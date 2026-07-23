@@ -70,13 +70,13 @@ const successStoriesData: SuccessStory[] = [
 >
 	<button
 		type="button"
-		class="flex w-full items-center font-medium text-neutral-600 hover:text-neutral-500 dark:text-neutral-400 dark:hover:text-neutral-500"
+		class="flex w-full items-center font-medium text-navbar-textSecondary hover:text-navbar-textMidLight dark:text-navbar-textSecondary dark:hover:text-navbar-textMidLight"
 	>
 		Services <Icon name="chevronDown" />
 	</button>
 
 	<div
-		class="hs-dropdown-menu start-0 top-full z-10 hidden w-full min-w-60 rounded-2xl bg-neutral-50 py-2 opacity-0 transition-[opacity,margin] duration-[0.1ms] before:absolute before:-top-5 before:start-0 before:h-5 before:w-full hs-dropdown-open:opacity-100 dark:divide-neutral-700 dark:bg-neutral-800 md:p-4 md:shadow-2xl md:duration-[150ms]"
+		class="hs-dropdown-menu start-0 top-full z-10 hidden w-full min-w-60 rounded-2xl bg-navbar-bgSubtle py-2 opacity-0 transition-[opacity,margin] duration-[0.1ms] before:absolute before:-top-5 before:start-0 before:h-5 before:w-full hs-dropdown-open:opacity-100 dark:divide-navbar-dropdownDividerDark dark:bg-navbar-shellBgCollapsed md:p-4 md:shadow-2xl md:duration-[150ms]"
 	>
 		<div class="gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
 			<div class="mx-1 flex flex-col md:mx-0">
@@ -84,15 +84,15 @@ const successStoriesData: SuccessStory[] = [
 					servicesData &&
 						servicesData.slice(0, 3).map((data) => (
 							<a
-								class="group flex gap-x-5 rounded-lg p-4 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-500/10"
+								class="group flex gap-x-5 rounded-lg p-4 hover:bg-navbar-bgHover dark:text-navbar-textEmphasisDark dark:hover:bg-navbar-dropdownHoverBgDark"
 								href={data.url}
 							>
 								<Icon name={data.icon} class="mt-1 size-5 flex-shrink-0" />
 								<div class="grow">
-									<p class="font-medium text-neutral-800 dark:text-neutral-200">
+									<p class="font-medium text-navbar-textPrimary dark:text-navbar-textEmphasisDark">
 										{data.title}
 									</p>
-									<p class="text-neutral-500 group-hover:text-neutral-800 dark:text-neutral-400 dark:group-hover:text-neutral-200">
+									<p class="text-navbar-textMidLight group-hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:group-hover:text-navbar-textEmphasisDark">
 										{data.description}
 									</p>
 								</div>
@@ -106,15 +106,15 @@ const successStoriesData: SuccessStory[] = [
 					servicesData &&
 						servicesData.slice(3, 6).map((data) => (
 							<a
-								class="group flex gap-x-5 rounded-lg p-4 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-500/10"
+								class="group flex gap-x-5 rounded-lg p-4 hover:bg-navbar-bgHover dark:text-navbar-textEmphasisDark dark:hover:bg-navbar-dropdownHoverBgDark"
 								href={data.url}
 							>
 								<Icon name={data.icon} class="mt-1 size-5 flex-shrink-0" />
 								<div class="grow">
-									<p class="font-medium text-neutral-800 dark:text-neutral-200">
+									<p class="font-medium text-navbar-textPrimary dark:text-navbar-textEmphasisDark">
 										{data.title}
 									</p>
-									<p class="text-neutral-500 group-hover:text-neutral-800 dark:text-neutral-400 dark:group-hover:text-neutral-200">
+									<p class="text-navbar-textMidLight group-hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:group-hover:text-navbar-textEmphasisDark">
 										{data.description}
 									</p>
 								</div>
@@ -125,11 +125,11 @@ const successStoriesData: SuccessStory[] = [
 
 			<div class="mx-1 flex flex-col pt-4 md:mx-0 md:pt-0">
 				<span
-					class="text-sm font-semibold uppercase text-neutral-800 dark:text-neutral-200"
-					>Success Stories</span
+					class="text-sm font-semibold uppercase text-navbar-textPrimary dark:text-navbar-textEmphasisDark"
+				>Success Stories</span
 				>
 				<a
-					class="group mt-2 flex items-center gap-x-5 rounded-xl p-3 hover:bg-neutral-100 dark:hover:bg-neutral-500/10"
+					class="group mt-2 flex items-center gap-x-5 rounded-xl p-3 hover:bg-navbar-bgHover dark:hover:bg-navbar-dropdownHoverBgDark"
 					href={successStoriesData[0].learnMoreUrl}
 				>
 					<img
@@ -140,7 +140,7 @@ const successStoriesData: SuccessStory[] = [
 						loading="eager"
 					/>
 					<div class="grow">
-						<p class="text-neutral-800 dark:text-neutral-400">
+						<p class="text-navbar-textPrimary dark:text-navbar-textSecondary">
 							{successStoriesData[0].description}
 						</p>
 						<p

@@ -9,7 +9,7 @@ interface Props {
 const { currentPath } = Astro.props;
 ---
 
-<div class="flex h-screen flex-col justify-between border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+<div class="flex h-screen flex-col justify-between border-r border-dashboard-border bg-dashboard-bg">
   <div class="px-4 py-6">
     <nav aria-label="Main Nav" class="mt-6 flex flex-col space-y-1">
       {
@@ -19,8 +19,8 @@ const { currentPath } = Astro.props;
             class:list={[
               "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium",
               currentPath === item.href
-                ? "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
-                : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200",
+                ? "bg-dashboard-bgSubtle text-dashboard-textSecondary"
+                : "text-dashboard-textMuted hover:bg-dashboard-bgSubtle hover:text-dashboard-textSecondary",
             ]}
           >
             <Fragment set:html={item.icon} />
@@ -31,10 +31,10 @@ const { currentPath } = Astro.props;
     </nav>
   </div>
 
-  <div class="sticky inset-x-0 bottom-0 border-t border-neutral-200 dark:border-neutral-800">
+  <div class="sticky inset-x-0 bottom-0 border-t border-dashboard-border">
     <a
       href="/dashboard/parametres"
-      class="flex items-center gap-2 bg-white p-4 hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+      class="flex items-center gap-2 bg-dashboard-bg p-4 hover:bg-dashboard-bgSubtle"
     >
       <img
         alt="Profile"
@@ -44,8 +44,8 @@ const { currentPath } = Astro.props;
 
       <div>
         <p class="text-xs">
-          <strong class="block font-medium text-neutral-900 dark:text-white">Compte</strong>
-          <span class="text-neutral-500 dark:text-neutral-400"> Gérer votre profil </span>
+          <strong class="block font-medium text-dashboard-textPrimary">Compte</strong>
+          <span class="text-dashboard-textMuted"> Gérer votre profil </span>
         </p>
       </div>
     </a>

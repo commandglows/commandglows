@@ -26,14 +26,14 @@ const navBarLinks = (strings.navBarLinks ?? []) as NavBarLink[];
 >
 	<!-- Navigation container -->
 	<nav
-		class="relative mx-2 w-full border border-yellow/10 px-4 py-3 backdrop-blur-md dark:border-neutral-700/40 dark:bg-neutral-800/80 dark:backdrop-blur-md md:flex md:items-center md:justify-between md:px-6 md:py-0 lg:px-8 xl:mx-auto"
+		class="relative mx-2 w-full border border-navbar-borderBrand/10 px-4 py-3 backdrop-blur-md dark:border-navbar-drawerBorder/40 dark:bg-navbar-shellBgCollapsed/80 dark:backdrop-blur-md md:flex md:items-center md:justify-between md:px-6 md:py-0 lg:px-8 xl:mx-auto"
 		style="border-radius: var(--mega-menu-radius); background: var(--surface-tint-subtle);"
 		aria-label="Global"
 	>
 		<div class="flex items-center justify-between">
 			<!-- Brand logo -->
 			<a
-				class="flex-none rounded-lg text-xl font-bold outline-none ring-zinc-500 focus-visible:ring dark:ring-zinc-200 dark:focus:outline-none"
+				class="flex-none rounded-lg text-xl font-bold outline-none ring-navbar-ringTone focus-visible:ring dark:ring-navbar-ringToneDark dark:focus:outline-none"
 				href={homeUrl}
 				aria-label="Brand"
 			>
@@ -43,7 +43,7 @@ const navBarLinks = (strings.navBarLinks ?? []) as NavBarLink[];
 			<div class="ml-auto mr-5 md:hidden">
 				<button
 					type="button"
-					class="hs-collapse-toggle flex h-8 w-8 items-center justify-center rounded-full font-bold text-neutral-600 transition duration-300 hover:bg-neutral-200 disabled:pointer-events-none disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:focus:outline-none"
+					class="hs-collapse-toggle flex h-8 w-8 items-center justify-center rounded-full font-bold text-navbar-textSecondary transition duration-300 hover:bg-navbar-bgHover disabled:pointer-events-none disabled:opacity-50 dark:text-navbar-textSecondary dark:hover:bg-navbar-bgHoverElevated dark:focus:outline-none"
 					data-hs-collapse="#navbar-collapse-with-animation"
 					aria-controls="navbar-collapse-with-animation"
 					aria-label="Toggle navigation"

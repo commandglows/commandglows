@@ -122,6 +122,30 @@
     --navbar-ring: 0 0% 9%;
     --navbar-force-shell-bg: 0 0% 2%;
     --navbar-force-drawer-bg: 0 0% 2%;
+    --navbar-shell-border-brand: 60 100% 50%;
+    --navbar-shell-bg-collapsed: 0 0% 14.5%;
+    --navbar-ring-tone: 240 5% 45%;
+    --navbar-ring-tone-dark: 240 5% 86%;
+    --navbar-bg-hover-elevated: 0 0% 25%;
+    --navbar-drawer-border-force: 0 0% 15%;
+
+    /* Dashboard tokens */
+    --dashboard-border: 0 0% 91%;
+    --navbar-text-mid-light: 0 0% 50%;
+    --navbar-text-emphasis-dark: 240 5% 86%;
+    --navbar-dropdown-hover-bg-dark: 0 0% 45%;
+    --navbar-dropdown-divider-dark: 0 0% 25%;
+    --dashboard-bg: 0 0% 100%;
+    --dashboard-bg-elevated: 0 0% 100%;
+    --dashboard-bg-subtle: 0 0% 95%;
+    --dashboard-bg-hover: 0 0% 91%;
+    --dashboard-text-primary: 0 0% 9%;
+    --dashboard-text-secondary: 0 0% 27%;
+    --dashboard-text-muted: 0 0% 47%;
+    --dashboard-icon-bg: 0 0% 95%;
+    --dashboard-icon-bg-hover: 0 0% 91%;
+    --dashboard-icon-text: 0 0% 44%;
+    --dashboard-icon-text-hover: 0 0% 18%;
 
     --ui-button-radius: 999rem;
     --ui-button-gap: 0.5rem;
@@ -263,6 +287,29 @@
     --navbar-ring: 0 0% 100%;
     --navbar-force-shell-bg: 0 0% 2%;
     --navbar-force-drawer-bg: 0 0% 2%;
+
+    --navbar-shell-border-brand: 60 100% 50%;
+    --navbar-shell-bg-collapsed: 0 0% 14.5%;
+    --navbar-ring-tone: 240 5% 45%;
+    --navbar-ring-tone-dark: 240 5% 86%;
+    --navbar-bg-hover-elevated: 0 0% 25%;
+    --navbar-drawer-border-force: 0 0% 15%;
+    --navbar-text-mid-light: 0 0% 50%;
+    --navbar-text-emphasis-dark: 240 5% 86%;
+    --navbar-dropdown-hover-bg-dark: 0 0% 45%;
+    --navbar-dropdown-divider-dark: 0 0% 25%;
+    --dashboard-border: 0 0% 18%;
+    --dashboard-bg: 0 0% 9%;
+    --dashboard-bg-elevated: 0 0% 9%;
+    --dashboard-bg-subtle: 0 0% 14%;
+    --dashboard-bg-hover: 0 0% 16%;
+    --dashboard-text-primary: 0 0% 95%;
+    --dashboard-text-secondary: 0 0% 65%;
+    --dashboard-text-muted: 0 0% 55%;
+    --dashboard-icon-bg: 0 0% 14%;
+    --dashboard-icon-bg-hover: 0 0% 20%;
+    --dashboard-icon-text: 0 0% 60%;
+    --dashboard-icon-text-hover: 0 0% 100%;
     --root-font-size: 16px;
     --text-logo-size-base: 3rem;
     --text-logo-size-sm: 2.25rem;
@@ -271,7 +318,7 @@
     --text-logo-transition-fast: all 0.3s ease;
     --text-logo-filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     --text-logo-filter-hover: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-    --text-logo-filter-active: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+    --text-logo-filter-active: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
     --text-logo-filter-before: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
     --text-logo-filter-before-hover: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
     --text-logo-filter-before-active: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
@@ -379,6 +426,230 @@
     --btn-full-width: 100%;
     --breakpoint-sm: 640px;
   }
+
+  .dark,
+  [data-theme="dark"] {
+    --landing-background: 0 0% 9%;
+    --landing-foreground: 0 0% 100%;
+    --landing-primary: 0 0% 100%;
+    --landing-primary-foreground: 0 0% 9%;
+    --landing-secondary: 0 0% 18%;
+    --landing-secondary-foreground: 0 0% 100%;
+    --landing-muted: 0 0% 18%;
+    --landing-muted-foreground: 0 0% 55%;
+    --landing-accent: 0 0% 18%;
+    --landing-accent-foreground: 0 0% 100%;
+    --landing-destructive: 0 62% 30%;
+    --landing-destructive-foreground: 0 0% 100%;
+    --landing-border: 0 0% 22%;
+    --landing-input: 0 0% 22%;
+    --landing-ring: 0 0% 40%;
+    --landing-card: 0 0% 13%;
+    --landing-card-foreground: 0 0% 100%;
+    --landing-popover: 0 0% 13%;
+    --landing-popover-foreground: 0 0% 100%;
+    --landing-surface: 0 0% 13%;
+    --landing-surface-foreground: 0 0% 100%;
+    --landing-surface-muted: 0 0% 64%;
+    --landing-surface-strong: 0 0% 9%;
+    --landing-surface-strong-foreground: 0 0% 100%;
+    --landing-surface-edge: 0 0% 22%;
+    --landing-soft: 0 0% 13%;
+    --landing-soft-foreground: 0 0% 100%;
+    --landing-soft-muted: 0 0% 64%;
+    --landing-strong: 0 0% 9%;
+    --landing-strong-foreground: 0 0% 100%;
+    --landing-edge: 0 0% 22%;
+    --landing-glow: 255 255 255;
+    --landing-shadow: 255 255 255;
+    --landing-marquee-fade: 0 0 0;
+    --navbar-shell-border: 0 0% 15%;
+    --navbar-shell-bg: 0 0% 10%;
+    --navbar-text-primary: 0 0% 100%;
+    --navbar-text-secondary: 0 0% 66%;
+    --navbar-text-tertiary: 0 0% 62%;
+    --navbar-text-quaternary: 0 0% 66%;
+    --navbar-bg-hover: 0 0% 15%;
+    --navbar-cta-bg: 0 0% 100%;
+    --navbar-cta-text: 0 0% 4%;
+    --navbar-cta-bg-hover: 0 0% 87%;
+    --navbar-drawer-border: 0 0% 40%;
+    --navbar-drawer-bg: 0 0% 10%;
+    --navbar-ring: 0 0% 100%;
+    --navbar-force-shell-bg: 0 0% 2%;
+    --navbar-force-drawer-bg: 0 0% 2%;
+    --navbar-shell-border-brand: 60 100% 50%;
+    --navbar-shell-bg-collapsed: 0 0% 14.5%;
+    --navbar-ring-tone: 240 5% 45%;
+    --navbar-ring-tone-dark: 240 5% 86%;
+    --navbar-bg-hover-elevated: 0 0% 25%;
+    --navbar-drawer-border-force: 0 0% 15%;
+    --navbar-text-mid-light: 0 0% 50%;
+    --navbar-text-emphasis-dark: 240 5% 86%;
+    --navbar-dropdown-hover-bg-dark: 0 0% 45%;
+    --navbar-dropdown-divider-dark: 0 0% 25%;
+    --root-font-size: 16px;
+    --text-logo-size-base: 3rem;
+    --text-logo-size-sm: 2.25rem;
+    --text-logo-size-xs: 1.75rem;
+    --text-logo-transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    --text-logo-transition-fast: all 0.3s ease;
+    --text-logo-filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    --text-logo-filter-hover: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    --text-logo-filter-active: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+    --text-logo-filter-before: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+    --text-logo-filter-before-hover: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
+    --text-logo-filter-before-active: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+    --text-logo-after-left: 1px;
+    --text-logo-after-top: 1px;
+    --text-logo-after-left-hover: 1.5px;
+    --text-logo-after-top-hover: 1.5px;
+    --text-logo-after-left-active: 0.5px;
+    --text-logo-after-top-active: 0.5px;
+    --text-logo-after-z: -1;
+    --text-logo-glow-inset: -6px -10px;
+    --text-logo-glow-inset-sm: -5px -8px;
+    --text-logo-glow-inset-xs: -4px -6px;
+    --text-logo-glow-radius: 40% / 100%;
+    --text-logo-glow-z: -2;
+    --text-logo-glow-shadow: 0 0 10px rgba(255, 0, 200, 0.3), 0 0 20px rgba(0, 200, 255, 0.2);
+    --text-logo-glow-animation: logo-gradient 6s ease infinite;
+    --text-logo-glow-animation-hover: logo-gradient 4s ease infinite;
+    --text-logo-shadow-rest: 0.5px 0.5px 0 white, 1px 1px 0 white, 1.5px 1.5px 0 rgba(255, 255, 255, 0.7), 0 2px 5px rgba(0, 0, 0, 0.2);
+    --text-logo-shadow-hover: 1px 1px 0 white, 1.5px 1.5px 0 white, 2px 2px 0 rgba(255, 255, 255, 0.7), 0 4px 8px rgba(0, 0, 0, 0.3);
+    --text-logo-shadow-active: 0.5px 0.5px 0 white, 0.75px 0.75px 0 white, 1px 1px 0 rgba(255, 255, 255, 0.7), 0 1px 3px rgba(0, 0, 0, 0.15);
+    --pulse-glow-shadow-rest: 0 0 4px currentColor;
+    --pulse-glow-shadow-peak: 0 0 8px currentColor;
+    --pulse-glow-animation: pulse-glow 2s ease-in-out infinite;
+    --shimmer-gradient: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    --shimmer-animation: shimmer 3s ease-in-out infinite;
+    --scrollbar-width: 12px;
+    --scrollbar-track-light: #ffffff;
+    --scrollbar-track-dark: var(--sl-color-gray-6, #272727);
+    --scrollbar-thumb-border-width: 3px;
+    --scrollbar-radius: 9999px;
+    --landing-shimmer-gradient: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    --landing-pulse-shadow-rest: 0 0 4px currentColor;
+    --landing-pulse-shadow-peak: 0 0 8px currentColor;
+    --landing-discord-padding: 4rem 0;
+    --landing-discord-heading-size: 1.5rem;
+    --landing-discord-image-offset: -1rem;
+    --landing-discord-image-size: 5rem;
+    --navbar-slide-down-animation: navbar-slide-down 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+    --menu-panel-radius: 2rem;
+    --mega-menu-radius: 2.25rem;
+    --surface-tint-subtle: rgb(250 204 21 / 0.05);
+    --icon-size-md: 1.25rem;
+    --logo-marquee-item-min-width: 10rem;
+    --avatar-size-sm-up: 2.875rem;
+    --banner-pattern-image: url("/banner-pattern.svg");
+    --overlay-z-critical: 100;
+    --media-ratio-card-wide: 50%;
+    --media-ratio-card-square: 100%;
+    --media-ratio-card-insight: 70%;
+    --eyebrow-text-size: 0.6875rem;
+    --eyebrow-letter-spacing: 0.18em;
+    --card-blog-height: 21.875rem;
+    --card-blog-overlay-start: rgb(23 23 23 / 0.7);
+    --pricing-card-inset-margin: 0.25rem;
+    --pricing-card-inset-radius: 0.625rem;
+    --ticker-min-width: 8.75rem;
+    --hero-fade-animation-fast: hero-fade-up 0.2s ease-out forwards;
+    --hero-fade-animation-medium: hero-fade-up 0.3s ease-out forwards;
+
+    --temu-card-radius-xl: 2rem;
+    --temu-card-radius-lg: 1.5rem;
+    --temu-card-radius-md: 1.25rem;
+    --temu-step-idle: 0 0% 64%;
+    --temu-step-active: 240 10% 12%;
+    --temu-step-active-light: 0 0% 90%;
+    --temu-step-done: 142 71% 39%;
+    --temu-step-indicator-rest: 0 0% 83%;
+    --temu-step-transition: 350ms;
+    --temu-step-gap: 6px;
+    --temu-step-dot-size: 10px;
+    --temu-step-dot-font-size: 7px;
+    --temu-step-dot-line-height: 10px;
+    --temu-step-connector-width: 20px;
+    --temu-step-connector-height: 2px;
+    --temu-step-connector-radius: 1px;
+    --step-dot-circle: 50%;
+    --temu-step-pulse-max-spread: 6px;
+    --temu-step-pulse-duration: 1.2s;
+    --temu-status-ellipsis-duration: 1.5s;
+    --temu-status-fade-duration: 300ms;
+
+    --btn-primary-radius: 0.75rem;
+    --btn-primary-padding-y: 0.625rem;
+    --btn-primary-padding-x: 1.5rem;
+    --btn-primary-font-size: 1.125rem;
+    --btn-primary-text: #fff;
+    --btn-primary-bg: #111827;
+    --btn-primary-border-width: 2px;
+    --btn-primary-transition: 200ms;
+
+    --btn-secondary-radius: 0.75rem;
+    --btn-secondary-padding-y: 0.625rem;
+    --btn-secondary-padding-x: 1rem;
+    --btn-secondary-font-size: 1.125rem;
+    --btn-secondary-text: #111827;
+    --btn-secondary-bg: #f5f5f5;
+    --btn-secondary-border: #9ca3af;
+    --btn-secondary-transition: 200ms;
+    --btn-secondary-dark-border: #525252;
+    --btn-secondary-dark-bg: #3f3f46;
+    --btn-secondary-dark-text: #d4d4d8;
+
+    --btn-full-width: 100%;
+    --breakpoint-sm: 640px;
+  }
+
+  /* Base font size */
+  html {
+    font-size: var(--root-font-size);
+  }
+
+  body {
+    font-family: var(--font-body);
+    @apply text-xl leading-relaxed text-neutral-700 dark:text-neutral-300;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
+
+  h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+  
+  /* Headings - Mobile first, larger baseline for readability */
+  h1 {
+    @apply text-5xl font-bold leading-tight tracking-tight text-neutral-800 dark:text-neutral-200;
+  }
+  
+  h2 {
+    @apply text-4xl font-bold leading-tight text-neutral-800 dark:text-neutral-200;
+  }
+  
+  h3 {
+    @apply text-3xl font-bold leading-snug text-neutral-800 dark:text-neutral-200;
+  }
+  
+  h4 {
+    @apply text-2xl font-bold leading-snug text-neutral-800 dark:text-neutral-200;
+  }
+  
+  h5, h6 {
+    @apply text-xl font-bold leading-normal text-neutral-800 dark:text-neutral-200;
+  }
+  
+  /* Paragraphs - Much larger on mobile for better readability */
+  p {
+    @apply text-xl leading-relaxed text-neutral-700 dark:text-neutral-400;
+  }
+  
+}
 
   /* Base font size */
   html {

@@ -70,7 +70,7 @@ export function MobileMenu({
   return (
     <>
       <button
-        className="md:hidden p-2 text-neutral-800 hover:text-neutral-950 dark:text-zinc-400 dark:hover:text-white"
+        className="md:hidden p-2 text-navbar-textPrimary hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:hover:text-navbar-textPrimary"
         onClick={() => setOpen(!open)}
         aria-label="Toggle menu"
       >
@@ -85,8 +85,8 @@ export function MobileMenu({
         <div
           className={
             forceDark
-              ? "absolute top-full left-0 right-0 mt-2 border border-zinc-800 bg-zinc-950/96 p-4 shadow-2xl backdrop-blur-md"
-              : "absolute top-full left-0 right-0 mt-2 border border-neutral-200/60 bg-white/95 p-4 shadow-lg backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/95 dark:shadow-none"
+              ? "absolute top-full left-0 right-0 mt-2 border border-navbar-drawerBorderForce bg-navbar-forceDrawerBg/96 p-4 shadow-2xl backdrop-blur-md"
+              : "absolute top-full left-0 right-0 mt-2 border border-navbar-border/60 bg-navbar-drawerBg/95 p-4 shadow-lg backdrop-blur-md dark:border-navbar-drawerBorderForce dark:bg-navbar-drawerBg/95 dark:shadow-none"
           }
           style={{ borderRadius: "var(--menu-panel-radius)", animation: "var(--hero-fade-animation-fast)" }}
         >
@@ -95,17 +95,17 @@ export function MobileMenu({
               <a
                 key={item.label}
                 href={item.href}
-                className="px-4 py-3 text-sm font-medium text-neutral-800 hover:text-neutral-950 hover:bg-neutral-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                className="px-4 py-3 text-sm font-medium text-navbar-textPrimary hover:text-navbar-textPrimary hover:bg-navbar-bgHover dark:text-navbar-textSecondary dark:hover:text-navbar-textPrimary dark:hover:bg-navbar-bgHover rounded-lg transition-colors"
                 onClick={() => setOpen(false)}
               >
                 {item.label}
               </a>
             ))}
-            <hr className="border-neutral-200 dark:border-zinc-800 my-2" />
+            <hr className="border-navbar-border dark:border-navbar-drawerBorderForce my-2" />
             {altLangUrl && altLangLabel && (
               <a
                 href={altLangUrl}
-                className="px-4 py-2 text-xs font-semibold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-100 dark:text-zinc-500 dark:hover:text-white dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-navbar-textTertiary hover:text-navbar-textPrimary hover:bg-navbar-bgHover dark:text-navbar-textSecondary dark:hover:text-navbar-textPrimary dark:hover:bg-navbar-bgHover rounded-lg transition-colors"
                 onClick={() => setOpen(false)}
               >
                 {altLangLabel}
@@ -114,19 +114,19 @@ export function MobileMenu({
             {showThemeToggle && !forceDark && (
               <button
                 type="button"
-                className="rounded-lg px-4 py-3 text-left text-sm font-medium text-neutral-800 transition-colors hover:bg-neutral-100 hover:text-neutral-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                className="rounded-lg px-4 py-3 text-left text-sm font-medium text-navbar-textPrimary transition-colors hover:bg-navbar-bgHover hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:hover:bg-navbar-bgHover dark:hover:text-navbar-textPrimary"
                 onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
               >
                 {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               </button>
             )}
             <a href={signInUrl} onClick={() => setOpen(false)}>
-              <button className="w-full text-left px-4 py-2 text-sm font-medium text-neutral-800 hover:text-neutral-950 hover:bg-neutral-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 rounded-lg transition-colors">
+              <button className="w-full text-left px-4 py-2 text-sm font-medium text-navbar-textPrimary hover:text-navbar-textPrimary hover:bg-navbar-bgHover dark:text-navbar-textSecondary dark:hover:text-navbar-textPrimary dark:hover:bg-navbar-bgHover rounded-lg transition-colors">
                 {signInLabel}
               </button>
             </a>
             <a href={ctaUrl} onClick={() => setOpen(false)}>
-              <button className="w-full shimmer-btn bg-neutral-900 text-white hover:bg-neutral-700 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-full px-4 py-2 text-sm font-medium inline-flex items-center justify-center">
+              <button className="w-full shimmer-btn bg-navbar-ctaBg text-navbar-ctaText hover:bg-navbar-ctaBgHover dark:bg-navbar-ctaBg dark:text-navbar-ctaText dark:hover:bg-navbar-ctaBgHover rounded-full px-4 py-2 text-sm font-medium inline-flex items-center justify-center">
                 {ctaLabel}
               </button>
             </a>
