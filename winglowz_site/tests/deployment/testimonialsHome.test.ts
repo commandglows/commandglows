@@ -82,10 +82,22 @@ describe('Homepage testimonial proof', () => {
 
     expect(marquee.match(/id="testimonials"/g)).toHaveLength(1)
     expect(marquee).toContain('scroll-mt-20')
-    expect(marquee).toContain("embedded ? 'bg-transparent' : 'bg-neutral-50 dark:bg-black'")
+    expect(marquee).toContain("embedded ? 'bg-transparent' : 'bg-content-bg-subtle dark:bg-content-bg-inverse'")
     expect(hero.indexOf('href="#testimonials"')).toBeLessThan(hero.indexOf('<LogoMarquee embedded />'))
     expect(hero.indexOf('<LogoMarquee embedded />')).toBeLessThan(hero.indexOf('<!-- Stats -->'))
     expect(homepage).toContain("{ params: { lang: 'en' }, props: { lang: 'en' as Language } }")
     expect(homepage).toContain("{ params: { lang: 'fr' }, props: { lang: 'fr' as Language } }")
+  })
+
+  test('keeps the animated carousel while allowing long reviews to expand on demand', () => {
+    const carousel = readProjectFile('src/components/react/landing/TestimonialCarousel.tsx')
+
+    expect(carousel).toContain('getTestimonialPreview')
+    expect(carousel).toContain('setInterval')
+    expect(carousel).toContain('expanded')
+    expect(carousel).toContain('aria-expanded={expanded}')
+    expect(carousel).toContain('setExpanded(false)')
+    expect(carousel).toContain('onPointerDown={handlePointerDown}')
+    expect(carousel).toContain('onPointerUp={handlePointerEnd}')
   })
 })

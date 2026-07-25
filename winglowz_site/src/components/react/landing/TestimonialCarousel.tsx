@@ -1,8 +1,13 @@
 /** @jsxImportSource react */
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { testimonialPeople } from "@/data/testimonialPeople"
 
 export const testimonials = testimonialPeople
+
+export function getTestimonialPreview(quote: string) {
+  const sentence = quote.match(/^(.+?[.!?])(?:\s+|$)/)
+  return sentence ? sentence[1] : quote
+}
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -16,10 +21,12 @@ function StarRating({ rating }: { rating: number }) {
   )
 }
 
-export function TestimonialCarousel() {
+export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
   const [current, setCurrent] = useState(0)
+  const [expanded, setExpanded] = useState(false)
   const [direction, setDirection] = useState<"next" | "prev">("next")
   const [isAnimating, setIsAnimating] = useState(false)
+  const swipeStartX = useRef<number | null>(null)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -27,9 +34,11 @@ export function TestimonialCarousel() {
       setIsAnimating(true)
       setTimeout(() => {
         setCurrent((prev) => (prev + 1) % testimonials.length)
+        setExpanded(false)
         setIsAnimating(false)
       }, 300)
     }, 6000)
+
     return () => clearInterval(timer)
   }, [])
 
@@ -37,17 +46,46 @@ export function TestimonialCarousel() {
     if (index === current) return
     setDirection(index > current ? "next" : "prev")
     setIsAnimating(true)
+    setExpanded(false)
     setTimeout(() => {
       setCurrent(index)
       setIsAnimating(false)
     }, 300)
   }
 
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    swipeStartX.current = event.clientX
+  }
+
+  const handlePointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (swipeStartX.current === null) return
+
+    const distance = event.clientX - swipeStartX.current
+    swipeStartX.current = null
+
+    if (Math.abs(distance) < 48) return
+
+    const nextIndex = distance < 0
+      ? (current + 1) % testimonials.length
+      : (current - 1 + testimonials.length) % testimonials.length
+
+    goTo(nextIndex)
+  }
+
   const t = testimonials[current]
+  const preview = getTestimonialPreview(t.quote)
+  const hasMore = preview.length < t.quote.length
+  const readMoreLabel = lang === "fr" ? "Lire le témoignage complet" : "Read the full testimonial"
+  const showLessLabel = lang === "fr" ? "Réduire le témoignage" : "Show less"
 
   return (
     <div>
-      <div className="relative min-h-52">
+      <div
+        className="relative min-h-52 touch-pan-y"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={() => { swipeStartX.current = null }}
+      >
         <div
           className="text-center transition-all duration-300"
           style={{
@@ -65,9 +103,19 @@ export function TestimonialCarousel() {
               &ldquo;{t.title}&rdquo;
             </h3>
           )}
-          <p className="mb-4 text-sm italic leading-relaxed text-content-text-secondary dark:text-content-text-tertiary">
-            &ldquo;{t.quote}&rdquo;
+          <p className="mb-2 text-sm italic leading-relaxed text-content-text-secondary dark:text-content-text-tertiary">
+            &ldquo;{expanded ? t.quote : preview}&rdquo;
           </p>
+          {hasMore && (
+            <button
+              type="button"
+              className="mb-4 text-sm font-medium text-content-text-primary underline underline-offset-4 transition-colors hover:text-content-text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring dark:text-content-text-over-dark dark:hover:text-content-text-muted"
+              onClick={() => setExpanded((value) => !value)}
+              aria-expanded={expanded}
+            >
+              {expanded ? showLessLabel : readMoreLabel}
+            </button>
+          )}
           <div className="flex items-center justify-center gap-2">
             {t.avatarRepresentation === "appsumo-generic" ? (
               <span
@@ -109,6 +157,7 @@ export function TestimonialCarousel() {
                 : "w-2 bg-content-bg-subtle hover:bg-content-bg-hover dark:bg-content-bg-strong dark:hover:bg-content-bg-hover"
             }`}
             aria-label={`Go to testimonial ${index + 1}`}
+            aria-pressed={index === current}
           />
         ))}
       </div>
