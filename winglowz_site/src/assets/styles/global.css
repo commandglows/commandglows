@@ -1066,6 +1066,21 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Tailwind v4 may leave the semantic bg utility unset during hydration.
+   Keep the page canvas itself dark so transparent gaps behind fixed/sticky
+   navigation can never expose the browser's white default background. */
+html,
+body {
+  background-color: hsl(var(--content-bg));
+}
+
+html.dark,
+html.dark body,
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  background-color: hsl(0 0% 4%);
+}
+
 /* Keep the light navbar readable over content while preserving the glass effect. */
 .navbar-shell-glass {
   background-color: hsl(var(--navbar-shell-bg) / 0.88);
@@ -1074,9 +1089,48 @@ html {
   box-shadow: 0 10px 30px rgb(15 23 42 / 0.08);
 }
 
+/* Keep overlay surfaces opaque enough to remain readable in light mode.
+   These explicit rules are intentional: the panels sit above arbitrary page
+   content and must not fall back to a transparent/invalid utility class. */
+.navbar-drawer-glass {
+  background-color: hsl(var(--navbar-drawer-bg) / 0.94);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow: 0 16px 40px rgb(15 23 42 / 0.14);
+}
+
+.navbar-mega-shell-glass {
+  background-color: rgb(255 255 255 / 0.88);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.cookie-consent-glass {
+  /* Use a concrete color here: this is a fixed overlay and must remain
+     readable even if a page overrides semantic background tokens. */
+  background-color: rgb(255 255 255 / 0.96) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow: 0 16px 40px rgb(15 23 42 / 0.16);
+}
+
 html.dark .navbar-shell-glass {
   background-color: hsl(var(--navbar-shell-bg) / 0.9);
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.24);
+}
+
+html.dark .navbar-drawer-glass {
+  background-color: hsl(var(--navbar-drawer-bg) / 0.96);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.3);
+}
+
+html.dark .navbar-mega-shell-glass {
+  background-color: rgb(24 24 27 / 0.9);
+}
+
+html.dark .cookie-consent-glass {
+  background-color: rgb(24 24 27 / 0.96) !important;
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.3);
 }
 
 /* Accessibility: disable navbar animations when user prefers reduced motion */
