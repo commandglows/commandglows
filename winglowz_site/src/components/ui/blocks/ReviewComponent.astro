@@ -22,7 +22,7 @@ interface Props {
         <div class="flex justify-center -space-x-3">
           {avatars?.map((src) => <Avatar src={src} alt="Avatar Description" />)}
           <span
-            class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 ring-2 ring-white dark:bg-zinc-900 dark:ring-zinc-800"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-content-bg-inverse dark:bg-content-bg-inverse dark:ring-content-text-secondary/50"
           >
             <span class="text-xs font-medium uppercase leading-none text-white"
               >7k+</span
@@ -31,7 +31,7 @@ interface Props {
         </div>
       </div>
       <div
-        class="mx-auto h-px w-32 border-t border-neutral-400 dark:border-neutral-500 sm:mx-0 sm:h-8 sm:w-auto sm:border-s sm:border-t-0"
+        class="mx-auto h-px w-32 border-t border-content-text-secondary/50 dark:border-content-text-secondary/50 sm:mx-0 sm:h-8 sm:w-auto sm:border-s sm:border-t-0"
       >
       </div>
       <!-- Review Ratings -->
@@ -45,11 +45,11 @@ interface Props {
                 .map((_, i) => <FullStar key={i} />)
             }
           </div>
-          <p class="text-neutral-800 dark:text-neutral-200">
+          <p class="text-content-text-primary dark:text-content-text-primary">
             <Fragment set:html={rating} />
           </p>
         </div>
-        <div class="text-neutral-800 dark:text-neutral-200 sm:ps-5">
+        <div class="text-content-text-primary dark:text-content-text-primary sm:ps-5">
           <p>
             <Fragment set:html={reviews} />
           </p>

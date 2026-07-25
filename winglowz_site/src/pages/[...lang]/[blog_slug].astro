@@ -131,7 +131,7 @@ const alternateUrls = translatedPost
 		{/* Article Header */}
 		<div class="mb-10">
 			<h1
-				class="mb-4 text-3xl font-bold text-neutral-800 dark:text-neutral-200 sm:text-4xl lg:text-5xl"
+				class="mb-4 text-3xl font-bold text-content-text-secondary dark:text-content-text-muted sm:text-4xl lg:text-5xl"
 			>
 				{post.data.title}
 			</h1>
@@ -161,7 +161,7 @@ const alternateUrls = translatedPost
 			}
 			{
 				post.data.contents.map((paragraph) => (
-					<p class="text-pretty text-neutral-600 dark:text-neutral-400">
+					<p class="text-pretty text-content-text-secondary dark:text-content-text-tertiary">
 						{paragraph}
 					</p>
 				))
@@ -181,7 +181,7 @@ const alternateUrls = translatedPost
 		{
 			relatedPosts.length > 0 && (
 				<div class="mt-16">
-					<h2 class="mb-8 text-2xl font-bold text-neutral-800 dark:text-neutral-200">
+					<h2 class="mb-8 text-2xl font-bold text-content-text-secondary dark:text-content-text-muted">
 						{t.relatedArticles}
 					</h2>
 					<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

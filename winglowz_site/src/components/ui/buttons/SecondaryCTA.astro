@@ -8,16 +8,16 @@ interface Props {
   url?: string;
 }
 // Define CSS classes for the hyperlink button
-const baseClasses = "font-pj mt-4 inline-flex w-full items-center justify-center rounded-xl border-2 border-gray-400 px-4 py-2.5 font-bold text-gray-900 transition-all duration-200 hover:border-magenta hover:bg-magenta hover:text-white focus:border-magenta focus:bg-magenta focus:text-white focus:outline-none focus:ring-2 focus:ring-magenta focus:ring-offset-2 sm:mt-0 sm:w-auto sm:px-6 sm:py-3";
-const borderClasses = "border border-neutral-200";
-const bgColorClasses = "bg-neutral-100";
+const baseClasses = "font-pj mt-4 inline-flex w-full items-center justify-center rounded-xl border-2 border-content-text-secondary/50 px-4 py-2.5 font-bold text-content-text-primary transition-all duration-200 hover:border-magenta hover:bg-magenta hover:text-white focus:border-magenta focus:bg-magenta focus:text-white focus:outline-none focus:ring-2 focus:ring-magenta focus:ring-offset-2 sm:mt-0 sm:w-auto sm:px-6 sm:py-3";
+const borderClasses = "border border-content-border";
+const bgColorClasses = "bg-content-bg-secondary";
 const hoverClasses =
   "hover:bg-magenta hover:text-white active:text-magenta hover:border-magenta";
 const disableClasses = "disabled:pointer-events-none disabled:opacity-50";
 const ringClasses = "ring-magenta";
 
 const darkClasses =
-  "dark:border-neutral-700 dark:bg-zinc-700 dark:text-neutral-300 dark:ring-magenta dark:hover:bg-magenta dark:focus:outline-none";
+  "dark:border-content-text-secondary/50 dark:bg-content-bg-secondary dark:text-content-text-secondary dark:ring-magenta dark:hover:bg-magenta dark:focus:outline-none";
 ---
 
 <!-- Styled hyperlink -->

@@ -16,7 +16,7 @@ const successMsg = Astro.currentLocale === "fr" ? "Merci ! Vous etes inscrit(e).
 const errorMsg = Astro.currentLocale === "fr" ? "Erreur. Veuillez reessayer." : "Something went wrong. Please try again.";
 ---
 
-<form id="newsletter-form" data-lang={Astro.currentLocale === "fr" ? "fr" : "en"} class="mt-4 flex flex-col items-center gap-2 rounded-lg bg-neutral-200 p-2 dark:bg-neutral-800 sm:flex-row sm:gap-3">
+<form id="newsletter-form" data-lang={Astro.currentLocale === "fr" ? "fr" : "en"} class="mt-4 flex flex-col items-center gap-2 rounded-lg bg-content-bg-secondary p-2 dark:bg-content-bg-secondary sm:flex-row sm:gap-3">
   <div class="w-full">
     <label for={id} class="sr-only">{label}</label>
     <input
@@ -24,13 +24,13 @@ const errorMsg = Astro.currentLocale === "fr" ? "Erreur. Veuillez reessayer." : 
       id={id}
       name="email"
       required
-      class="block w-full rounded-lg border-transparent bg-neutral-100 px-4 py-3 text-neutral-600 focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-transparent dark:bg-neutral-700 dark:text-gray-300 dark:placeholder:text-neutral-300 caret-magenta"
+      class="block w-full rounded-lg border-transparent bg-content-bg-secondary px-4 py-3 text-content-text-secondary focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-transparent dark:bg-content-bg-secondary dark:text-content-text-primary dark:placeholder:text-content-text-muted caret-magenta"
       placeholder={placeholder}
     />
   </div>
   <button
     type="submit"
-    class="inline-flex w-full items-center justify-center gap-x-2 whitespace-nowrap rounded-lg border border-transparent bg-magenta p-3 font-bold text-neutral-50 outline-none ring-zinc-500 transition duration-300 hover:opacity-90 focus-visible:ring disabled:pointer-events-none disabled:opacity-50 dark:ring-zinc-200 dark:focus:outline-none dark:focus:ring-1 sm:w-auto"
+    class="inline-flex w-full items-center justify-center gap-x-2 whitespace-nowrap rounded-lg border border-transparent bg-magenta p-3 font-bold text-white outline-none ring-content-text-secondary/50 transition duration-300 hover:opacity-90 focus-visible:ring disabled:pointer-events-none disabled:opacity-50 dark:ring-content-text-secondary/50 dark:focus:outline-none dark:focus:ring-1 sm:w-auto"
     data-track="newsletter-subscribe"
   >
     {title}

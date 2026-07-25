@@ -18,11 +18,11 @@ const { apiKey } = Astro.props;
       </svg>
     </div>
     <div class="ml-3">
-      <h3 class="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+      <h3 class="text-sm font-medium text-content-text-secondary dark:text-content-text-muted">
         Votre nouvelle clé API
       </h3>
       <div class="mt-2">
-        <p class="text-sm text-neutral-700 dark:text-neutral-300">
+        <p class="text-sm text-content-text-secondary dark:text-content-text-tertiary">
           Assurez-vous de copier votre clé API maintenant. Vous ne pourrez plus la voir après avoir quitté cette page.
         </p>
       </div>
@@ -32,11 +32,11 @@ const { apiKey } = Astro.props;
             type="text"
             value={apiKey}
             readonly
-            class="block w-full rounded-md border-neutral-300 bg-white font-mono text-sm shadow-sm dark:border-neutral-600 dark:bg-neutral-800"
+            class="block w-full rounded-md border-content-border bg-content-bg-elevated font-mono text-sm shadow-sm dark:border-content-border-strong dark:bg-content-bg-strong"
           />
           <button
             type="button"
-            class="inline-flex items-center rounded-md bg-yellow/10 px-3 py-2 text-sm font-semibold text-neutral-800 shadow-sm ring-1 ring-inset ring-yellow/20 hover:bg-yellow/20 dark:bg-yellow/10 dark:text-neutral-200 dark:ring-yellow/30 dark:hover:bg-yellow/20"
+            class="inline-flex items-center rounded-md bg-yellow/10 px-3 py-2 text-sm font-semibold text-content-text-secondary shadow-sm ring-1 ring-inset ring-yellow/20 hover:bg-yellow/20 dark:bg-yellow/10 dark:text-content-text-muted dark:ring-yellow/30 dark:hover:bg-yellow/20"
             data-copy-key={apiKey}
           >
             <svg class="-ml-0.5 mr-1.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

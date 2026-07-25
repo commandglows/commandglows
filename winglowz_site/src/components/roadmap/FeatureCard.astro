@@ -26,15 +26,15 @@ const { feature, showProjectName = false, translations } = Astro.props;
 function getStatusColor(status: Feature["status"]) {
   switch (status) {
     case "in-development":
-      return "text-cyan bg-neutral-100 dark:bg-neutral-800 dark:text-cyan";
+      return "text-cyan bg-content-bg-secondary dark:bg-content-bg-secondary dark:text-cyan";
     case "planned":
-      return "text-yellow bg-neutral-100 dark:bg-neutral-800 dark:text-yellow";
+      return "text-yellow bg-content-bg-secondary dark:bg-content-bg-secondary dark:text-yellow";
     case "considering":
-      return "text-magenta bg-neutral-100 dark:bg-neutral-800 dark:text-magenta";
+      return "text-magenta bg-content-bg-secondary dark:bg-content-bg-secondary dark:text-magenta";
     case "completed":
-      return "text-green bg-neutral-100 dark:bg-neutral-800 dark:text-green";
+      return "text-green bg-content-bg-secondary dark:bg-content-bg-secondary dark:text-green";
     default:
-      return "text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400";
+      return "text-content-text-secondary bg-content-bg-secondary dark:bg-content-bg-secondary dark:text-content-text-tertiary";
   }
 }
 
@@ -54,19 +54,19 @@ function getStatusTitle(status: Feature["status"]) {
 }
 ---
 
-<div class="relative flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+<div class="relative flex flex-col overflow-hidden rounded-lg border border-content-border bg-content-bg-primary shadow-sm transition-all hover:shadow-md dark:border-content-text-secondary/50 dark:bg-content-bg-inverse">
   <div class="flex flex-1 flex-col justify-between p-6">
     <div class="flex-1">
       {showProjectName && feature.projectName && (
-        <p class="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+        <p class="text-sm font-medium text-content-text-secondary dark:text-content-text-tertiary">
           {feature.projectName}
         </p>
       )}
       <div class="mt-2 block">
-        <p class="text-xl font-semibold text-neutral-900 dark:text-white">
+        <p class="text-xl font-semibold text-content-text-primary dark:text-content-text-primary">
           {feature.title}
         </p>
-        <p class="mt-3 text-base text-neutral-500 dark:text-neutral-400">
+        <p class="mt-3 text-base text-content-text-muted dark:text-content-text-tertiary">
           {feature.description}
         </p>
       </div>
@@ -86,7 +86,7 @@ function getStatusTitle(status: Feature["status"]) {
       <div class="flex items-center space-x-1">
         <button
           type="button"
-          class="inline-flex items-center space-x-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 shadow-sm hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800"
+          class="inline-flex items-center space-x-1 rounded-lg border border-content-text-secondary/50 bg-content-bg-primary px-3 py-2 text-sm font-semibold text-content-text-primary shadow-sm hover:bg-content-bg-secondary dark:border-content-text-secondary/50 dark:bg-content-bg-inverse dark:text-content-text-primary dark:hover:bg-content-bg-secondary"
           data-feature-key={feature.key}
           data-login-message={translations.loginToVote ?? 'Sign in to vote'}
           data-account-message={translations.accountNotReady ?? 'Your account is still syncing'}
@@ -96,7 +96,7 @@ function getStatusTitle(status: Feature["status"]) {
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0H21.75a2.25 2.25 0 0 1 2.25 2.25c0 .702-.32 1.33-.822 1.742a2.25 2.25 0 0 1-.395 3.306c.116.477.053.984-.167 1.415-.265.519-.687.888-1.175 1.043a2.202 2.202 0 0 1-.653 1.893 2.217 2.217 0 0 1-1.338.518H14.25M6.633 10.25H4.5a2.25 2.25 0 0 0-2.25 2.25v5.25A2.25 2.25 0 0 0 4.5 20h1.705a.75.75 0 0 0 .534-.221l.595-.595A2.25 2.25 0 0 1 8.926 18.5h.984" /></svg>
           <span>{translations.vote}</span>
-          <span class="ml-0.5 text-neutral-500">({feature.votes})</span>
+          <span class="ml-0.5 text-content-text-muted">({feature.votes})</span>
         </button>
       </div>
     </div>
@@ -110,7 +110,7 @@ function getStatusTitle(status: Feature["status"]) {
     voteButtons.forEach(button => {
       button.addEventListener('click', async () => {
         const featureKey = button.dataset.featureKey;
-        const voteCount = button.querySelector('.text-neutral-500');
+        const voteCount = button.querySelector('.text-content-text-muted');
         
         if (!featureKey || !voteCount || button.disabled) return;
 

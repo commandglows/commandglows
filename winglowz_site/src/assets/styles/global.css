@@ -147,6 +147,27 @@
     --dashboard-icon-text: 0 0% 44%;
     --dashboard-icon-text-hover: 0 0% 18%;
 
+    /* Content/public page tokens (replaces neutral/zinc throughout) */
+    --content-text-primary: 0 0% 9%;
+    --content-text-secondary: 0 0% 27%;
+    --content-text-muted: 0 0% 47%;
+    --content-text-tertiary: 0 0% 55%;
+    --content-text-quaternary: 0 0% 65%;
+    --content-text-over-dark: 0 0% 100%;
+    --content-text-over-dark-muted: 240 0% 80%;
+    --content-text-over-dark-subtle: 240 0% 60%;
+    --content-bg: 0 0% 98%;
+    --content-bg-elevated: 0 0% 100%;
+    --content-bg-subtle: 0 0% 94%;
+    --content-bg-hover: 0 0% 91%;
+    --content-bg-code: 0 0% 95%;
+    --content-bg-inverse: 0 0% 9%;
+    --content-border: 0 0% 91%;
+    --content-border-subtle: 0 0% 93%;
+    --content-border-strong: 0 0% 86%;
+    --content-border-inverse: 0 0% 18%;
+    --content-divider: 0 0% 88%;
+
     --ui-button-radius: 999rem;
     --ui-button-gap: 0.5rem;
     --ui-button-padding-y: 0.5rem;
@@ -380,27 +401,6 @@
     --hero-fade-animation-fast: hero-fade-up 0.2s ease-out forwards;
     --hero-fade-animation-medium: hero-fade-up 0.3s ease-out forwards;
 
-    --temu-card-radius-xl: 2rem;
-    --temu-card-radius-lg: 1.5rem;
-    --temu-card-radius-md: 1.25rem;
-    --temu-step-idle: 0 0% 64%;
-    --temu-step-active: 240 10% 12%;
-    --temu-step-active-light: 0 0% 90%;
-    --temu-step-done: 142 71% 39%;
-    --temu-step-indicator-rest: 0 0% 83%;
-    --temu-step-transition: 350ms;
-    --temu-step-gap: 6px;
-    --temu-step-dot-size: 10px;
-    --temu-step-dot-font-size: 7px;
-    --temu-step-dot-line-height: 10px;
-    --temu-step-connector-width: 20px;
-    --temu-step-connector-height: 2px;
-    --temu-step-connector-radius: 1px;
-    --step-dot-circle: 50%;
-    --temu-step-pulse-max-spread: 6px;
-    --temu-step-pulse-duration: 1.2s;
-    --temu-status-ellipsis-duration: 1.5s;
-    --temu-status-fade-duration: 300ms;
 
     --btn-primary-radius: 0.75rem;
     --btn-primary-padding-y: 0.625rem;
@@ -488,6 +488,27 @@
     --navbar-text-emphasis-dark: 240 5% 86%;
     --navbar-dropdown-hover-bg-dark: 0 0% 45%;
     --navbar-dropdown-divider-dark: 0 0% 25%;
+
+    /* Content/public page tokens */
+    --content-text-primary: 0 0% 95%;
+    --content-text-secondary: 0 0% 65%;
+    --content-text-muted: 0 0% 45%;
+    --content-text-tertiary: 0 0% 22%;
+    --content-text-quaternary: 0 0% 15%;
+    --content-text-over-dark: 0 0% 100%;
+    --content-text-over-dark-muted: 240 0% 80%;
+    --content-text-over-dark-subtle: 240 0% 60%;
+    --content-bg: 0 0% 9%;
+    --content-bg-elevated: 0 0% 14%;
+    --content-bg-subtle: 0 0% 13%;
+    --content-bg-hover: 0 0% 18%;
+    --content-bg-code: 0 0% 17%;
+    --content-bg-inverse: 0 0% 90%;
+    --content-border: 0 0% 18%;
+    --content-border-subtle: 0 0% 17%;
+    --content-border-strong: 0 0% 25%;
+    --content-border-inverse: 0 0% 78%;
+    --content-divider: 0 0% 22%;
     --root-font-size: 16px;
     --text-logo-size-base: 3rem;
     --text-logo-size-sm: 2.25rem;
@@ -558,27 +579,6 @@
     --hero-fade-animation-fast: hero-fade-up 0.2s ease-out forwards;
     --hero-fade-animation-medium: hero-fade-up 0.3s ease-out forwards;
 
-    --temu-card-radius-xl: 2rem;
-    --temu-card-radius-lg: 1.5rem;
-    --temu-card-radius-md: 1.25rem;
-    --temu-step-idle: 0 0% 64%;
-    --temu-step-active: 240 10% 12%;
-    --temu-step-active-light: 0 0% 90%;
-    --temu-step-done: 142 71% 39%;
-    --temu-step-indicator-rest: 0 0% 83%;
-    --temu-step-transition: 350ms;
-    --temu-step-gap: 6px;
-    --temu-step-dot-size: 10px;
-    --temu-step-dot-font-size: 7px;
-    --temu-step-dot-line-height: 10px;
-    --temu-step-connector-width: 20px;
-    --temu-step-connector-height: 2px;
-    --temu-step-connector-radius: 1px;
-    --step-dot-circle: 50%;
-    --temu-step-pulse-max-spread: 6px;
-    --temu-step-pulse-duration: 1.2s;
-    --temu-status-ellipsis-duration: 1.5s;
-    --temu-status-fade-duration: 300ms;
 
     --btn-primary-radius: 0.75rem;
     --btn-primary-padding-y: 0.625rem;
@@ -612,7 +612,7 @@
 
   body {
     font-family: var(--font-body);
-    @apply text-xl leading-relaxed text-neutral-700 dark:text-neutral-300;
+    @apply text-xl leading-relaxed text-content-text-secondary dark:text-content-text-muted;
   }
 
   h1, h2, h3 {
@@ -625,74 +625,28 @@
   
   /* Headings - Mobile first, larger baseline for readability */
   h1 {
-    @apply text-5xl font-bold leading-tight tracking-tight text-neutral-800 dark:text-neutral-200;
+    @apply text-5xl font-bold leading-tight tracking-tight text-content-text-secondary dark:text-content-text-muted;
   }
   
   h2 {
-    @apply text-4xl font-bold leading-tight text-neutral-800 dark:text-neutral-200;
+    @apply text-4xl font-bold leading-tight text-content-text-secondary dark:text-content-text-muted;
   }
   
   h3 {
-    @apply text-3xl font-bold leading-snug text-neutral-800 dark:text-neutral-200;
+    @apply text-3xl font-bold leading-snug text-content-text-secondary dark:text-content-text-muted;
   }
   
   h4 {
-    @apply text-2xl font-bold leading-snug text-neutral-800 dark:text-neutral-200;
+    @apply text-2xl font-bold leading-snug text-content-text-secondary dark:text-content-text-muted;
   }
   
   h5, h6 {
-    @apply text-xl font-bold leading-normal text-neutral-800 dark:text-neutral-200;
+    @apply text-xl font-bold leading-normal text-content-text-secondary dark:text-content-text-muted;
   }
   
   /* Paragraphs - Much larger on mobile for better readability */
   p {
-    @apply text-xl leading-relaxed text-neutral-700 dark:text-neutral-400;
-  }
-  
-}
-
-  /* Base font size */
-  html {
-    font-size: var(--root-font-size);
-  }
-
-  body {
-    font-family: var(--font-body);
-    @apply text-xl leading-relaxed text-neutral-700 dark:text-neutral-300;
-  }
-
-  h1, h2, h3 {
-    font-family: var(--font-display);
-  }
-
-  h4, h5, h6 {
-    font-family: var(--font-heading);
-  }
-  
-  /* Headings - Mobile first, larger baseline for readability */
-  h1 {
-    @apply text-5xl font-bold leading-tight tracking-tight text-neutral-800 dark:text-neutral-200;
-  }
-  
-  h2 {
-    @apply text-4xl font-bold leading-tight text-neutral-800 dark:text-neutral-200;
-  }
-  
-  h3 {
-    @apply text-3xl font-bold leading-snug text-neutral-800 dark:text-neutral-200;
-  }
-  
-  h4 {
-    @apply text-2xl font-bold leading-snug text-neutral-800 dark:text-neutral-200;
-  }
-  
-  h5, h6 {
-    @apply text-xl font-bold leading-normal text-neutral-800 dark:text-neutral-200;
-  }
-  
-  /* Paragraphs - Much larger on mobile for better readability */
-  p {
-    @apply text-xl leading-relaxed text-neutral-700 dark:text-neutral-400;
+    @apply text-xl leading-relaxed text-content-text-secondary dark:text-content-text-tertiary;
   }
   
 }
@@ -819,7 +773,7 @@
   }
 
   .link-hover {
-    transition: color var(--temu-step-transition);
+    transition: color 200ms;
   }
   .link-hover:hover {
     color: var(--brand-magenta);
@@ -835,8 +789,8 @@
   }
 
   .badge-neutral {
-    @apply inline-block rounded-full bg-neutral-200 dark:bg-neutral-700;
-    @apply px-3 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-300;
+    @apply inline-block rounded-full bg-content-bg-subtle dark:bg-content-bg-strong;
+    @apply px-3 py-1 text-xs font-medium text-content-text-tertiary dark:text-content-text-muted;
   }
 
   /* Rainbow gradient text effect */
@@ -1091,4 +1045,5 @@ html.dark .navbar-shell-glass {
     transition: none !important;
     transform: none !important;
   }
-} 
+
+}

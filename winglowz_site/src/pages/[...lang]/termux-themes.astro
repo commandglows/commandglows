@@ -61,12 +61,12 @@ const guideUrl = lang === 'fr' ? '/fr/blog/termux-personnalisation' : '/blog/ter
 >
 	<section class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
 		<div class="mb-10 text-center">
-			<h1 class="text-3xl font-bold text-neutral-800 dark:text-neutral-200 sm:text-4xl lg:text-5xl">
-				{t.heading}
-			</h1>
-			<p class="mt-4 text-lg text-neutral-600 dark:text-neutral-400">
-				{t.subtitle}
-			</p>
+		<h1 class="text-3xl font-bold text-content-text-secondary dark:text-content-text-muted sm:text-4xl lg:text-5xl">
+			{t.heading}
+		</h1>
+		<p class="mt-4 text-lg text-content-text-secondary dark:text-content-text-tertiary">
+			{t.subtitle}
+		</p>
 		</div>
 
 		<TermuxThemePreview client:only="react" />
@@ -74,10 +74,10 @@ const guideUrl = lang === 'fr' ? '/fr/blog/termux-personnalisation' : '/blog/ter
 		{/* Dotfiles promo */}
 		<div class="mt-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-indigo-200 bg-indigo-50 p-6 dark:border-indigo-800 dark:bg-indigo-950/30">
 			<div>
-				<p class="font-semibold text-neutral-800 dark:text-neutral-200">
+				<p class="font-semibold text-content-text-secondary dark:text-content-text-muted">
 					{lang === 'fr' ? 'Notre config Termux prête à l\'emploi' : 'Our ready-to-go Termux config'}
 				</p>
-				<p class="text-sm text-neutral-600 dark:text-neutral-400">
+				<p class="text-sm text-content-text-secondary dark:text-content-text-tertiary">
 					{lang === 'fr'
 						? 'Dotfiles open source : Termux, Neovim, Starship, Nerd Fonts, AI agents — une commande.'
 						: 'Open source dotfiles: Termux, Neovim, Starship, Nerd Fonts, AI agents — one command.'}
@@ -87,17 +87,17 @@ const guideUrl = lang === 'fr' ? '/fr/blog/termux-personnalisation' : '/blog/ter
 				href="https://github.com/dianedef/dotfiles"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 whitespace-nowrap"
+				class="inline-flex items-center gap-2 rounded-lg bg-content-bg-inverse px-4 py-2 text-sm font-medium text-content-text-over-dark hover:bg-content-bg-strong dark:bg-content-bg-inverse dark:text-content-bg dark:hover:bg-content-bg-strong whitespace-nowrap"
 			>
 				GitHub →
 			</a>
 		</div>
 
-		<div class="mt-12 rounded-xl border border-neutral-200 bg-neutral-50 p-6 dark:border-neutral-700 dark:bg-neutral-800/50">
-			<h2 class="mb-4 text-xl font-bold text-neutral-800 dark:text-neutral-200">
+		<div class="mt-12 rounded-xl border border-content-border bg-content-bg-subtle p-6 dark:border-content-border-strong dark:bg-content-bg-strong/50">
+			<h2 class="mb-4 text-xl font-bold text-content-text-secondary dark:text-content-text-muted">
 				{t.howToInstall}
 			</h2>
-			<ol class="list-inside list-decimal space-y-3 text-neutral-600 dark:text-neutral-400">
+			<ol class="list-inside list-decimal space-y-3 text-content-text-secondary dark:text-content-text-tertiary">
 				<li>{t.step1}</li>
 				<li>
 					{t.step2title}
@@ -110,7 +110,7 @@ nano ~/.termux/colors.properties
 					<pre class="mt-2 rounded-lg bg-neutral-900 p-3 text-sm text-green-400"><code>termux-reload-settings</code></pre>
 				</li>
 			</ol>
-			<p class="mt-6 text-neutral-600 dark:text-neutral-400">
+			<p class="mt-6 text-content-text-secondary dark:text-content-text-tertiary">
 				{t.guideCta} <a href={guideUrl} class="font-medium text-indigo-500 hover:text-indigo-400">{t.guideLink}</a>.
 			</p>
 		</div>

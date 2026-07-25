@@ -28,7 +28,7 @@ type CGV = {
 <MainLayout title={t.title} lang={lang}>
 	<main class="prose prose-lg prose-neutral dark:prose-invert container mx-auto max-w-4xl px-4 py-8">
 		<h1 class="mb-6 text-4xl font-bold">{t.title}</h1>
-		<p class="mb-8 text-neutral-600 dark:text-neutral-400">{ui.common.lastUpdated}</p>
+		<p class="mb-8 text-content-text-secondary dark:text-content-text-tertiary">{ui.common.lastUpdated}</p>
 
 		{
 			Object.entries((t as CGV).sections).map(
@@ -48,8 +48,8 @@ type CGV = {
 			)
 		}
 
-		<footer class="mt-12 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-			<p class="text-neutral-600 dark:text-neutral-400">{t.contact}</p>
+		<footer class="mt-12 border-t border-content-border pt-8 dark:border-content-border-strong">
+			<p class="text-content-text-secondary dark:text-content-text-tertiary">{t.contact}</p>
 		</footer>
 	</main>
 </MainLayout>

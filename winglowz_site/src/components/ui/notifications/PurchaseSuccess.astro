@@ -8,7 +8,7 @@ interface Props {
 const { productName, apiKey, price } = Astro.props;
 ---
 
-<div class="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+<div class="rounded-lg border border-content-border bg-content-bg-elevated p-6 shadow-sm dark:border-content-border-strong dark:bg-content-bg-strong">
   <div class="sm:flex sm:items-start">
     <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green/10 dark:bg-green/10 sm:mx-0">
       <svg class="h-6 w-6 text-green" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -16,11 +16,11 @@ const { productName, apiKey, price } = Astro.props;
       </svg>
     </div>
     <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-      <h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-neutral-100">
+      <h3 class="text-lg font-medium leading-6 text-content-text-primary dark:text-content-text-over-dark">
         Achat réussi !
       </h3>
       <div class="mt-2">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">
+        <p class="text-sm text-content-text-muted dark:text-content-text-tertiary">
           Merci pour votre achat de {productName} pour {price}.
         </p>
       </div>
@@ -36,11 +36,11 @@ const { productName, apiKey, price } = Astro.props;
           </svg>
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+          <h3 class="text-sm font-medium text-content-text-secondary dark:text-content-text-muted">
             Votre clé API
           </h3>
           <div class="mt-2">
-            <p class="text-sm text-neutral-700 dark:text-neutral-300">
+            <p class="text-sm text-content-text-secondary dark:text-content-text-tertiary">
               Copiez votre clé API maintenant. Pour des raisons de sécurité, elle ne sera plus jamais affichée.
             </p>
           </div>
@@ -50,11 +50,11 @@ const { productName, apiKey, price } = Astro.props;
                 type="text"
                 value={apiKey}
                 readonly
-                class="block w-full rounded-md border-neutral-300 bg-neutral-50 font-mono text-sm shadow-sm dark:border-neutral-700 dark:bg-neutral-800"
+                class="block w-full rounded-md border-content-border bg-content-bg-subtle font-mono text-sm shadow-sm dark:border-content-border-strong dark:bg-content-bg-strong"
               />
               <button
                 type="button"
-                class="inline-flex items-center rounded-md bg-yellow/10 px-3 py-2 text-sm font-semibold text-neutral-800 shadow-sm ring-1 ring-inset ring-yellow/20 hover:bg-yellow/20 dark:bg-yellow/10 dark:text-neutral-200 dark:ring-yellow/30 dark:hover:bg-yellow/20"
+                class="inline-flex items-center rounded-md bg-yellow/10 px-3 py-2 text-sm font-semibold text-content-text-secondary shadow-sm ring-1 ring-inset ring-yellow/20 hover:bg-yellow/20 dark:bg-yellow/10 dark:text-content-text-muted dark:ring-yellow/30 dark:hover:bg-yellow/20"
                 data-copy-key={apiKey}
               >
                 <svg class="-ml-0.5 mr-1.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@ const { productName, apiKey, price } = Astro.props;
   </div>
 
   <div class="mt-6">
-    <div class="rounded-md bg-neutral-50 p-4 dark:bg-neutral-800">
+    <div class="rounded-md bg-content-bg-subtle p-4 dark:bg-content-bg-strong">
       <div class="flex">
         <div class="flex-shrink-0">
           <svg class="h-5 w-5 text-cyan" viewBox="0 0 20 20" fill="currentColor">
@@ -96,13 +96,13 @@ const { productName, apiKey, price } = Astro.props;
   <div class="mt-6 flex justify-end space-x-3">
     <a
       href="/fr/formations/"
-      class="rounded-md bg-neutral-50 px-3 py-2 text-sm font-semibold text-neutral-900 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-100 dark:ring-neutral-700 dark:hover:bg-neutral-700"
+      class="rounded-md bg-content-bg-subtle px-3 py-2 text-sm font-semibold text-content-text-primary shadow-sm ring-1 ring-inset ring-content-border-strong hover:bg-content-bg-hover dark:bg-content-bg-strong dark:text-content-text-over-dark dark:ring-content-border-strong dark:hover:bg-content-bg-hover"
     >
       Documentation
     </a>
     <a
       href="/dashboard"
-      class="rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 dark:bg-neutral-700 dark:hover:bg-neutral-600"
+      class="rounded-md bg-content-text-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-content-text-secondary dark:bg-content-bg-strong dark:hover:bg-content-bg-hover"
     >
       Aller au dashboard
     </a>

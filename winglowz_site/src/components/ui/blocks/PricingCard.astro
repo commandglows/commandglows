@@ -30,28 +30,28 @@ const {
 const tagLabel = badgeLabel ?? (popular ? 'Popular' : 'Standard')
 const cardClass = popular
   ? 'relative flex flex-col overflow-hidden rounded-xl shadow-xl'
-  : 'relative flex flex-col rounded-xl bg-white p-8 shadow-sm dark:bg-neutral-800'
+  : 'relative flex flex-col rounded-xl bg-content-bg-elevated p-8 shadow-sm dark:bg-content-bg-strong'
 const innerClass = popular
-  ? 'relative flex h-full w-full flex-col bg-neutral-900 p-8'
+  ? 'relative flex h-full w-full flex-col bg-content-bg-primary p-8'
   : 'flex h-full flex-col'
 const badgeClass = popular
   ? 'badge-rainbow absolute right-0 top-0 rounded-tr-[10px] rounded-bl-xl'
   : 'badge-neutral absolute right-0 top-0 rounded-tr-xl rounded-bl-xl'
 const titleClass = popular
   ? 'text-xl font-bold text-white lg:text-2xl'
-  : 'text-xl font-bold text-neutral-800 dark:text-neutral-200 lg:text-2xl'
+  : 'text-xl font-bold text-content-text-secondary dark:text-content-text-muted lg:text-2xl'
 const descriptionClass = popular
-  ? 'mt-2 text-neutral-300'
-  : 'mt-2 text-neutral-600 dark:text-neutral-400'
+  ? 'mt-2 text-content-text-muted'
+  : 'mt-2 text-content-text-secondary dark:text-content-text-tertiary'
 const priceClass = popular
   ? 'text-4xl font-bold text-white lg:text-5xl'
-  : 'text-4xl font-bold text-neutral-800 dark:text-neutral-200 lg:text-5xl'
+  : 'text-4xl font-bold text-content-text-secondary dark:text-content-text-muted lg:text-5xl'
 const periodClass = popular
-  ? 'text-neutral-400'
-  : 'text-neutral-600 dark:text-neutral-400'
+  ? 'text-content-text-muted'
+  : 'text-content-text-secondary dark:text-content-text-tertiary'
 const featureClass = popular
-  ? 'flex items-center gap-x-2 text-neutral-300'
-  : 'flex items-center gap-x-2 text-neutral-600 dark:text-neutral-400'
+  ? 'flex items-center gap-x-2 text-content-text-muted'
+  : 'flex items-center gap-x-2 text-content-text-secondary dark:text-content-text-tertiary'
 const ctaClass = popular
   ? 'inline-flex w-full items-center justify-center rounded-lg bg-gradient-rainbow px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:pointer-events-none disabled:opacity-50'
   : 'inline-flex w-full items-center justify-center rounded-lg border-2 border-magenta px-4 py-3 text-sm font-semibold text-magenta transition-all hover:bg-magenta hover:text-white disabled:pointer-events-none disabled:opacity-50'

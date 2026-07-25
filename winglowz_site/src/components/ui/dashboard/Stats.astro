@@ -5,7 +5,7 @@ const stats = [
     value: '0',
     change: '+0%',
     changeType: 'positive',
-    icon: `<svg class="h-6 w-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    icon: `<svg class="h-6 w-6 text-content-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
     </svg>`
   },
@@ -14,7 +14,7 @@ const stats = [
     value: '12',
     change: 'total',
     changeType: 'neutral',
-    icon: `<svg class="h-6 w-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    icon: `<svg class="h-6 w-6 text-content-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
     </svg>`
   },
@@ -23,7 +23,7 @@ const stats = [
     value: 'Aujourd\'hui',
     change: '',
     changeType: 'neutral',
-    icon: `<svg class="h-6 w-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    icon: `<svg class="h-6 w-6 text-content-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>`
   }
@@ -33,17 +33,17 @@ const stats = [
 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
   {
     stats.map((item) => (
-      <div class="relative overflow-hidden rounded-lg border border-neutral-200 bg-white px-4 pb-12 pt-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 sm:px-6 sm:pt-6">
+      <div class="relative overflow-hidden rounded-lg border border-content-border bg-content-bg-elevated px-4 pb-12 pt-5 shadow-sm dark:border-content-border-strong dark:bg-content-bg-strong sm:px-6 sm:pt-6">
         <dt>
-          <div class="absolute rounded-md bg-neutral-100 p-3 dark:bg-neutral-800">
+          <div class="absolute rounded-md bg-content-bg-subtle p-3 dark:bg-content-bg-strong">
             <Fragment set:html={item.icon} />
           </div>
-          <p class="ml-16 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
+          <p class="ml-16 truncate text-sm font-medium text-content-text-muted dark:text-content-text-tertiary">
             {item.name}
           </p>
         </dt>
         <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-          <p class="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+          <p class="text-2xl font-semibold text-content-text-primary dark:text-content-text-over-dark">
             {item.value}
           </p>
           {item.change && (
@@ -54,17 +54,17 @@ const stats = [
                   ? "text-green dark:text-green"
                   : item.changeType === 'negative'
                   ? "text-red dark:text-red"
-                  : "text-neutral-500 dark:text-neutral-400"
+                  : "text-content-text-muted dark:text-content-text-tertiary"
               ]}
             >
               {item.change}
             </p>
           )}
-          <div class="absolute inset-x-0 bottom-0 border-t border-neutral-200 bg-neutral-50 px-4 py-4 dark:border-neutral-800 dark:bg-neutral-800/60 sm:px-6">
+          <div class="absolute inset-x-0 bottom-0 border-t border-content-border-strong bg-content-bg-subtle px-4 py-4 dark:border-content-border-strong dark:bg-content-bg-strong/60 sm:px-6">
             <div class="text-sm">
               <a
                 href="#"
-                class="font-medium text-neutral-600 hover:text-neutral-500 dark:text-neutral-300 dark:hover:text-neutral-200"
+                class="font-medium text-content-text-secondary hover:text-content-text-muted dark:text-content-text-muted dark:hover:text-content-text-tertiary"
               >
                 Voir les détails
                 <span class="sr-only"> {item.name}</span>

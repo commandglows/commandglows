@@ -77,11 +77,11 @@ const siteDescription = t?.meta?.siteDescription || "";
 	<section class="mx-auto max-w-screen-2xl space-y-8 px-4 pt-16 sm:px-6 lg:px-8">
 		<!--Page header-->
 		<div class="mx-auto max-w-3xl text-left sm:text-center">
-			<h1 class="block text-balance text-4xl font-bold tracking-tight text-neutral-800 dark:text-neutral-200 md:text-5xl lg:text-6xl">
+			<h1 class="block text-balance text-4xl font-bold tracking-tight text-content-text-secondary dark:text-content-text-muted md:text-5xl lg:text-6xl">
 				{t.title}
 			</h1>
 
-			<p class="mt-4 text-pretty text-lg text-neutral-600 dark:text-neutral-400">
+			<p class="mt-4 text-pretty text-lg text-content-text-secondary dark:text-content-text-tertiary">
 				{t.subtitle}
 			</p>
 		</div>
@@ -107,7 +107,7 @@ const siteDescription = t?.meta?.siteDescription || "";
 		</>
 	) : (
 		<section class="mx-auto max-w-screen-2xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-			<p class="text-center text-lg text-neutral-600 dark:text-neutral-400">
+			<p class="text-center text-lg text-content-text-secondary dark:text-content-text-tertiary">
 				{currentLang === "fr" ? "Aucun article de blog disponible pour le moment." : "No blog posts available at the moment."}
 			</p>
 		</section>

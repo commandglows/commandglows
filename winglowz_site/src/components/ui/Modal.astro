@@ -9,26 +9,26 @@ const { id, title } = Astro.props;
 
 <div
   id={id}
-  class="fixed inset-0 z-50 hidden h-full w-full overflow-y-auto overflow-x-hidden bg-neutral-900/50 p-4 backdrop-blur-sm"
+  class="fixed inset-0 z-50 hidden h-full w-full overflow-y-auto overflow-x-hidden bg-content-bg/50 p-4 backdrop-blur-sm"
   aria-labelledby={`${id}-title`}
   aria-hidden="true"
   tabindex="-1"
 >
   <div
-    class="relative top-7 mx-auto w-full max-w-md rounded-xl border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900 sm:p-7"
+    class="relative top-7 mx-auto w-full max-w-md rounded-xl border border-content-border bg-content-bg-elevated p-6 shadow-xl dark:border-content-border-strong dark:bg-content-bg-elevated sm:p-7"
     role="dialog"
     aria-modal="true"
   >
     <div class="flex items-center justify-between">
       <h3
         id={`${id}-title`}
-        class="text-xl font-semibold text-neutral-800 dark:text-white"
+        class="text-xl font-semibold text-content-text-secondary dark:text-content-text-over-dark"
       >
         {title}
       </h3>
       <button
         type="button"
-        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm text-content-text-tertiary transition hover:bg-content-bg-hover hover:text-content-text-primary focus:outline-none focus:ring-2 focus:ring-content-border dark:text-content-text-muted dark:hover:bg-content-bg-strong dark:hover:text-content-text-over-dark"
         data-modal-close={id}
       >
         <span class="sr-only">Fermer</span>

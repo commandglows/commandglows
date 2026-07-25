@@ -22,7 +22,7 @@ const config = {
 <!-- Root element of the modal with id and styling -->
 <div
 	id={config.id}
-	class="hs-overlay absolute start-0 top-0 z-50 hidden h-full w-full hs-overlay-backdrop-open:bg-neutral-900/90"
+	class="hs-overlay absolute start-0 top-0 z-50 hidden h-full w-full hs-overlay-backdrop-open:bg-content-bg-primary/90"
 >
 	<!-- Modal content container -->
 	<div
@@ -31,20 +31,20 @@ const config = {
 		<div class="mx-auto w-full max-w-md p-6">
 			<!-- Actual box for the modal elements -->
 			<div
-				class="mt-7 rounded-xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+				class="mt-7 rounded-xl border border-content-border bg-content-bg-elevated shadow-xl dark:border-content-border-strong dark:bg-content-bg-strong"
 			>
 				<div class="p-4 sm:p-7">
 					<div class="text-center">
 						<h2
-							class="block text-2xl font-bold text-neutral-800 dark:text-neutral-200"
+							class="block text-2xl font-bold text-content-text-secondary dark:text-content-text-muted"
 						>
 							{config.title}
 						</h2>
-						<p class="mt-2 text-neutral-600 dark:text-neutral-400">
+						<p class="mt-2 text-content-text-secondary dark:text-content-text-tertiary">
 							{config.subTitle}
 							<!-- Button that, when clicked, opens the login modal -->
 							<button
-								class="rounded-lg p-1 font-medium text-magenta decoration-2 outline-none ring-zinc-500 hover:underline focus-visible:ring dark:text-magenta dark:ring-zinc-200 dark:focus:outline-none"
+								class="rounded-lg p-1 font-medium text-magenta decoration-2 outline-none ring-content-border-strong hover:underline focus-visible:ring dark:text-magenta dark:ring-content-border-muted dark:focus:outline-none"
 								data-hs-overlay={config.loginBtnDataHS}
 							>
 								{config.loginBtn}

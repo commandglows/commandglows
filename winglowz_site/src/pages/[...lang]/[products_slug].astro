@@ -83,7 +83,7 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 	>
 		<div>
 			<p
-				class="mb-8 max-w-prose text-pretty font-light text-neutral-700 dark:text-neutral-300 sm:text-xl"
+				class="mb-8 max-w-prose text-pretty font-light text-content-text-secondary dark:text-content-text-muted sm:text-xl"
 			>
 				{product.data.main.content}
 			</p>
@@ -98,11 +98,11 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 					</span>
 				</div>
 				<h1
-					class="block text-4xl font-bold tracking-tighter text-neutral-800 dark:text-neutral-200 sm:text-5xl md:text-6xl lg:text-7xl"
+					class="block text-4xl font-bold tracking-tighter text-content-text-secondary dark:text-content-text-muted sm:text-5xl md:text-6xl lg:text-7xl"
 				>
 					{product.data.title}
 				</h1>
-				<p class="text-lg text-neutral-600 dark:text-neutral-400">
+				<p class="text-lg text-content-text-secondary dark:text-content-text-tertiary">
 					{product.data.description}
 				</p>
 			</div>
@@ -145,12 +145,12 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 						<div class="grid gap-12 md:grid-cols-2">
 							<div class="lg:w-3/4">
 								<h2
-									class="text-balance text-3xl font-bold tracking-tight text-neutral-800 dark:text-neutral-200 md:leading-tight lg:text-4xl"
+									class="text-balance text-3xl font-bold tracking-tight text-content-text-secondary dark:text-content-text-muted md:leading-tight lg:text-4xl"
 								>
 									{product.data.longDescription.title}
 								</h2>
 								<p
-									class="mt-3 text-pretty text-neutral-600 dark:text-neutral-400"
+									class="mt-3 text-pretty text-content-text-secondary dark:text-content-text-tertiary"
 								>
 									{product.data.longDescription.subTitle}
 								</p>
@@ -167,7 +167,7 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 												url={product.data.longDescription.btnURL}
 											/>
 										) : (
-											<span class="inline-flex w-full items-center justify-center rounded-xl border border-neutral-300 bg-neutral-100 px-6 py-2.5 font-bold text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 sm:w-auto sm:px-8 sm:py-3">
+											<span class="inline-flex w-full items-center justify-center rounded-xl border border-content-border-strong bg-content-bg-subtle px-6 py-2.5 font-bold text-content-text-tertiary dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-muted sm:w-auto sm:px-8 sm:py-3">
 												{statusLabel}
 											</span>
 										)
@@ -180,10 +180,10 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 									product.data.descriptionList.map((list) => (
 										<div class="flex">
 											<div>
-												<h3 class="text-base font-bold text-neutral-800 dark:text-neutral-200 sm:text-lg">
+												<h3 class="text-base font-bold text-content-text-secondary dark:text-content-text-muted sm:text-lg">
 													{list.title}
 												</h3>
-												<p class="mt-1 text-neutral-600 dark:text-neutral-400">
+												<p class="mt-1 text-content-text-secondary dark:text-content-text-tertiary">
 													{list.subTitle}
 												</p>
 											</div>
@@ -206,10 +206,10 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 								{
 									product.data.specificationsLeft.map((spec) => (
 										<div>
-											<h3 class="block font-bold text-neutral-800 dark:text-neutral-200">
+											<h3 class="block font-bold text-content-text-secondary dark:text-content-text-muted">
 												{spec.title}
 											</h3>
-											<p class="text-neutral-600 dark:text-neutral-400">
+											<p class="text-content-text-secondary dark:text-content-text-tertiary">
 												{spec.subTitle}
 											</p>
 										</div>
@@ -221,10 +221,10 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 									<div class="mt-6 max-w-md space-y-6 md:ml-auto md:mt-0">
 										{product.data.specificationsRight?.map((spec) => (
 											<div>
-												<h3 class="block font-bold text-neutral-800 dark:text-neutral-200">
+												<h3 class="block font-bold text-content-text-secondary dark:text-content-text-muted">
 													{spec.title}
 												</h3>
-												<p class="text-neutral-600 dark:text-neutral-400">
+												<p class="text-content-text-secondary dark:text-content-text-tertiary">
 													{spec.subTitle}
 												</p>
 											</div>
@@ -236,14 +236,14 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 											<div class="-m-1.5 overflow-x-auto">
 												<div class="inline-block min-w-full p-1.5 align-middle">
 													<div class="overflow-hidden">
-														<table class="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700">
+														<table class="min-w-full divide-y divide-content-border-strong dark:divide-content-border-strong">
 															<thead>
 																<tr>
 																	{product.data.tableData?.[0].feature?.map(
 																		(header) => (
 																			<th
 																				scope="col"
-																				class="px-6 py-3 text-start text-xs font-medium uppercase text-neutral-500 dark:text-neutral-500"
+																				class="px-6 py-3 text-start text-xs font-medium uppercase text-content-text-tertiary dark:text-content-text-tertiary"
 																			>
 																				{header}
 																			</th>
@@ -251,12 +251,12 @@ const visibleTabs = product.data.tabs.filter((_, index) => {
 																	)}
 																</tr>
 															</thead>
-															<tbody class="divide-y divide-neutral-300 dark:divide-neutral-700">
+															<tbody class="divide-y divide-content-border-strong dark:divide-content-border-strong">
 																{product.data.tableData?.map((row) =>
 																	row.description.map((rowData) => (
 																		<tr>
 																			{rowData.map((cellValue) => (
-																				<td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+																				<td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-content-text-secondary dark:text-content-text-tertiary">
 																					{cellValue}
 																				</td>
 																			))}

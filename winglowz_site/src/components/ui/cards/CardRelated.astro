@@ -15,7 +15,7 @@ const cleanSlug = blogEntry.id.split('/')[1].replace(/\.md$/, '')
 ---
 
 <a
-	class="group block rounded-xl outline-none ring-zinc-500 transition duration-300 focus-visible:ring dark:ring-zinc-200 dark:focus:outline-none"
+	class="group block rounded-xl outline-none ring-content-text-secondary/50 transition duration-300 focus-visible:ring dark:ring-content-text-secondary/50 dark:focus:outline-none"
 	href={blogLocale === 'fr' ? `/fr/blog/${cleanSlug}` : `/blog/${cleanSlug}`}
 	data-astro-prefetch
 	data-astro-transition-persist
@@ -30,12 +30,12 @@ const cleanSlug = blogEntry.id.split('/')[1].replace(/\.md$/, '')
 		/>
 		<!-- The title of the blog post -->
 		<h3
-			class="mt-2 text-balance text-lg font-medium text-neutral-800 group-hover:text-magenta dark:text-neutral-300 dark:group-hover:text-neutral-50"
+			class="mt-2 text-balance text-lg font-medium text-content-text-primary group-hover:text-magenta dark:text-content-text-secondary dark:group-hover:text-content-text-primary"
 		>
 			{blogEntry.data.title}
 		</h3>
 		<!-- The formatted publication date of the blog post -->
-		<p class="mt-2 text-neutral-600 dark:text-neutral-400">
+		<p class="mt-2 text-content-text-secondary dark:text-content-text-tertiary">
 			{formatDate(blogEntry.data.pubDate)}
 		</p>
 	</div>

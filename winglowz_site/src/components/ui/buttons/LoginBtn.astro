@@ -11,11 +11,11 @@ interface Props {
 const { title = t?.login?.button ?? "Log in" } = Astro.props;
 
 const baseClasses =
-  "flex items-center gap-x-2 font-medium text-neutral-600 ring-zinc-500 transition duration-300 focus-visible:ring outline-none";
+  "flex items-center gap-x-2 font-medium text-content-text-primary ring-content-text-secondary/50 transition duration-300 focus-visible:ring outline-none";
 const hoverClasses = "hover:text-magenta dark:hover:text-magenta";
 const darkClasses =
-  "dark:border-neutral-700 dark:text-neutral-400 dark:ring-zinc-200 dark:focus:outline-none";
-const mdClasses = "md:my-6 md:border-s md:border-neutral-300 md:ps-6";
+  "dark:border-content-text-secondary/50 dark:text-content-text-secondary dark:ring-content-text-secondary dark:focus:outline-none";
+const mdClasses = "md:my-6 md:border-s md:border-content-text-secondary/30 md:ps-6";
 const userSVG = `<svg
       class="h-4 w-4 flex-shrink-0"
       width="24"

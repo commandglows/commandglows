@@ -30,14 +30,14 @@ const trustText = lang === 'fr'
   id="testimonials"
   class:list={[
     'scroll-mt-20 py-16 overflow-hidden',
-    embedded ? 'bg-transparent' : 'bg-neutral-50 dark:bg-black',
+    embedded ? 'bg-transparent' : 'bg-content-bg-subtle dark:bg-content-bg-inverse',
   ]}
 >
   <div class="reveal text-center mb-6">
-    <p class="text-sm font-medium uppercase tracking-wider text-neutral-500 dark:text-zinc-500">
+    <p class="text-sm font-medium uppercase tracking-wider text-content-text-muted dark:text-content-text-muted">
       {trustText.trust}
     </p>
-    <p class="mx-auto mt-3 max-w-xl text-sm text-neutral-600 dark:text-zinc-400">
+    <p class="mx-auto mt-3 max-w-xl text-sm text-content-text-secondary dark:text-content-text-tertiary">
       {trustText.subtitle}
     </p>
   </div>
@@ -58,8 +58,8 @@ const trustText = lang === 'fr'
           class="mx-8 flex h-16 items-center justify-center grayscale opacity-50 transition-all duration-300 hover:grayscale-0 hover:opacity-100"
           style="min-width: var(--logo-marquee-item-min-width);"
         >
-          <div class="flex items-center gap-2 text-neutral-600 dark:text-zinc-400">
-            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-200 dark:bg-zinc-800">
+          <div class="flex items-center gap-2 text-content-text-secondary dark:text-content-text-tertiary">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-content-bg-subtle dark:bg-content-bg-strong">
               <span class="text-xs font-bold">{tool.name[0]}</span>
             </div>
             <span class="font-medium">{tool.name}</span>

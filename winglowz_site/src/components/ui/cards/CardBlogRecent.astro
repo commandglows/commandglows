@@ -31,10 +31,10 @@ interface Props {
 	<div class="sm:order-1">
 		<!-- Blog title which is also a hyperlink to the blog detail page  -->
 		<h2
-			class="text-balance text-2xl font-bold tracking-tight text-neutral-800 dark:text-neutral-200 md:text-3xl lg:text-4xl lg:leading-tight xl:text-5xl xl:leading-tight"
+			class="text-balance text-2xl font-bold tracking-tight text-content-text-primary dark:text-content-text-primary md:text-3xl lg:text-4xl lg:leading-tight xl:text-5xl xl:leading-tight"
 		>
 			<a
-				class="outline-none ring-zinc-500 transition duration-300 hover:text-magenta focus-visible:ring dark:text-neutral-300 dark:ring-zinc-200 dark:hover:text-neutral-50 dark:focus:outline-none"
+				class="outline-none ring-content-text-secondary/50 transition duration-300 hover:text-magenta focus-visible:ring dark:text-content-text-secondary dark:ring-content-text-secondary/50 dark:hover:text-content-text-primary dark:focus:outline-none"
 				href={blogLocale === 'fr'
 					? `/fr/blog/${blogSlug}`
 					: `/blog/${blogSlug}`}
@@ -48,10 +48,10 @@ interface Props {
 			<AvatarBlogLarge post={blogEntry} />
 
 			<div class="ms-3 sm:ms-4">
-				<p class="font-bold text-neutral-800 dark:text-neutral-200 sm:mb-1">
+				<p class="font-bold text-content-text-primary dark:text-content-text-primary sm:mb-1">
 					{blogEntry.data.author}
 				</p>
-				<p class="text-neutral-500">
+				<p class="text-content-text-muted">
 					{blogEntry.data.role}
 				</p>
 			</div>

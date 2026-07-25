@@ -49,7 +49,7 @@
 .docs-article,
 .docs-main__header,
 .docs-pager {
-  @apply rounded-3xl border border-neutral-200/80 bg-white/90 backdrop-blur-lg;
+  @apply rounded-3xl border border-content-border/80 bg-content-bg-elevated/90 backdrop-blur-lg;
 }
 
 .dark .docs-sidebar__inner,
@@ -57,7 +57,7 @@
 .dark .docs-article,
 .dark .docs-main__header,
 .dark .docs-pager {
-  @apply border-neutral-800/90 bg-neutral-900/90;
+  @apply border-content-border-strong/90 bg-content-bg-elevated/90;
 }
 
 .docs-main__header {
@@ -76,7 +76,7 @@
 }
 
 .docs-main__description {
-  @apply mt-4 max-w-2xl text-neutral-600 dark:text-neutral-400;
+  @apply mt-4 max-w-2xl text-content-text-secondary dark:text-content-text-tertiary;
 }
 
 .docs-article {
@@ -94,7 +94,7 @@
 }
 
 .docs-nav__list--nested {
-  @apply mt-1 border-l border-neutral-200 pl-3.5 dark:border-neutral-700;
+  @apply mt-1 border-l border-content-border pl-3.5 dark:border-content-border-strong;
 }
 
 .docs-nav__summary {
@@ -130,7 +130,7 @@
 }
 
 .docs-pager__link {
-  @apply block rounded-2xl bg-neutral-100/80 p-4 no-underline dark:bg-neutral-950/50;
+  @apply block rounded-2xl bg-content-bg-subtle/80 p-4 no-underline dark:bg-content-bg-strong/50;
   color: inherit;
 }
 
@@ -185,7 +185,7 @@
 }
 
 .sl-markdown-content blockquote {
-  @apply border-l-4 border-cyan bg-neutral-100 dark:bg-neutral-800;
+  @apply border-l-4 border-cyan bg-content-bg-subtle dark:bg-content-bg-strong;
 }
 
 .docs-aside {

@@ -28,13 +28,13 @@ const ListItemMarker: string = `<svg fill="none" viewBox="0 0 24 24" stroke-widt
 			<div class="space-y-6 sm:space-y-8">
 				<div class="space-y-2 md:space-y-4">
 					<h2
-						class="text-balance text-3xl font-bold text-neutral-800 dark:text-neutral-200 sm:text-4xl lg:text-5xl"
+						class="text-balance text-3xl font-bold text-content-text-primary dark:text-content-text-primary sm:text-4xl lg:text-5xl"
 					>
 						{title}
 					</h2>
 					{
 						subTitle && (
-							<p class="text-pretty text-lg text-neutral-600 dark:text-neutral-400">
+							<p class="text-pretty text-lg text-content-text-secondary dark:text-content-text-tertiary">
 								{subTitle}
 							</p>
 						)
@@ -46,7 +46,7 @@ const ListItemMarker: string = `<svg fill="none" viewBox="0 0 24 24" stroke-widt
 							{benefits.map((item) => (
 								<li class="flex space-x-3">
 									<Fragment set:html={ListItemMarker} />
-									<span class="text-pretty text-lg font-medium text-neutral-600 dark:text-neutral-400">
+									<span class="text-pretty text-lg font-medium text-content-text-secondary dark:text-content-text-tertiary">
 										{item}
 									</span>
 								</li>

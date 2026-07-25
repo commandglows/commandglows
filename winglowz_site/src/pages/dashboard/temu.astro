@@ -1,23 +1,5 @@
 ---
-import MainLayout from '@/layouts/MainLayout.astro'
-import TemuWorkspace from '@/components/temu/TemuWorkspace.astro'
-
-const auth = Astro.locals.auth()
-if (!auth.userId) {
-  return Astro.redirect('/signin?next=%2Fdashboard%2Ftemu')
-}
+export const status = 410
+export const title = "Assistant Temu — déplacé"
 ---
-
-<MainLayout
-  lang="fr"
-  title="Assistant Temu | Dashboard"
-  noindex={true}
-  meta={{
-    title: 'Assistant Temu | Dashboard',
-    description:
-      "Espace privé pour extraire, réécrire et traduire des fiches produit Temu.",
-    canonicalURL: 'https://www.winflowz.com/dashboard/temu',
-  }}
->
-  <TemuWorkspace lang="fr" />
-</MainLayout>
+<p>L'espace Temu du dashboard a été déplacé hors de WinGlowz.</p>

@@ -45,36 +45,36 @@ const heroText = lang === 'fr'
     }
 ---
 
-<section class="landing-hero-shell relative flex flex-col items-center justify-center overflow-hidden bg-neutral-50 px-4 pb-16 dark:bg-black">
+<section class="landing-hero-shell relative flex flex-col items-center justify-center overflow-hidden bg-content-bg-secondary px-4 pb-16 dark:bg-black">
   <!-- Background gradient -->
-  <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-100 dark:from-black dark:via-black dark:to-zinc-950"></div>
+  <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-content-bg-secondary via-white to-content-bg-secondary dark:from-black dark:via-black dark:to-black"></div>
 
   <!-- Subtle radial glow -->
-  <div class="landing-hero-glow pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full bg-fuchsia-400/10 blur-3xl dark:bg-zinc-800/20"></div>
+  <div class="landing-hero-glow pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full bg-fuchsia-400/10 blur-3xl dark:bg-content-text-secondary/20"></div>
 
   <div class="relative z-10 max-w-5xl mx-auto text-center">
     <!-- Badge -->
     <div class="landing-hero-fade landing-hero-fade--badge landing-surface mb-8 hidden items-center gap-2 rounded-full border px-4 py-2 md:inline-flex">
       <span class="landing-hero-status-dot pulse-glow h-2 w-2 rounded-full"></span>
-      <span class="text-sm text-neutral-600 dark:text-zinc-400">{heroText.badge}</span>
+      <span class="text-sm text-content-text-secondary dark:text-content-text-tertiary">{heroText.badge}</span>
     </div>
 
     <!-- Headline with text mask animation -->
-    <h1 class="mb-6 text-7xl font-bold tracking-tight text-neutral-950 dark:text-white sm:text-8xl lg:text-9xl">
+    <h1 class="mb-6 text-7xl font-bold tracking-tight text-content-text-primary dark:text-content-text-primary sm:text-8xl lg:text-9xl">
       <span class="block overflow-hidden">
         <span class="landing-hero-text-line landing-hero-text-line--primary block">
           {heroText.h1Line1}
         </span>
       </span>
       <span class="block overflow-hidden">
-        <span class="landing-hero-text-line landing-hero-text-line--secondary block text-neutral-400 dark:text-zinc-500">
+        <span class="landing-hero-text-line landing-hero-text-line--secondary block text-content-text-muted dark:text-content-text-tertiary">
           {heroText.h1Line2}
         </span>
       </span>
     </h1>
 
     <!-- Subheadline -->
-    <p class="landing-hero-fade landing-hero-fade--copy mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-neutral-600 dark:text-zinc-400 sm:text-xl">
+    <p class="landing-hero-fade landing-hero-fade--copy mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-content-text-secondary dark:text-content-text-tertiary sm:text-xl">
       {heroText.sub}
     </p>
 
@@ -100,7 +100,7 @@ const heroText = lang === 'fr'
             {person.avatarRepresentation === 'appsumo-generic' ? (
               <span
                 aria-hidden="true"
-                class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-neutral-200 text-xs font-bold text-neutral-700 dark:border-black dark:bg-zinc-800 dark:text-zinc-300"
+                class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-content-bg-secondary text-xs font-bold text-content-text-primary dark:border-black dark:bg-content-bg-secondary dark:text-content-text-primary"
               >
                 {person.name[0]}
               </span>
@@ -115,8 +115,8 @@ const heroText = lang === 'fr'
           </div>
         ))}
       </div>
-      <p class="text-sm text-neutral-500 dark:text-zinc-500">
-        <span class="font-medium text-neutral-800 dark:text-zinc-300">{heroText.reviewsLabel}</span> {heroText.reviews}
+      <p class="text-sm text-content-text-muted dark:text-content-text-tertiary">
+        <span class="font-medium text-content-text-primary dark:text-content-text-primary">{heroText.reviewsLabel}</span> {heroText.reviews}
       </p>
     </a>
 
@@ -128,8 +128,8 @@ const heroText = lang === 'fr'
     <div class="landing-hero-fade landing-hero-fade--stats mx-auto grid max-w-2xl grid-cols-2 gap-8 sm:grid-cols-4">
       {stats.map((stat) => (
         <div class="landing-hero-stat relative text-center">
-          <div class="text-2xl font-bold text-neutral-950 dark:text-white sm:text-3xl">{stat.value}</div>
-          <div class="mt-1 text-xs text-neutral-500 dark:text-zinc-500 sm:text-sm">{stat.label}</div>
+          <div class="text-2xl font-bold text-content-text-primary dark:text-content-text-primary sm:text-3xl">{stat.value}</div>
+          <div class="mt-1 text-xs text-content-text-muted dark:text-content-text-tertiary sm:text-sm">{stat.label}</div>
         </div>
       ))}
     </div>

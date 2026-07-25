@@ -36,15 +36,15 @@ fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" >
   <slot />
   <div class="grow">
     <!-- Heading of the section -->
-    <h3 class="font-bold text-neutral-700 dark:text-neutral-300">
+    <h3 class="font-bold text-content-text-secondary dark:text-content-text-muted">
       {heading}
     </h3>
     <!-- Content of the section -->
-    <p class="mt-1 text-neutral-600 dark:text-neutral-400">{content}</p>
+    <p class="mt-1 text-content-text-secondary dark:text-content-text-tertiary">{content}</p>
     <!-- Conditional rendering of address content if isAddressVisible is true -->
     {
       isAddressVisible ? (
-        <p class="mt-1 text-sm italic text-neutral-500">{addressContent}</p>
+        <p class="mt-1 text-sm italic text-content-text-muted">{addressContent}</p>
       ) : null
     }
     <!-- Conditional rendering of a link if isLinkVisible is true.
@@ -52,7 +52,7 @@ fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" >
     {
       isLinkVisible ? (
         <a
-          class="group mt-2 inline-flex items-center gap-x-2 rounded-lg text-sm font-medium text-zinc-600 outline-none ring-zinc-500 transition duration-300 hover:text-zinc-800 focus-visible:ring dark:text-zinc-400 dark:ring-zinc-200 dark:hover:text-zinc-200 dark:focus:outline-none dark:focus:ring-1 "
+          class="group mt-2 inline-flex items-center gap-x-2 rounded-lg text-sm font-medium text-content-text-secondary outline-none ring-content-border-strong transition duration-300 hover:text-content-text-muted focus-visible:ring dark:text-content-text-tertiary dark:ring-content-border-muted dark:hover:text-content-text-muted dark:focus:outline-none dark:focus:ring-1 "
           href={linkURL}
         >
           {linkTitle}

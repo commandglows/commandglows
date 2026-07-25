@@ -16,7 +16,7 @@ interface Props {
 <div class:list={['hs-accordion', first ? 'active pb-3' : 'pb-3 pt-6']} id={id}>
   <!-- The accordion button, which toggles the expanded/collapsed state -->
   <button
-    class="hs-accordion-toggle group inline-flex w-full items-center justify-between gap-x-3 text-balance rounded-lg pb-3 text-start font-bold text-neutral-800 outline-none ring-zinc-500 transition hover:text-neutral-500 focus-visible:ring dark:text-neutral-200 dark:ring-zinc-200 dark:hover:text-neutral-400 dark:focus:outline-none md:text-lg"
+    class="hs-accordion-toggle group inline-flex w-full items-center justify-between gap-x-3 text-balance rounded-lg pb-3 text-start font-bold text-content-text-secondary outline-none ring-content-border-strong transition hover:text-content-text-tertiary focus-visible:ring dark:text-content-text-muted dark:ring-content-border-strong dark:hover:text-content-text-muted dark:focus:outline-none md:text-lg"
     aria-controls={collapseId}
   >
     {question}
@@ -36,7 +36,7 @@ interface Props {
     id={collapseId}
   >
     <!-- The content paragraph -->
-    <p class="text-pretty text-neutral-600 dark:text-neutral-400">
+    <p class="text-pretty text-content-text-secondary dark:text-content-text-tertiary">
       {answer}
     </p>
   </div>

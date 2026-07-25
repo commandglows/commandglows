@@ -46,36 +46,36 @@ const currentYear = new Date().getFullYear()
 const backToTopLabel = lang === 'fr' ? '↑ Retour en haut' : '↑ Back to top'
 
 const footerClass = forceDark
-  ? 'border-t border-zinc-800 bg-black'
-  : 'border-t border-neutral-200 bg-neutral-50 dark:border-zinc-800 dark:bg-black'
+  ? 'border-t border-content-border-strong bg-content-bg'
+  : 'border-t border-content-border bg-content-bg-subtle dark:border-content-border-strong dark:bg-content-bg'
 
 const footerTextClass = forceDark
-  ? 'text-sm text-zinc-500'
-  : 'text-sm text-neutral-500 dark:text-zinc-500'
+  ? 'text-sm text-content-text-tertiary'
+  : 'text-sm text-content-text-tertiary dark:text-content-text-muted'
 
 const footerMutedClass = forceDark
-  ? 'text-xs text-zinc-500'
-  : 'text-xs text-neutral-500 dark:text-zinc-500'
+  ? 'text-xs text-content-text-tertiary'
+  : 'text-xs text-content-text-tertiary dark:text-content-text-muted'
 
 const footerLabelClass = forceDark
-  ? 'mb-2 text-xs text-zinc-400'
-  : 'mb-2 text-xs text-neutral-600 dark:text-zinc-400'
+  ? 'mb-2 text-xs text-content-text-muted'
+  : 'mb-2 text-xs text-content-text-secondary dark:text-content-text-muted'
 
 const footerHeadingClass = forceDark
-  ? 'mb-4 text-sm font-semibold text-white'
-  : 'mb-4 text-sm font-semibold text-neutral-900 dark:text-white'
+  ? 'mb-4 text-sm font-semibold text-content-text-over-dark'
+  : 'mb-4 text-sm font-semibold text-content-text-primary dark:text-content-text-over-dark'
 
 const footerLinkClass = forceDark
-  ? 'text-sm text-zinc-500 transition-colors hover:text-white'
-  : 'text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-zinc-500 dark:hover:text-white'
+  ? 'text-sm text-content-text-tertiary transition-colors hover:text-content-text-over-dark'
+  : 'text-sm text-content-text-tertiary transition-colors hover:text-content-text-primary dark:text-content-text-muted dark:hover:text-content-text-over-dark'
 
 const statusShellClass = forceDark
-  ? 'inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1.5'
-  : 'inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-100 px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900'
+  ? 'inline-flex items-center gap-2 rounded-full border border-content-border-strong bg-content-bg-strong px-3 py-1.5'
+  : 'inline-flex items-center gap-2 rounded-full border border-content-border bg-content-bg-subtle px-3 py-1.5 dark:border-content-border-strong dark:bg-content-bg-strong'
 
 const dividerClass = forceDark
-  ? 'reveal delay-3 mt-16 flex flex-col items-center justify-between gap-4 border-t border-zinc-800 pt-8 sm:flex-row'
-  : 'reveal delay-3 mt-16 flex flex-col items-center justify-between gap-4 border-t border-neutral-200 pt-8 dark:border-zinc-800 sm:flex-row'
+  ? 'reveal delay-3 mt-16 flex flex-col items-center justify-between gap-4 border-t border-content-border-strong pt-8 sm:flex-row'
+  : 'reveal delay-3 mt-16 flex flex-col items-center justify-between gap-4 border-t border-content-border pt-8 dark:border-content-border-strong sm:flex-row'
 ---
 
 <footer class={footerClass}>
@@ -107,8 +107,8 @@ const dividerClass = forceDark
             style="background-color: var(--brand-green);"></span>
           <span
             class={forceDark
-              ? 'text-xs text-zinc-400'
-              : 'text-xs text-neutral-500 dark:text-zinc-400'}
+              ? 'text-xs text-content-text-muted'
+              : 'text-xs text-content-text-tertiary dark:text-content-text-muted'}
           >
             Site and catalog are maintained continuously
           </span>

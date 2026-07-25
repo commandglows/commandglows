@@ -47,20 +47,20 @@ interface Offering {
 			<p class="mb-2 text-sm font-semibold uppercase tracking-wide text-magenta">
 				{t.hero.tagline}
 			</p>
-			<h1 class="mb-4 text-4xl font-bold text-neutral-900 dark:text-white sm:text-5xl">
-				{t.hero.headline}
-			</h1>
-			<p class="text-xl text-neutral-600 dark:text-neutral-400">
-				{t.hero.subheadline}
-			</p>
+		<h1 class="mb-4 text-4xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-5xl">
+			{t.hero.headline}
+		</h1>
+		<p class="text-xl text-content-text-secondary dark:text-content-text-tertiary">
+			{t.hero.subheadline}
+		</p>
 		</div>
 
 		<!-- Story Section -->
 		<div class="mb-12">
-			<h2 class="mb-6 text-2xl font-bold text-neutral-900 dark:text-white">
-				{t.story.title}
-			</h2>
-			<div class="space-y-4 text-neutral-600 dark:text-neutral-400">
+		<h2 class="mb-6 text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">
+			{t.story.title}
+		</h2>
+		<div class="space-y-4 text-content-text-secondary dark:text-content-text-tertiary">
 				{t.story.paragraphs.map((paragraph: string) => (
 					<p class="leading-relaxed">{paragraph}</p>
 				))}
@@ -68,20 +68,20 @@ interface Offering {
 		</div>
 
 		<!-- Mission Section -->
-		<div class="mb-12 rounded-xl bg-neutral-100 p-8 dark:bg-neutral-800">
-			<h2 class="mb-4 text-2xl font-bold text-neutral-900 dark:text-white">
+		<div class="mb-12 rounded-xl bg-content-bg-subtle p-8 dark:bg-content-bg-strong">
+			<h2 class="mb-4 text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">
 				{t.mission.title}
 			</h2>
-			<p class="mb-6 text-neutral-600 dark:text-neutral-400">
+			<p class="mb-6 text-content-text-secondary dark:text-content-text-tertiary">
 				{t.mission.content}
 			</p>
 			<div class="grid gap-6 md:grid-cols-3">
 				{t.mission.values.map((value: Value) => (
-					<div class="rounded-lg bg-white p-6 dark:bg-neutral-900">
-						<h3 class="mb-2 font-semibold text-neutral-900 dark:text-white">
+					<div class="rounded-lg bg-content-bg-elevated p-6 dark:bg-content-bg-elevated">
+						<h3 class="mb-2 font-semibold text-content-text-primary dark:text-content-text-over-dark">
 							{value.title}
 						</h3>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">
+						<p class="text-sm text-content-text-secondary dark:text-content-text-tertiary">
 							{value.description}
 						</p>
 					</div>
@@ -91,16 +91,16 @@ interface Offering {
 
 		<!-- Offerings Section -->
 		<div class="mb-12">
-			<h2 class="mb-6 text-2xl font-bold text-neutral-900 dark:text-white">
+			<h2 class="mb-6 text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">
 				{t.offerings.title}
 			</h2>
 			<div class="grid gap-6 md:grid-cols-3">
 				{t.offerings.items.map((item: Offering) => (
-					<div class="rounded-lg border border-neutral-200 p-6 dark:border-neutral-700">
-						<h3 class="mb-2 font-semibold text-neutral-900 dark:text-white">
+					<div class="rounded-lg border border-content-border p-6 dark:border-content-border-strong">
+						<h3 class="mb-2 font-semibold text-content-text-primary dark:text-content-text-over-dark">
 							{item.title}
 						</h3>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">
+						<p class="text-sm text-content-text-secondary dark:text-content-text-tertiary">
 							{item.description}
 						</p>
 					</div>
@@ -109,11 +109,11 @@ interface Offering {
 		</div>
 
 		<!-- CTA Section -->
-		<div class="rounded-xl bg-neutral-100 p-8 text-center dark:bg-neutral-800">
-			<h2 class="mb-4 text-2xl font-bold text-neutral-900 dark:text-white">
+		<div class="rounded-xl bg-content-bg-subtle p-8 text-center dark:bg-content-bg-strong">
+			<h2 class="mb-4 text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">
 				{t.cta.title}
 			</h2>
-			<p class="mb-6 text-neutral-600 dark:text-neutral-400">
+			<p class="mb-6 text-content-text-secondary dark:text-content-text-tertiary">
 				{t.cta.description}
 			</p>
 			<a
@@ -125,7 +125,7 @@ interface Offering {
 		</div>
 
 		<!-- Footer -->
-		<p class="mt-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
+		<p class="mt-8 text-center text-sm text-content-text-tertiary dark:text-content-text-muted">
 			{t.footer.contact}
 		</p>
 	</div>

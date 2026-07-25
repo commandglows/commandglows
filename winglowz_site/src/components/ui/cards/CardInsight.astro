@@ -24,7 +24,7 @@ interface Props {
 
 <!-- The anchor tag is the root container for the "Insight" card. It links to the insight detail page. -->
 <a
-	class="group rounded-xl outline-none ring-zinc-500 transition duration-300 focus-visible:ring dark:ring-zinc-200 dark:focus:outline-none"
+	class="group rounded-xl outline-none ring-content-text-secondary/50 transition duration-300 focus-visible:ring dark:ring-content-text-secondary/50 dark:focus:outline-none"
 	href={insightLocale && insightLocale !== 'en'
 		? `/${insightLocale}/insights/${insightEntry.slug.replace(/^fr\//, '')}/`
 		: `/insights/${insightEntry.slug.replace(/^en\//, '')}/`}
@@ -43,12 +43,12 @@ interface Props {
 	<div class="mt-7">
 		<!-- The title of the insight -->
 		<h3
-			class="text-xl font-bold text-neutral-800 group-hover:text-neutral-600 dark:text-neutral-200 dark:group-hover:text-neutral-400"
+			class="text-xl font-bold text-content-text-primary group-hover:text-content-text-secondary dark:text-content-text-primary dark:group-hover:text-content-text-tertiary"
 		>
 			{insightEntry.data.title}
 		</h3>
 		<!-- The description of the insight -->
-		<p class="mt-3 text-neutral-600 dark:text-neutral-400">
+		<p class="mt-3 text-content-text-secondary dark:text-content-text-tertiary">
 			{insightEntry.data.description}
 		</p>
 		<!-- The "Read More" hyperlink going to the full insight. With an arrow icon -->

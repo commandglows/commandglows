@@ -61,18 +61,18 @@ export function TestimonialCarousel() {
             <StarRating rating={t.rating} />
           </div>
           {t.title && (
-            <h3 className="mb-3 text-base font-semibold text-neutral-950 dark:text-white">
+            <h3 className="mb-3 text-base font-semibold text-content-text-primary dark:text-content-text-over-dark">
               &ldquo;{t.title}&rdquo;
             </h3>
           )}
-          <p className="mb-4 text-sm italic leading-relaxed text-neutral-600 dark:text-zinc-400">
+          <p className="mb-4 text-sm italic leading-relaxed text-content-text-secondary dark:text-content-text-tertiary">
             &ldquo;{t.quote}&rdquo;
           </p>
           <div className="flex items-center justify-center gap-2">
             {t.avatarRepresentation === "appsumo-generic" ? (
               <span
                 aria-hidden="true"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700 dark:bg-zinc-800 dark:text-zinc-300"
+                 className="flex h-8 w-8 items-center justify-center rounded-full bg-content-bg-subtle text-xs font-bold text-content-text-secondary dark:bg-content-bg-strong dark:text-content-text-muted"
               >
                 {t.name[0]}
               </span>
@@ -80,13 +80,13 @@ export function TestimonialCarousel() {
               <img
                 src={t.avatarSrc}
                 alt={`${t.name} avatar`}
-                className="h-8 w-8 rounded-full object-cover ring-2 ring-white dark:ring-zinc-900"
+                className="h-8 w-8 rounded-full object-cover ring-2 ring-white dark:ring-content-bg-strong"
                 loading="lazy"
               />
             )}
             <div className="text-left">
-              <p className="text-sm font-medium text-neutral-800 dark:text-zinc-300">{t.name}</p>
-              <p className="text-xs text-neutral-500 dark:text-zinc-500">
+              <p className="text-sm font-medium text-content-text-secondary dark:text-content-text-muted">{t.name}</p>
+              <p className="text-xs text-content-text-tertiary dark:text-content-text-muted">
                 {t.role}
                 {t.verified && (
                   <span className="ml-1 text-green">Verified Purchaser</span>
@@ -106,7 +106,7 @@ export function TestimonialCarousel() {
             className={`h-2 rounded-full transition-all duration-300 ${
               index === current
                 ? "w-6 bg-cyan"
-                : "w-2 bg-neutral-300 hover:bg-neutral-400 dark:bg-zinc-700 dark:hover:bg-zinc-500"
+                : "w-2 bg-content-bg-subtle hover:bg-content-bg-hover dark:bg-content-bg-strong dark:hover:bg-content-bg-hover"
             }`}
             aria-label={`Go to testimonial ${index + 1}`}
           />

@@ -67,7 +67,6 @@ const CLERK_PROTECTED_PATH_PREFIXES = [
   '/api/clerk',
   '/api/features',
   '/api/polar',
-  '/api/temu',
 ];
 
 function shouldUseClerkMiddleware(pathname: string): boolean {

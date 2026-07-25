@@ -22,14 +22,14 @@ const validationMessages = {
 	<div
 		class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 m-3 mt-0 min-h-screen opacity-0 ease-out transition-all sm:w-full sm:max-w-lg sm:mx-auto"
 	>
-		<div class="relative flex flex-col rounded-xl border border-neutral-200 bg-white shadow-sm pointer-events-auto dark:border-neutral-700 dark:bg-neutral-800">
-			<div class="flex justify-between items-center py-3 px-4 border-b dark:border-neutral-700">
-				<h3 class="font-bold text-neutral-800 dark:text-white">
+		<div class="relative flex flex-col rounded-xl border border-content-border bg-content-bg-elevated shadow-sm pointer-events-auto dark:border-content-border-strong dark:bg-content-bg-strong">
+			<div class="flex justify-between items-center py-3 px-4 border-b dark:border-content-border-strong">
+				<h3 class="font-bold text-content-text-secondary dark:text-content-text-over-dark">
 					{t?.addFeature?.title ?? "Add Feature"}
 				</h3>
 				<button
 					type="button"
-					class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-neutral-800 hover:bg-neutral-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-neutral-700 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-neutral-600"
+					class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-content-text-secondary hover:bg-content-bg-hover disabled:opacity-50 disabled:pointer-events-none dark:text-content-text-over-dark dark:hover:bg-content-bg-strong dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-content-border-strong"
 					data-hs-overlay="#addFeatureModal"
 				>
 					<span class="sr-only">Close</span>
@@ -71,7 +71,7 @@ const validationMessages = {
 							<select
 								id="project"
 								name="project"
-								class="block w-full rounded-lg border border-neutral-200 px-4 py-3 text-sm focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:focus:ring-neutral-600"
+								class="block w-full rounded-lg border border-content-border px-4 py-3 text-sm focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-muted dark:focus:ring-content-border-strong"
 								required
 							>
 								<option value="" disabled selected>
@@ -99,7 +99,7 @@ const validationMessages = {
 								type="text"
 								id="title"
 								name="title"
-								class="block w-full rounded-lg border border-neutral-200 px-4 py-3 text-sm focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:focus:ring-neutral-600"
+								class="block w-full rounded-lg border border-content-border px-4 py-3 text-sm focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-muted dark:focus:ring-content-border-strong"
 								required
 								minlength="3"
 							/>
@@ -117,29 +117,29 @@ const validationMessages = {
 								id="description"
 								name="description"
 								rows="4"
-								class="block w-full rounded-lg border border-neutral-200 px-4 py-3 text-sm focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:focus:ring-neutral-600"
+								class="block w-full rounded-lg border border-content-border px-4 py-3 text-sm focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-muted dark:focus:ring-content-border-strong"
 								required
 								minlength="10"
 							></textarea>
 						</div>
 						<p
 							id="featureFormStatus"
-							class="hidden rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+							class="hidden rounded-lg border border-content-border bg-content-bg-subtle px-3 py-2 text-sm text-content-text-secondary dark:border-content-border-strong dark:bg-content-bg-inverse dark:text-content-text-muted"
 						></p>
 					</div>
 				</div>
 
-				<div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+				<div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-content-border-strong">
 					<button
 						type="button"
-						class="inline-flex items-center gap-x-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-50 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-neutral-600"
+						class="inline-flex items-center gap-x-2 rounded-lg border border-content-border bg-content-bg-elevated px-3 py-2 text-sm font-medium text-content-text-secondary shadow-sm hover:bg-content-bg-hover disabled:pointer-events-none disabled:opacity-50 dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-content-border-strong"
 						data-hs-overlay="#addFeatureModal"
 					>
 						{t?.addFeature?.cancel ?? "Cancel"}
 					</button>
 					<button
 						type="submit"
-						class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-magenta px-3 py-2 text-sm font-semibold text-white hover:bg-magenta disabled:pointer-events-none disabled:opacity-50 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-neutral-600"
+						class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-magenta px-3 py-2 text-sm font-semibold text-white hover:bg-magenta disabled:pointer-events-none disabled:opacity-50 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-content-border-strong"
 					>
 						{t?.addFeature?.submit ?? "Submit"}
 					</button>

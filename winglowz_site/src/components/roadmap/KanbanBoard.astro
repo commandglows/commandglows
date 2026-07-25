@@ -76,11 +76,11 @@ const columns = [
 
 <div class="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:gap-8 lg:overflow-visible lg:pb-0">
   {columns.map(column => (
-    <div class="flex w-11/12 max-w-sm shrink-0 snap-start flex-col rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900 lg:w-auto lg:max-w-none lg:min-w-0 lg:shrink lg:p-6">
+    <div class="flex w-11/12 max-w-sm shrink-0 snap-start flex-col rounded-xl border border-content-border bg-content-bg-secondary p-4 dark:border-content-text-secondary/50 dark:bg-content-bg-inverse lg:w-auto lg:max-w-none lg:min-w-0 lg:shrink lg:p-6">
       <div class="mb-4 flex items-center justify-between lg:mb-6">
-        <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">
+        <h2 class="text-lg font-semibold text-content-text-primary dark:text-content-text-primary">
           {column.title}
-          <span class="ml-2 text-sm font-normal text-neutral-500">
+          <span class="ml-2 text-sm font-normal text-content-text-muted">
             ({column.features.length})
           </span>
         </h2>
@@ -96,7 +96,7 @@ const columns = [
             />
           ))
         ) : (
-          <div class="flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-white p-4 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
+          <div class="flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-content-border bg-content-bg-primary p-4 text-center text-sm text-content-text-muted dark:border-content-text-secondary/50 dark:bg-content-bg-secondary dark:text-content-text-tertiary">
             <p>{column.emptyMessage}</p>
           </div>
         )}

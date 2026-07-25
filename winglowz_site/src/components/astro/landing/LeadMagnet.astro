@@ -27,7 +27,7 @@ const content = lang === 'fr'
     }
 ---
 
-<section class="bg-neutral-50 dark:bg-black py-16 px-4">
+<section class="bg-content-bg-subtle dark:bg-content-bg-inverse py-16 px-4">
   <div class="reveal max-w-3xl mx-auto">
     <div class="landing-surface relative overflow-hidden rounded-2xl border p-8 sm:p-12">
       <!-- Background glow -->
@@ -40,11 +40,11 @@ const content = lang === 'fr'
           {content.badge}
         </span>
 
-        <h2 class="mb-4 font-display text-3xl font-bold text-neutral-950 dark:text-white sm:text-4xl">
+        <h2 class="mb-4 font-display text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl">
           {content.title}
         </h2>
 
-        <p class="mx-auto mb-8 max-w-xl text-neutral-600 dark:text-zinc-400">
+        <p class="mx-auto mb-8 max-w-xl text-content-text-secondary dark:text-content-text-tertiary">
           {content.sub}
         </p>
 
@@ -55,11 +55,11 @@ const content = lang === 'fr'
             name="email"
             required
             placeholder={content.placeholder}
-            class="flex-1 rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm text-neutral-950 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-500"
+            class="flex-1 rounded-full border border-content-border bg-content-bg-elevated px-5 py-3 text-sm text-content-text-primary placeholder:text-content-text-muted focus:border-content-border-strong focus:outline-none dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:placeholder:text-content-text-muted dark:focus:border-content-border-strong"
           />
           <button
             type="submit"
-            class="shimmer-btn inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-neutral-950 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-neutral-950/10 hover:bg-neutral-800 dark:bg-white dark:text-zinc-950 dark:shadow-white/10 dark:hover:bg-zinc-200"
+            class="shimmer-btn inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-content-text-primary px-6 py-3 text-sm font-medium text-white shadow-lg shadow-content-shadow hover:bg-content-text-secondary dark:bg-white dark:text-content-text-primary dark:shadow-white/10 dark:hover:bg-content-text-secondary"
             data-track="lead-magnet-cta"
           >
             {content.cta}
@@ -70,7 +70,7 @@ const content = lang === 'fr'
         <p id="lead-magnet-success" class="hidden mt-4 text-sm text-green">{content.success}</p>
         <p id="lead-magnet-error" class="hidden mt-4 text-sm text-red">{content.error}</p>
 
-        <p class="mt-4 text-xs text-neutral-500 dark:text-zinc-600">{content.privacy}</p>
+        <p class="mt-4 text-xs text-content-text-muted dark:text-content-text-tertiary">{content.privacy}</p>
       </div>
     </div>
   </div>

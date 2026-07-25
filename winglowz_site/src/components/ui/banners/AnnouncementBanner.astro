@@ -16,20 +16,20 @@ interface Props {
     aria-label="Informational Banner"
   >
     <div
-      class="rounded-xl bg-neutral-800 bg-cover bg-center bg-no-repeat p-4 text-center shadow-sm dark:bg-neutral-200"
+      class="rounded-xl bg-content-bg-inverse bg-cover bg-center bg-no-repeat p-4 text-center shadow-sm dark:bg-content-bg-primary"
       style="background-image: var(--banner-pattern-image);"
     >
       <div class="flex items-center justify-center">
         <div class="ml-auto">
           {title &&
           <p
-            class="me-2 inline-block font-medium text-neutral-50 dark:text-neutral-700"
+            class="me-2 inline-block font-medium text-content-text-over-dark dark:text-content-text-secondary"
           >
             {title}
           </p>
           }
           <a
-            class="group inline-flex items-center gap-x-2 rounded-full border-2 border-neutral-50 backdrop-brightness-75 sm:backdrop-brightness-100 px-3 py-2 text-sm font-semibold text-neutral-50 transition duration-300 hover:border-neutral-100/70 hover:text-neutral-50/70 disabled:pointer-events-none disabled:opacity-50 dark:backdrop-brightness-100 dark:border-neutral-700 dark:text-neutral-700 dark:hover:border-neutral-700/70 dark:hover:text-neutral-800/70 dark:focus:outline-none"
+            class="group inline-flex items-center gap-x-2 rounded-full border-2 border-content-text-over-dark backdrop-brightness-75 sm:backdrop-brightness-100 px-3 py-2 text-sm font-semibold text-content-text-over-dark transition duration-300 hover:border-content-text-over-dark/70 hover:text-content-text-over-dark/70 disabled:pointer-events-none disabled:opacity-50 dark:backdrop-brightness-100 dark:border-content-border-strong dark:text-content-text-secondary dark:hover:border-content-border-strong/70 dark:hover:text-content-text-secondary/70 dark:focus:outline-none"
             href={url}
             target="_blank"
           >
@@ -49,7 +49,7 @@ interface Props {
         </div>
         <button
           type="button"
-          class="ml-auto inline-flex items-center gap-x-2 rounded-full border border-transparent bg-gray-100 p-2 text-sm font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-neutral-700 dark:text-neutral-50 dark:hover:bg-neutral-700/80 dark:hover:text-neutral-50 dark:focus:outline-none"
+          class="ml-auto inline-flex items-center gap-x-2 rounded-full border border-transparent bg-gray-100 p-2 text-sm font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-content-bg-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover dark:hover:text-content-text-over-dark dark:focus:outline-none"
           id={btnId}
         >
           <span class="sr-only">Dismiss</span>

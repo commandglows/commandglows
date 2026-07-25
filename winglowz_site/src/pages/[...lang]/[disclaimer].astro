@@ -21,18 +21,18 @@ export function getStaticPaths() {
 
 <MainLayout title={t.title} lang={lang}>
 	<div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-		<h1 class="mb-8 text-3xl font-bold text-neutral-900 dark:text-white">
+		<h1 class="mb-8 text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark">
 			{t.title}
 		</h1>
 
-		<p class="mb-4 text-sm text-neutral-500 dark:text-neutral-400">
+		<p class="mb-4 text-sm text-content-text-tertiary dark:text-content-text-muted">
 			{ui.common.lastUpdated}
 		</p>
 
-		<div class="space-y-6 text-neutral-600 dark:text-neutral-400">
+		<div class="space-y-6 text-content-text-secondary dark:text-content-text-tertiary">
 			<!-- Section Informations Générales -->
 			<h2
-				class="mb-4 mt-8 text-xl font-semibold text-neutral-800 dark:text-neutral-200"
+				class="mb-4 mt-8 text-xl font-semibold text-content-text-secondary dark:text-content-text-muted"
 			>
 				{sections.general?.title}
 			</h2>
@@ -40,7 +40,7 @@ export function getStaticPaths() {
 
 			<!-- Section Absence de Résultats Garantis -->
 			<h2
-				class="mb-4 mt-8 text-xl font-semibold text-neutral-800 dark:text-neutral-200"
+				class="mb-4 mt-8 text-xl font-semibold text-content-text-secondary dark:text-content-text-muted"
 			>
 				{sections.noGuarantee?.title}
 			</h2>
@@ -55,7 +55,7 @@ export function getStaticPaths() {
 
 			<!-- Section Limitations Techniques -->
 			<h2
-				class="mb-4 mt-8 text-xl font-semibold text-neutral-800 dark:text-neutral-200"
+				class="mb-4 mt-8 text-xl font-semibold text-content-text-secondary dark:text-content-text-muted"
 			>
 				{sections.technical?.title}
 			</h2>
@@ -66,7 +66,7 @@ export function getStaticPaths() {
 
 			<!-- Section Conseil Professionnel -->
 			<h2
-				class="mb-4 mt-8 text-xl font-semibold text-neutral-800 dark:text-neutral-200"
+				class="mb-4 mt-8 text-xl font-semibold text-content-text-secondary dark:text-content-text-muted"
 			>
 				{sections.professional?.title}
 			</h2>
@@ -81,7 +81,7 @@ export function getStaticPaths() {
 
 			<!-- Section Contenu Tiers -->
 			<h2
-				class="mb-4 mt-8 text-xl font-semibold text-neutral-800 dark:text-neutral-200"
+				class="mb-4 mt-8 text-xl font-semibold text-content-text-secondary dark:text-content-text-muted"
 			>
 				{sections.thirdParty?.title}
 			</h2>
@@ -92,7 +92,7 @@ export function getStaticPaths() {
 
 			<!-- Section Limitation de Responsabilité -->
 			<h2
-				class="mb-4 mt-8 text-xl font-semibold text-neutral-800 dark:text-neutral-200"
+				class="mb-4 mt-8 text-xl font-semibold text-content-text-secondary dark:text-content-text-muted"
 			>
 				{sections.liability?.title}
 			</h2>
@@ -103,7 +103,7 @@ export function getStaticPaths() {
 
 			<!-- Section Modifications et Erreurs -->
 			<h2
-				class="mb-4 mt-8 text-xl font-semibold text-neutral-800 dark:text-neutral-200"
+				class="mb-4 mt-8 text-xl font-semibold text-content-text-secondary dark:text-content-text-muted"
 			>
 				{sections.changes?.title}
 			</h2>
@@ -113,7 +113,7 @@ export function getStaticPaths() {
 			</ul>
 		</div>
 
-		<p class="mt-8 text-sm text-neutral-500 dark:text-neutral-400">
+		<p class="mt-8 text-sm text-content-text-tertiary dark:text-content-text-muted">
 			{t.contact}
 		</p>
 	</div>

@@ -44,14 +44,14 @@ const { title, subTitle, src, alt, features } = Astro.props
 		<div class="lg:col-span-1">
 			<!-- Rendering title -->
 			<h2
-				class="text-balance text-2xl font-bold text-neutral-800 dark:text-neutral-200 md:text-4xl"
+				class="text-balance text-2xl font-bold text-content-text-primary dark:text-content-text-primary md:text-4xl"
 			>
 				{title}
 			</h2>
 			<!-- Rendering subtitle -->
 			{
 				subTitle && (
-					<p class="mt-2 text-pretty text-neutral-600 dark:text-neutral-400 md:mt-4">
+					<p class="mt-2 text-pretty text-content-text-secondary dark:text-content-text-tertiary md:mt-4">
 						{subTitle}
 					</p>
 				)

@@ -42,33 +42,33 @@ const introLead =
   <main class="bg-background text-foreground">
     <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       <div class="mx-auto max-w-3xl text-center">
-        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-zinc-500">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-content-text-tertiary dark:text-content-text-muted">
           {eyebrow}
         </p>
-        <h1 class="mt-4 text-balance text-4xl font-bold tracking-tight text-neutral-950 dark:text-white sm:text-5xl">
+        <h1 class="mt-4 text-balance text-4xl font-bold tracking-tight text-content-text-primary dark:text-content-text-over-dark sm:text-5xl">
           {title}
         </h1>
-        <p class="mx-auto mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-neutral-600 dark:text-zinc-400">
+        <p class="mx-auto mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-content-text-secondary dark:text-content-text-tertiary">
           {description}
         </p>
       </div>
 
-      <div class="mx-auto mt-10 max-w-3xl rounded-3xl border bg-white/70 p-6 text-left shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-black/30 sm:p-8">
+      <div class="mx-auto mt-10 max-w-3xl rounded-3xl border border-content-border bg-content-bg-elevated/70 p-6 text-left shadow-sm backdrop-blur dark:border-content-border-strong dark:bg-content-bg/30 sm:p-8">
         <div class="flex justify-center">
           <img
             src="https://winglowz.b-cdn.net/profile-pic.png"
             alt={lang === 'fr' ? 'Portrait de Diane Defores' : 'Portrait of Diane Defores'}
-            class="h-20 w-20 rounded-full border border-neutral-200 object-cover shadow-sm dark:border-zinc-700"
+            class="h-20 w-20 rounded-full border border-content-border object-cover shadow-sm dark:border-content-border-strong"
             loading="eager"
           />
         </div>
-        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-500">
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-content-text-tertiary dark:text-content-text-muted">
           {lang === 'fr' ? 'Comment lire cette page' : 'How to read this page'}
         </p>
-        <p class="mt-3 text-pretty text-lg leading-relaxed text-neutral-700 dark:text-zinc-300">
+        <p class="mt-3 text-pretty text-lg leading-relaxed text-content-text-secondary dark:text-content-text-muted">
           {introLead}
         </p>
-        <p class="mt-4 text-pretty text-sm leading-relaxed text-neutral-600 dark:text-zinc-400">
+        <p class="mt-4 text-pretty text-sm leading-relaxed text-content-text-secondary dark:text-content-text-tertiary">
           {lang === 'fr'
             ? 'L’ordre va du bénéfice le plus immédiat vers la preuve la plus profonde: d’abord le temps gagné, ensuite la qualité perçue, puis l’origine du produit et le contexte du lancement.'
             : 'The order moves from the most immediate benefit to the deepest proof: time saved first, then perceived quality, then the product origin and launch context.'}
@@ -79,17 +79,17 @@ const introLead =
         {recommendationSections.map((section) => (
           <section class="space-y-5">
             <div class="max-w-3xl">
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-500">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-content-text-tertiary dark:text-content-text-muted">
                 {section.key === 'time'
                   ? (lang === 'fr' ? 'Gain de temps' : 'Time saved')
                   : section.key === 'quality'
                     ? (lang === 'fr' ? 'Qualité perçue' : 'Perceived quality')
                     : (lang === 'fr' ? 'Contexte du lancement' : 'Launch context')}
               </p>
-              <h2 class="mt-2 text-balance text-2xl font-bold tracking-tight text-neutral-950 dark:text-white sm:text-3xl">
+              <h2 class="mt-2 text-balance text-2xl font-bold tracking-tight text-content-text-primary dark:text-content-text-over-dark sm:text-3xl">
                 {lang === 'fr' ? section.title.fr : section.title.en}
               </h2>
-              <p class="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 dark:text-zinc-400">
+              <p class="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-content-text-secondary dark:text-content-text-tertiary">
                 {lang === 'fr' ? section.summary.fr : section.summary.en}
               </p>
             </div>
@@ -113,8 +113,8 @@ const introLead =
         ))}
       </div>
 
-      <section class="mt-12 rounded-3xl border bg-neutral-950 px-6 py-8 text-white shadow-lg dark:bg-white dark:text-neutral-950 sm:px-8">
-        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-300 dark:text-neutral-500">
+      <section class="mt-12 rounded-3xl border bg-content-bg-inverse px-6 py-8 text-content-text-over-dark shadow-lg dark:bg-content-bg-elevated dark:text-content-text-primary sm:px-8">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-content-text-over-dark-muted dark:text-content-text-tertiary">
           {lang === 'fr' ? 'Angle de vente' : 'Sales angle'}
         </p>
         <h2 class="mt-2 text-balance text-2xl font-bold sm:text-3xl">
@@ -122,7 +122,7 @@ const introLead =
             ? 'Un petit produit utile devenu une vraie formation'
             : 'A small useful product that became a real course'}
         </h2>
-        <p class="mt-4 max-w-3xl text-pretty text-base leading-relaxed text-neutral-200 dark:text-neutral-700">
+        <p class="mt-4 max-w-3xl text-pretty text-base leading-relaxed text-content-text-over-dark-subtle dark:text-content-text-secondary">
           {lang === 'fr'
             ? 'Au départ, il y avait un template Notion et un besoin simple: aider les gens à retrouver du temps et de la clarté sur Windows. Les retours positifs et le lancement AppSumo de juillet 2024 ont validé l’idée, puis le projet a été porté vers une formation plus complète.'
             : 'At the start, there was a Notion template and a simple need: help people regain time and clarity on Windows. Positive feedback and the July 2024 AppSumo launch validated the idea, then the project was turned into a fuller course.'}

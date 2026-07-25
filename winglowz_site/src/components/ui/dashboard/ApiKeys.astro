@@ -16,14 +16,14 @@ interface Props {
 const { apiKeys } = Astro.props;
 ---
 
-<div class="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+<div class="overflow-hidden rounded-lg border border-content-border bg-content-bg-elevated shadow-sm dark:border-content-border-strong dark:bg-content-bg-strong">
   <div class="p-6">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-neutral-100">
+        <h3 class="text-lg font-medium leading-6 text-content-text-primary dark:text-content-text-over-dark">
           Vos clés API
         </h3>
-        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        <p class="mt-1 text-sm text-content-text-muted dark:text-content-text-tertiary">
           Clés d'accès pour vos produits achetés
         </p>
       </div>
@@ -34,35 +34,35 @@ const { apiKeys } = Astro.props;
         <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
           {apiKeys.length === 0 ? (
             <div class="text-center py-4">
-              <p class="text-sm text-neutral-500 dark:text-neutral-400">
+              <p class="text-sm text-content-text-muted dark:text-content-text-tertiary">
                 Vous n'avez pas encore de produit avec accès API
               </p>
             </div>
           ) : (
-            <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+            <table class="min-w-full divide-y divide-content-border-strong dark:divide-content-border-strong">
               <thead>
                 <tr>
-                  <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-100 sm:pl-0">
+                  <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-content-text-primary dark:text-content-text-over-dark sm:pl-0">
                     Produit
                   </th>
-                  <th class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                  <th class="px-3 py-3.5 text-left text-sm font-semibold text-content-text-primary dark:text-content-text-over-dark">
                     Statut
                   </th>
-                  <th class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                  <th class="px-3 py-3.5 text-left text-sm font-semibold text-content-text-primary dark:text-content-text-over-dark">
                     Dernière utilisation
                   </th>
-                  <th class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                  <th class="px-3 py-3.5 text-left text-sm font-semibold text-content-text-primary dark:text-content-text-over-dark">
                     Expire le
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+              <tbody class="divide-y divide-content-border-strong dark:divide-content-border-strong">
                 {apiKeys.map((key) => (
                   <tr>
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-neutral-900 dark:text-neutral-100 sm:pl-0">
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-content-text-primary dark:text-content-text-over-dark sm:pl-0">
                       <div>
                         <div class="font-medium">{key.product.name}</div>
-                        <div class="text-neutral-500 dark:text-neutral-400">{key.product.description}</div>
+                        <div class="text-content-text-muted dark:text-content-text-tertiary">{key.product.description}</div>
                       </div>
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm">
@@ -79,10 +79,10 @@ const { apiKeys } = Astro.props;
                         {key.status === 'active' ? 'Active' : key.status === 'suspended' ? 'Suspendue' : 'Expirée'}
                       </span>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-content-text-muted dark:text-content-text-tertiary">
                       {key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : 'Jamais'}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-500 dark:text-neutral-400">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-content-text-muted dark:text-content-text-tertiary">
                       {key.expires_at ? new Date(key.expires_at).toLocaleDateString() : 'Jamais'}
                     </td>
                   </tr>

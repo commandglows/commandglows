@@ -50,9 +50,9 @@ function getStatusTitle(status: Feature["status"]) {
 <div class="mt-16 space-y-16">
   {statuses.map(status => (
     <section>
-      <h2 class="mb-8 text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+      <h2 class="mb-8 text-2xl font-bold tracking-tight text-content-text-primary dark:text-content-text-primary">
         {getStatusTitle(status)}
-        <span class="ml-2 text-lg font-normal text-neutral-500">
+        <span class="ml-2 text-lg font-normal text-content-text-muted">
           ({groupedFeatures[status]?.length || 0})
         </span>
       </h2>
