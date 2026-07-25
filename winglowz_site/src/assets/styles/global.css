@@ -101,10 +101,55 @@
     --landing-reveal-delay-4: 0.4s;
     --landing-reveal-delay-5: 0.5s;
     --landing-reveal-delay-6: 0.6s;
+    --landing-testimonials-embedded-gap-after-proof: 1rem;
+    --landing-testimonials-embedded-padding-top: 1rem;
+    --landing-testimonials-embedded-padding-bottom: 4rem;
+    --landing-hero-shell-padding-top: 4.625rem;
+    --landing-hero-glow-width: 50rem;
+    --landing-hero-glow-height: 37.5rem;
+    --landing-hero-glow-top: 25%;
+    --landing-hero-fade-duration: 0.6s;
+    --landing-hero-text-duration: 0.8s;
+    --landing-hero-avatar-duration: 0.4s;
+    --landing-hero-stat-duration: 0.4s;
+    --landing-hero-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --landing-hero-badge-delay: 0.2s;
+    --landing-hero-copy-delay: 0.5s;
+    --landing-hero-actions-delay: 0.6s;
+    --landing-hero-proof-delay: 0.7s;
+    --landing-hero-stats-delay: 0.9s;
+    --landing-hero-title-secondary-delay: 0.1s;
+    --landing-bento-hover-scale: 1.02;
+    --landing-bento-transition-duration: 0.3s;
+    --landing-widget-bg: hsl(var(--content-bg-code));
+    --landing-widget-border: hsl(var(--content-border-strong));
+    --landing-widget-text: hsl(var(--content-text-muted));
+    --landing-widget-text-subtle: hsl(var(--content-text-tertiary));
+    --landing-widget-active-opacity: 0.08;
+    --landing-widget-pressed-scale: 0.92;
+    --landing-widget-press-offset: 2px;
+    --landing-widget-key-delay-step: 50ms;
+    --landing-eyebrow-letter-spacing: 0.16em;
+    --landing-bleed-width: 100vw;
+    --landing-bleed-offset: 50%;
+    --landing-motion-fast: 100ms;
+    --landing-motion-none: 0ms;
+    --link-hover-transition-duration: 200ms;
+    --content-canvas-dark: 0 0% 4%;
+    --navbar-glass-shadow-light: 0 10px 30px rgb(15 23 42 / 0.08);
+    --navbar-drawer-shadow-light: 0 16px 40px rgb(15 23 42 / 0.14);
+    --navbar-cookie-shadow-light: 0 16px 40px rgb(15 23 42 / 0.16);
+    --navbar-glass-shadow-dark: 0 10px 30px rgb(0 0 0 / 0.24);
+    --navbar-drawer-shadow-dark: 0 16px 40px rgb(0 0 0 / 0.3);
+    --navbar-cookie-shadow-dark: 0 16px 40px rgb(0 0 0 / 0.3);
+    --navbar-overlay-light: 255 255 255;
+    --navbar-overlay-dark: 24 24 27;
 
     /* Radius */
     --radius: 1rem;
     --navbar-dropdown-min-width: 280px;
+    --navbar-mobile-tagline-size: 0.75rem;
+    --navbar-mobile-tagline-line-height: 1.25;
 
     /* Navbar tokens */
     --navbar-shell-border: 0 0% 90%;
@@ -811,13 +856,109 @@
   }
 
   .link-hover {
-    transition: color 200ms;
+    transition: color var(--link-hover-transition-duration);
   }
   .link-hover:hover {
     color: var(--brand-magenta);
   }
   .dark .link-hover:hover {
     color: var(--brand-magenta);
+  }
+
+  .landing-eyebrow {
+    letter-spacing: var(--landing-eyebrow-letter-spacing);
+  }
+
+  .landing-testimonials-bleed {
+    position: relative;
+    left: var(--landing-bleed-offset);
+    width: var(--landing-bleed-width);
+    transform: translateX(-50%);
+  }
+
+  .landing-bento-card {
+    transition: transform var(--landing-bento-transition-duration) ease,
+      border-color var(--landing-bento-transition-duration) ease;
+  }
+
+  .landing-bento-card:hover {
+    transform: scale(var(--landing-bento-hover-scale));
+  }
+
+  .landing-smart-org-item {
+    transition: transform var(--landing-bento-transition-duration) ease;
+  }
+
+  .landing-smart-org-item[data-active='true'] {
+    transform: scale(1.1) translateY(-0.125rem);
+  }
+
+  .landing-smart-org-icon {
+    border-color: var(--landing-widget-border);
+    background-color: var(--landing-widget-bg);
+    color: var(--landing-widget-text);
+    transition: border-color var(--landing-bento-transition-duration) ease,
+      background-color var(--landing-bento-transition-duration) ease,
+      color var(--landing-bento-transition-duration) ease;
+  }
+
+  .landing-smart-org-icon[data-active='true'] {
+    border-color: var(--landing-smart-org-accent);
+    background-color: color-mix(in srgb, var(--landing-smart-org-accent) 8%, transparent);
+    color: var(--landing-smart-org-accent);
+  }
+
+  .landing-smart-org-label {
+    color: var(--landing-widget-text);
+    transition: color var(--landing-bento-transition-duration) ease;
+  }
+
+  .landing-smart-org-label[data-active='true'] {
+    color: var(--landing-smart-org-accent);
+  }
+
+  .landing-smart-org-accent-magenta {
+    --landing-smart-org-accent: var(--brand-magenta);
+  }
+
+  .landing-smart-org-accent-cyan {
+    --landing-smart-org-accent: var(--brand-cyan);
+  }
+
+  .landing-smart-org-accent-yellow {
+    --landing-smart-org-accent: var(--brand-yellow);
+  }
+
+  .landing-keyboard-key {
+    border-color: var(--landing-widget-border);
+    background-color: var(--landing-widget-bg);
+    color: var(--content-text-secondary);
+    transition: transform var(--landing-motion-fast) ease, background-color var(--landing-motion-fast) ease,
+      border-color var(--landing-motion-fast) ease, color var(--landing-motion-fast) ease;
+  }
+
+  .landing-keyboard-key--1 {
+    transition-delay: var(--landing-motion-none);
+  }
+
+  .landing-keyboard-key--2 {
+    transition-delay: var(--landing-widget-key-delay-step);
+  }
+
+  .landing-keyboard-key--3 {
+    transition-delay: calc(var(--landing-widget-key-delay-step) * 2);
+  }
+
+  .landing-keyboard-key[data-pressed='true'] {
+    transform: scale(var(--landing-widget-pressed-scale))
+      translateY(var(--landing-widget-press-offset));
+    border-color: var(--brand-cyan);
+    background-color: var(--brand-cyan);
+    color: hsl(var(--landing-primary-foreground));
+  }
+
+  .landing-keyboard-label {
+    color: var(--landing-widget-text);
   }
 
   /* Badge Styles */
@@ -1078,7 +1219,7 @@ html.dark,
 html.dark body,
 html[data-theme="dark"],
 html[data-theme="dark"] body {
-  background-color: hsl(0 0% 4%);
+  background-color: hsl(var(--content-canvas-dark));
 }
 
 /* Keep the light navbar readable over content while preserving the glass effect. */
@@ -1086,7 +1227,7 @@ html[data-theme="dark"] body {
   background-color: hsl(var(--navbar-shell-bg) / 0.88);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   backdrop-filter: blur(16px) saturate(1.2);
-  box-shadow: 0 10px 30px rgb(15 23 42 / 0.08);
+  box-shadow: var(--navbar-glass-shadow-light);
 }
 
 /* Keep overlay surfaces opaque enough to remain readable in light mode.
@@ -1096,11 +1237,11 @@ html[data-theme="dark"] body {
   background-color: hsl(var(--navbar-drawer-bg) / 0.94);
   -webkit-backdrop-filter: blur(18px) saturate(1.15);
   backdrop-filter: blur(18px) saturate(1.15);
-  box-shadow: 0 16px 40px rgb(15 23 42 / 0.14);
+  box-shadow: var(--navbar-drawer-shadow-light);
 }
 
 .navbar-mega-shell-glass {
-  background-color: rgb(255 255 255 / 0.88);
+  background-color: rgb(var(--navbar-overlay-light) / 0.88);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   backdrop-filter: blur(16px) saturate(1.2);
 }
@@ -1108,29 +1249,29 @@ html[data-theme="dark"] body {
 .cookie-consent-glass {
   /* Use a concrete color here: this is a fixed overlay and must remain
      readable even if a page overrides semantic background tokens. */
-  background-color: rgb(255 255 255 / 0.96) !important;
+  background-color: rgb(var(--navbar-overlay-light) / 0.96) !important;
   -webkit-backdrop-filter: blur(18px) saturate(1.15);
   backdrop-filter: blur(18px) saturate(1.15);
-  box-shadow: 0 16px 40px rgb(15 23 42 / 0.16);
+  box-shadow: var(--navbar-cookie-shadow-light);
 }
 
 html.dark .navbar-shell-glass {
   background-color: hsl(var(--navbar-shell-bg) / 0.9);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.24);
+  box-shadow: var(--navbar-glass-shadow-dark);
 }
 
 html.dark .navbar-drawer-glass {
   background-color: hsl(var(--navbar-drawer-bg) / 0.96);
-  box-shadow: 0 16px 40px rgb(0 0 0 / 0.3);
+  box-shadow: var(--navbar-drawer-shadow-dark);
 }
 
 html.dark .navbar-mega-shell-glass {
-  background-color: rgb(24 24 27 / 0.9);
+  background-color: rgb(var(--navbar-overlay-dark) / 0.9);
 }
 
 html.dark .cookie-consent-glass {
-  background-color: rgb(24 24 27 / 0.96) !important;
-  box-shadow: 0 16px 40px rgb(0 0 0 / 0.3);
+  background-color: rgb(var(--navbar-overlay-dark) / 0.96) !important;
+  box-shadow: var(--navbar-cookie-shadow-dark);
 }
 
 /* Accessibility: disable navbar animations when user prefers reduced motion */

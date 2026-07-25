@@ -24,13 +24,11 @@ function StarRating({ rating }: { rating: number }) {
 export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
   const [current, setCurrent] = useState(0)
   const [expanded, setExpanded] = useState(false)
-  const [direction, setDirection] = useState<"next" | "prev">("next")
   const [isAnimating, setIsAnimating] = useState(false)
   const swipeStartX = useRef<number | null>(null)
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setDirection("next")
       setIsAnimating(true)
       setTimeout(() => {
         setCurrent((prev) => (prev + 1) % testimonials.length)
@@ -44,7 +42,6 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
 
   const goTo = (index: number) => {
     if (index === current) return
-    setDirection(index > current ? "next" : "prev")
     setIsAnimating(true)
     setExpanded(false)
     setTimeout(() => {
@@ -87,13 +84,10 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
         onPointerCancel={() => { swipeStartX.current = null }}
       >
         <div
-          className="text-center transition-all duration-300"
-          style={{
-            opacity: isAnimating ? 0 : 1,
-            transform: isAnimating
-              ? `translateY(${direction === "next" ? "-20px" : "20px"})`
-              : "translateY(0)",
-          }}
+        className="text-center transition-opacity duration-300"
+        style={{
+          opacity: isAnimating ? 0 : 1,
+        }}
         >
           <div className="flex items-center justify-center gap-1 mb-4">
             <StarRating rating={t.rating} />
@@ -151,10 +145,10 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
           <button
             key={index}
             onClick={() => goTo(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-2 w-2 rounded-full border border-content-border transition-all duration-300 dark:border-content-border-strong ${
               index === current
-                ? "w-6 bg-cyan"
-                : "w-2 bg-content-bg-subtle hover:bg-content-bg-hover dark:bg-content-bg-strong dark:hover:bg-content-bg-hover"
+                ? "w-6 border-cyan bg-cyan"
+                : "bg-transparent hover:border-content-text-muted hover:bg-content-bg-hover dark:hover:bg-content-bg-hover"
             }`}
             aria-label={`Go to testimonial ${index + 1}`}
             aria-pressed={index === current}

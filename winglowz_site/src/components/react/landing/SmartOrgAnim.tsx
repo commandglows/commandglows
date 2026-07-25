@@ -4,21 +4,21 @@ import { useState, useEffect } from "react"
 const items = [
   {
     label: "Categorize",
-    color: "var(--brand-magenta)",
+    accentClass: "landing-smart-org-accent-magenta",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M2 10h20"/></svg>
     ),
   },
   {
     label: "Discover",
-    color: "var(--brand-cyan)",
+    accentClass: "landing-smart-org-accent-cyan",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     ),
   },
   {
     label: "Save",
-    color: "var(--brand-yellow)",
+    accentClass: "landing-smart-org-accent-yellow",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
     ),
@@ -42,24 +42,18 @@ export function SmartOrgAnim() {
         return (
           <div
             key={item.label}
-            className="flex flex-col items-center gap-1 transition-transform duration-300"
-            style={{
-              transform: isActive ? "scale(1.1) translateY(-2px)" : "scale(1) translateY(0)",
-            }}
+            className={`landing-smart-org-item flex flex-col items-center gap-1 ${isActive ? "is-active" : ""}`}
+            data-active={isActive}
           >
             <div
-              className="p-2 rounded-lg border transition-all duration-300 border-zinc-700 bg-zinc-800 text-zinc-400"
-              style={{
-                borderColor: isActive ? item.color : undefined,
-                backgroundColor: isActive ? `${item.color}15` : undefined,
-                color: isActive ? item.color : undefined,
-              }}
+              className={`landing-smart-org-icon p-2 rounded-lg border ${item.accentClass}`}
+              data-active={isActive}
             >
               {item.icon}
             </div>
             <span
-              className="text-xs font-medium transition-colors duration-300 text-zinc-500"
-              style={{ color: isActive ? item.color : undefined }}
+              className={`landing-smart-org-label text-xs font-medium ${item.accentClass}`}
+              data-active={isActive}
             >
               {item.label}
             </span>

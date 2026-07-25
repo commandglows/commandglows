@@ -144,7 +144,7 @@ const ctaButtonClass = forceDark
     </a>
 
     <p
-      class="mx-4 hidden flex-1 text-center text-sm font-semibold uppercase tracking-wider text-navbar-textSecondary max-md:block"
+      class="navbar-mobile-tagline mx-4 hidden flex-1 text-center font-semibold uppercase tracking-wider text-navbar-textSecondary max-md:block"
     >
       {mobileTagline}
     </p>
@@ -340,6 +340,11 @@ const ctaButtonClass = forceDark
 
   .navbar-header :global(.text-logo) {
     width: fit-content;
+  }
+
+  .navbar-mobile-tagline {
+    font-size: var(--navbar-mobile-tagline-size);
+    line-height: var(--navbar-mobile-tagline-line-height);
   }
 
   .mobile-menu summary::-webkit-details-marker {

@@ -52,7 +52,7 @@ const heroText = lang === 'fr'
   <!-- Subtle radial glow -->
   <div class="landing-hero-glow pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full bg-fuchsia-400/10 blur-3xl dark:bg-content-text-secondary/20"></div>
 
-  <div class="relative z-10 max-w-5xl mx-auto text-center">
+  <div class="relative z-10 w-full min-w-0 max-w-5xl mx-auto text-center">
     <!-- Badge -->
     <div class="landing-hero-fade landing-hero-fade--badge landing-surface mb-8 hidden items-center gap-2 rounded-full border px-4 py-2 md:inline-flex">
       <span class="landing-hero-status-dot pulse-glow h-2 w-2 rounded-full"></span>
@@ -92,7 +92,7 @@ const heroText = lang === 'fr'
     <a
       href="#testimonials"
       aria-label={lang === 'fr' ? 'Voir les témoignages de la communauté' : 'View community testimonials'}
-      class="landing-hero-fade landing-hero-fade--proof mb-12 flex flex-col items-center gap-4 rounded-lg focus-visible:ring focus-visible:ring-ring focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black"
+      class="landing-hero-fade landing-hero-fade--proof landing-hero-proof flex flex-col items-center gap-4 rounded-lg focus-visible:ring focus-visible:ring-ring focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black"
     >
       <div class="flex items-center -space-x-3">
         {testimonialPeople.map((person) => (
@@ -120,7 +120,7 @@ const heroText = lang === 'fr'
       </p>
     </a>
 
-    <div class="relative left-1/2 w-screen -translate-x-1/2">
+    <div class="landing-testimonials-bleed">
       <LogoMarquee embedded />
     </div>
 
@@ -138,21 +138,6 @@ const heroText = lang === 'fr'
 
 <style>
   .landing-hero-shell {
-    --landing-hero-shell-padding-top: 4.625rem;
-    --landing-hero-glow-width: 50rem;
-    --landing-hero-glow-height: 37.5rem;
-    --landing-hero-glow-top: 25%;
-    --landing-hero-fade-duration: 0.6s;
-    --landing-hero-text-duration: 0.8s;
-    --landing-hero-avatar-duration: 0.4s;
-    --landing-hero-stat-duration: 0.4s;
-    --landing-hero-ease: cubic-bezier(0.22, 1, 0.36, 1);
-    --landing-hero-badge-delay: 0.2s;
-    --landing-hero-copy-delay: 0.5s;
-    --landing-hero-actions-delay: 0.6s;
-    --landing-hero-proof-delay: 0.7s;
-    --landing-hero-stats-delay: 0.9s;
-    --landing-hero-title-secondary-delay: 0.1s;
     padding-top: var(--landing-hero-shell-padding-top);
   }
 
@@ -196,6 +181,10 @@ const heroText = lang === 'fr'
 
   .landing-hero-fade--proof {
     animation-delay: var(--landing-hero-proof-delay);
+  }
+
+  .landing-hero-proof {
+    margin-bottom: var(--landing-testimonials-embedded-gap-after-proof);
   }
 
   .landing-hero-fade--stats {

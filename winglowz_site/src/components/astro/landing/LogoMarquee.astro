@@ -29,7 +29,7 @@ const trustText = lang === 'fr'
 <section
   id="testimonials"
   class:list={[
-    'scroll-mt-20 py-16 overflow-hidden',
+    embedded ? 'landing-testimonials--embedded scroll-mt-20 overflow-hidden' : 'scroll-mt-20 py-16 overflow-hidden',
     embedded ? 'bg-transparent' : 'bg-content-bg-subtle dark:bg-content-bg-inverse',
   ]}
 >
@@ -69,3 +69,10 @@ const trustText = lang === 'fr'
     </div>
   </div>
 </section>
+
+<style>
+  .landing-testimonials--embedded {
+    padding-top: var(--landing-testimonials-embedded-padding-top);
+    padding-bottom: var(--landing-testimonials-embedded-padding-bottom);
+  }
+</style>
