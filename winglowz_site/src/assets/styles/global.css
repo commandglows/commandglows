@@ -161,6 +161,7 @@
     --content-bg-subtle: 0 0% 94%;
     --content-bg-hover: 0 0% 91%;
     --content-bg-code: 0 0% 95%;
+    --content-bg-strong: var(--content-bg-elevated);
     --content-bg-inverse: 0 0% 9%;
     --content-border: 0 0% 91%;
     --content-border-subtle: 0 0% 93%;
@@ -503,6 +504,7 @@
     --content-bg-subtle: 0 0% 13%;
     --content-bg-hover: 0 0% 18%;
     --content-bg-code: 0 0% 17%;
+    --content-bg-strong: var(--content-bg-elevated);
     --content-bg-inverse: 0 0% 90%;
     --content-border: 0 0% 18%;
     --content-border-subtle: 0 0% 17%;
@@ -612,7 +614,12 @@
 
   body {
     font-family: var(--font-body);
-    @apply text-xl leading-relaxed text-content-text-secondary dark:text-content-text-muted;
+    @apply text-xl leading-relaxed;
+    color: hsl(var(--content-text-secondary));
+  }
+
+  .dark body {
+    color: hsl(var(--content-text-muted));
   }
 
   h1, h2, h3 {
@@ -625,28 +632,59 @@
   
   /* Headings - Mobile first, larger baseline for readability */
   h1 {
-    @apply text-5xl font-bold leading-tight tracking-tight text-content-text-secondary dark:text-content-text-muted;
+    @apply text-5xl font-bold leading-tight tracking-tight;
+    color: hsl(var(--content-text-secondary));
+  }
+
+  .dark h1 {
+    color: hsl(var(--content-text-muted));
   }
   
   h2 {
-    @apply text-4xl font-bold leading-tight text-content-text-secondary dark:text-content-text-muted;
+    @apply text-4xl font-bold leading-tight;
+    color: hsl(var(--content-text-secondary));
+  }
+
+  .dark h2 {
+    color: hsl(var(--content-text-muted));
   }
   
   h3 {
-    @apply text-3xl font-bold leading-snug text-content-text-secondary dark:text-content-text-muted;
+    @apply text-3xl font-bold leading-snug;
+    color: hsl(var(--content-text-secondary));
+  }
+
+  .dark h3 {
+    color: hsl(var(--content-text-muted));
   }
   
   h4 {
-    @apply text-2xl font-bold leading-snug text-content-text-secondary dark:text-content-text-muted;
+    @apply text-2xl font-bold leading-snug;
+    color: hsl(var(--content-text-secondary));
+  }
+
+  .dark h4 {
+    color: hsl(var(--content-text-muted));
   }
   
   h5, h6 {
-    @apply text-xl font-bold leading-normal text-content-text-secondary dark:text-content-text-muted;
+    @apply text-xl font-bold leading-normal;
+    color: hsl(var(--content-text-secondary));
+  }
+
+  .dark h5,
+  .dark h6 {
+    color: hsl(var(--content-text-muted));
   }
   
   /* Paragraphs - Much larger on mobile for better readability */
   p {
-    @apply text-xl leading-relaxed text-content-text-secondary dark:text-content-text-tertiary;
+    @apply text-xl leading-relaxed;
+    color: hsl(var(--content-text-secondary));
+  }
+
+  .dark p {
+    color: hsl(var(--content-text-tertiary));
   }
   
 }
@@ -789,8 +827,14 @@
   }
 
   .badge-neutral {
-    @apply inline-block rounded-full bg-content-bg-subtle dark:bg-content-bg-strong;
-    @apply px-3 py-1 text-xs font-medium text-content-text-tertiary dark:text-content-text-muted;
+    @apply inline-block rounded-full px-3 py-1 text-xs font-medium;
+    background-color: hsl(var(--content-bg-subtle));
+    color: hsl(var(--content-text-tertiary));
+  }
+
+  .dark .badge-neutral {
+    background-color: hsl(var(--content-bg-elevated));
+    color: hsl(var(--content-text-muted));
   }
 
   /* Rainbow gradient text effect */

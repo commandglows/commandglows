@@ -136,8 +136,7 @@ async function getOrganizationId() {
   return items[0].id;
 }
 
-async function createProduct(orgId, product) {
-  // orgId is only used for display; org tokens imply the org — do not pass organizationId
+async function createProduct(product) {
   const payload = {
     name: product.name,
     description: product.description,
@@ -158,7 +157,9 @@ async function createProduct(orgId, product) {
 async function main() {
   console.log(`\n🚀  Creating Flowz products on Polar.sh (${SERVER})${DRY_RUN ? " [DRY RUN]" : ""}\n`);
 
-  const orgId = DRY_RUN ? (ORG_ARG ?? "dry-run-org") : await getOrganizationId();
+  if (!DRY_RUN) {
+    await getOrganizationId();
+  }
 
   const results = [];
   let currentGroup = "";
@@ -170,7 +171,7 @@ async function main() {
     }
 
     try {
-      const created = await createProduct(orgId, product);
+      const created = await createProduct(product);
       const priceLabel = product.prices.map((p) => {
         const amount = (p.priceAmount / 100).toFixed(0);
         const currency = (p.priceCurrency ?? "usd").toUpperCase();
