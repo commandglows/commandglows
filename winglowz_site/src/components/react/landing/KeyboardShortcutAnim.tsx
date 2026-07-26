@@ -23,8 +23,8 @@ export function KeyboardShortcutAnim() {
   }, [])
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-1">
+    <div className="keyboard-shortcut-stack flex flex-col">
+      <div className="keyboard-shortcut-keys flex items-center">
         {shortcuts[current].keys.map((key, i) => (
           <kbd
             key={`${current}-${i}`}

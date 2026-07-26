@@ -27,29 +27,29 @@ const content = lang === 'fr'
     }
 ---
 
-<section class="bg-content-bg-subtle dark:bg-content-bg-inverse py-16 px-4">
+<section class="landing-section bg-content-bg-subtle dark:bg-content-bg-inverse px-4">
   <div class="reveal max-w-3xl mx-auto">
-    <div class="landing-surface relative overflow-hidden rounded-2xl border p-8 sm:p-12">
+    <div class="landing-surface landing-section-card relative overflow-hidden rounded-2xl border">
       <!-- Background glow -->
       <div class="absolute -top-24 -right-24 h-64 w-64 pointer-events-none rounded-full blur-3xl" style="background: radial-gradient(circle, rgb(var(--landing-glow) / 0.15), transparent 70%);"></div>
 
       <div class="relative z-10 text-center">
         <!-- Badge -->
-        <span class="landing-soft-badge mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs">
+        <span class="landing-soft-badge landing-section-badge landing-badge inline-flex items-center rounded-full border px-3 py-1 text-xs">
           <svg class="h-3 w-3 text-green" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3V18a3 3 0 0 0 3 3h15zM1.5 10.146V6a3 3 0 0 1 3-3h5.379a2.25 2.25 0 0 1 1.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 0 1 3 3v1.146A4.483 4.483 0 0 0 19.5 9h-15a4.483 4.483 0 0 0-3 1.146z"/></svg>
           {content.badge}
         </span>
 
-        <h2 class="mb-4 font-display text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl">
+        <h2 class="landing-section-title font-display text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl">
           {content.title}
         </h2>
 
-        <p class="mx-auto mb-8 max-w-xl text-content-text-secondary dark:text-content-text-tertiary">
+        <p class="landing-section-copy mx-auto max-w-xl text-content-text-secondary dark:text-content-text-tertiary">
           {content.sub}
         </p>
 
         <!-- Email form -->
-        <form id="lead-magnet-form" data-lang={lang} class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+        <form id="lead-magnet-form" data-lang={lang} class="landing-section-form mx-auto flex max-w-md flex-col sm:flex-row">
           <input
             type="email"
             name="email"
@@ -59,7 +59,7 @@ const content = lang === 'fr'
           />
           <button
             type="submit"
-            class="shimmer-btn inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-content-text-primary px-6 py-3 text-sm font-medium text-white shadow-lg shadow-content-shadow hover:bg-content-text-secondary dark:bg-white dark:text-content-text-primary dark:shadow-white/10 dark:hover:bg-content-text-secondary"
+            class="landing-cta-inline shimmer-btn inline-flex items-center justify-center whitespace-nowrap rounded-full bg-content-text-primary px-6 py-3 text-sm font-medium text-white shadow-lg shadow-content-shadow hover:bg-content-text-secondary dark:bg-white dark:text-content-text-primary dark:shadow-white/10 dark:hover:bg-content-text-secondary"
             data-track="lead-magnet-cta"
           >
             {content.cta}
@@ -67,10 +67,10 @@ const content = lang === 'fr'
           </button>
         </form>
 
-        <p id="lead-magnet-success" class="hidden mt-4 text-sm text-green">{content.success}</p>
-        <p id="lead-magnet-error" class="hidden mt-4 text-sm text-red">{content.error}</p>
+        <p id="lead-magnet-success" class="landing-section-form-feedback hidden text-sm text-green">{content.success}</p>
+        <p id="lead-magnet-error" class="landing-section-form-feedback hidden text-sm text-red">{content.error}</p>
 
-        <p class="mt-4 text-xs text-content-text-muted dark:text-content-text-tertiary">{content.privacy}</p>
+        <p class="landing-section-form-privacy text-xs text-content-text-muted dark:text-content-text-tertiary">{content.privacy}</p>
       </div>
     </div>
   </div>

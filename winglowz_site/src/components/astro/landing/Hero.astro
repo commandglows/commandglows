@@ -45,7 +45,7 @@ const heroText = lang === 'fr'
     }
 ---
 
-<section class="landing-hero-shell relative flex flex-col items-center justify-center overflow-hidden bg-content-bg-secondary px-4 pb-16 dark:bg-black">
+<section class="landing-hero-shell relative flex flex-col items-center justify-center overflow-hidden bg-content-bg-secondary px-4 dark:bg-black">
   <!-- Background gradient -->
   <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-content-bg-secondary via-white to-content-bg-secondary dark:from-black dark:via-black dark:to-black"></div>
 
@@ -54,13 +54,13 @@ const heroText = lang === 'fr'
 
   <div class="relative z-10 w-full min-w-0 max-w-5xl mx-auto text-center">
     <!-- Badge -->
-    <div class="landing-hero-fade landing-hero-fade--badge landing-surface mb-8 hidden items-center gap-2 rounded-full border px-4 py-2 md:inline-flex">
+    <div class="landing-hero-fade landing-hero-fade--badge landing-hero-badge landing-surface hidden items-center landing-badge rounded-full border px-4 py-2 md:inline-flex">
       <span class="landing-hero-status-dot pulse-glow h-2 w-2 rounded-full"></span>
       <span class="text-sm text-content-text-secondary dark:text-content-text-tertiary">{heroText.badge}</span>
     </div>
 
     <!-- Headline with text mask animation -->
-    <h1 class="mb-6 text-7xl font-bold tracking-tight text-content-text-primary dark:text-content-text-primary sm:text-8xl lg:text-9xl">
+    <h1 class="landing-hero-title text-5xl font-bold leading-[0.98] tracking-tight text-content-text-primary dark:text-content-text-primary sm:text-8xl lg:text-9xl">
       <span class="block overflow-hidden">
         <span class="landing-hero-text-line landing-hero-text-line--primary block">
           {heroText.h1Line1}
@@ -74,12 +74,12 @@ const heroText = lang === 'fr'
     </h1>
 
     <!-- Subheadline -->
-    <p class="landing-hero-fade landing-hero-fade--copy mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-content-text-secondary dark:text-content-text-tertiary sm:text-xl">
+    <p class="landing-hero-fade landing-hero-fade--copy landing-hero-copy mx-auto max-w-2xl text-lg leading-relaxed text-content-text-secondary dark:text-content-text-tertiary sm:text-xl">
       {heroText.sub}
     </p>
 
     <!-- CTAs -->
-    <div class="landing-hero-fade landing-hero-fade--actions mb-16 flex flex-col items-center justify-center gap-4 sm:flex-row">
+    <div class="landing-hero-fade landing-hero-fade--actions landing-hero-actions flex flex-col items-center justify-center sm:flex-row">
       <Button variant="primary" link={windowsMasteryUrl} track="hero-primary-cta" icon={{ type: 'icon', name: 'arrow-right' }}>
         {heroText.cta}
       </Button>
@@ -92,7 +92,7 @@ const heroText = lang === 'fr'
     <a
       href="#testimonials"
       aria-label={lang === 'fr' ? 'Voir les témoignages de la communauté' : 'View community testimonials'}
-      class="landing-hero-fade landing-hero-fade--proof landing-hero-proof flex flex-col items-center gap-4 rounded-lg focus-visible:ring focus-visible:ring-ring focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black"
+      class="landing-hero-fade landing-hero-fade--proof landing-hero-proof flex flex-col items-center rounded-lg focus-visible:ring focus-visible:ring-ring focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black"
     >
       <div class="flex items-center -space-x-3">
         {testimonialPeople.map((person) => (
@@ -125,11 +125,11 @@ const heroText = lang === 'fr'
     </div>
 
     <!-- Stats -->
-    <div class="landing-hero-fade landing-hero-fade--stats mx-auto grid max-w-2xl grid-cols-2 gap-8 sm:grid-cols-4">
+    <div class="landing-hero-fade landing-hero-fade--stats landing-hero-stats mx-auto grid max-w-2xl grid-cols-2 sm:grid-cols-4">
       {stats.map((stat) => (
         <div class="landing-hero-stat relative text-center">
           <div class="text-2xl font-bold text-content-text-primary dark:text-content-text-primary sm:text-3xl">{stat.value}</div>
-          <div class="mt-1 text-xs text-content-text-muted dark:text-content-text-tertiary sm:text-sm">{stat.label}</div>
+          <div class="landing-hero-stat-label text-xs text-content-text-muted dark:text-content-text-tertiary sm:text-sm">{stat.label}</div>
         </div>
       ))}
     </div>
@@ -181,10 +181,6 @@ const heroText = lang === 'fr'
 
   .landing-hero-fade--proof {
     animation-delay: var(--landing-hero-proof-delay);
-  }
-
-  .landing-hero-proof {
-    margin-bottom: var(--landing-testimonials-embedded-gap-after-proof);
   }
 
   .landing-hero-fade--stats {

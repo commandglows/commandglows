@@ -131,9 +131,9 @@ const ctaButtonClass = forceDark
 ---
 
 <header
-  class="navbar-header fixed inset-x-0 top-4 z-50 mx-auto w-full max-w-4xl px-4"
+  class="navbar-header fixed inset-x-0 top-4 z-50 mx-auto box-border w-full max-w-4xl px-4"
 >
-  <nav class:list={[navShellClass, !forceDark && 'navbar-shell-glass']}>
+  <nav class:list={[navShellClass, 'box-border w-full min-w-0', !forceDark && 'navbar-shell-glass']}>
     <!-- The landing layout has no ClientRouter; keep this layered logo out of a cross-layout transition. -->
     <a
       href={homeUrl}
@@ -191,17 +191,20 @@ const ctaButtonClass = forceDark
 
       <div
         id="mobile-navigation-menu"
-        class={forceDark
-          ? 'absolute right-0 top-full mt-3 min-w-[var(--navbar-dropdown-min-width)] max-w-sm rounded-2xl border border-navbar-drawer-border bg-navbar-force-drawer-bg p-4 shadow-2xl'
-          : 'navbar-drawer-glass absolute right-0 top-full mt-3 min-w-[var(--navbar-dropdown-min-width)] max-w-sm rounded-2xl border border-navbar-drawer-border/60 p-4 dark:border-navbar-drawer-border'}
+        class={[
+          'mobile-menu-panel absolute right-0 top-full box-border w-[min(var(--navbar-dropdown-min-width),calc(100vw-2rem))] max-w-sm rounded-2xl border shadow-2xl',
+          forceDark
+            ? 'border-navbar-drawer-border bg-navbar-force-drawer-bg'
+            : 'navbar-drawer-glass border-navbar-drawer-border/60 dark:border-navbar-drawer-border',
+        ]}
       >
-        <div class="flex flex-col gap-2">
+        <div class="mobile-menu-list flex flex-col">
           {
             navItems.map((item) => (
             <NavLink
               url={item.href}
               name={item.label}
-              class="rounded-lg px-4 py-3.5 text-base font-semibold text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+              class="mobile-menu-item rounded-lg px-4 py-3.5 text-base font-semibold text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
               activeClass={
                 forceDark ? 'text-navbar-textPrimary' : 'text-navbar-textPrimary dark:text-navbar-textPrimary'
               }
@@ -213,9 +216,9 @@ const ctaButtonClass = forceDark
             />
             ))
           }
-          <hr class="my-2 border-navbar-drawer-border" />
+          <hr class="mobile-menu-divider border-navbar-drawer-border" />
           <div
-            class={`grid ${showThemePicker && !forceDark ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}
+            class={`grid ${showThemePicker && !forceDark ? 'grid-cols-3' : 'grid-cols-2'} mobile-menu-list`}
           >
             <a
               href={altLangUrl}
@@ -351,6 +354,11 @@ const ctaButtonClass = forceDark
   .navbar-mobile-tagline {
     font-size: var(--navbar-mobile-tagline-size);
     line-height: var(--navbar-mobile-tagline-line-height);
+  }
+
+  .mobile-menu > #mobile-navigation-menu {
+    width: min(var(--navbar-dropdown-min-width), calc(100vw - var(--navbar-mobile-gutter)));
+    min-width: 0;
   }
 
   .mobile-menu summary::-webkit-details-marker {

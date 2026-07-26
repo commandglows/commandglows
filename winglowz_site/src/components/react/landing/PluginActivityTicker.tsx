@@ -24,11 +24,11 @@ export function PluginActivityTicker() {
   }, [activeIndex])
 
   return (
-    <div className="flex min-w-0 flex-col gap-1.5" style={{ minWidth: "var(--ticker-min-width)" }}>
+    <div className="plugin-activity-stack flex min-w-0 flex-col" style={{ minWidth: "var(--ticker-min-width)" }}>
       {events.map((event) => (
         <div
           key={event.id}
-          className="flex items-center gap-2 text-xs"
+          className="plugin-activity-row flex items-center text-xs"
           style={{ animation: "var(--hero-fade-animation-medium)" }}
         >
           <span
@@ -42,7 +42,7 @@ export function PluginActivityTicker() {
         </div>
       ))}
       {events.length === 0 && (
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
+        <div className="plugin-activity-row flex items-center text-xs text-zinc-500">
           <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-pulse" />
           listening...
         </div>

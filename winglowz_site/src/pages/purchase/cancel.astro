@@ -12,7 +12,7 @@ const returnUrl = isWinGlowzAppOffer
 ---
 
 <MainLayout title="Checkout Cancelled">
-	<div class="flex min-h-screen items-center justify-center py-12">
+	<div class="site-main-shell flex min-h-screen items-center justify-center py-12">
 		<div class="mx-auto max-w-lg text-center">
 			<div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-content-bg-subtle dark:bg-content-bg-strong">
 				<svg class="h-8 w-8 text-content-text-tertiary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -26,7 +26,7 @@ const returnUrl = isWinGlowzAppOffer
 				No payment was completed. You can return to the offer when you are ready.
 			</p>
 
-			<a href={returnUrl} class="inline-flex items-center justify-center rounded-lg bg-magenta px-6 py-3 font-medium text-white transition-opacity hover:opacity-90">
+			<a href={returnUrl} class="btn-primary inline-flex items-center justify-center">
 				Return to the offer
 			</a>
 		</div>

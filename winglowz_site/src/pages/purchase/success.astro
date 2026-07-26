@@ -44,10 +44,10 @@ const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
 ---
 
 <MainLayout title={labels.title}>
-	<div class="flex min-h-screen items-center justify-center py-12">
+	<div class="site-main-shell flex min-h-screen items-center justify-center py-12">
 		<div class="mx-auto max-w-lg text-center">
-			<div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green/10">
-				<svg class="h-8 w-8 text-green" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-content-bg-subtle dark:bg-content-bg-strong">
+				<svg class="h-8 w-8 text-content-text-primary dark:text-content-text-over-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					<path d="M20 6 9 17l-5-5"/>
 				</svg>
 			</div>
@@ -59,19 +59,19 @@ const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
 
 			<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
 				{isWinGlowzAppOffer || isSocialGlowzOffer ? (
-					<a href={contactUrl} class="inline-flex items-center justify-center rounded-lg bg-magenta px-6 py-3 font-medium text-white hover:opacity-90 transition-opacity">
+					<a href={contactUrl} class="btn-primary inline-flex items-center justify-center">
 						{labels.contact}
 					</a>
 				) : auth.userId ? (
-					<a href={safeNextUrl || '/dashboard'} class="inline-flex items-center justify-center rounded-lg bg-magenta px-6 py-3 font-medium text-white hover:opacity-90 transition-opacity">
+					<a href={safeNextUrl || '/dashboard'} class="btn-primary inline-flex items-center justify-center">
 						{safeNextUrl ? labels.openLesson : labels.goToDashboard}
 					</a>
 				) : (
-					<a href={safeNextUrl ? `/signin?next=${encodeURIComponent(safeNextUrl)}` : '/signin'} class="inline-flex items-center justify-center rounded-lg bg-magenta px-6 py-3 font-medium text-white hover:opacity-90 transition-opacity">
+					<a href={safeNextUrl ? `/signin?next=${encodeURIComponent(safeNextUrl)}` : '/signin'} class="btn-primary inline-flex items-center justify-center">
 						{labels.signIn}
 					</a>
 				)}
-				<a href={productsUrl} class="inline-flex items-center justify-center rounded-lg border border-content-border-strong px-6 py-3 font-medium text-content-text-secondary hover:bg-content-bg-subtle dark:border-content-border-strong dark:text-content-text-muted dark:hover:bg-content-bg-strong transition-colors">
+				<a href={productsUrl} class="btn-secondary inline-flex items-center justify-center">
 					{labels.viewProducts}
 				</a>
 			</div>

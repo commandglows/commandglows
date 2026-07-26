@@ -40,24 +40,24 @@ interface Props {
 
 <!-- Defining a grid container that holds all the content -->
 <section
-	class="mx-auto grid max-w-screen-2xl gap-4 px-3 py-8 sm:px-6 sm:py-14 md:grid-cols-2 md:items-center md:gap-8 lg:px-8"
+	class="site-page-shell landing-hero-grid mx-auto grid py-8 sm:py-14 md:grid-cols-2 md:items-center"
 >
 	<!-- Title and description -->
 	<div>
 		<!-- Each h1 and p tag renders a portion of the title and subTitle defined above -->
-		<h1 class="text-balance">
+		<h1 class="landing-hero-title text-balance">
 			<!-- About Fragment: https://docs.astro.build/en/basics/astro-syntax/#fragments -->
 			<Fragment set:html={title} />
 		</h1>
 		{
 			subTitle && (
-				<p class="mt-4 text-pretty sm:mt-7 lg:w-4/5">
+				<p class="landing-hero-copy text-pretty lg:w-4/5">
 					{subTitle}
 				</p>
 			)
 		}
 		<!-- Action Button Section: This section includes two CTAs with their own styles and URL -->
-		<div class="mt-5 grid w-full gap-3 sm:mt-7 sm:inline-flex sm:gap-6">
+		<div class="landing-hero-actions grid w-full sm:inline-flex">
 			{
 				primaryBtn && (
 					<PrimaryCTA title={primaryBtn} url={primaryBtnURL} noArrow={true} />

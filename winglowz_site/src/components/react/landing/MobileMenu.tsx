@@ -85,12 +85,12 @@ export function MobileMenu({
         <div
           className={
             forceDark
-              ? "absolute top-full left-0 right-0 mt-2 border border-navbar-drawerBorderForce bg-navbar-forceDrawerBg/96 p-4 shadow-2xl backdrop-blur-md"
-              : "absolute top-full left-0 right-0 mt-2 border border-navbar-border/60 bg-navbar-drawerBg/95 p-4 shadow-lg backdrop-blur-md dark:border-navbar-drawerBorderForce dark:bg-navbar-drawerBg/95 dark:shadow-none"
+              ? "mobile-menu-panel absolute top-full left-0 right-0 border border-navbar-drawerBorderForce bg-navbar-forceDrawerBg/96 shadow-2xl backdrop-blur-md"
+              : "mobile-menu-panel absolute top-full left-0 right-0 border border-navbar-border/60 bg-navbar-drawerBg/95 shadow-lg backdrop-blur-md dark:border-navbar-drawerBorderForce dark:bg-navbar-drawerBg/95 dark:shadow-none"
           }
           style={{ borderRadius: "var(--menu-panel-radius)", animation: "var(--hero-fade-animation-fast)" }}
         >
-          <div className="flex flex-col gap-2">
+          <div className="mobile-menu-list flex flex-col">
             {navItems.map((item) => (
               <a
                 key={item.label}
@@ -101,7 +101,7 @@ export function MobileMenu({
                 {item.label}
               </a>
             ))}
-            <hr className="border-navbar-border dark:border-navbar-drawerBorderForce my-2" />
+            <hr className="mobile-menu-divider border-navbar-border dark:border-navbar-drawerBorderForce" />
             {altLangUrl && altLangLabel && (
               <a
                 href={altLangUrl}

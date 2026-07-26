@@ -21,34 +21,22 @@ const tools = [
   { name: "WinGlows" },
 ]
 
-const trustText = lang === 'fr'
-  ? { trust: "Conçu pour les utilisateurs Windows qui veulent un système simple", subtitle: "Retours communautaires, sans promesse de score public." }
-  : { trust: "Built for people who want a clearer Windows workflow", subtitle: "Community feedback only, no public score claim." }
 ---
 
-<section
+  <section
   id="testimonials"
   class:list={[
-    embedded ? 'landing-testimonials--embedded scroll-mt-20 overflow-hidden' : 'scroll-mt-20 py-16 overflow-hidden',
+    embedded ? 'landing-testimonials--embedded scroll-mt-20 overflow-hidden' : 'landing-testimonials-shell scroll-mt-20 overflow-hidden',
     embedded ? 'bg-transparent' : 'bg-content-bg-subtle dark:bg-content-bg-inverse',
   ]}
 >
-  <div class="reveal text-center mb-6">
-    <p class="text-sm font-medium uppercase tracking-wider text-content-text-muted dark:text-content-text-muted">
-      {trustText.trust}
-    </p>
-    <p class="mx-auto mt-3 max-w-xl text-sm text-content-text-secondary dark:text-content-text-tertiary">
-      {trustText.subtitle}
-    </p>
-  </div>
-
   <!-- Testimonials carousel (React island) -->
-  <div class="reveal delay-2 max-w-3xl mx-auto px-4 mb-8">
+  <div class="landing-testimonials-carousel reveal delay-2 max-w-3xl mx-auto px-4">
     <TestimonialCarousel client:only="react" lang={lang} />
   </div>
 
   <!-- Marquee -->
-  <div class="relative mt-12">
+  <div class="landing-testimonials-marquee relative">
     <div class="landing-marquee-fade-left pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-32"></div>
     <div class="landing-marquee-fade-right pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-32"></div>
 
@@ -58,7 +46,7 @@ const trustText = lang === 'fr'
           class="mx-8 flex h-16 items-center justify-center grayscale opacity-50 transition-all duration-300 hover:grayscale-0 hover:opacity-100"
           style="min-width: var(--logo-marquee-item-min-width);"
         >
-          <div class="flex items-center gap-2 text-content-text-secondary dark:text-content-text-tertiary">
+          <div class="landing-badge flex items-center text-content-text-secondary dark:text-content-text-tertiary">
             <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-content-bg-subtle dark:bg-content-bg-strong">
               <span class="text-xs font-bold">{tool.name[0]}</span>
             </div>

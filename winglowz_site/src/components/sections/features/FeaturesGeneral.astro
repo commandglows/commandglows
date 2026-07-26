@@ -21,10 +21,10 @@ const { title, subTitle, src, alt, features } = Astro.props
 ---
 
 <section
-	class="mx-auto max-w-screen-2xl px-3 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-14"
+	class="landing-section site-page-shell mx-auto py-8 sm:py-10 lg:py-14"
 >
 	<!-- Block to display the feature image -->
-	<div class="relative mb-4 overflow-hidden sm:mb-6 md:mb-8">
+	<div class="landing-section-header relative overflow-hidden">
 		{
 			src && alt && (
 				<img
@@ -39,19 +39,17 @@ const { title, subTitle, src, alt, features } = Astro.props
 	</div>
 
 	<!-- Displaying the main content consisting of title, subtitle, and several `IconBlock` components -->
-	<div class="mt-4 grid gap-6 sm:mt-5 lg:mt-16 lg:grid-cols-3 lg:gap-12">
+	<div class="landing-feature-grid landing-section-grid grid lg:grid-cols-3">
 		<!-- Block for title and subtitle -->
 		<div class="lg:col-span-1">
 			<!-- Rendering title -->
-			<h2
-				class="text-balance text-2xl font-bold text-content-text-primary dark:text-content-text-primary md:text-4xl"
-			>
+			<h2 class="landing-section-title text-balance text-2xl font-bold text-content-text-primary dark:text-content-text-primary md:text-4xl">
 				{title}
 			</h2>
 			<!-- Rendering subtitle -->
 			{
 				subTitle && (
-					<p class="mt-2 text-pretty text-content-text-secondary dark:text-content-text-tertiary md:mt-4">
+					<p class="landing-section-copy text-pretty text-content-text-secondary dark:text-content-text-tertiary md:mt-4">
 						{subTitle}
 					</p>
 				)
@@ -60,7 +58,7 @@ const { title, subTitle, src, alt, features } = Astro.props
 
 		<!-- Block to display the IconBlock components -->
 		<div class="lg:col-span-2">
-			<div class="grid gap-6 sm:grid-cols-2 sm:gap-8 md:gap-12">
+			<div class="landing-section-grid grid sm:grid-cols-2">
 				<!-- Injecting IconBlock components with different properties -->
 				{
 					features &&

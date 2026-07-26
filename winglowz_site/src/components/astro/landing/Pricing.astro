@@ -57,54 +57,54 @@ const copy = lang === 'fr'
     }
 ---
 
-<section id="pricing" class="bg-content-bg-subtle dark:bg-content-bg-inverse py-16 px-4">
+<section id="pricing" class="landing-section bg-content-bg-subtle dark:bg-content-bg-inverse px-4">
   <div class="max-w-6xl mx-auto">
-    <div class="reveal text-center mb-12">
+    <div class="reveal landing-section-header text-center">
       <h2
-        class="mb-4 text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl"
+        class="landing-section-title text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl"
         style="font-family: var(--font-instrument-sans);"
       >
         {copy.title}
       </h2>
-      <p class="mx-auto mb-8 max-w-2xl text-content-text-secondary dark:text-content-text-tertiary">
+      <p class="landing-section-copy mx-auto max-w-2xl text-content-text-secondary dark:text-content-text-tertiary">
         {copy.sub}
       </p>
     </div>
 
-    <div class="reveal grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="reveal landing-section-grid grid grid-cols-1 md:grid-cols-2">
       <article
-        class="landing-surface relative p-6 rounded-2xl border border-content-border dark:border-content-border-strong"
+        class="landing-surface landing-section-card relative rounded-2xl border border-content-border dark:border-content-border-strong"
       >
-        <p class="landing-eyebrow mb-2 text-sm font-semibold uppercase text-content-text-muted dark:text-content-text-tertiary">{copy.flagship.name}</p>
+        <p class="landing-eyebrow landing-section-eyebrow text-sm font-semibold uppercase text-content-text-muted dark:text-content-text-tertiary">{copy.flagship.name}</p>
         <h3 class="text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.flagship.description}</h3>
-        <ul class="mt-6 space-y-3 text-sm text-content-text-secondary dark:text-content-text-muted">
+        <ul class="landing-section-list text-sm text-content-text-secondary dark:text-content-text-muted">
           {copy.flagship.points.map((point) => (
-            <li class="flex gap-3">
+            <li class="landing-section-list-item flex">
               <svg class="h-5 w-5 flex-shrink-0" style="color: var(--brand-green);" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7" /></svg>
               {point}
             </li>
           ))}
         </ul>
         <a href={copy.flagship.href}>
-          <button class="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-content-text-primary px-5 text-sm font-semibold text-white hover:bg-content-text-secondary dark:bg-white dark:text-content-text-primary dark:hover:bg-content-text-secondary">
+          <button class="landing-section-button inline-flex h-11 w-full items-center justify-center rounded-full bg-content-text-primary px-5 text-sm font-semibold text-white hover:bg-content-text-secondary dark:bg-white dark:text-content-text-primary dark:hover:bg-content-text-secondary">
             {copy.flagship.cta}
           </button>
         </a>
       </article>
 
-      <article class="landing-surface p-6 rounded-2xl border border-content-border dark:border-content-border-strong">
-        <p class="landing-eyebrow mb-2 text-sm font-semibold uppercase text-content-text-muted dark:text-content-text-tertiary">{copy.ecosystem.name}</p>
+      <article class="landing-surface landing-section-card rounded-2xl border border-content-border dark:border-content-border-strong">
+        <p class="landing-eyebrow landing-section-eyebrow text-sm font-semibold uppercase text-content-text-muted dark:text-content-text-tertiary">{copy.ecosystem.name}</p>
         <h3 class="text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.ecosystem.description}</h3>
-        <ul class="mt-6 space-y-3 text-sm text-content-text-secondary dark:text-content-text-muted">
+        <ul class="landing-section-list text-sm text-content-text-secondary dark:text-content-text-muted">
           {copy.ecosystem.points.map((point) => (
-            <li class="flex gap-3">
+            <li class="landing-section-list-item flex">
               <svg class="h-5 w-5 flex-shrink-0" style="color: var(--brand-green);" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7" /></svg>
               {point}
             </li>
           ))}
         </ul>
         <a href={copy.ecosystem.href}>
-          <button class="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full border border-content-border px-5 text-sm font-semibold text-content-text-secondary transition-colors hover:bg-content-bg-hover dark:border-content-border-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover">
+          <button class="landing-section-button inline-flex h-11 w-full items-center justify-center rounded-full border border-content-border px-5 text-sm font-semibold text-content-text-secondary transition-colors hover:bg-content-bg-hover dark:border-content-border-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover">
             {copy.ecosystem.cta}
           </button>
         </a>

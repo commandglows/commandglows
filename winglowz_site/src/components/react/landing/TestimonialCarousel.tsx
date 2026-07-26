@@ -11,7 +11,7 @@ export function getTestimonialPreview(quote: string) {
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="landing-testimonial-stars flex">
       {Array.from({ length: rating }).map((_, i) => (
         <svg key={i} className="w-4 h-4" viewBox="0 0 24 24" fill="var(--brand-yellow)" stroke="var(--brand-yellow)" strokeWidth="1">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -84,33 +84,33 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
         onPointerCancel={() => { swipeStartX.current = null }}
       >
         <div
-        className="text-center transition-opacity duration-300"
-        style={{
-          opacity: isAnimating ? 0 : 1,
-        }}
+          className="text-center transition-opacity duration-300"
+          style={{
+            opacity: isAnimating ? 0 : 1,
+          }}
         >
-          <div className="flex items-center justify-center gap-1 mb-4">
+          <div className="landing-testimonial-rating flex items-center justify-center">
             <StarRating rating={t.rating} />
           </div>
           {t.title && (
-            <h3 className="mb-3 text-base font-semibold text-content-text-primary dark:text-content-text-over-dark">
+            <h3 className="landing-testimonial-title text-base font-semibold text-content-text-primary dark:text-content-text-over-dark">
               &ldquo;{t.title}&rdquo;
             </h3>
           )}
-          <p className="mb-2 text-sm italic leading-relaxed text-content-text-secondary dark:text-content-text-tertiary">
+          <p className="landing-testimonial-excerpt text-sm italic leading-relaxed text-content-text-secondary dark:text-content-text-tertiary">
             &ldquo;{expanded ? t.quote : preview}&rdquo;
           </p>
           {hasMore && (
             <button
               type="button"
-              className="mb-4 text-sm font-medium text-content-text-primary underline underline-offset-4 transition-colors hover:text-content-text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring dark:text-content-text-over-dark dark:hover:text-content-text-muted"
+              className="landing-testimonial-toggle text-sm font-medium text-content-text-primary underline underline-offset-4 transition-colors hover:text-content-text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring dark:text-content-text-over-dark dark:hover:text-content-text-muted"
               onClick={() => setExpanded((value) => !value)}
               aria-expanded={expanded}
             >
               {expanded ? showLessLabel : readMoreLabel}
             </button>
           )}
-          <div className="flex items-center justify-center gap-2">
+          <div className="landing-testimonial-meta flex items-center justify-center">
             {t.avatarRepresentation === "appsumo-generic" ? (
               <span
                 aria-hidden="true"
@@ -140,7 +140,7 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
       </div>
 
       {/* Dots navigation */}
-      <div className="flex items-center justify-center gap-2 mt-6">
+      <div className="landing-carousel-dots flex items-center justify-center">
         {testimonials.map((_, index) => (
           <button
             key={index}
