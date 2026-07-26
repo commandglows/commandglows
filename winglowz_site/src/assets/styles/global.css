@@ -536,11 +536,11 @@
     --navbar-dropdown-divider-dark: 0 0% 25%;
 
     /* Content/public page tokens */
-    --content-text-primary: 0 0% 95%;
-    --content-text-secondary: 0 0% 65%;
-    --content-text-muted: 0 0% 45%;
-    --content-text-tertiary: 0 0% 22%;
-    --content-text-quaternary: 0 0% 15%;
+    --content-text-primary: 0 0% 100%;
+    --content-text-secondary: 0 0% 88%;
+    --content-text-muted: 0 0% 75%;
+    --content-text-tertiary: 0 0% 68%;
+    --content-text-quaternary: 0 0% 56%;
     --content-text-over-dark: 0 0% 100%;
     --content-text-over-dark-muted: 240 0% 80%;
     --content-text-over-dark-subtle: 240 0% 60%;
@@ -682,7 +682,7 @@
   }
 
   .dark h1 {
-    color: hsl(var(--content-text-muted));
+    color: hsl(var(--content-text-primary));
   }
   
   h2 {
@@ -691,7 +691,7 @@
   }
 
   .dark h2 {
-    color: hsl(var(--content-text-muted));
+    color: hsl(var(--content-text-primary));
   }
   
   h3 {
@@ -700,7 +700,7 @@
   }
 
   .dark h3 {
-    color: hsl(var(--content-text-muted));
+    color: hsl(var(--content-text-primary));
   }
   
   h4 {
@@ -709,7 +709,7 @@
   }
 
   .dark h4 {
-    color: hsl(var(--content-text-muted));
+    color: hsl(var(--content-text-primary));
   }
   
   h5, h6 {
@@ -719,7 +719,7 @@
 
   .dark h5,
   .dark h6 {
-    color: hsl(var(--content-text-muted));
+    color: hsl(var(--content-text-primary));
   }
   
   /* Paragraphs - Much larger on mobile for better readability */

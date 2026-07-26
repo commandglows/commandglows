@@ -312,6 +312,12 @@ const ctaButtonClass = forceDark
         menu.addEventListener('click', (event) => {
           if ((event.target as Element).closest('a')) menu.open = false
         })
+        document.addEventListener('pointerdown', (event) => {
+          if (!menu.open) return
+
+          const target = event.target as Node | null
+          if (target && !menu.contains(target)) menu.open = false
+        })
 
         menu.dataset.initialized = 'true'
         syncState()

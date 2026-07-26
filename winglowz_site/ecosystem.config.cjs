@@ -3,7 +3,7 @@ module.exports = {
     name: "winglowz_site",
     cwd: "/home/claude/winglowz/winglowz_site",
     script: "bash",
-    args: ["-lc", "pnpm exec astro dev --port 3001"],
+    args: ["-lc", "pnpm exec astro dev --port 3001 --force"],
     env: {
       PORT: 3001
     },
