@@ -19,9 +19,11 @@ function Write-Warn([string]$Message) { Write-Host "[ShipGlowz] $Message" -Foreg
 function Fail([string]$Message) { Write-Error "[ShipGlowz] $Message"; exit 1 }
 
 if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
-    $wslStatus = & wsl.exe --status 2>$null
-    if ($LASTEXITCODE -eq 0 -and $wslStatus) {
+    $wslProbeOutput = (& wsl.exe -e sh -lc 'printf ok' 2>$null | Out-String).Trim()
+    if ($LASTEXITCODE -eq 0 -and $wslProbeOutput -eq 'ok') {
         Write-Warn 'WSL est disponible. Pour le CLI complet, utilise le parcours WSL.'
+    } else {
+        Write-Warn 'WSL is detected but unusable on this machine; using native Windows local mode.'
     }
 }
 
@@ -35,25 +37,25 @@ if (-not (Test-Path -LiteralPath $ShipglowzDir)) {
     if ($archiveBase -match '^https://github\.com/([^/]+/[^/]+)$') {
         $archiveUrl = "https://github.com/$($Matches[1])/archive/refs/heads/$Branch.zip"
     } else {
-        Fail 'RepoUrl doit pointer vers un dépôt GitHub public pour l’installation Windows sans Git.'
+        Fail 'RepoUrl must point to a public GitHub repository for the Windows installation without Git.'
     }
 
     $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglowz-" + [guid]::NewGuid().ToString('N'))
     $archivePath = Join-Path $tempRoot 'shipglowz.zip'
     New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
     try {
-        Write-Info "Téléchargement de ShipGlowz dans $ShipglowzDir..."
+        Write-Info "Downloading ShipGlowz into $ShipglowzDir..."
         & curl.exe -fsSL $archiveUrl -o $archivePath
-        if ($LASTEXITCODE -ne 0) { Fail 'Le téléchargement de ShipGlowz a échoué.' }
+        if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz download failed.' }
         Expand-Archive -LiteralPath $archivePath -DestinationPath $tempRoot -Force
         $extracted = Get-ChildItem -LiteralPath $tempRoot -Directory | Select-Object -First 1
-        if (-not $extracted) { Fail 'L’archive ShipGlowz est invalide.' }
+        if (-not $extracted) { Fail 'The ShipGlowz archive is invalid.' }
         Move-Item -LiteralPath $extracted.FullName -Destination $ShipglowzDir
     } finally {
         Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
 } elseif (-not (Test-Path -LiteralPath (Join-Path $ShipglowzDir 'local/install_local.ps1'))) {
-    Fail "$ShipglowzDir existe déjà mais ne contient pas une installation ShipGlowz valide."
+    Fail "$ShipglowzDir already exists but does not contain a valid ShipGlowz installation."
 }
 
 $localInstaller = Join-Path $ShipglowzDir 'local/install_local.ps1'
@@ -63,8 +65,8 @@ if (-not (Test-Path -LiteralPath $localInstaller)) {
 
 Write-Info 'Lancement de la configuration locale Windows.'
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $localInstaller
-if ($LASTEXITCODE -ne 0) { Fail 'La configuration locale Windows a échoué.' }
+if ($LASTEXITCODE -ne 0) { Fail 'Native Windows configuration failed.' }
 
 Write-Host ''
-Write-Host 'Installation locale ShipGlowz terminée.' -ForegroundColor Green
+Write-Host 'ShipGlowz native Windows installation completed.' -ForegroundColor Green
 Write-Host 'Utilise ensuite: tunnel -Port 3001' -ForegroundColor Green

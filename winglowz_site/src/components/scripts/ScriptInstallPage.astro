@@ -45,7 +45,11 @@ const installVariants: InstallVariant[] = page.installVariants ?? [
 		available: true,
 	},
 ]
-const defaultVariant = installVariants[0]
+const requestUserAgent = Astro.request.headers.get('user-agent') ?? ''
+const isWindowsRequest = /Windows NT/i.test(requestUserAgent)
+const defaultVariant = isWindowsRequest
+	? installVariants.find((variant) => variant.platform === 'windows' && variant.mode === 'local') ?? installVariants[0]
+	: installVariants[0]
 const installLabels =
 	lang === 'fr'
 		? {
@@ -153,12 +157,12 @@ const installLabels =
 							<div>
 								<p class="mb-2 text-xs font-semibold uppercase tracking-widest text-content-text-muted">{installLabels.platform}</p>
 								<div class="flex flex-wrap gap-2" role="tablist" aria-label={installLabels.platform}>
-									{(['unix', 'windows', 'termux'] as const).map((platform, index) => (
+									{(['unix', 'windows', 'termux'] as const).map((platform) => (
 										<button
 											type="button"
-											class={`install-platform rounded-lg border px-3 py-2 text-xs font-semibold transition ${index === 0 ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100' : 'border-white/15 text-content-text-muted hover:border-white/30 hover:text-white'}`}
+											class={`install-platform rounded-lg border px-3 py-2 text-xs font-semibold transition ${platform === defaultVariant.platform ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100' : 'border-white/15 text-content-text-muted hover:border-white/30 hover:text-white'}`}
 											data-platform={platform}
-											aria-selected={index === 0 ? 'true' : 'false'}
+											aria-selected={platform === defaultVariant.platform ? 'true' : 'false'}
 											role="tab"
 										>
 												{installLabels[platform]}
@@ -169,12 +173,12 @@ const installLabels =
 							<div>
 								<p class="mb-2 text-xs font-semibold uppercase tracking-widest text-content-text-muted">{installLabels.mode}</p>
 								<div class="flex flex-wrap gap-2" role="tablist" aria-label={installLabels.mode}>
-									{(['local', 'full'] as const).map((mode, index) => (
+									{(['local', 'full'] as const).map((mode) => (
 										<button
 											type="button"
-											class={`install-mode rounded-lg border px-3 py-2 text-xs font-semibold transition ${index === 0 ? 'border-emerald-300 bg-emerald-300/20 text-emerald-100' : 'border-white/15 text-content-text-muted hover:border-white/30 hover:text-white'}`}
+											class={`install-mode rounded-lg border px-3 py-2 text-xs font-semibold transition ${mode === defaultVariant.mode ? 'border-emerald-300 bg-emerald-300/20 text-emerald-100' : 'border-white/15 text-content-text-muted hover:border-white/30 hover:text-white'}`}
 											data-mode={mode}
-											aria-selected={index === 0 ? 'true' : 'false'}
+											aria-selected={mode === defaultVariant.mode ? 'true' : 'false'}
 											role="tab"
 										>
 												{installLabels[mode]}
@@ -251,11 +255,11 @@ const installLabels =
 		</div>
 	</section>
 
-	<script define:vars={{ installVariants }}>
+	<script define:vars={{ installVariants, defaultPlatform: defaultVariant.platform, defaultMode: defaultVariant.mode }}>
 		const installSelector = document.querySelector('[data-install-selector]')
 		if (installSelector) {
-			let selectedPlatform = 'unix'
-			let selectedMode = 'local'
+			let selectedPlatform = defaultPlatform
+			let selectedMode = defaultMode
 			const command = document.querySelector('[data-install-command]')
 			const status = document.querySelector('[data-install-status]')
 			const note = document.querySelector('[data-install-note]')
