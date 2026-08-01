@@ -30,6 +30,12 @@ describe('ShipGlowz public installer', () => {
     expect(windowsInstaller).toContain('Get-FileHash')
     expect(windowsInstaller).toContain('Source commit: $($source.Commit)')
     expect(windowsInstaller).toContain('must contain exactly one local/install_local.ps1')
+    expect(windowsInstaller).toContain("Join-Path $env:WINDIR 'System32\\tar.exe'")
+    expect(windowsInstaller).toContain('$tarPath -tf $ArchivePath')
+    expect(windowsInstaller).toContain('$tarPath -xf $ArchivePath -C $DestinationPath $installerEntries[0]')
+    expect(windowsInstaller).toContain('[switch]$DownloadOnly')
+    expect(windowsInstaller).toContain('commit/$encodedRef.patch')
+    expect(windowsInstaller).not.toContain('api.github.com')
     expect(windowsInstaller).not.toContain('5.75.134.202')
   })
 

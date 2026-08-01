@@ -8,7 +8,8 @@ param(
     [string]$RepoUrl = $(if ($env:SHIPGLOWZ_REPO_URL) { $env:SHIPGLOWZ_REPO_URL } else { 'https://github.com/dianedef/shipglowz.git' }),
     [Alias('Version', 'Tag', 'Ref')]
     [string]$Branch = $(if ($env:SHIPGLOWZ_BRANCH) { $env:SHIPGLOWZ_BRANCH } else { 'main' }),
-    [string]$ShipglowzDir = $(if ($env:SHIPGLOWZ_DIR) { $env:SHIPGLOWZ_DIR } else { Join-Path $env:USERPROFILE 'shipglowz' })
+    [string]$ShipglowzDir = $(if ($env:SHIPGLOWZ_DIR) { $env:SHIPGLOWZ_DIR } else { Join-Path $env:USERPROFILE 'shipglowz' }),
+    [switch]$DownloadOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,16 +23,35 @@ function Remove-PathIfPresent([string]$Path) {
         Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction SilentlyContinue
     }
 }
-function Expand-ShipglowzArchive([string]$ArchivePath, [string]$DestinationPath) {
-    $tarCommand = Get-Command tar.exe -CommandType Application -ErrorAction SilentlyContinue
-    if (-not $tarCommand) {
+function Extract-ShipglowzLocalInstaller([string]$ArchivePath, [string]$DestinationPath) {
+    $windowsTarPath = Join-Path $env:WINDIR 'System32\tar.exe'
+    if (Test-Path -LiteralPath $windowsTarPath) {
+        $tarPath = $windowsTarPath
+    } else {
+        $fallbackTar = Get-Command tar.exe -CommandType Application -All -ErrorAction SilentlyContinue | Select-Object -First 1
+        $tarPath = if ($fallbackTar) { $fallbackTar.Source } else { $null }
+    }
+    if (-not $tarPath) {
         Fail 'Windows tar.exe is required to extract ShipGlowz without Microsoft.PowerShell.Archive.'
     }
 
-    & $tarCommand.Source -xf $ArchivePath -C $DestinationPath
+    $archiveEntries = @(& $tarPath -tf $ArchivePath)
     if ($LASTEXITCODE -ne 0) {
-        Fail 'ShipGlowz archive extraction with tar.exe failed.'
+        Fail 'Could not inspect the ShipGlowz archive with tar.exe.'
     }
+    $installerEntries = @(
+        $archiveEntries | Where-Object { $_ -match '^[^/]+/local/install_local\.ps1$' }
+    )
+    if ($installerEntries.Count -ne 1) {
+        Fail 'The ShipGlowz archive must contain exactly one local/install_local.ps1.'
+    }
+
+    & $tarPath -xf $ArchivePath -C $DestinationPath $installerEntries[0]
+    if ($LASTEXITCODE -ne 0) {
+        Fail 'Could not extract local/install_local.ps1 with tar.exe.'
+    }
+
+    return $installerEntries[0]
 }
 function Resolve-GitHubSource([string]$RepositoryUrl, [string]$Ref) {
     $archiveBase = $RepositoryUrl.TrimEnd('/') -replace '\.git$', ''
@@ -41,20 +61,17 @@ function Resolve-GitHubSource([string]$RepositoryUrl, [string]$Ref) {
 
     $repositoryPath = $Matches[1]
     $encodedRef = [Uri]::EscapeDataString($Ref)
-    $commitApiUrl = "https://api.github.com/repos/$repositoryPath/commits/$encodedRef"
-    $commitResponse = (& curl.exe -fsSL -H 'Accept: application/vnd.github+json' $commitApiUrl | Out-String)
+    $commitPatchUrl = "https://github.com/$repositoryPath/commit/$encodedRef.patch"
+    $commitResponse = (& curl.exe -fsSL $commitPatchUrl | Out-String)
     if ($LASTEXITCODE -ne 0) {
         Fail "Could not resolve ShipGlowz ref: $Ref"
     }
 
-    try {
-        $commitSha = ($commitResponse | ConvertFrom-Json).sha
-    } catch {
-        Fail "GitHub returned an invalid commit response for ref: $Ref"
-    }
-    if (-not $commitSha -or $commitSha -notmatch '^[0-9a-f]{40}$') {
+    $commitMatch = [regex]::Match($commitResponse, '(?m)^From ([0-9a-f]{40}) ')
+    if (-not $commitMatch.Success) {
         Fail "GitHub did not return a valid commit for ref: $Ref"
     }
+    $commitSha = $commitMatch.Groups[1].Value
 
     [PSCustomObject]@{
         Commit = $commitSha
@@ -101,7 +118,7 @@ try {
     & curl.exe -fsSL $source.ArchiveUrl -o $archivePath
     if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz download failed.' }
 
-    Expand-ShipglowzArchive -ArchivePath $archivePath -DestinationPath $extractRoot
+    $installerEntry = Extract-ShipglowzLocalInstaller -ArchivePath $archivePath -DestinationPath $extractRoot
     $installerCandidates = @(
         Get-ChildItem -LiteralPath $extractRoot -Recurse -Force -File -Filter 'install_local.ps1' |
             Where-Object { $_.Directory.Name -eq 'local' }
@@ -126,6 +143,11 @@ Write-Info "Source commit: $($source.Commit)"
 Write-Info "SHA256: $localInstallerHash"
 Assert-PowerShellSyntax -Path $localInstaller
 Write-Info 'PowerShell syntax validation passed.'
+
+if ($DownloadOnly) {
+    Write-Info 'Download-only validation completed.'
+    exit 0
+}
 
 Write-Info 'Lancement de la configuration locale Windows.'
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $localInstaller
