@@ -56,5 +56,6 @@ describe('ShipGlowz public installer', () => {
     expect(component).toContain('data-platform={platform}')
     expect(component).toContain('data-mode={mode}')
     expect(component).toContain('data-install-command')
+    expect(component).not.toMatch(/querySelector(?:All)?<[^>]+>/)
   })
 })

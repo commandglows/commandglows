@@ -88,7 +88,6 @@ export function MobileMenu({
               ? "mobile-menu-panel absolute top-full left-0 right-0 border border-navbar-drawerBorderForce bg-navbar-forceDrawerBg/96 shadow-2xl backdrop-blur-md"
               : "mobile-menu-panel absolute top-full left-0 right-0 border border-navbar-border/60 bg-navbar-drawerBg/95 shadow-lg backdrop-blur-md dark:border-navbar-drawerBorderForce dark:bg-navbar-drawerBg/95 dark:shadow-none"
           }
-          style={{ borderRadius: "var(--menu-panel-radius)", animation: "var(--hero-fade-animation-fast)" }}
         >
           <div className="mobile-menu-list flex flex-col">
             {navItems.map((item) => (

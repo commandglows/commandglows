@@ -32,18 +32,18 @@
 }
 
 .docs-shell {
-  --docs-aside-tip-border: rgb(255 229 0 / 0.3);
-  --docs-aside-tip-start: rgb(255 229 0 / 0.2);
-  --docs-aside-tip-mid: rgb(16 185 129 / 0.1);
-  --docs-aside-note-border: rgb(0 200 255 / 0.25);
-  --docs-aside-note-start: rgb(0 200 255 / 0.2);
-  --docs-aside-note-mid: rgb(16 185 129 / 0.1);
-  --docs-aside-danger-border: rgb(255 0 51 / 0.3);
-  --docs-aside-danger-start: rgb(255 0 51 / 0.2);
-  --docs-aside-danger-mid: rgb(249 115 22 / 0.1);
-  --docs-aside-success-border: rgb(16 185 129 / 0.25);
-  --docs-aside-success-start: rgb(16 185 129 / 0.2);
-  --docs-aside-success-mid: rgb(0 255 68 / 0.1);
+  --docs-aside-tip-border: rgb(var(--status-warning) / 0.3);
+  --docs-aside-tip-start: rgb(var(--status-warning) / 0.2);
+  --docs-aside-tip-mid: rgb(var(--status-success) / 0.1);
+  --docs-aside-note-border: rgb(var(--status-info) / 0.25);
+  --docs-aside-note-start: rgb(var(--status-info) / 0.2);
+  --docs-aside-note-mid: rgb(var(--status-success) / 0.1);
+  --docs-aside-danger-border: rgb(var(--status-danger) / 0.3);
+  --docs-aside-danger-start: rgb(var(--status-danger) / 0.2);
+  --docs-aside-danger-mid: rgb(var(--status-danger-alt) / 0.1);
+  --docs-aside-success-border: rgb(var(--status-success) / 0.25);
+  --docs-aside-success-start: rgb(var(--status-success) / 0.2);
+  --docs-aside-success-mid: rgb(var(--status-success-brand) / 0.1);
 }
 
 .docs-shell {
@@ -248,8 +248,8 @@
   );
 }
 
-@media (min-width: 1280px) {
-.docs-shell {
+@screen xl {
+  .docs-shell {
     @apply grid-cols-3;
   }
 

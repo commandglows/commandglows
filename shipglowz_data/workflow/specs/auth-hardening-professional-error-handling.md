@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "WinGlows"
 created: "2026-05-14"
 created_at: "2026-05-14 17:27:52 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "auth-hardening-professional-error-handling"
 owner: "Diane"
+confidence: medium
 user_story: "En tant que builder de WinGlows, je veux une authentification Firebase/Google robuste, observable et sûre, afin de pouvoir vendre un produit Android professionnel sans fuite de secrets, sans accès non autorisé et sans erreurs auth silencieuses."
 risk_level: high
 security_impact: "yes"

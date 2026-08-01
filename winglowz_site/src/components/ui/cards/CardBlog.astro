@@ -30,8 +30,7 @@ const cleanSlug = blogEntry.id.split('/')[1].replace(/\.md$/, '')
 >
 	<!-- The container for the blog post's cover image. Uses astro:assets' Image for image source -->
 	<div
-		class="relative w-full flex-shrink-0 overflow-hidden rounded-xl before:absolute before:inset-x-0 before:z-10 before:size-full before:bg-gradient-to-t"
-		style="height: var(--card-blog-height); --tw-gradient-from: var(--card-blog-overlay-start) var(--tw-gradient-from-position);"
+		class="card-blog-media relative w-full flex-shrink-0 overflow-hidden rounded-xl before:absolute before:inset-x-0 before:z-10 before:size-full before:bg-gradient-to-t"
 		transition:name={`blog-image-${cleanSlug}`}
 	>
 		<img

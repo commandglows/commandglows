@@ -60,10 +60,7 @@ const copy = lang === 'fr'
 <section id="pricing" class="landing-section bg-content-bg-subtle dark:bg-content-bg-inverse px-4">
   <div class="max-w-6xl mx-auto">
     <div class="reveal landing-section-header text-center">
-      <h2
-        class="landing-section-title text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl"
-        style="font-family: var(--font-instrument-sans);"
-      >
+      <h2 class="landing-section-title font-display text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl">
         {copy.title}
       </h2>
       <p class="landing-section-copy mx-auto max-w-2xl text-content-text-secondary dark:text-content-text-tertiary">
@@ -77,10 +74,10 @@ const copy = lang === 'fr'
       >
         <p class="landing-eyebrow landing-section-eyebrow text-sm font-semibold uppercase text-content-text-muted dark:text-content-text-tertiary">{copy.flagship.name}</p>
         <h3 class="text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.flagship.description}</h3>
-        <ul class="landing-section-list text-sm text-content-text-secondary dark:text-content-text-muted">
+          <ul class="landing-section-list text-sm text-content-text-secondary dark:text-content-text-muted">
           {copy.flagship.points.map((point) => (
             <li class="landing-section-list-item flex">
-              <svg class="h-5 w-5 flex-shrink-0" style="color: var(--brand-green);" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7" /></svg>
+              <svg class="h-5 w-5 flex-shrink-0 text-green" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7" /></svg>
               {point}
             </li>
           ))}
@@ -95,10 +92,10 @@ const copy = lang === 'fr'
       <article class="landing-surface landing-section-card rounded-2xl border border-content-border dark:border-content-border-strong">
         <p class="landing-eyebrow landing-section-eyebrow text-sm font-semibold uppercase text-content-text-muted dark:text-content-text-tertiary">{copy.ecosystem.name}</p>
         <h3 class="text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.ecosystem.description}</h3>
-        <ul class="landing-section-list text-sm text-content-text-secondary dark:text-content-text-muted">
+          <ul class="landing-section-list text-sm text-content-text-secondary dark:text-content-text-muted">
           {copy.ecosystem.points.map((point) => (
             <li class="landing-section-list-item flex">
-              <svg class="h-5 w-5 flex-shrink-0" style="color: var(--brand-green);" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7" /></svg>
+              <svg class="h-5 w-5 flex-shrink-0 text-green" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7" /></svg>
               {point}
             </li>
           ))}

@@ -28,6 +28,7 @@ depends_on:
   - artifact: "shipglowz_data/technical/winglowz_app/guidelines.md"
     artifact_version: "1.0.1"
     required_status: "reviewed"
+supersedes: []
 evidence:
   - "python3 /home/claude/shipglowz/tools/design_system_drift_check.py --format markdown --warn-only --max-findings 5000"
   - "Excluding generated .vercel/output artifacts: 422 findings"
@@ -105,4 +106,3 @@ Reason: high volume of direct literals in production UI files blocks coherent mo
 app/site coherence and future scaling.
 
 Recommended route: `/100-sf-spec WinGlows token hardening and visual standardization`
-

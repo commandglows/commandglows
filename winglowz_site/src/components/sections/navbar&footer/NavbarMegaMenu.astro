@@ -26,8 +26,7 @@ const navBarLinks = (strings.navBarLinks ?? []) as NavBarLink[];
 >
 	<!-- Navigation container -->
 	<nav
-		class="navbar-mega-shell-glass relative mx-2 w-full border border-navbar-borderBrand/10 px-4 py-3 dark:border-navbar-drawerBorder/40 md:flex md:items-center md:justify-between md:px-6 md:py-0 lg:px-8 xl:mx-auto"
-		style="border-radius: var(--mega-menu-radius);"
+		class="navbar-mega-shell-glass navbar-mega-menu-shell relative mx-2 w-full border border-navbar-borderBrand/10 px-4 py-3 dark:border-navbar-drawerBorder/40 md:flex md:items-center md:justify-between md:px-6 md:py-0 lg:px-8 xl:mx-auto"
 		aria-label="Global"
 	>
 		<div class="flex items-center justify-between">
@@ -49,8 +48,7 @@ const navBarLinks = (strings.navBarLinks ?? []) as NavBarLink[];
 					aria-label="Toggle navigation"
 				>
 					<svg
-						class="flex-shrink-0 hs-collapse-open:hidden"
-						style="height: var(--icon-size-md); width: var(--icon-size-md);"
+						class="navbar-mega-menu-icon flex-shrink-0 hs-collapse-open:hidden"
 						width="24"
 						height="24"
 						viewBox="0 0 24 24"
@@ -65,8 +63,7 @@ const navBarLinks = (strings.navBarLinks ?? []) as NavBarLink[];
 						<line x1="3" x2="21" y1="18" y2="18"></line>
 					</svg>
 					<svg
-						class="hidden flex-shrink-0 hs-collapse-open:block"
-						style="height: var(--icon-size-md); width: var(--icon-size-md);"
+						class="navbar-mega-menu-icon hidden flex-shrink-0 hs-collapse-open:block"
 						width="24"
 						height="24"
 						viewBox="0 0 24 24"

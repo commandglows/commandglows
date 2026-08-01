@@ -6,9 +6,9 @@ interface Props {
 }
 ---
 
-<div class="card--fullwidth">
+<div class="landing-card-shell card--fullwidth">
 	<article class="card">
-		<div class="split">
+		<div class="landing-card-shell__split split">
 			<slot />
 		</div>
 	</article>
@@ -16,47 +16,21 @@ interface Props {
 
 <style>
 	.card--fullwidth {
-		--card-bg: rgba(23, 25, 30, 0.8);
-		--split-card-margin-top: 1rem;
-		--split-card-gap-mobile: 1rem;
-		--split-card-gap-desktop: 2.5rem;
-		--split-card-text: rgb(250 250 250);
-		--split-card-border: rgb(255 255 255 / 0.12);
-		--split-card-radius: 1rem;
-		--split-card-padding: 1.25rem;
 		grid-column: 1 / -1;
 	}
 	:global(:root[data-theme='light']) .card--fullwidth {
-		--card-bg: rgba(255, 255, 255, 0.8);
-	}
-
-	.split {
-		margin-top: var(--split-card-margin-top);
-		display: flex;
-		flex-direction: column;
-		gap: 0 var(--split-card-gap-mobile);
-		color: var(--split-card-text);
+		--card-bg: hsl(var(--landing-card));
 	}
 
 	.card--fullwidth .card {
 		background:
 			radial-gradient(var(--brand-cyan), transparent 70%) no-repeat 50% -25% / 120% 300%,
-			var(--card-bg);
-		position: relative;
-		border: 1px solid var(--split-card-border);
-		border-radius: var(--split-card-radius);
-		padding: var(--split-card-padding);
-		backdrop-filter: blur(12px);
+			var(--card-bg, hsl(var(--landing-card)));
 	}
 
-	@media screen and (width >= 78rem) {
-		.split {
+	@screen 2xl {
+		.landing-card-shell__split {
 			flex-direction: row;
-			gap: var(--split-card-gap-desktop);
-		}
-		.split > :global(*) {
-			margin-top: 0 !important;
-			flex: 1;
 		}
 	}
 </style>

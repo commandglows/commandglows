@@ -84,10 +84,9 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
         onPointerCancel={() => { swipeStartX.current = null }}
       >
         <div
-          className="text-center transition-opacity duration-300"
-          style={{
-            opacity: isAnimating ? 0 : 1,
-          }}
+          className={`landing-testimonial-content text-center transition-opacity duration-300 ${
+            isAnimating ? "landing-testimonial-content--hidden" : "landing-testimonial-content--visible"
+          }`}
         >
           <div className="landing-testimonial-rating flex items-center justify-center">
             <StarRating rating={t.rating} />
@@ -114,7 +113,7 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
             {t.avatarRepresentation === "appsumo-generic" ? (
               <span
                 aria-hidden="true"
-                 className="flex h-8 w-8 items-center justify-center rounded-full bg-content-bg-subtle text-xs font-bold text-content-text-secondary dark:bg-content-bg-strong dark:text-content-text-muted"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-content-bg-subtle text-xs font-bold text-content-text-secondary dark:bg-content-bg-strong dark:text-content-text-muted"
               >
                 {t.name[0]}
               </span>
@@ -130,7 +129,7 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
               <p className="text-sm font-medium text-content-text-secondary dark:text-content-text-muted">{t.name}</p>
               <p className="text-xs text-content-text-tertiary dark:text-content-text-muted">
                 {t.role}
-                {t.verified && (
+                {t.verified && !t.role.toLowerCase().includes("verified purchaser") && (
                   <span className="ml-1 text-green">Verified Purchaser</span>
                 )}
               </p>
@@ -145,10 +144,10 @@ export function TestimonialCarousel({ lang = "en" }: { lang?: "en" | "fr" }) {
           <button
             key={index}
             onClick={() => goTo(index)}
-            className={`h-2 w-2 rounded-full border border-content-border transition-all duration-300 dark:border-content-border-strong ${
+            className={`landing-carousel-dots__button rounded-full border border-content-border transition-all duration-300 dark:border-content-border-strong ${
               index === current
-                ? "w-6 border-cyan bg-cyan"
-                : "bg-transparent hover:border-content-text-muted hover:bg-content-bg-hover dark:hover:bg-content-bg-hover"
+                ? "landing-carousel-dots__button--active"
+                : "landing-carousel-dots__button--inactive"
             }`}
             aria-label={`Go to testimonial ${index + 1}`}
             aria-pressed={index === current}

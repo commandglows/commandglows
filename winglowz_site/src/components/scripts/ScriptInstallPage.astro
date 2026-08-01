@@ -252,14 +252,22 @@ const installLabels =
 	</section>
 
 	<script define:vars={{ installVariants }}>
-		const installSelector = document.querySelector<HTMLElement>('[data-install-selector]')
+		const installSelector = document.querySelector('[data-install-selector]')
 		if (installSelector) {
 			let selectedPlatform = 'unix'
 			let selectedMode = 'local'
-			const command = document.querySelector<HTMLElement>('[data-install-command]')
-			const status = document.querySelector<HTMLElement>('[data-install-status]')
-			const note = document.querySelector<HTMLElement>('[data-install-note]')
-			const copyButton = document.querySelector<HTMLButtonElement>('.copy-command')
+			const command = document.querySelector('[data-install-command]')
+			const status = document.querySelector('[data-install-status]')
+			const note = document.querySelector('[data-install-note]')
+			const copyButton = document.querySelector('.copy-command')
+			const updateSelection = (selector, selectedButton, activeClasses, inactiveClasses) => {
+				installSelector.querySelectorAll(selector).forEach((item) => {
+					const isSelected = item === selectedButton
+					item.setAttribute('aria-selected', String(isSelected))
+					activeClasses.forEach((className) => item.classList.toggle(className, isSelected))
+					inactiveClasses.forEach((className) => item.classList.toggle(className, !isSelected))
+				})
+			}
 
 			const selectVariant = () => {
 				const variant = installVariants.find((item) => item.platform === selectedPlatform && item.mode === selectedMode)
@@ -273,23 +281,23 @@ const installLabels =
 				copyButton.classList.toggle('cursor-not-allowed', !variant.available)
 			}
 
-			installSelector.querySelectorAll<HTMLButtonElement>('[data-platform]').forEach((button) => {
+			installSelector.querySelectorAll('[data-platform]').forEach((button) => {
 				button.addEventListener('click', () => {
 					selectedPlatform = button.dataset.platform || selectedPlatform
-					installSelector.querySelectorAll<HTMLButtonElement>('[data-platform]').forEach((item) => item.setAttribute('aria-selected', String(item === button)))
+					updateSelection('[data-platform]', button, ['border-cyan-300', 'bg-cyan-300/20', 'text-cyan-100'], ['border-white/15', 'text-content-text-muted'])
 					selectVariant()
 				})
 			})
-			installSelector.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((button) => {
+			installSelector.querySelectorAll('[data-mode]').forEach((button) => {
 				button.addEventListener('click', () => {
 					selectedMode = button.dataset.mode || selectedMode
-					installSelector.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((item) => item.setAttribute('aria-selected', String(item === button)))
+					updateSelection('[data-mode]', button, ['border-emerald-300', 'bg-emerald-300/20', 'text-emerald-100'], ['border-white/15', 'text-content-text-muted'])
 					selectVariant()
 				})
 			})
 		}
 
-		document.querySelectorAll<HTMLButtonElement>('.copy-command').forEach((button) => {
+		document.querySelectorAll('.copy-command').forEach((button) => {
 			button.addEventListener('click', async () => {
 				const command = button.dataset.copyCommand
 				if (!command) return

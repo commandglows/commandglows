@@ -126,12 +126,12 @@ const signInButtonClass = forceDark
   : 'rounded-full px-3 py-1.5 text-sm font-medium text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary'
 
 const ctaButtonClass = forceDark
-  ? 'shimmer-btn rounded-full bg-navbar-cta-text px-4 py-1.5 text-sm font-medium text-navbar-cta-textHover hover:bg-navbar-cta-bgHover'
-  : 'shimmer-btn rounded-full bg-navbar-cta-bg px-4 py-1.5 text-sm font-medium text-navbar-cta-text hover:bg-navbar-cta-bgHover dark:bg-navbar-cta-text dark:text-navbar-cta-textHover dark:hover:bg-navbar-cta-bgHover'
+  ? 'shimmer-btn rounded-full bg-navbar-cta-text px-4 py-1.5 text-sm font-medium text-navbar-cta-bg hover:bg-navbar-cta-bg-hover'
+  : 'shimmer-btn rounded-full bg-navbar-cta-bg px-4 py-1.5 text-sm font-medium text-navbar-cta-text hover:bg-navbar-cta-bg-hover'
 ---
 
 <header
-  class="navbar-header fixed inset-x-0 top-4 z-50 mx-auto box-border w-full max-w-4xl px-4"
+  class="navbar-header fixed inset-x-0 top-4 z-50 mx-auto box-border w-full px-4"
 >
   <nav class:list={[navShellClass, 'box-border w-full min-w-0', !forceDark && 'navbar-shell-glass']}>
     <!-- The landing layout has no ClientRouter; keep this layered logo out of a cross-layout transition. -->
@@ -140,7 +140,7 @@ const ctaButtonClass = forceDark
       data-astro-reload
       class="no-hover-animation flex items-center gap-2"
     >
-      <TextLogo class="w-32" />
+      <TextLogo />
     </a>
 
     <p
@@ -191,8 +191,8 @@ const ctaButtonClass = forceDark
 
       <div
         id="mobile-navigation-menu"
-        class={[
-          'mobile-menu-panel absolute right-0 top-full box-border w-[min(var(--navbar-dropdown-min-width),calc(100vw-2rem))] max-w-sm rounded-2xl border shadow-2xl',
+        class:list={[
+          'mobile-menu-panel navbar-mobile-menu-panel absolute right-0 top-full border shadow-2xl',
           forceDark
             ? 'border-navbar-drawer-border bg-navbar-force-drawer-bg'
             : 'navbar-drawer-glass border-navbar-drawer-border/60 dark:border-navbar-drawer-border',
@@ -271,7 +271,7 @@ const ctaButtonClass = forceDark
           </div>
           <a href={ctaUrl}>
             <span
-              class="shimmer-btn inline-flex w-full items-center justify-center rounded-full bg-navbar-cta-bg px-4 py-2.5 text-base font-semibold text-navbar-cta-text transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 dark:bg-navbar-cta-text dark:text-navbar-cta-textHover dark:hover:bg-navbar-cta-bgHover"
+              class="shimmer-btn inline-flex w-full items-center justify-center rounded-full bg-navbar-cta-bg px-4 py-2.5 text-base font-semibold text-navbar-cta-text transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-cta-bg-hover"
             >
               {ctaLabel}
             </span>
@@ -333,6 +333,7 @@ const ctaButtonClass = forceDark
 
 <style>
   .navbar-header {
+    max-width: var(--navbar-shell-max-width);
     animation: var(--navbar-slide-down-animation);
   }
 

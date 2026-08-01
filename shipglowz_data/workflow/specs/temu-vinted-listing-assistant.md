@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "WinGlows"
 created: "2026-06-19"
 created_at: "2026-06-19 00:00:00 UTC"
 updated: "2026-06-21"
 updated_at: "2026-06-21 10:38:40 UTC"
-status: implemented
+status: reviewed
 source_skill: 001-sf-build
 source_model: "Codex"
 scope: "temu-vinted-listing-assistant"

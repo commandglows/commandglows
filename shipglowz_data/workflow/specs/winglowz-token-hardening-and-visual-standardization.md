@@ -291,6 +291,10 @@ None.
 | 2026-07-18 08:30:00 UTC | 001-sg-build | unknown | continuation | in_progress | Continue navbar token migration as part of existing chantier | Complete Tâche 7 Navbar.astro tokenization then run /103-sg-verify |
 | 2026-07-18 08:46:00 UTC | 103-sg-verify | unknown | verification | verified | Navbar token migration verified clean: drift-check 0 findings, build:check 0 errors, no hardcoded colors remain | Launch /104-sg-end then /005-sg-ship |
 | 2026-07-18 08:50:00 UTC | 005-sg-ship | unknown | ship | shipped | Committed and pushed fc5c59f to origin/main | Work complete |
+| 2026-07-26 13:07:06 UTC | 006-sg-design | GPT-5 Codex | routing | partial | Reused the existing token-hardening chantier and removed a duplicate site-only spec | Continue the existing WinGlowz token hardening spec only |
+| 2026-07-28 00:00:00 UTC | 006-sg-design | GPT-5 Codex | audit-tokens-migration | partial | Global source scan passes for site/app; centralized shared status colors, removed duplicate Termux token, and replaced invalid CSS media queries | Continue with visual/browser proof, then /103-sg-verify |
+| 2026-07-29 06:17:14 UTC | 006-sg-design | GPT-5 Codex | visual-polish-and-token-proof | done | Restored landing typography hierarchy, widened and polished the shared navbar, repaired semantic Tailwind v4 tokens, fixed cookie stacking and lead-form contrast, and centralized missing Temu state tokens; desktop/mobile plus dark-mode browser proof collected | Ready for final verification and closure |
+| 2026-07-29 19:55:08 UTC | 003-sg-bug | GPT-5 Codex | mobile-navbar-visual-regression-fix | fixed-pending-verify | Repaired invalid mobile drawer class serialization, restored an opaque token-driven drawer surface, and aligned the dark landing shell with the black hero; local 390×844 light/dark browser retest passed without a build | Await operator validation of the rendered mobile result |
 
 ## Current Chantier Flow
 
@@ -299,9 +303,10 @@ None.
 | 100-sf-spec | done | Spec created and approved 2026-06-11 | Keep spec current |
 | 101-sf-ready | done | Readiness confirmed 2026-06-11 | Continue implementation |
 | 102-sf-start | done | Navbar.astro tokenized; hardcoded colors replaced with --navbar-* tokens | Complete |
-| 006-sf-design | done | Navbar token design and migration completed | Complete |
+| 006-sf-design | done | Global token coherence and professional visual polish completed; desktop/mobile browser proof collected with zero undefined project CSS variables | Ready for /103-sg-verify |
+| 003-sg-bug | fixed-pending-verify | Mobile drawer is opaque in light/dark and the dark landing shell matches the hero in a 390×844 browser retest | Await operator validation |
 | 001-sf-build | done | Navbar token migration implemented and verified | Complete |
 | 502-sf-audit-design | done | Remediated 115 drift findings (TemuWorkspace, global.css buttons, Navbar); drift-check --changed clean | Complete |
-| 103-sf-verify | verified | Navbar token migration verified clean: drift-check 0 findings, build:check 0 errors, no hardcoded colors remain | Launch /104-sf-end then /005-sf-ship |
+| 103-sf-verify | pending | Token drift passes and browser proof is collected; no build check was run per operator preference | Run final verification without redundant build checks unless an error appears |
 | 104-sf-end | not launched | — | Launch after /103-sg-verify passes |
 | 005-sf-ship | shipped | Committed and pushed fc5c59f to origin/main | Complete |

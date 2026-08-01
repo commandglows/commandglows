@@ -1,17 +1,18 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "winglowz_app"
 created: "2026-05-19"
 created_at: "2026-05-19 14:46:49 UTC"
 updated: "2026-05-19"
 updated_at: "2026-05-19 18:00:37 UTC"
-status: implemented-pending-android-qa
+status: active
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: medium
 user_story: "En tant qu'utilisatrice du clavier WinGlows sur Android, je veux que les lignes d'action scrollables indiquent clairement quand le scroll commence, où il reste du contenu et sur quelle page la ligne va se repositionner, afin de comprendre le geste sans ambiguïté visuelle."
 risk_level: "medium"
 security_impact: "none"

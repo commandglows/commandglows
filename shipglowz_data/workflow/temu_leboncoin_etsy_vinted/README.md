@@ -1,7 +1,7 @@
 ---
 artifact: workflow_index
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "WinGlows"
 created: "2026-06-21"
 updated: "2026-06-21"
@@ -9,6 +9,8 @@ status: active
 source_skill: 001-sf-build
 owner: "Diane"
 confidence: high
+scope: "workflow-index"
+depends_on: []
 risk_level: low
 security_impact: none
 docs_impact: yes

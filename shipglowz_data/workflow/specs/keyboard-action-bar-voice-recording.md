@@ -1,6 +1,7 @@
 ---
 artifact: implementation_spec
 metadata_schema_version: "1.0"
+source_skill: sf-spec
 artifact_version: "1.0.0"
 project: "winglowz_app"
 created: "2026-05-14"
@@ -8,7 +9,20 @@ updated: "2026-05-14"
 status: draft
 scope: "feature"
 owner: "codex"
+confidence: medium
+user_story: "En tant qu'utilisatrice WinGlowz, je veux dicter depuis la barre d'actions du clavier Android afin de saisir du texte sans quitter l'application active."
 title: "Keyboard action-bar voice recording"
+risk_level: high
+security_impact: "yes"
+docs_impact: "yes"
+linked_systems:
+  - "Android IME keyboard"
+  - "Local-first ASR runtime"
+depends_on: []
+supersedes: []
+evidence:
+  - "Product intent and keyboard-first voice workflow are defined in this document."
+next_step: "/102-sg-start shipglowz_data/workflow/specs/keyboard-action-bar-voice-recording.md"
 ---
 
 # Keyboard Action-Bar Voice Recording

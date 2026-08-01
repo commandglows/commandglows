@@ -7,7 +7,7 @@ created: "2026-05-24"
 created_at: "2026-05-24 21:02:33 UTC"
 updated: "2026-05-24"
 updated_at: "2026-05-24 21:38:00 UTC"
-status: shipped
+status: reviewed
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "repository-migration"

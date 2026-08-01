@@ -1,17 +1,18 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "winglowz_app"
 created: "2026-05-19"
 created_at: "2026-05-19 18:30:18 UTC"
 updated: "2026-05-19"
 updated_at: "2026-05-19 18:52:16 UTC"
-status: implemented-pending-android-qa
+status: active
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "android-ime-keyboard-layout"
 owner: "Diane"
+confidence: medium
 user_story: "En tant qu'utilisatrice rapide du clavier WinGlows sur Android, je veux que les modes principaux reposent sur une grille stable avec des exceptions en multiples de cellule, afin que le clavier reste beau, cohérent, prévisible et plus fiable au toucher."
 risk_level: "medium"
 security_impact: "none"

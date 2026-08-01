@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "WinGlows"
 created: "2026-05-16"
 created_at: "2026-05-16 17:24:54 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: medium
 user_story: "En tant qu’utilisatrice du clavier WinGlows, je veux partager une vidéo depuis YouTube ou une autre app vers WinGlows, puis la retrouver dans la barre Media avec vignette et overlay lecteur, afin de regarder une vidéo compacte pendant que je travaille."
 risk_level: "high"
 security_impact: "yes"

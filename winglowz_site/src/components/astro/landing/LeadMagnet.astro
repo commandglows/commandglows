@@ -31,7 +31,7 @@ const content = lang === 'fr'
   <div class="reveal max-w-3xl mx-auto">
     <div class="landing-surface landing-section-card relative overflow-hidden rounded-2xl border">
       <!-- Background glow -->
-      <div class="absolute -top-24 -right-24 h-64 w-64 pointer-events-none rounded-full blur-3xl" style="background: radial-gradient(circle, rgb(var(--landing-glow) / 0.15), transparent 70%);"></div>
+      <div class="landing-lead-glow absolute -top-24 -right-24 h-64 w-64 pointer-events-none rounded-full blur-3xl"></div>
 
       <div class="relative z-10 text-center">
         <!-- Badge -->
@@ -59,7 +59,7 @@ const content = lang === 'fr'
           />
           <button
             type="submit"
-            class="landing-cta-inline shimmer-btn inline-flex items-center justify-center whitespace-nowrap rounded-full bg-content-text-primary px-6 py-3 text-sm font-medium text-white shadow-lg shadow-content-shadow hover:bg-content-text-secondary dark:bg-white dark:text-content-text-primary dark:shadow-white/10 dark:hover:bg-content-text-secondary"
+            class="landing-primary-action landing-cta-inline shimmer-btn inline-flex items-center justify-center whitespace-nowrap rounded-full px-6 py-3 text-sm font-medium"
             data-track="lead-magnet-cta"
           >
             {content.cta}

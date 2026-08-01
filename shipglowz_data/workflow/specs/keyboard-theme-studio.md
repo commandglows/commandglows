@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "winglowz_app"
 created: "2026-05-15"
 created_at: "2026-05-15 19:09:11 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: medium
 user_story: "En tant qu'utilisateur Android power user, je veux personnaliser entièrement le thème visuel et les effets du clavier WinGlows, afin d'avoir un clavier utile, expressif et adapté à mon style sans sacrifier la lisibilité ni la performance."
 risk_level: "high"
 security_impact: "yes"

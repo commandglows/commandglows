@@ -1,6 +1,7 @@
 ---
 artifact: research_note
 metadata_schema_version: "1.0"
+source_skill: 203-sg-research
 artifact_version: "1.0.0"
 project: "winglowz_app"
 created: "2026-05-14"
@@ -9,6 +10,17 @@ status: active
 scope: "research"
 owner: "codex"
 title: "Free on-device ASR options for Android keyboard dictation"
+confidence: medium
+risk_level: medium
+security_impact: "yes"
+docs_impact: "yes"
+linked_systems:
+  - "winglowz_app Android IME"
+depends_on: []
+supersedes: []
+evidence:
+  - "Research comparison and source links are maintained in this note."
+next_step: "Benchmark the shortlisted local ASR runtimes on Android hardware"
 ---
 
 # Free On-Device ASR Options

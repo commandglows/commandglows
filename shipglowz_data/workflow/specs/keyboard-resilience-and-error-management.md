@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "winglowz_app"
 created: "2026-05-16"
 created_at: "2026-05-16 07:23:29 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: medium
 user_story: "En tant qu'utilisatrice du clavier WinGlows sur Android, je veux que les actions du clavier, les réglages et les diagnostics restent récupérables même quand une action native échoue, afin de ne plus perdre le clavier ou l'application sans information exploitable."
 risk_level: "high"
 security_impact: "yes"

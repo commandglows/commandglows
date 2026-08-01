@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "WinGlows"
 created: "2026-05-14"
 created_at: "2026-05-14 09:54:42 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: medium
 user_story: "En tant qu'utilisateur Android de WinGlows qui personnalise son clavier, je veux configurer touche par touche les actions declenchees par les swipes vers les quatre coins, afin d'adapter accents, ponctuation, snippets, raccourcis systeme et macros a ma facon d'ecrire sans changer de mode."
 risk_level: "high"
 security_impact: "yes"

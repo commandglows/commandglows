@@ -18,22 +18,24 @@
    :where() gives zero specificity so TW
    utility classes always win.
    ========================================== */
-:where(.landing-page) :where(h1, h2, h3, h4, h5, h6) {
-  font-size: inherit;
-  line-height: inherit;
-  letter-spacing: inherit;
-  color: inherit;
-}
+@layer base {
+  :where(.landing-page) :where(h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+  }
 
-:where(.landing-page) :where(p) {
-  font-size: inherit;
-  line-height: inherit;
-  color: inherit;
-}
+  :where(.landing-page) :where(p) {
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+  }
 
-:where(.landing-page) {
-  font-size: var(--landing-page-body-font-size);
-  line-height: var(--landing-page-body-line-height);
+  :where(.landing-page) {
+    font-size: var(--landing-page-body-font-size);
+    line-height: var(--landing-page-body-line-height);
+  }
 }
 
 /* text-logo styles → now in global.css @layer components */

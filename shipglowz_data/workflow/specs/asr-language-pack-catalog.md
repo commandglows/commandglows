@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "winglowz_app"
 created: "2026-05-14"
 created_at: "2026-05-14 22:30:00 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: medium
 user_story: "En tant qu'utilisatrice WinGlows qui veut dicter dans sa langue depuis le clavier Android, je veux installer seulement les packs vocaux locaux dont j'ai besoin et comprendre clairement le fallback disponible, afin d'utiliser la dictée sans coût serveur implicite ni promesse trompeuse."
 risk_level: "high"
 security_impact: "yes"

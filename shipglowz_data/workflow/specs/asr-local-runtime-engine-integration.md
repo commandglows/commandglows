@@ -12,6 +12,8 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "implementation"
 owner: "Diane"
+confidence: medium
+user_story: "En tant qu'utilisatrice WinGlowz, je veux une dictée locale fiable dans le clavier Android afin de dicter sans appel serveur implicite."
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
@@ -31,11 +33,12 @@ depends_on:
   - artifact: "shipglowz_data/workflow/specs/keyboard-action-bar-voice-recording.md"
     artifact_version: "1.0.0"
     required_status: "active"
-    
+supersedes: []
 evidence:
   - "Catalog runtime contract exists and currently provides local/Android fallback state transitions with stubbed local engine linkage."
   - "Local runtime timeout and fallback_reason semantics are implemented in provider state."
   - "Current bridge path already carries voice pack configuration and pack artifact path."
+next_step: "/102-sg-start shipglowz_data/workflow/specs/asr-local-runtime-engine-integration.md"
 
 ---
 

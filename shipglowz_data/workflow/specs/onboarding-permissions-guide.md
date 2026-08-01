@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "WinGlows"
 created: "2026-05-11"
 created_at: "2026-05-11 00:00:00 UTC"
@@ -12,6 +12,8 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "WinGlows Team"
+confidence: medium
+user_story: "En tant qu'utilisateur Android, je veux être guidé pour activer les permissions nécessaires afin de configurer WinGlowz sans erreur."
 risk_level: "medium"
 security_impact: "yes"
 docs_impact: "yes"
