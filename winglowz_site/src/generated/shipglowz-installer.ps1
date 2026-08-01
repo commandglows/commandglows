@@ -17,6 +17,11 @@ Set-StrictMode -Version Latest
 function Write-Info([string]$Message) { Write-Host "[ShipGlowz] $Message" -ForegroundColor Cyan }
 function Write-Warn([string]$Message) { Write-Host "[ShipGlowz] $Message" -ForegroundColor Yellow }
 function Fail([string]$Message) { Write-Error "[ShipGlowz] $Message"; exit 1 }
+function Remove-PathIfPresent([string]$Path) {
+    if (Test-Path -LiteralPath $Path) {
+        Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction SilentlyContinue
+    }
+}
 
 if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
     $wslProbeOutput = (& wsl.exe -e sh -lc 'printf ok' 2>$null | Out-String).Trim()
@@ -42,17 +47,19 @@ if (-not (Test-Path -LiteralPath $ShipglowzDir)) {
 
     $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglowz-" + [guid]::NewGuid().ToString('N'))
     $archivePath = Join-Path $tempRoot 'shipglowz.zip'
+    $extractRoot = Join-Path $tempRoot 'extract'
     New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+    New-Item -ItemType Directory -Path $extractRoot -Force | Out-Null
     try {
         Write-Info "Downloading ShipGlowz into $ShipglowzDir..."
         & curl.exe -fsSL $archiveUrl -o $archivePath
         if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz download failed.' }
-        Expand-Archive -LiteralPath $archivePath -DestinationPath $tempRoot -Force
-        $extracted = Get-ChildItem -LiteralPath $tempRoot -Directory | Select-Object -First 1
+        Expand-Archive -LiteralPath $archivePath -DestinationPath $extractRoot
+        $extracted = Get-ChildItem -LiteralPath $extractRoot -Force -Directory | Select-Object -First 1
         if (-not $extracted) { Fail 'The ShipGlowz archive is invalid.' }
         Move-Item -LiteralPath $extracted.FullName -Destination $ShipglowzDir
     } finally {
-        Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-PathIfPresent $tempRoot
     }
 } elseif (-not (Test-Path -LiteralPath (Join-Path $ShipglowzDir 'local/install_local.ps1'))) {
     Fail "$ShipglowzDir already exists but does not contain a valid ShipGlowz installation."
@@ -84,19 +91,21 @@ if ($hasLegacyMarker -or -not $hasUtf8Bom) {
     $archiveUrl = "https://github.com/$($Matches[1])/archive/refs/heads/$Branch.zip"
     $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglowz-refresh-" + [guid]::NewGuid().ToString('N'))
     $archivePath = Join-Path $tempRoot 'shipglowz.zip'
+    $extractRoot = Join-Path $tempRoot 'extract'
     New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+    New-Item -ItemType Directory -Path $extractRoot -Force | Out-Null
     try {
         & curl.exe -fsSL $archiveUrl -o $archivePath
         if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz installer refresh failed.' }
-        Expand-Archive -LiteralPath $archivePath -DestinationPath $tempRoot -Force
-        $extracted = Get-ChildItem -LiteralPath $tempRoot -Directory | Select-Object -First 1
+        Expand-Archive -LiteralPath $archivePath -DestinationPath $extractRoot
+        $extracted = Get-ChildItem -LiteralPath $extractRoot -Force -Directory | Select-Object -First 1
         $freshLocalInstaller = if ($extracted) { Join-Path $extracted.FullName 'local/install_local.ps1' } else { $null }
         if (-not $freshLocalInstaller -or -not (Test-Path -LiteralPath $freshLocalInstaller)) {
             Fail 'The refreshed ShipGlowz archive does not contain local/install_local.ps1.'
         }
         Copy-Item -LiteralPath $freshLocalInstaller -Destination $localInstaller -Force
     } finally {
-        Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-PathIfPresent $tempRoot
     }
 }
 
