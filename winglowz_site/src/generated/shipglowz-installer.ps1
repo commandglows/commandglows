@@ -22,6 +22,33 @@ function Remove-PathIfPresent([string]$Path) {
         Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction SilentlyContinue
     }
 }
+function Expand-ShipglowzArchive([string]$ArchivePath, [string]$DestinationPath) {
+    $tarCommand = Get-Command tar.exe -CommandType Application -ErrorAction SilentlyContinue
+    if (-not $tarCommand) {
+        Fail 'Windows tar.exe is required to extract ShipGlowz without Microsoft.PowerShell.Archive.'
+    }
+
+    & $tarCommand.Source -xf $ArchivePath -C $DestinationPath
+    if ($LASTEXITCODE -ne 0) {
+        Fail 'ShipGlowz archive extraction with tar.exe failed.'
+    }
+}
+function Assert-PowerShellSyntax([string]$Path) {
+    $parseTokens = $null
+    $parseErrors = $null
+    [void][System.Management.Automation.Language.Parser]::ParseFile(
+        $Path,
+        [ref]$parseTokens,
+        [ref]$parseErrors
+    )
+
+    if ($parseErrors -and $parseErrors.Count -gt 0) {
+        foreach ($parseError in $parseErrors) {
+            Write-Host ("[ShipGlowz] PowerShell syntax error at line {0}: {1}" -f $parseError.Extent.StartLineNumber, $parseError.Message) -ForegroundColor Red
+        }
+        Fail "PowerShell syntax validation failed for $Path"
+    }
+}
 
 if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
     $wslProbeOutput = (& wsl.exe -e sh -lc 'printf ok' 2>$null | Out-String).Trim()
@@ -54,7 +81,7 @@ if (-not (Test-Path -LiteralPath $ShipglowzDir)) {
         Write-Info "Downloading ShipGlowz into $ShipglowzDir..."
         & curl.exe -fsSL $archiveUrl -o $archivePath
         if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz download failed.' }
-        Expand-Archive -LiteralPath $archivePath -DestinationPath $extractRoot
+        Expand-ShipglowzArchive -ArchivePath $archivePath -DestinationPath $extractRoot
         $extracted = Get-ChildItem -LiteralPath $extractRoot -Force -Directory | Select-Object -First 1
         if (-not $extracted) { Fail 'The ShipGlowz archive is invalid.' }
         Move-Item -LiteralPath $extracted.FullName -Destination $ShipglowzDir
@@ -97,7 +124,7 @@ if ($hasLegacyMarker -or -not $hasUtf8Bom) {
     try {
         & curl.exe -fsSL $archiveUrl -o $archivePath
         if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz installer refresh failed.' }
-        Expand-Archive -LiteralPath $archivePath -DestinationPath $extractRoot
+        Expand-ShipglowzArchive -ArchivePath $archivePath -DestinationPath $extractRoot
         $extracted = Get-ChildItem -LiteralPath $extractRoot -Force -Directory | Select-Object -First 1
         $freshLocalInstaller = if ($extracted) { Join-Path $extracted.FullName 'local/install_local.ps1' } else { $null }
         if (-not $freshLocalInstaller -or -not (Test-Path -LiteralPath $freshLocalInstaller)) {
@@ -108,6 +135,12 @@ if ($hasLegacyMarker -or -not $hasUtf8Bom) {
         Remove-PathIfPresent $tempRoot
     }
 }
+
+$localInstallerHash = (Get-FileHash -LiteralPath $localInstaller -Algorithm SHA256).Hash
+Write-Info "Installed local installer: $localInstaller"
+Write-Info "SHA256: $localInstallerHash"
+Assert-PowerShellSyntax -Path $localInstaller
+Write-Info 'PowerShell syntax validation passed.'
 
 Write-Info 'Lancement de la configuration locale Windows.'
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $localInstaller

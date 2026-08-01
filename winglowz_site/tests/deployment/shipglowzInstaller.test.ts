@@ -24,6 +24,10 @@ describe('ShipGlowz public installer', () => {
     expect(windowsInstaller).toContain('local/install_local.ps1')
     expect(windowsInstaller).toContain('ShipglowzDir')
     expect(windowsInstaller).toContain("Alias('Version', 'Tag', 'Ref')")
+    expect(windowsInstaller).not.toContain('Expand-Archive')
+    expect(windowsInstaller).toContain('Get-Command tar.exe')
+    expect(windowsInstaller).toContain('Parser]::ParseFile')
+    expect(windowsInstaller).toContain('Get-FileHash')
     expect(windowsInstaller).not.toContain('5.75.134.202')
   })
 
