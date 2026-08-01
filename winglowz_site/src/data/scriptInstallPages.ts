@@ -25,6 +25,16 @@ export interface ScriptInstallPageContent {
 	copiedLabel: string
 	rawScriptLabel: string
 	installNote: string
+	installVariants?: InstallVariant[]
+}
+
+export interface InstallVariant {
+	id: string
+	platform: 'unix' | 'windows' | 'termux'
+	mode: 'local' | 'full'
+	command: string
+	note: string
+	available: boolean
 }
 
 type ScriptPageKey = ScriptInstallPageContent['slug']
@@ -181,7 +191,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			kicker: 'Local or server agent workflow setup',
 			title: 'Install the right ShipGlowz layer for this machine.',
 			description:
-				'The bootstrap detects Termux and root automatically, or asks whether you want the local tunnel setup or the complete Ubuntu server layer. Your GitHub account must already have access to the private ShipGlowz repository.',
+				'The bootstrap detects Termux and root automatically, or asks whether you want the local tunnel setup or the complete Ubuntu server layer. Native Windows downloads the public repository without Git and installs OpenSSH when needed.',
 			command: 'curl -fsSL https://www.winflowz.com/shipglowz-script | sh',
 			rawScriptUrl: '/shipglowz-script',
 			githubUrl: 'https://github.com/dianedef/ShipGlowz',
@@ -199,7 +209,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			installedTitle: 'Installed',
 			installed: ['local mode: tunnel and remote-login commands', 'full mode: ShipGlowz CLI, server tooling and wrappers', 'Claude/Codex skill symlinks when selected', 'local project tracking data'],
 			excludedTitle: 'Important boundary',
-			excluded: ['the private repository requires pre-existing authorized GitHub access', 'full mode still requires root on a supported server', 'the bootstrap never asks for or stores a GitHub token'],
+			excluded: ['the Windows path may request UAC permission to add OpenSSH Client', 'full mode still requires root on a supported server', 'the bootstrap never asks for or stores a GitHub token'],
 			linksTitle: 'Useful links',
 			links: [
 				{ label: 'ShipGlowz public docs', href: 'https://github.com/dianedef/ShipGlowz' },
@@ -208,7 +218,57 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			copyLabel: 'Copy command',
 			copiedLabel: 'Copied',
 			rawScriptLabel: 'Open raw script',
-			installNote: 'Run without sudo. Termux selects local mode, root selects full mode, and other interactive shells ask. For automation, pipe into SHIPGLOWZ_INSTALL_MODE=local sh or use sudo env SHIPGLOWZ_INSTALL_MODE=full sh.',
+			installNote: 'Run without sudo. Termux selects local mode, root selects full mode, and other interactive shells ask. On native Windows without WSL, download the public archive through the same endpoint with curl.exe using ?format=powershell, then run powershell.exe -NoProfile -ExecutionPolicy Bypass. The script installs OpenSSH Client when needed and Windows may show a UAC confirmation. For automation, pipe into SHIPGLOWZ_INSTALL_MODE=local sh or use sudo env SHIPGLOWZ_INSTALL_MODE=full sh.',
+			installVariants: [
+				{
+					id: 'unix-local',
+					platform: 'unix',
+					mode: 'local',
+					command: 'curl -fsSL https://www.winflowz.com/shipglowz-script | SHIPGLOWZ_INSTALL_MODE=local sh',
+					note: 'Unix local: installe les tunnels et les commandes de connexion pour l’utilisateur courant, sans sudo.',
+					available: true,
+				},
+				{
+					id: 'unix-full',
+					platform: 'unix',
+					mode: 'full',
+					command: 'curl -fsSL https://www.winflowz.com/shipglowz-script | sudo env SHIPGLOWZ_INSTALL_MODE=full sh',
+					note: 'Unix full: installe la couche serveur complète sur Ubuntu avec les privilèges root.',
+					available: true,
+				},
+				{
+					id: 'windows-local',
+					platform: 'windows',
+					mode: 'local',
+					command: "$installer = Join-Path $env:TEMP 'shipglowz-install.ps1'\ncurl.exe -fsSL 'https://www.winflowz.com/shipglowz-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer",
+					note: 'Windows local: télécharge l’archive publique sans Git et installe OpenSSH Client automatiquement si nécessaire. Une confirmation UAC peut apparaître.',
+					available: true,
+				},
+				{
+					id: 'windows-full',
+					platform: 'windows',
+					mode: 'full',
+					command: '',
+					note: 'Le mode full/remote doit être lancé sur un serveur Linux/Ubuntu. Windows natif prend en charge le mode local.',
+					available: false,
+				},
+				{
+					id: 'termux-local',
+					platform: 'termux',
+					mode: 'local',
+					command: 'curl -fsSL https://www.winflowz.com/shipglowz-script | SHIPGLOWZ_INSTALL_MODE=local sh',
+					note: 'Termux local: utilise le home Android courant et n’appelle jamais sudo.',
+					available: true,
+				},
+				{
+					id: 'termux-full',
+					platform: 'termux',
+					mode: 'full',
+					command: '',
+					note: 'Termux ne supporte pas le mode full/remote. Utilise le mode local.',
+					available: false,
+				},
+			],
 		},
 		fr: {
 			slug: 'shipglowz',
@@ -216,7 +276,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			kicker: 'Setup local ou serveur pour workflows agents',
 			title: 'Installe la bonne couche ShipGlowz pour cette machine.',
 			description:
-				'Le bootstrap détecte automatiquement Termux et root, ou demande si tu veux la configuration locale des tunnels ou la couche serveur Ubuntu complète. Ton compte GitHub doit déjà avoir accès au dépôt privé ShipGlowz.',
+				'Le bootstrap détecte automatiquement Termux et root, ou demande si tu veux la configuration locale des tunnels ou la couche serveur Ubuntu complète. Sur Windows, il télécharge le dépôt public sans Git et installe OpenSSH si nécessaire.',
 			command: 'curl -fsSL https://www.winflowz.com/shipglowz-script | sh',
 			rawScriptUrl: '/shipglowz-script',
 			githubUrl: 'https://github.com/dianedef/ShipGlowz',
@@ -234,7 +294,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			installedTitle: 'Installé',
 			installed: ['mode local: tunnels et commandes de login distant', 'mode complet: CLI ShipGlowz, outillage serveur et wrappers', 'symlinks de skills Claude/Codex si sélectionnés', 'tracking local des projets'],
 			excludedTitle: 'Limite importante',
-			excluded: ['le dépôt privé exige un accès GitHub autorisé au préalable', 'le mode complet demande toujours root sur un serveur supporté', 'le bootstrap ne demande et ne stocke aucun token GitHub'],
+			excluded: ['le parcours Windows peut demander une confirmation UAC pour ajouter OpenSSH Client', 'le mode complet demande toujours root sur un serveur supporté', 'le bootstrap ne demande et ne stocke aucun token GitHub'],
 			linksTitle: 'Liens utiles',
 			links: [
 				{ label: 'Docs publiques ShipGlowz', href: 'https://github.com/dianedef/ShipGlowz' },
@@ -243,7 +303,57 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			copyLabel: 'Copier la commande',
 			copiedLabel: 'Copié',
 			rawScriptLabel: 'Ouvrir le script brut',
-			installNote: 'Lance la commande sans sudo. Termux choisit le mode local, root choisit le mode complet, et les autres shells interactifs demandent. En automatisation, utilise SHIPGLOWZ_INSTALL_MODE=local côté sh, ou sudo env SHIPGLOWZ_INSTALL_MODE=full sh.',
+			installNote: 'Lance la commande sans sudo. Termux choisit le mode local, root choisit le mode complet, et les autres shells interactifs demandent. Sur Windows natif sans WSL, télécharge l’archive publique via le même endpoint avec curl.exe et ?format=powershell, puis lance powershell.exe -NoProfile -ExecutionPolicy Bypass. Le script installe OpenSSH Client si nécessaire et Windows peut afficher une confirmation UAC. En automatisation, utilise SHIPGLOWZ_INSTALL_MODE=local côté sh, ou sudo env SHIPGLOWZ_INSTALL_MODE=full sh.',
+			installVariants: [
+				{
+					id: 'unix-local',
+					platform: 'unix',
+					mode: 'local',
+					command: 'curl -fsSL https://www.winflowz.com/shipglowz-script | SHIPGLOWZ_INSTALL_MODE=local sh',
+					note: 'Unix local : installe les tunnels et les commandes de connexion pour l’utilisateur courant, sans sudo.',
+					available: true,
+				},
+				{
+					id: 'unix-full',
+					platform: 'unix',
+					mode: 'full',
+					command: 'curl -fsSL https://www.winflowz.com/shipglowz-script | sudo env SHIPGLOWZ_INSTALL_MODE=full sh',
+					note: 'Unix full : installe la couche serveur complète sur Ubuntu avec les privilèges root.',
+					available: true,
+				},
+				{
+					id: 'windows-local',
+					platform: 'windows',
+					mode: 'local',
+					command: "$installer = Join-Path $env:TEMP 'shipglowz-install.ps1'\ncurl.exe -fsSL 'https://www.winflowz.com/shipglowz-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer",
+					note: 'Windows local : télécharge l’archive publique sans Git et installe OpenSSH Client automatiquement si nécessaire. Une confirmation UAC peut apparaître.',
+					available: true,
+				},
+				{
+					id: 'windows-full',
+					platform: 'windows',
+					mode: 'full',
+					command: '',
+					note: 'Le mode full/remote doit être lancé sur un serveur Linux/Ubuntu. Windows natif prend en charge le mode local.',
+					available: false,
+				},
+				{
+					id: 'termux-local',
+					platform: 'termux',
+					mode: 'local',
+					command: 'curl -fsSL https://www.winflowz.com/shipglowz-script | SHIPGLOWZ_INSTALL_MODE=local sh',
+					note: 'Termux local : utilise le home Android courant et n’appelle jamais sudo.',
+					available: true,
+				},
+				{
+					id: 'termux-full',
+					platform: 'termux',
+					mode: 'full',
+					command: '',
+					note: 'Termux ne supporte pas le mode full/remote. Utilise le mode local.',
+					available: false,
+				},
+			],
 		},
 	},
 }

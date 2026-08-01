@@ -183,9 +183,9 @@ stash_shipglowz_changes() {
         git -C "$SHIPGLOWZ_DIR" stash push -u -m "shipglowz-bootstrap backup $(date -u +%Y%m%dT%H%M%SZ)"
 }
 
-repository_access_error() {
-    log "ShipGlowz utilise un dépôt privé: un accès GitHub autorisé est requis."
-    log "Configurez votre clé SSH ou votre credential helper GitHub, puis relancez la commande."
+repository_download_error() {
+    log "Le dépôt public ShipGlowz est inaccessible ou le téléchargement a échoué."
+    log "Vérifiez la connexion réseau, l'URL du dépôt et la branche demandée, puis relancez la commande."
     log "Aucun token ne doit être ajouté à l'URL ou collé dans le journal."
 }
 
@@ -197,8 +197,8 @@ install_bootstrap_deps
 if [ -d "$SHIPGLOWZ_DIR/.git" ]; then
     log "Mise à jour du dépôt ShipGlowz..."
     stash_shipglowz_changes
-    run_or_explain "accès au dépôt privé et récupération de $BRANCH" as_install_user git -C "$SHIPGLOWZ_DIR" fetch origin "$BRANCH" || {
-        repository_access_error
+    run_or_explain "accès au dépôt public et récupération de $BRANCH" as_install_user git -C "$SHIPGLOWZ_DIR" fetch origin "$BRANCH" || {
+        repository_download_error
         exit 1
     }
     run_or_explain "sélection de la branche $BRANCH" as_install_user git -C "$SHIPGLOWZ_DIR" checkout "$BRANCH"
@@ -210,8 +210,8 @@ elif [ -e "$SHIPGLOWZ_DIR" ]; then
 else
     log "Téléchargement de ShipGlowz..."
     mkdir -p "$(dirname "$SHIPGLOWZ_DIR")"
-    run_or_explain "accès et téléchargement du dépôt privé ShipGlowz" as_install_user git clone --quiet --branch "$BRANCH" "$REPO_URL" "$SHIPGLOWZ_DIR" || {
-        repository_access_error
+    run_or_explain "accès et téléchargement du dépôt public ShipGlowz" as_install_user git clone --quiet --branch "$BRANCH" "$REPO_URL" "$SHIPGLOWZ_DIR" || {
+        repository_download_error
         exit 1
     }
 fi
