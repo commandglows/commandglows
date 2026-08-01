@@ -28,6 +28,8 @@ describe('ShipGlowz public installer', () => {
     expect(windowsInstaller).toContain('Get-Command tar.exe')
     expect(windowsInstaller).toContain('Parser]::ParseFile')
     expect(windowsInstaller).toContain('Get-FileHash')
+    expect(windowsInstaller).toContain('Source commit: $($source.Commit)')
+    expect(windowsInstaller).toContain('must contain exactly one local/install_local.ps1')
     expect(windowsInstaller).not.toContain('5.75.134.202')
   })
 

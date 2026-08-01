@@ -33,6 +33,34 @@ function Expand-ShipglowzArchive([string]$ArchivePath, [string]$DestinationPath)
         Fail 'ShipGlowz archive extraction with tar.exe failed.'
     }
 }
+function Resolve-GitHubSource([string]$RepositoryUrl, [string]$Ref) {
+    $archiveBase = $RepositoryUrl.TrimEnd('/') -replace '\.git$', ''
+    if ($archiveBase -notmatch '^https://github\.com/([^/]+/[^/]+)$') {
+        Fail 'RepoUrl must point to a public GitHub repository for the Windows installation without Git.'
+    }
+
+    $repositoryPath = $Matches[1]
+    $encodedRef = [Uri]::EscapeDataString($Ref)
+    $commitApiUrl = "https://api.github.com/repos/$repositoryPath/commits/$encodedRef"
+    $commitResponse = (& curl.exe -fsSL -H 'Accept: application/vnd.github+json' $commitApiUrl | Out-String)
+    if ($LASTEXITCODE -ne 0) {
+        Fail "Could not resolve ShipGlowz ref: $Ref"
+    }
+
+    try {
+        $commitSha = ($commitResponse | ConvertFrom-Json).sha
+    } catch {
+        Fail "GitHub returned an invalid commit response for ref: $Ref"
+    }
+    if (-not $commitSha -or $commitSha -notmatch '^[0-9a-f]{40}$') {
+        Fail "GitHub did not return a valid commit for ref: $Ref"
+    }
+
+    [PSCustomObject]@{
+        Commit = $commitSha
+        ArchiveUrl = "https://github.com/$repositoryPath/archive/$commitSha.zip"
+    }
+}
 function Assert-PowerShellSyntax([string]$Path) {
     $parseTokens = $null
     $parseErrors = $null
@@ -59,85 +87,42 @@ if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
     }
 }
 
-$parent = Split-Path -Parent $ShipglowzDir
-if (-not (Test-Path -LiteralPath $parent)) {
-    New-Item -ItemType Directory -Path $parent -Force | Out-Null
-}
+$source = Resolve-GitHubSource -RepositoryUrl $RepoUrl -Ref $Branch
+$tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglowz-local-" + [guid]::NewGuid().ToString('N'))
+$archivePath = Join-Path $tempRoot 'shipglowz.zip'
+$extractRoot = Join-Path $tempRoot 'extract'
+$localDirectory = Join-Path $ShipglowzDir 'local'
+$localInstaller = Join-Path $localDirectory 'install_local.ps1'
+New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+New-Item -ItemType Directory -Path $extractRoot -Force | Out-Null
 
-if (-not (Test-Path -LiteralPath $ShipglowzDir)) {
-    $archiveBase = $RepoUrl.TrimEnd('/') -replace '\.git$', ''
-    if ($archiveBase -match '^https://github\.com/([^/]+/[^/]+)$') {
-        $archiveUrl = "https://github.com/$($Matches[1])/archive/refs/heads/$Branch.zip"
-    } else {
-        Fail 'RepoUrl must point to a public GitHub repository for the Windows installation without Git.'
+try {
+    Write-Info "Downloading ShipGlowz local installer from commit $($source.Commit)..."
+    & curl.exe -fsSL $source.ArchiveUrl -o $archivePath
+    if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz download failed.' }
+
+    Expand-ShipglowzArchive -ArchivePath $archivePath -DestinationPath $extractRoot
+    $installerCandidates = @(
+        Get-ChildItem -LiteralPath $extractRoot -Recurse -Force -File -Filter 'install_local.ps1' |
+            Where-Object { $_.Directory.Name -eq 'local' }
+    )
+    if ($installerCandidates.Count -ne 1) {
+        Fail 'The ShipGlowz archive must contain exactly one local/install_local.ps1.'
     }
 
-    $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglowz-" + [guid]::NewGuid().ToString('N'))
-    $archivePath = Join-Path $tempRoot 'shipglowz.zip'
-    $extractRoot = Join-Path $tempRoot 'extract'
-    New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-    New-Item -ItemType Directory -Path $extractRoot -Force | Out-Null
-    try {
-        Write-Info "Downloading ShipGlowz into $ShipglowzDir..."
-        & curl.exe -fsSL $archiveUrl -o $archivePath
-        if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz download failed.' }
-        Expand-ShipglowzArchive -ArchivePath $archivePath -DestinationPath $extractRoot
-        $extracted = Get-ChildItem -LiteralPath $extractRoot -Force -Directory | Select-Object -First 1
-        if (-not $extracted) { Fail 'The ShipGlowz archive is invalid.' }
-        Move-Item -LiteralPath $extracted.FullName -Destination $ShipglowzDir
-    } finally {
-        Remove-PathIfPresent $tempRoot
-    }
-} elseif (-not (Test-Path -LiteralPath (Join-Path $ShipglowzDir 'local/install_local.ps1'))) {
-    Fail "$ShipglowzDir already exists but does not contain a valid ShipGlowz installation."
+    New-Item -ItemType Directory -Path $localDirectory -Force | Out-Null
+    Copy-Item -LiteralPath $installerCandidates[0].FullName -Destination $localInstaller -Force
+} finally {
+    Remove-PathIfPresent $tempRoot
 }
 
-$localInstaller = Join-Path $ShipglowzDir 'local/install_local.ps1'
 if (-not (Test-Path -LiteralPath $localInstaller)) {
-    Fail "Installateur Windows introuvable: $localInstaller"
-}
-
-# Repair an existing checkout that still contains the legacy generated script.
-# The bootstrap must not silently keep executing an older local installer.
-$localInstallerBytes = [IO.File]::ReadAllBytes($localInstaller)
-$localInstallerText = [Text.Encoding]::UTF8.GetString($localInstallerBytes)
-$legacyMarkers = @(
-    ('`' + [char]36 + 'Port')
-    ([char]36 + '{YELLOW}')
-    ([char]36 + '{GREEN}')
-    ([char]36 + '{NC}')
-)
-$hasLegacyMarker = $legacyMarkers | Where-Object { $localInstallerText.Contains($_) } | Select-Object -First 1
-$hasUtf8Bom = $localInstallerBytes.Length -ge 3 -and $localInstallerBytes[0] -eq 0xEF -and $localInstallerBytes[1] -eq 0xBB -and $localInstallerBytes[2] -eq 0xBF
-if ($hasLegacyMarker -or -not $hasUtf8Bom) {
-    Write-Warn 'The existing local Windows installer is outdated; refreshing only local/install_local.ps1.'
-    $archiveBase = $RepoUrl.TrimEnd('/') -replace '\.git$', ''
-    if ($archiveBase -notmatch '^https://github\.com/([^/]+/[^/]+)$') {
-        Fail 'RepoUrl must point to a public GitHub repository to refresh the Windows installer.'
-    }
-    $archiveUrl = "https://github.com/$($Matches[1])/archive/refs/heads/$Branch.zip"
-    $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglowz-refresh-" + [guid]::NewGuid().ToString('N'))
-    $archivePath = Join-Path $tempRoot 'shipglowz.zip'
-    $extractRoot = Join-Path $tempRoot 'extract'
-    New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-    New-Item -ItemType Directory -Path $extractRoot -Force | Out-Null
-    try {
-        & curl.exe -fsSL $archiveUrl -o $archivePath
-        if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz installer refresh failed.' }
-        Expand-ShipglowzArchive -ArchivePath $archivePath -DestinationPath $extractRoot
-        $extracted = Get-ChildItem -LiteralPath $extractRoot -Force -Directory | Select-Object -First 1
-        $freshLocalInstaller = if ($extracted) { Join-Path $extracted.FullName 'local/install_local.ps1' } else { $null }
-        if (-not $freshLocalInstaller -or -not (Test-Path -LiteralPath $freshLocalInstaller)) {
-            Fail 'The refreshed ShipGlowz archive does not contain local/install_local.ps1.'
-        }
-        Copy-Item -LiteralPath $freshLocalInstaller -Destination $localInstaller -Force
-    } finally {
-        Remove-PathIfPresent $tempRoot
-    }
+    Fail "Installed Windows local installer not found: $localInstaller"
 }
 
 $localInstallerHash = (Get-FileHash -LiteralPath $localInstaller -Algorithm SHA256).Hash
 Write-Info "Installed local installer: $localInstaller"
+Write-Info "Source commit: $($source.Commit)"
 Write-Info "SHA256: $localInstallerHash"
 Assert-PowerShellSyntax -Path $localInstaller
 Write-Info 'PowerShell syntax validation passed.'
