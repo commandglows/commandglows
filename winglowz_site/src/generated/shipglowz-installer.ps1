@@ -63,6 +63,43 @@ if (-not (Test-Path -LiteralPath $localInstaller)) {
     Fail "Installateur Windows introuvable: $localInstaller"
 }
 
+# Repair an existing checkout that still contains the legacy generated script.
+# The bootstrap must not silently keep executing an older local installer.
+$localInstallerBytes = [IO.File]::ReadAllBytes($localInstaller)
+$localInstallerText = [Text.Encoding]::UTF8.GetString($localInstallerBytes)
+$legacyMarkers = @(
+    ('`' + [char]36 + 'Port')
+    ([char]36 + '{YELLOW}')
+    ([char]36 + '{GREEN}')
+    ([char]36 + '{NC}')
+)
+$hasLegacyMarker = $legacyMarkers | Where-Object { $localInstallerText.Contains($_) } | Select-Object -First 1
+$hasUtf8Bom = $localInstallerBytes.Length -ge 3 -and $localInstallerBytes[0] -eq 0xEF -and $localInstallerBytes[1] -eq 0xBB -and $localInstallerBytes[2] -eq 0xBF
+if ($hasLegacyMarker -or -not $hasUtf8Bom) {
+    Write-Warn 'The existing local Windows installer is outdated; refreshing only local/install_local.ps1.'
+    $archiveBase = $RepoUrl.TrimEnd('/') -replace '\.git$', ''
+    if ($archiveBase -notmatch '^https://github\.com/([^/]+/[^/]+)$') {
+        Fail 'RepoUrl must point to a public GitHub repository to refresh the Windows installer.'
+    }
+    $archiveUrl = "https://github.com/$($Matches[1])/archive/refs/heads/$Branch.zip"
+    $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglowz-refresh-" + [guid]::NewGuid().ToString('N'))
+    $archivePath = Join-Path $tempRoot 'shipglowz.zip'
+    New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+    try {
+        & curl.exe -fsSL $archiveUrl -o $archivePath
+        if ($LASTEXITCODE -ne 0) { Fail 'ShipGlowz installer refresh failed.' }
+        Expand-Archive -LiteralPath $archivePath -DestinationPath $tempRoot -Force
+        $extracted = Get-ChildItem -LiteralPath $tempRoot -Directory | Select-Object -First 1
+        $freshLocalInstaller = if ($extracted) { Join-Path $extracted.FullName 'local/install_local.ps1' } else { $null }
+        if (-not $freshLocalInstaller -or -not (Test-Path -LiteralPath $freshLocalInstaller)) {
+            Fail 'The refreshed ShipGlowz archive does not contain local/install_local.ps1.'
+        }
+        Copy-Item -LiteralPath $freshLocalInstaller -Destination $localInstaller -Force
+    } finally {
+        Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
 Write-Info 'Lancement de la configuration locale Windows.'
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $localInstaller
 if ($LASTEXITCODE -ne 0) { Fail 'Native Windows configuration failed.' }
