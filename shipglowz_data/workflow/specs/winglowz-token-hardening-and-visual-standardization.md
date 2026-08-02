@@ -295,6 +295,8 @@ None.
 | 2026-07-28 00:00:00 UTC | 006-sg-design | GPT-5 Codex | audit-tokens-migration | partial | Global source scan passes for site/app; centralized shared status colors, removed duplicate Termux token, and replaced invalid CSS media queries | Continue with visual/browser proof, then /103-sg-verify |
 | 2026-07-29 06:17:14 UTC | 006-sg-design | GPT-5 Codex | visual-polish-and-token-proof | done | Restored landing typography hierarchy, widened and polished the shared navbar, repaired semantic Tailwind v4 tokens, fixed cookie stacking and lead-form contrast, and centralized missing Temu state tokens; desktop/mobile plus dark-mode browser proof collected | Ready for final verification and closure |
 | 2026-07-29 19:55:08 UTC | 003-sg-bug | GPT-5 Codex | mobile-navbar-visual-regression-fix | fixed-pending-verify | Repaired invalid mobile drawer class serialization, restored an opaque token-driven drawer surface, and aligned the dark landing shell with the black hero; local 390×844 light/dark browser retest passed without a build | Await operator validation of the rendered mobile result |
+| 2026-08-02 12:28:59 UTC | 003-sg-bug | GPT-5 Codex | dark-landing-surface-regression-fix | fixed-pending-verify | Removed the inverted dark surface utility from the three landing sections; local 390×844 dark/light retest now computes 33/33/33 in dark and 240/240/240 in light | Await operator validation of the rendered result |
+| 2026-08-02 12:31:54 UTC | 003-sg-bug | GPT-5 Codex | landing-button-contrast-fix | fixed-pending-verify | Reused the tokenized primary-action class for Pricing and Final CTA buttons; light/dark browser retest confirms readable primary and secondary button text | Await operator validation of the rendered result |
 
 ## Current Chantier Flow
 
@@ -304,7 +306,7 @@ None.
 | 101-sf-ready | done | Readiness confirmed 2026-06-11 | Continue implementation |
 | 102-sf-start | done | Navbar.astro tokenized; hardcoded colors replaced with --navbar-* tokens | Complete |
 | 006-sf-design | done | Global token coherence and professional visual polish completed; desktop/mobile browser proof collected with zero undefined project CSS variables | Ready for /103-sg-verify |
-| 003-sg-bug | fixed-pending-verify | Mobile drawer is opaque in light/dark and the dark landing shell matches the hero in a 390×844 browser retest | Await operator validation |
+| 003-sg-bug | fixed-pending-verify | Mobile drawer is opaque in light/dark; dark landing surfaces and primary button text now use theme-aware tokens with readable contrast | Await operator validation |
 | 001-sf-build | done | Navbar token migration implemented and verified | Complete |
 | 502-sf-audit-design | done | Remediated 115 drift findings (TemuWorkspace, global.css buttons, Navbar); drift-check --changed clean | Complete |
 | 103-sf-verify | pending | Token drift passes and browser proof is collected; no build check was run per operator preference | Run final verification without redundant build checks unless an error appears |
