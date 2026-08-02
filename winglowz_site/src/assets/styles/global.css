@@ -116,7 +116,12 @@
     --landing-primary-action-bg: hsl(var(--content-text-primary));
     --landing-primary-action-bg-hover: hsl(var(--content-text-secondary));
     --landing-primary-action-text: hsl(var(--content-bg-elevated));
-    --landing-primary-action-shadow: 0 1rem 2rem rgb(var(--landing-shadow) / 0.12);
+    --landing-primary-action-border-width: 1px;
+    --landing-primary-action-border: 0 0% 78%;
+    --landing-primary-action-shadow: 0 1rem 2rem rgb(var(--landing-shadow) / 0.16);
+    --landing-primary-action-shadow-hover: 0 1rem 2rem rgb(var(--landing-shadow) / 0.22);
+    --landing-secondary-action-shadow: 0 0.5rem 1.25rem rgb(15 23 42 / 0.08);
+    --landing-secondary-action-shadow-hover: 0 0.75rem 1.5rem rgb(15 23 42 / 0.14);
     --landing-background: 0 0% 98%;
     --landing-foreground: 240 10% 12%;
     --landing-primary: 240 10% 12%;
@@ -142,6 +147,9 @@
     --landing-surface-strong: 240 10% 12%;
     --landing-surface-strong-foreground: 0 0% 100%;
     --landing-surface-edge: 0 0% 84%;
+    --landing-surface-border-width: 1px;
+    --landing-surface-shadow: 0 20px 60px rgb(15 23 42 / 0.08);
+    --landing-surface-glow: 0 0 0 1px rgb(0 200 255 / 0.02);
     --landing-soft: 0 0% 100%;
     --landing-soft-foreground: 240 10% 14%;
     --landing-soft-muted: 240 6% 42%;
@@ -379,7 +387,7 @@
     --navbar-drawer-shadow-light: 0 16px 40px rgb(15 23 42 / 0.14);
     --navbar-cookie-shadow-light: 0 16px 40px rgb(15 23 42 / 0.16);
     --navbar-glass-shadow-dark: 0 10px 30px rgb(0 0 0 / 0.24);
-    --navbar-drawer-shadow-dark: 0 16px 40px rgb(0 0 0 / 0.3);
+    --navbar-drawer-shadow-dark: 0 16px 40px rgb(0 0 0 / 0.46), 0 0 24px rgb(0 200 255 / 0.07);
     --navbar-cookie-shadow-dark: 0 16px 40px rgb(0 0 0 / 0.3);
     --navbar-overlay-light: 255 255 255;
     --navbar-overlay-dark: 24 24 27;
@@ -566,7 +574,7 @@
     --landing-accent-foreground: 0 0% 100%;
     --landing-destructive: 0 62% 30%;
     --landing-destructive-foreground: 0 0% 100%;
-    --landing-border: 0 0% 22%;
+    --landing-border: 0 0% 28%;
     --landing-input: 0 0% 22%;
     --landing-ring: 0 0% 40%;
     --landing-card: 0 0% 13%;
@@ -578,7 +586,7 @@
     --landing-surface-muted: 0 0% 64%;
     --landing-surface-strong: 0 0% 9%;
     --landing-surface-strong-foreground: 0 0% 100%;
-    --landing-surface-edge: 0 0% 22%;
+    --landing-surface-edge: 0 0% 28%;
     --landing-soft: 0 0% 13%;
     --landing-soft-foreground: 0 0% 100%;
     --landing-soft-muted: 0 0% 64%;
@@ -598,7 +606,7 @@
     --navbar-cta-bg: 0 0% 100%;
     --navbar-cta-text: 0 0% 4%;
     --navbar-cta-bg-hover: 0 0% 87%;
-    --navbar-drawer-border: 0 0% 40%;
+    --navbar-drawer-border: 0 0% 46%;
     --navbar-drawer-bg: 0 0% 10%;
     --navbar-ring: 0 0% 100%;
     --navbar-force-shell-bg: 0 0% 2%;
@@ -732,7 +740,7 @@
     --landing-accent-foreground: 0 0% 100%;
     --landing-destructive: 0 62% 30%;
     --landing-destructive-foreground: 0 0% 100%;
-    --landing-border: 0 0% 22%;
+    --landing-border: 0 0% 28%;
     --landing-input: 0 0% 22%;
     --landing-ring: 0 0% 40%;
     --landing-card: 0 0% 13%;
@@ -744,7 +752,15 @@
     --landing-surface-muted: 0 0% 64%;
     --landing-surface-strong: 0 0% 9%;
     --landing-surface-strong-foreground: 0 0% 100%;
-    --landing-surface-edge: 0 0% 22%;
+    --landing-surface-edge: 0 0% 28%;
+    --landing-surface-border-width: 1px;
+    --landing-surface-shadow: 0 20px 60px rgb(0 0 0 / 0.42);
+    --landing-surface-glow: 0 0 0 1px rgb(0 200 255 / 0.05);
+    --landing-primary-action-border: 0 0% 18%;
+    --landing-primary-action-shadow: 0 1rem 2rem rgb(0 0 0 / 0.34), 0 0 20px rgb(0 200 255 / 0.08);
+    --landing-primary-action-shadow-hover: 0 1rem 2rem rgb(0 0 0 / 0.42), 0 0 26px rgb(0 200 255 / 0.14);
+    --landing-secondary-action-shadow: 0 0.5rem 1.25rem rgb(0 0 0 / 0.28), 0 0 18px rgb(0 200 255 / 0.05);
+    --landing-secondary-action-shadow-hover: 0 0.75rem 1.5rem rgb(0 0 0 / 0.36), 0 0 22px rgb(0 200 255 / 0.1);
     --landing-soft: 0 0% 13%;
     --landing-soft-foreground: 0 0% 100%;
     --landing-soft-muted: 0 0% 64%;
@@ -764,7 +780,7 @@
     --navbar-cta-bg: 0 0% 100%;
     --navbar-cta-text: 0 0% 4%;
     --navbar-cta-bg-hover: 0 0% 87%;
-    --navbar-drawer-border: 0 0% 40%;
+    --navbar-drawer-border: 0 0% 46%;
     --navbar-drawer-bg: 0 0% 10%;
     --navbar-ring: 0 0% 100%;
     --navbar-force-shell-bg: 0 0% 2%;
@@ -1360,11 +1376,23 @@
   .landing-primary-action {
     color: var(--landing-primary-action-text);
     background-color: var(--landing-primary-action-bg);
+    border: var(--landing-primary-action-border-width) solid hsl(var(--landing-primary-action-border));
     box-shadow: var(--landing-primary-action-shadow);
+    transition: background-color var(--landing-motion-fast) ease, border-color var(--landing-motion-fast) ease, box-shadow var(--landing-motion-fast) ease, transform var(--landing-motion-fast) ease;
   }
 
   .landing-primary-action:hover {
     background-color: var(--landing-primary-action-bg-hover);
+    box-shadow: var(--landing-primary-action-shadow-hover);
+  }
+
+  .landing-secondary-action {
+    box-shadow: var(--landing-secondary-action-shadow);
+    transition: background-color var(--landing-motion-fast) ease, border-color var(--landing-motion-fast) ease, box-shadow var(--landing-motion-fast) ease, transform var(--landing-motion-fast) ease;
+  }
+
+  .landing-secondary-action:hover {
+    box-shadow: var(--landing-secondary-action-shadow-hover);
   }
 
   .landing-lead-glow {

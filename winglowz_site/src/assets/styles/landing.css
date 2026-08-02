@@ -54,7 +54,8 @@
   background: hsl(var(--landing-surface));
   color: hsl(var(--landing-surface-foreground));
   border-color: hsl(var(--landing-border));
-  box-shadow: 0 20px 60px rgba(var(--landing-shadow), 0.08);
+  border-width: var(--landing-surface-border-width);
+  box-shadow: var(--landing-surface-shadow), var(--landing-surface-glow);
 }
 
 .landing-surface-strong {

@@ -297,6 +297,9 @@ None.
 | 2026-07-29 19:55:08 UTC | 003-sg-bug | GPT-5 Codex | mobile-navbar-visual-regression-fix | fixed-pending-verify | Repaired invalid mobile drawer class serialization, restored an opaque token-driven drawer surface, and aligned the dark landing shell with the black hero; local 390×844 light/dark browser retest passed without a build | Await operator validation of the rendered mobile result |
 | 2026-08-02 12:28:59 UTC | 003-sg-bug | GPT-5 Codex | dark-landing-surface-regression-fix | fixed-pending-verify | Removed the inverted dark surface utility from the three landing sections; local 390×844 dark/light retest now computes 33/33/33 in dark and 240/240/240 in light | Await operator validation of the rendered result |
 | 2026-08-02 12:31:54 UTC | 003-sg-bug | GPT-5 Codex | landing-button-contrast-fix | fixed-pending-verify | Reused the tokenized primary-action class for Pricing and Final CTA buttons; light/dark browser retest confirms readable primary and secondary button text | Await operator validation of the rendered result |
+| 2026-08-02 13:01:11 UTC | 006-sg-design | GPT-5 Codex | audit-tokens-site-app | pass | Source scans pass with 0 findings for 236 site files and 128 app files; generated deployment output was excluded from the source verdict | Continue visual proof and final verification |
+| 2026-08-02 13:23:54 UTC | 006-sg-design | GPT-5 Codex | surface-border-and-action-elevation | done | Strengthened tokenized card/menu borders, added restrained dark glow and shadows, and added visible primary-button borders/elevation; light/dark browser proof plus site drift scan passed | Continue final verification |
+| 2026-08-02 13:25:19 UTC | 006-sg-design | GPT-5 Codex | dark-secondary-action-elevation | done | Added restrained dark shadow and cyan halo tokens to secondary landing actions; dark browser proof confirms visible borders and readable text | Continue final verification |
 
 ## Current Chantier Flow
 
@@ -305,7 +308,7 @@ None.
 | 100-sf-spec | done | Spec created and approved 2026-06-11 | Keep spec current |
 | 101-sf-ready | done | Readiness confirmed 2026-06-11 | Continue implementation |
 | 102-sf-start | done | Navbar.astro tokenized; hardcoded colors replaced with --navbar-* tokens | Complete |
-| 006-sf-design | done | Global token coherence and professional visual polish completed; desktop/mobile browser proof collected with zero undefined project CSS variables | Ready for /103-sg-verify |
+| 006-sf-design | done | Source token drift scan passes: 0 findings across 236 site files and 128 app files; card/menu borders and primary-button elevation were visually checked in light/dark | Ready for /103-sg-verify |
 | 003-sg-bug | fixed-pending-verify | Mobile drawer is opaque in light/dark; dark landing surfaces and primary button text now use theme-aware tokens with readable contrast | Await operator validation |
 | 001-sf-build | done | Navbar token migration implemented and verified | Complete |
 | 502-sf-audit-design | done | Remediated 115 drift findings (TemuWorkspace, global.css buttons, Navbar); drift-check --changed clean | Complete |
