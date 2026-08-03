@@ -43,6 +43,17 @@ The following records were consolidated from the former nested site tracker duri
 🟠 [WinGlowsApp] task: Extract shared metric/status pill primitives and remove duplicated private metric widgets across product pages | status: todo | area: product-pages-components | id: wfz-shared-metric-status-pills
 🟠 [WinGlowsApp] task: Split oversized Flutter page widgets and studios into smaller render/controller components with focused widget tests | status: todo | area: component-architecture | id: wfz-split-god-widgets
 
+### Site 404 Remediation
+
+🟠 [WinGlows] task: Repair bilingual route translation mapping | status: todo | area: site-routing | id: wfz-site-route-translation-helper | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: production crawl found broken language-switch destinations | next: 106-sg-fix
+🟠 [WinGlows] task: Restore production Roadmap routes for both locales | status: todo | area: site-roadmap | id: wfz-site-roadmap-production-routes | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: /roadmap and /fr/roadmap return 404 in production | next: 106-sg-fix
+🟠 [WinGlows] task: Fix product image public URLs across EN and FR listing and detail pages | status: todo | area: site-products | id: wfz-site-product-image-urls | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: 20 browser-loaded product image URLs return 404 | next: 106-sg-fix
+🟠 [WinGlows] task: Fix Services Astro image rendering contract | status: todo | area: site-services | id: wfz-site-services-image-rendering | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: Services pages load serialized function URLs as images | next: 106-sg-fix
+🟡 [WinGlows] task: Return correct 404 status for the French error page and serve the root favicon | status: todo | area: site-errors | id: wfz-site-error-status-favicon | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: /fr/404 returns 200 and /favicon.ico returns 404 | next: 106-sg-fix
+🟠 [WinGlows] task: Repair localized content links and aliases for blog training and Welcome pages | status: todo | area: site-i18n | id: wfz-site-localized-content-links | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: EN and FR content alternate links produce 15 production 404 destinations | paired: wfz-site-route-translation-helper | next: 106-sg-fix
+🟠 [WinGlows] task: Add an exhaustive sitemap link and browser resource 404 regression crawl | status: todo | area: site-quality | id: wfz-site-anti-404-regression | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: 23 internal destinations or resources fail in production | next: 105-sg-check
+🟡 [WinGlows] task: Align production URL and Node validation requirements in project documentation | status: todo | area: site-governance | id: wfz-site-validation-environment-docs | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: documented production host is stale and local runtime is Node 22 while package requires Node 24 | next: 300-sg-docs
+
 ---
 
 ## Migration Verification

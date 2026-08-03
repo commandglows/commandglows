@@ -1,5 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import * as React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { TestimonialCarousel } from '@/components/react/landing/TestimonialCarousel'
+
+;(globalThis as typeof globalThis & { React: typeof React }).React = React
 
 function readProjectFile(path: string) {
   return readFileSync(resolve(process.cwd(), path), 'utf8')
@@ -99,5 +104,17 @@ describe('Homepage testimonial proof', () => {
     expect(carousel).toContain('setExpanded(false)')
     expect(carousel).toContain('onPointerDown={handlePointerDown}')
     expect(carousel).toContain('onPointerUp={handlePointerEnd}')
+  })
+
+  test('server-renders the first testimonial without a reveal visibility gate', () => {
+    const marquee = readProjectFile('src/components/astro/landing/LogoMarquee.astro')
+    const renderedCarousel = renderToStaticMarkup(React.createElement(TestimonialCarousel, { lang: 'fr' }))
+
+    expect(marquee).toContain('<TestimonialCarousel client:load lang={lang} />')
+    expect(marquee).not.toContain('client:only="react"')
+    expect(marquee).toContain('class="landing-testimonials-carousel max-w-3xl mx-auto px-4"')
+    expect(marquee).not.toContain('landing-testimonials-carousel reveal')
+    expect(renderedCarousel).toContain('One of the Best Deals I Purchased All Year!')
+    expect(renderedCarousel).toContain('Florin Muresan')
   })
 })
