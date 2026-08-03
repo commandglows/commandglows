@@ -19,8 +19,8 @@ linked_systems:
   - "macOS desktop bridge"
   - "Linux desktop bridge"
 depends_on:
-  - "shipglowz_data/workflow/specs/custom-action-buttons-and-command-macros.md"
-  - "shipglowz_data/technical/winglowz_app/context-function-tree.md"
+  - "shipglows_data/workflow/specs/custom-action-buttons-and-command-macros.md"
+  - "shipglows_data/technical/winglowz_app/context-function-tree.md"
 evidence:
   - "winglowz_app/lib/features/custom_action_buttons/domain/custom_action_buttons.dart"
   - "winglowz_app/lib/features/snippets/presentation/custom_action_buttons_panel.dart"

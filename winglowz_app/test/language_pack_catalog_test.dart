@@ -36,7 +36,7 @@ void main() {
       final invalid = _validLocalPack()
         ..['quality_tier'] = 'recommended'
         ..['benchmark_status'] = 'passed'
-        ..['benchmark_evidence'] = 'shipglowz_data/workflow/benchmarks/fr.md';
+        ..['benchmark_evidence'] = 'shipglows_data/workflow/benchmarks/fr.md';
 
       expect(
         () => LanguagePackCatalogEntry.fromMap(invalid),
@@ -789,7 +789,7 @@ Map<Object?, Object?> _validLocalPack() => {
   'supports_offline': true,
   'benchmark_status': 'candidate',
   'benchmark_evidence':
-      'shipglowz_data/workflow/specs/on-device-asr-free-options-research.md',
+      'shipglows_data/workflow/specs/on-device-asr-free-options-research.md',
   'updated_at': '2026-05-15T19:19:39Z',
 };
 

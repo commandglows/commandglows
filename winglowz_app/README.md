@@ -27,7 +27,7 @@ depends_on:
 supersedes: []
 evidence:
   - "docs/SPEC_FLUTTER_SUPABASE_MIGRATION.md"
-  - "../shipglowz_data/workflow/specs/android-ime-winglowz_app-keyboard.md"
+  - "../shipglows_data/workflow/specs/android-ime-winglowz_app-keyboard.md"
   - "android/app/src/main/AndroidManifest.xml"
 next_step: "$sf-docs update"
 ---

@@ -30,19 +30,19 @@ depends_on:
   - artifact: "docs/MIGRATION_FLUTTER.md"
     artifact_version: "0.1.0"
     required_status: "reviewed"
-  - artifact: "shipglowz_data/business/product.md"
+  - artifact: "shipglows_data/business/product.md"
     artifact_version: "0.1.0"
     required_status: "reviewed"
-  - artifact: "shipglowz_data/technical/architecture.md"
+  - artifact: "shipglows_data/technical/architecture.md"
     artifact_version: "0.1.0"
     required_status: "reviewed"
-  - artifact: "shipglowz_data/business/business.md"
+  - artifact: "shipglows_data/business/business.md"
     artifact_version: "0.1.0"
     required_status: "reviewed"
-  - artifact: "shipglowz_data/business/branding.md"
+  - artifact: "shipglows_data/business/branding.md"
     artifact_version: "0.1.0"
     required_status: "reviewed"
-  - artifact: "shipglowz_data/technical/guidelines.md"
+  - artifact: "shipglows_data/technical/guidelines.md"
     artifact_version: "0.1.0"
     required_status: "reviewed"
   - artifact: "docs/API.md"
@@ -62,7 +62,7 @@ depends_on:
     required_status: "reviewed"
 supersedes:
   - "docs/MIGRATION_FLUTTER.md@0.1.0 as execution scope"
-superseded_by: "shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md"
+superseded_by: "shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
 evidence:
   - "package.json"
   - "app/(tabs)/index.tsx"
@@ -77,9 +77,9 @@ evidence:
   - "docs/PLATFORM_BEHAVIOR.md"
   - "docs/OVERLAY_ANDROID.md"
   - "docs/VERIFICATION.md"
-  - "shipglowz_data/workflow/reviews/security-readiness-flutter-supabase.md"
+  - "shipglows_data/workflow/reviews/security-readiness-flutter-supabase.md"
   - "modules/floating-overlay/android/src/main"
-next_step: "/sf-start shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md"
+next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
 ---
 
 # Title
@@ -89,7 +89,7 @@ Migration totale WinGlowz vers Flutter + Supabase
 > Superseded: this spec is no longer the active implementation target after the
 > 2026-05-09 decision to use backend-agnostic contracts with Firebase as the
 > first Android adapter. Keep it as migration history only. The active spec is
-> `shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md`.
+> `shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md`.
 >
 > Archived spec: do not execute new tasks from this document.
 
@@ -245,7 +245,7 @@ Sources officielles consultees:
 - Product: snippets et dictionary passent de tables partiellement exposees a UI complete.
 - Platform: Android conserve des capacites supplementaires via overlay; iOS, macOS, Windows, Linux et web doivent avoir une experience complete sans overlay.
 - Ops: Supabase migrations doivent devenir la source de verite schema.
-- Docs: `shipglowz_data/technical/architecture.md`, `shipglowz_data/technical/guidelines.md`, `docs/API.md`, `docs/COMPONENTS.md`, `shipglowz_data/business/business.md`, `shipglowz_data/business/product.md` et `shipglowz_data/business/branding.md` sont alignes comme contrats reviewed; `README.md` et les guides generes doivent rester coherents pendant l'implementation.
+- Docs: `shipglows_data/technical/architecture.md`, `shipglows_data/technical/guidelines.md`, `docs/API.md`, `docs/COMPONENTS.md`, `shipglows_data/business/business.md`, `shipglows_data/business/product.md` et `shipglows_data/business/branding.md` sont alignes comme contrats reviewed; `README.md` et les guides generes doivent rester coherents pendant l'implementation.
 
 # Documentation Coherence
 
@@ -258,8 +258,8 @@ Docs a creer ou remplacer:
 - `docs/OVERLAY_ANDROID.md`: cree et reviewed; a completer si le bridge Kotlin change.
 - `docs/VERIFICATION.md`: cree et reviewed; a cocher avec les resultats effectifs.
 - `docs/DECISIONS.md`: reviewed avec decision Flutter + Supabase.
-- `shipglowz_data/business/business.md`, `shipglowz_data/business/product.md`, `shipglowz_data/business/branding.md`, `shipglowz_data/technical/architecture.md`, `shipglowz_data/technical/guidelines.md`, `docs/API.md`, `docs/COMPONENTS.md`: reviewed et alignes sur cible Flutter + Supabase.
-- `shipglowz_data/workflow/reviews/security-readiness-flutter-supabase.md`: revue adversariale integree dans cette spec.
+- `shipglows_data/business/business.md`, `shipglows_data/business/product.md`, `shipglows_data/business/branding.md`, `shipglows_data/technical/architecture.md`, `shipglows_data/technical/guidelines.md`, `docs/API.md`, `docs/COMPONENTS.md`: reviewed et alignes sur cible Flutter + Supabase.
+- `shipglows_data/workflow/reviews/security-readiness-flutter-supabase.md`: revue adversariale integree dans cette spec.
 
 # Edge Cases
 
@@ -510,16 +510,16 @@ Fichiers a lire d'abord:
 
 - `docs/SPEC_FLUTTER_SUPABASE_MIGRATION.md`
 - `docs/MIGRATION_FLUTTER.md`
-- `shipglowz_data/business/product.md`
-- `shipglowz_data/business/business.md`
-- `shipglowz_data/technical/architecture.md`
-- `shipglowz_data/technical/guidelines.md`
+- `shipglows_data/business/product.md`
+- `shipglows_data/business/business.md`
+- `shipglows_data/technical/architecture.md`
+- `shipglows_data/technical/guidelines.md`
 - `docs/API.md`
 - `docs/API_SUPABASE.md`
 - `docs/PLATFORM_BEHAVIOR.md`
 - `docs/OVERLAY_ANDROID.md`
 - `docs/VERIFICATION.md`
-- `shipglowz_data/workflow/reviews/security-readiness-flutter-supabase.md`
+- `shipglows_data/workflow/reviews/security-readiness-flutter-supabase.md`
 - `modules/floating-overlay/android/src/main/java/expo/modules/floatingoverlay/FloatingOverlayModule.kt`
 
 Approche d'execution:

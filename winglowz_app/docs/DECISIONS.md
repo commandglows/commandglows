@@ -14,14 +14,14 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "high"
 depends_on:
-  - "../shipglowz_data/business/business.md@0.1.0"
-  - "../shipglowz_data/business/product.md@0.1.0"
+  - "../shipglows_data/business/business.md@0.1.0"
+  - "../shipglows_data/business/product.md@0.1.0"
 evidence:
   - "SPEC_FLUTTER_SUPABASE_MIGRATION.md"
   - "../docs/MIGRATION_FLUTTER.md"
 supersedes:
   - "2026-04-26 long-term platform direction"
-next_step: "/sf-ready shipglowz_data/workflow/specs/unified-suite-authentication.md"
+next_step: "/sf-ready shipglows_data/workflow/specs/unified-suite-authentication.md"
 ---
 
 # Decisions — WinGlowz
@@ -63,7 +63,7 @@ Platform split:
   touched and must be replaced with "Windows target chantier, not implemented
   until Windows proof exists."
 - The active chantier is
-  `shipglowz_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md`.
+  `shipglows_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md`.
 
 ## 2026-05-19 — Suite identity exception for Clerk (reviewed)
 

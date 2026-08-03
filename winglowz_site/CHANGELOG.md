@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Added canonical ShipGlows pages, installer endpoint, generated shell and PowerShell installers, and permanent compatibility redirects from the former ShipGlowz routes.
+
+### Changed
+- Canonicalized suite installer variables, repository paths, product identifiers, entitlements, public copy, and documentation to ShipGlows while retaining bounded legacy fallbacks.
+
 ## [2026-05-03]
 
 ### Changed
@@ -21,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Funnel strategy documents under `CONTENU/xxxTunnel/` covering messaging spine, avatar matrix, landing wireframe, sales-page draft, and email campaign copy
 - Reusable FR/EN Windows Mastery email campaign assets under `idees/emails/winglowz-windows-mastery/`
 - `.env.example` documenting the current Clerk, Polar, Convex, Resend, and app configuration variables
-- `shipglowz_data/technical/guidelines.md` to capture project-specific engineering and funnel maintenance rules
+- `shipglows_data/technical/guidelines.md` to capture project-specific engineering and funnel maintenance rules
 
 ### Changed
 - Redirect homepage hero, final CTA, and paid pricing CTA into the new Windows sales page while keeping the free plan linked to the course preview hub
@@ -50,7 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Clean up unused docs and legacy files (AUTH_ANALYSIS, BRANDING_SPECIFICATION, copilot-instructions)
 - Remove Dependabot configuration
 - Simplify README
-- Update `shipglowz_data/business/branding.md` wording
+- Update `shipglows_data/business/branding.md` wording
 - Route Starlight lesson previews to the Polar checkout flow instead of the product offer page
 - Update Clerk sign-in flow so `next` can return to checkout or the private lesson
 - Update purchase success page copy and redirect behavior for course unlocks
@@ -96,12 +102,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - CLAUDE.md project instructions for Claude Code
-- `shipglowz_data/business/branding.md` comprehensive brand guidelines
-- `shipglowz_data/business/business.md` business model documentation
-- `shipglowz_data/technical/guidelines.md` development guidelines
+- `shipglows_data/business/branding.md` comprehensive brand guidelines
+- `shipglows_data/business/business.md` business model documentation
+- `shipglows_data/technical/guidelines.md` development guidelines
 - Starlight documentation: 8 training modules (productivity, Windows config, time management, actions, content consumption, knowledge management, social tools, keyboard shortcuts)
 - Privacy policy page with bilingual support (EN/FR)
-- ShipGlowz inspector and Eruda debug tools for development
+- ShipGlows inspector and Eruda debug tools for development
 
 ### Changed
 - Restructure CONTENU/ course content with metadata headers

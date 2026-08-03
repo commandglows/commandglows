@@ -5,7 +5,8 @@ export const WINGLOWZ_APP_PRODUCT_ID = 'winglowz_app'
 export const WINGLOWZ_FORMATION_PRODUCT_ID = 'winglowz_formation'
 export const GOCHARBON_PRODUCT_ID = 'gocharbon'
 export const CONTENTGLOWZ_PRODUCT_ID = 'contentglowz'
-export const SHIPGLOWZ_PRODUCT_ID = 'shipglowz'
+export const SHIPGLOWS_PRODUCT_ID = 'shipglows'
+export const LEGACY_SHIPGLOWZ_PRODUCT_ID = 'shipglowz'
 export const REPLAYGLOWZ_PRODUCT_ID = 'replayglowz'
 export const SOCIALGLOWZ_PRODUCT_ID = 'socialglowz'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
@@ -15,7 +16,7 @@ export const SUITE_PRODUCT_IDS = [
   WINGLOWZ_FORMATION_PRODUCT_ID,
   GOCHARBON_PRODUCT_ID,
   CONTENTGLOWZ_PRODUCT_ID,
-  SHIPGLOWZ_PRODUCT_ID,
+  SHIPGLOWS_PRODUCT_ID,
   REPLAYGLOWZ_PRODUCT_ID,
   SOCIALGLOWZ_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
@@ -43,7 +44,7 @@ export const DEFAULT_FREE_ENTITLEMENT_POLICIES = [
     source: 'product_default',
   },
   {
-    productId: SHIPGLOWZ_PRODUCT_ID,
+    productId: SHIPGLOWS_PRODUCT_ID,
     plan: 'free',
     source: 'product_default',
   },
@@ -77,8 +78,14 @@ type RawEntitlement = {
   plan?: string
 }
 
+export function normalizeSuiteProductId(productId: string): string {
+  return productId === LEGACY_SHIPGLOWZ_PRODUCT_ID
+    ? SHIPGLOWS_PRODUCT_ID
+    : productId
+}
+
 export function isAllowedSuiteProduct(productId: string): boolean {
-  return SUITE_PRODUCT_ALLOWLIST.has(productId)
+  return SUITE_PRODUCT_ALLOWLIST.has(normalizeSuiteProductId(productId))
 }
 
 export function isActiveAccessStatus(status: string): boolean {
@@ -91,7 +98,8 @@ export function selectPreferredActiveProductEntitlement<T extends RawEntitlement
 ): T | undefined {
   const activeEntitlements = entitlements.filter(
     (entry) =>
-      entry.productId === productId && isActiveAccessStatus(entry.status)
+      normalizeSuiteProductId(entry.productId) === normalizeSuiteProductId(productId) &&
+      isActiveAccessStatus(entry.status)
   )
   return (
     activeEntitlements.find((entry) => entry.plan !== 'free') ??
@@ -100,9 +108,10 @@ export function selectPreferredActiveProductEntitlement<T extends RawEntitlement
 }
 
 function getDefaultFreeEntitlementPolicy(productId: string) {
+  const canonicalProductId = normalizeSuiteProductId(productId)
   return (
     DEFAULT_FREE_ENTITLEMENT_POLICIES.find(
-      (policy) => policy.productId === productId
+      (policy) => policy.productId === canonicalProductId
     ) ?? null
   )
 }
@@ -142,21 +151,37 @@ export async function ensureDefaultFreeEntitlement(
     )
     .first()
 
-  if (existingDefaultEntitlement) {
+  const legacyIdempotencyKey =
+    policy.productId === SHIPGLOWS_PRODUCT_ID
+      ? `${policy.source}:${LEGACY_SHIPGLOWZ_PRODUCT_ID}:${args.globalUserPublicId}`
+      : null
+  const existingLegacyEntitlement = legacyIdempotencyKey
+    ? await ctx.db
+        .query('productEntitlements')
+        .withIndex('by_idempotencyKey', (q) =>
+          q.eq('idempotencyKey', legacyIdempotencyKey)
+        )
+        .first()
+    : null
+  const entitlementToReuse = existingDefaultEntitlement ?? existingLegacyEntitlement
+
+  if (entitlementToReuse) {
     if (
-      existingDefaultEntitlement.productId !== policy.productId ||
-      existingDefaultEntitlement.status !== 'active' ||
-      existingDefaultEntitlement.plan !== policy.plan ||
-      existingDefaultEntitlement.source !== policy.source
+      entitlementToReuse.productId !== policy.productId ||
+      entitlementToReuse.status !== 'active' ||
+      entitlementToReuse.plan !== policy.plan ||
+      entitlementToReuse.source !== policy.source ||
+      entitlementToReuse.idempotencyKey !== idempotencyKey
     ) {
-      await ctx.db.patch(existingDefaultEntitlement._id, {
+      await ctx.db.patch(entitlementToReuse._id, {
         productId: policy.productId,
         plan: policy.plan,
         status: 'active',
         source: policy.source,
         sourceRef: args.sourceRef,
         environment: args.environment,
-        grantedAt: existingDefaultEntitlement.grantedAt ?? args.now,
+        idempotencyKey,
+        grantedAt: entitlementToReuse.grantedAt ?? args.now,
         updatedAt: args.now,
       })
     }

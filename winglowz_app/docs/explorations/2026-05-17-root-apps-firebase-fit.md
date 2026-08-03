@@ -37,13 +37,13 @@ evidence:
   - "/home/claude/replayglowz/replayglowz_app/pubspec.yaml"
   - "/home/claude/socialglowz/README.md"
   - "/home/claude/socialglowz/package.json"
-  - "/home/claude/shipglowz_data/projects/socialflow/TASKS.md"
+  - "/home/claude/shipglows_data/projects/socialflow/TASKS.md"
   - "/home/claude/notefinderz/README.md"
   - "/home/claude/notefinderz/package.json"
   - "/home/claude/gocharbon/package.json"
-  - "/home/claude/shipglowz_data/projects/nantes-gratuit/TASKS.md"
+  - "/home/claude/shipglows_data/projects/nantes-gratuit/TASKS.md"
 depends_on:
-  - "/home/claude/shipglowz_data/projects/winglowz/docs/technical/suite-authentication.md@1.0.0"
+  - "/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication.md@1.0.0"
 supersedes: []
 next_step: "/sf-spec firebase-fit-per-product if a migration is selected"
 ---

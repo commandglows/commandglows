@@ -25,10 +25,10 @@ linked_systems:
   - "Firestore"
 evidence:
   - "docs/DECISIONS.md"
-  - "shipglowz_data/technical/architecture.md"
-  - "shipglowz_data/technical/guidelines.md"
-  - "/home/claude/shipglowz_data/specs/master-auth-playbook.md"
-  - "/home/claude/shipglowz_data/projects/VoiceFlowz/TASKS.md"
+  - "shipglows_data/technical/architecture.md"
+  - "shipglows_data/technical/guidelines.md"
+  - "/home/claude/shipglows_data/specs/master-auth-playbook.md"
+  - "/home/claude/shipglows_data/projects/VoiceFlowz/TASKS.md"
   - "/home/claude/.claude/projects/-home-claude-winglowz/751f382a-c2fc-42ea-bf75-b4e0c48dd1c5"
 depends_on:
   - "docs/DECISIONS.md@1.0.0"
@@ -50,17 +50,17 @@ domains?
 - `docs/DECISIONS.md` - Current reviewed decision is backend-agnostic data
   contracts with Firebase Auth + Firestore as first Android adapter for the
   WinGlowz app. It does not decide suite-wide identity.
-- `shipglowz_data/technical/architecture.md` - User ownership comes from backend
+- `shipglows_data/technical/architecture.md` - User ownership comes from backend
   auth context, not client-provided IDs. This remains valid under either shared
   or product-local auth.
-- `shipglowz_data/technical/guidelines.md` - Firebase Auth + Firestore is current
+- `shipglows_data/technical/guidelines.md` - Firebase Auth + Firestore is current
   WinGlowz app direction; Convex/Clerk/Supabase are legacy for this app, not a
   workspace-wide prohibition.
-- `/home/claude/shipglowz_data/specs/master-auth-playbook.md` - Cross-project
+- `/home/claude/shipglows_data/specs/master-auth-playbook.md` - Cross-project
   auth playbook says one documented session owner per runtime and separate
   local/preview/staging/prod auth environments. It explicitly scopes out
   migrating every app to one provider.
-- `/home/claude/shipglowz_data/projects/VoiceFlowz/TASKS.md` - Historical
+- `/home/claude/shipglows_data/projects/VoiceFlowz/TASKS.md` - Historical
   tracker for the app now known as WinGlowz app. The legacy task "Configure
   Clerk for auth (shared with WinGlowz)" is a signal in favor of shared suite
   auth, not against it. Treat VoiceFlowz / VoiceFlows as old naming, not as a
@@ -300,4 +300,4 @@ Product Data
 
 | Date UTC | Prompt/Focus | Action | Result | Next step |
 |----------|--------------|--------|--------|-----------|
-| 2026-05-16 00:00:00 UTC | Shared account across product suite | Searched local WinGlowz docs, ShipGlowz auth playbook, project trackers, historical WinGlowz session notes, and current identity-provider docs | No binding decision found against shared suite identity; evidence favors shared identity with separate entitlements | `/sf-spec unified-suite-authentication` |
+| 2026-05-16 00:00:00 UTC | Shared account across product suite | Searched local WinGlowz docs, ShipGlows auth playbook, project trackers, historical WinGlowz session notes, and current identity-provider docs | No binding decision found against shared suite identity; evidence favors shared identity with separate entitlements | `/sf-spec unified-suite-authentication` |

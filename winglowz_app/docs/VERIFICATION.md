@@ -14,14 +14,14 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 depends_on:
-  - "shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
+  - "shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
 supersedes: []
 evidence:
-  - "shipglowz_data/workflow/specs/android-ime-winglowz_app-keyboard.md"
+  - "shipglows_data/workflow/specs/android-ime-winglowz_app-keyboard.md"
   - "test/widget_test.dart"
-  - "shipglowz_data/workflow/specs/clipboard-backend-agnostic-api.md"
-  - "shipglowz_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md"
-next_step: "/sf-start shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md"
+  - "shipglows_data/workflow/specs/clipboard-backend-agnostic-api.md"
+  - "shipglows_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md"
+next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
 ---
 
 # Verification — WinGlowz Android Firebase Backend-Agnostic Migration
@@ -127,7 +127,7 @@ Run before closing any auth-hardening chantier as sellable/production-ready:
 | Sentry/AppDiagnostics review | Category/code/support detail are present where useful; secrets, tokens, passwords, OAuth payloads, clipboard text, transcripts, and raw provider payloads are absent. |
 
 Record device/emulator, build source, Firebase project, provider/SHA setup
-status, and redaction evidence in this doc or `shipglowz_data/workflow/TEST_LOG.md`.
+status, and redaction evidence in this doc or `shipglows_data/workflow/TEST_LOG.md`.
 
 ## Android IME Manual Matrix
 

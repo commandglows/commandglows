@@ -99,7 +99,7 @@ mosh user@yourserver
 - ✅ Ranger, fzf, ripgrep, fd (navigation fichiers)
 - ✅ Starship, Zoxide (shell)
 - ✅ SSH, Mosh, tmux (connexion persistante)
-- ✅ ShipGlowz local tunnels (urls/tunnel)
+- ✅ ShipGlows local tunnels (urls/tunnel)
 
 ### Ce qui est sauté (serveur uniquement)
 

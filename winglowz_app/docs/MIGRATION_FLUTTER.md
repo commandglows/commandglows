@@ -21,14 +21,14 @@ evidence:
   - "../modules/floating-overlay/android/src/main/java/expo/modules/floatingoverlay/FloatingOverlayModule.kt"
   - "../docs/API.md"
 supersedes: []
-superseded_by: "shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md"
+superseded_by: "shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
 next_step: "execute domain workstreams with explicit write-sets"
 ---
 
 # Migration Contract — Flutter + Supabase
 
 > Legacy reference: this migration contract was superseded by
-> `shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md`. Flutter remains the app
+> `shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md`. Flutter remains the app
 > foundation, but Supabase is no longer the active backend target.
 >
 > Archived migration contract: do not use this document as an execution plan
@@ -104,7 +104,7 @@ Legacy stack status:
 ### Gate A — Documentation coherence
 
 - `docs/DECISIONS.md` explicitly locks Flutter + Supabase target.
-- `shipglowz_data/technical/architecture.md`, `shipglowz_data/technical/guidelines.md`, `docs/API.md`, `docs/COMPONENTS.md` split legacy vs target.
+- `shipglows_data/technical/architecture.md`, `shipglows_data/technical/guidelines.md`, `docs/API.md`, `docs/COMPONENTS.md` split legacy vs target.
 - No owned doc presents Convex/Clerk/Expo as target implementation.
 
 ### Gate B — Backend security baseline

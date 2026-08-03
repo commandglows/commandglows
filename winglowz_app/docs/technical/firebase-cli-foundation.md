@@ -14,7 +14,7 @@ risk_level: "high"
 security_impact: "high"
 docs_impact: "high"
 depends_on:
-  - "shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
+  - "shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
 supersedes: []
 evidence:
   - ".firebaserc"

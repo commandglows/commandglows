@@ -14,7 +14,7 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 depends_on:
-  - "shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
+  - "shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
 supersedes: []
 evidence:
   - "android/app/src/main/kotlin/com/winglowz_app/winglowz_app/OverlayForegroundService.kt"
@@ -22,9 +22,9 @@ evidence:
   - "android/app/src/main/kotlin/com/winglowz_app/winglowz_app/OverlayEventQueue.kt"
   - "android/app/src/main/kotlin/com/winglowz_app/winglowz_app/OverlayTextInjectionHelper.kt"
   - "android/app/src/main/kotlin/com/winglowz_app/winglowz_app/ime/WinGlowzInputMethodService.kt"
-  - "shipglowz_data/workflow/specs/android-ime-winglowz_app-keyboard.md"
-  - "shipglowz_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md"
-next_step: "/sf-verify shipglowz_data/workflow/specs/android-overlay-flutter-parity-repair.md"
+  - "shipglows_data/workflow/specs/android-ime-winglowz_app-keyboard.md"
+  - "shipglows_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md"
+next_step: "/sf-verify shipglows_data/workflow/specs/android-overlay-flutter-parity-repair.md"
 ---
 
 # Android Overlay — WinGlowz

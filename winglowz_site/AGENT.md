@@ -22,8 +22,8 @@ linked_systems:
   - "Resend"
 depends_on:
   - "CLAUDE.md"
-  - "shipglowz_data/technical/guidelines.md"
-  - "shipglowz_data/technical/architecture.md"
+  - "shipglows_data/technical/guidelines.md"
+  - "shipglows_data/technical/architecture.md"
 supersedes: []
 evidence:
   - "package.json"
@@ -49,9 +49,9 @@ WinGlows is a bilingual Astro application for Windows-focused productivity conte
 ## First Places to Read
 
 1. `CLAUDE.md` for the local MCP/context workflow expected in this repo.
-2. `shipglowz_data/technical/guidelines.md` for product and routing constraints.
-3. `shipglowz_data/technical/architecture.md` for system boundaries and runtime flows.
-4. `shipglowz_data/technical/context.md` for a concise directory and feature map.
+2. `shipglows_data/technical/guidelines.md` for product and routing constraints.
+3. `shipglows_data/technical/architecture.md` for system boundaries and runtime flows.
+4. `shipglows_data/technical/context.md` for a concise directory and feature map.
 
 ## Stack Summary
 

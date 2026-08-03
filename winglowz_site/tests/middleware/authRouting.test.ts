@@ -20,4 +20,11 @@ describe("auth routing middleware", () => {
     expect(shouldBypassClerkMiddleware("/dashboard")).toBe(false);
     expect(shouldBypassClerkMiddleware("/signin")).toBe(false);
   });
+
+  test("bypasses only the exact canonical and legacy ShipGlows script paths", () => {
+    expect(shouldBypassClerkMiddleware("/shipglows-script")).toBe(true);
+    expect(shouldBypassClerkMiddleware("/shipglowz-script")).toBe(true);
+    expect(shouldBypassClerkMiddleware("/shipglows-script/extra")).toBe(false);
+    expect(shouldBypassClerkMiddleware("/shipglowz-script-evil")).toBe(false);
+  });
 });

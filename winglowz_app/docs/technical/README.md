@@ -20,10 +20,10 @@ linked_systems:
   - "Firebase first adapter"
 depends_on:
   - "CLAUDE.md@1.2.0"
-  - "shipglowz_data/technical/guidelines.md@0.1.0"
+  - "shipglows_data/technical/guidelines.md@0.1.0"
 supersedes: []
 evidence:
-  - "Bootstrapped for shipglowz_data/workflow/specs/android-ime-winglowz_app-keyboard.md execution."
+  - "Bootstrapped for shipglows_data/workflow/specs/android-ime-winglowz_app-keyboard.md execution."
 next_review: "2026-06-04"
 next_step: "/sf-docs technical audit"
 ---

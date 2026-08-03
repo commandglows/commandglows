@@ -7,6 +7,7 @@ const CLERK_BYPASS_API_PATHS = new Set([
 const CLERK_BYPASS_PUBLIC_PATHS = new Set([
   "/dotfiles-script",
   "/shipglowz-script",
+  "/shipglows-script",
   "/termux-script",
 ]);
 

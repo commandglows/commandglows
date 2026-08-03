@@ -21,8 +21,8 @@ linked_systems:
   - "Polar"
   - "Resend"
 depends_on:
-  - "shipglowz_data/technical/guidelines.md"
-  - "shipglowz_data/technical/architecture.md"
+  - "shipglows_data/technical/guidelines.md"
+  - "shipglows_data/technical/architecture.md"
 supersedes: []
 evidence:
   - "package.json"
@@ -52,8 +52,8 @@ Use this file as the short operating contract before changing code or docs.
 
 ## First Files To Inspect
 
-1. `shipglowz_data/technical/guidelines.md`
-2. `shipglowz_data/technical/architecture.md`
+1. `shipglows_data/technical/guidelines.md`
+2. `shipglows_data/technical/architecture.md`
 3. `src/middleware/index.ts`
 4. `src/middleware/i18n.ts`
 5. `src/pages/api/polar/checkout.ts`

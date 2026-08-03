@@ -16,6 +16,7 @@ import {
   isAllowedSocialGlowzPlan,
   isAllowedSocialGlowzSource,
   isAllowedSuiteProduct,
+  normalizeSuiteProductId,
   isTrustedFirebaseIdTokenClaims,
   parseSyncRequestBody,
   maskProviderAccountId,
@@ -107,7 +108,9 @@ describe('suiteBridge helpers', () => {
     expect(isAllowedSuiteProduct('winglowz_formation')).toBe(true)
     expect(isAllowedSuiteProduct('gocharbon')).toBe(true)
     expect(isAllowedSuiteProduct('contentglowz')).toBe(true)
+    expect(isAllowedSuiteProduct('shipglows')).toBe(true)
     expect(isAllowedSuiteProduct('shipglowz')).toBe(true)
+    expect(normalizeSuiteProductId('shipglowz')).toBe('shipglows')
     expect(isAllowedSuiteProduct('replayglowz')).toBe(true)
     expect(isAllowedSuiteProduct('socialglowz')).toBe(true)
     expect(isAllowedSuiteProduct('temu_shopping_lists')).toBe(true)
@@ -122,7 +125,7 @@ describe('suiteBridge helpers', () => {
       'winglowz_formation',
       'gocharbon',
       'contentglowz',
-      'shipglowz',
+      'shipglows',
       'replayglowz',
       'socialglowz',
       'temu_shopping_lists',

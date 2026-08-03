@@ -19,7 +19,7 @@ linked_systems:
   - "Firebase Auth"
   - "Firestore"
 depends_on:
-  - artifact: "/home/claude/shipglowz_data/projects/winglowz/docs/technical/suite-authentication.md"
+  - artifact: "/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication.md"
     artifact_version: "1.0.8"
     required_status: "reviewed"
 supersedes: []
@@ -41,7 +41,7 @@ next_step: "/sf-spec unified-suite-authentication provider decision"
 
 The canonical suite authentication decision lives in:
 
-`/home/claude/shipglowz_data/projects/winglowz/docs/technical/suite-authentication.md`
+`/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication.md`
 
 For this Android app:
 
@@ -56,9 +56,9 @@ For this Android app:
 - The `suiteAccess/{uid}` mirror is not client-readable or client-writable. It is written by the suite bridge backend after Firebase Admin token verification and Convex entitlement lookup.
 - The Formation Firebase bridge checks revoked/disabled Firebase sessions server-side. A structurally valid but revoked Firebase ID token must be rejected before Convex identity linking or Firestore mirror writes.
 - Entitlement changes no longer depend only on the next app login bridge call: Formation now has an internal sync endpoint for Polar grant/refund/revoke events. Production still needs configured `SUITE_BRIDGE_SYNC_URL` proof before final ship.
-- Support operators should use the canonical runbook at `/home/claude/shipglowz_data/projects/winglowz/docs/technical/suite-authentication-support-runbook.md` for account-recognition, linking, entitlement and provider triage.
-- Redacted smoke-readiness log: [shipglowz_data/workflow/TEST_LOG.md](</home/claude/winglowz_app/shipglowz_data/workflow/TEST_LOG.md>).
+- Support operators should use the canonical runbook at `/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication-support-runbook.md` for account-recognition, linking, entitlement and provider triage.
+- Redacted smoke-readiness log: [shipglows_data/workflow/TEST_LOG.md](</home/claude/winglowz_app/shipglows_data/workflow/TEST_LOG.md>).
 
 Implementation details belong in the active spec:
 
-`shipglowz_data/workflow/specs/unified-suite-authentication.md`
+`shipglows_data/workflow/specs/unified-suite-authentication.md`

@@ -67,7 +67,7 @@ sudo ufw allow 60000:61000/udp
 - ✅ Ranger, fzf, ripgrep, fd (navigation)
 - ✅ Starship, Zoxide (shell)
 - ✅ SSH, Mosh, tmux (connexion)
-- ✅ ShipGlowz local tunnels
+- ✅ ShipGlows local tunnels
 
 ## Ce qui est sauté (important)
 

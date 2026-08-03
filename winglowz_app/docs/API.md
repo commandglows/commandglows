@@ -18,7 +18,7 @@ linked_systems:
   - "Firebase first adapter"
   - "Supabase legacy reference"
 depends_on:
-  - "../shipglowz_data/technical/architecture.md@0.1.0"
+  - "../shipglows_data/technical/architecture.md@0.1.0"
   - "../docs/DECISIONS.md@0.1.0"
 supersedes: []
 evidence:
@@ -34,7 +34,7 @@ next_step: "$sf-docs api"
 
 > Legacy reference: this document still contains the previous Supabase contract.
 > The active backend target is now backend-agnostic stores with Firebase as the
-> first Android adapter. Use `shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md` for
+> first Android adapter. Use `shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md` for
 > new work.
 
 ## Scope

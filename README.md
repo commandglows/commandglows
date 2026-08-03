@@ -6,7 +6,7 @@ Canonical monorepo for the WinGlowz site and application surfaces.
 
 - `winglowz_site/` - Astro site for content, account, commerce, and bridge API surfaces.
 - `winglowz_app/` - Flutter Android-first app.
-- `shipglowz_data/` - monorepo-level governance contracts, specs, bugs, reviews, and workflow artifacts.
+- `shipglows_data/` - monorepo-level governance contracts, specs, bugs, reviews, and workflow artifacts.
 
 ## Deployment Model
 

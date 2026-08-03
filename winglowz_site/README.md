@@ -18,7 +18,7 @@ depends_on: []
 supersedes: []
 evidence:
   - package.json
-  - ../shipglowz_data/
+  - ../shipglows_data/
 next_step: /sf-docs update
 ---
 
@@ -200,14 +200,14 @@ Common commands:
 
 - [CLAUDE.md](./CLAUDE.md) — agent workflow and context rules
 - [AGENT.md](./AGENT.md) — short repo execution contract
-- [shipglowz_data/business/business.md](../shipglowz_data/business/business.md) — business contract centered on `Windows Mastery`
-- [shipglowz_data/business/branding.md](../shipglowz_data/business/branding.md) — brand voice and claim policy
-- [shipglowz_data/business/product.md](../shipglowz_data/business/product.md) — product scope and user journey
-- [shipglowz_data/business/gtm.md](../shipglowz_data/business/gtm.md) — go-to-market structure
-- [shipglowz_data/editorial/content-map.md](../shipglowz_data/editorial/content-map.md) — content routing map
-- [shipglowz_data/technical/guidelines.md](../shipglowz_data/technical/guidelines.md) — project-specific engineering guidelines
-- [shipglowz_data/technical/architecture.md](../shipglowz_data/technical/architecture.md) — system boundaries and integrations
-- [shipglowz_data/technical/context.md](../shipglowz_data/technical/context.md) — repository context map
+- [shipglows_data/business/business.md](../shipglows_data/business/business.md) — business contract centered on `Windows Mastery`
+- [shipglows_data/business/branding.md](../shipglows_data/business/branding.md) — brand voice and claim policy
+- [shipglows_data/business/product.md](../shipglows_data/business/product.md) — product scope and user journey
+- [shipglows_data/business/gtm.md](../shipglows_data/business/gtm.md) — go-to-market structure
+- [shipglows_data/editorial/content-map.md](../shipglows_data/editorial/content-map.md) — content routing map
+- [shipglows_data/technical/guidelines.md](../shipglows_data/technical/guidelines.md) — project-specific engineering guidelines
+- [shipglows_data/technical/architecture.md](../shipglows_data/technical/architecture.md) — system boundaries and integrations
+- [shipglows_data/technical/context.md](../shipglows_data/technical/context.md) — repository context map
 - [docs/DESIGN_SPECIFICATION.md](./docs/DESIGN_SPECIFICATION.md) — design system notes
 - [docs/COMPONENT_CLASSES.md](./docs/COMPONENT_CLASSES.md) — reusable CSS class reference
 

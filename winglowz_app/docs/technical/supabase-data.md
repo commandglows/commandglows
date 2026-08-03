@@ -20,7 +20,7 @@ linked_systems:
   - "Supabase Realtime"
 depends_on:
   - "docs/API_SUPABASE.md@0.1.0"
-  - "shipglowz_data/technical/guidelines.md@0.1.0"
+  - "shipglows_data/technical/guidelines.md@0.1.0"
 supersedes: []
 evidence:
   - "Mapped before Android keyboard schema extension."
@@ -33,7 +33,7 @@ next_step: "/sf-docs technical audit"
 > Legacy reference: Supabase data remains documented here only for current code
 > compatibility and migration comparison. New backend work belongs to
 > backend-agnostic stores with Firebase as first adapter, per
-> `shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md`.
+> `shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md`.
 >
 > Archived technical context for legacy adapters: do not use as a target design
 > document for new work.

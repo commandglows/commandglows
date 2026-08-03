@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Renamed active ShipGlowz governance references and documentation links to the canonical ShipGlows identity and `shipglows_data` path.
+
 ### Added
 - Added the first macOS and Linux desktop overlay host versions with a shared
   Dart `DesktopOverlayBridge`, native macOS/Linux channels, clipboard fallback,
@@ -51,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Added a Settings backend-provider diagnostic card with a copyable Supabase/local-mode error.
 - Added the Android WinGlowz keyboard IME foundation with a custom swipe-corner keyboard surface, native input service declaration, Settings bridge, Android speech recognition trigger, explicit clipboard actions, emoji/navigation panels, touch-debug overlay and generic media play/pause.
 - Added keyboard-origin Supabase schema fields, source allowlists, clipboard hash dedupe metadata, RLS smoke coverage and Dart model/bridge tests.
-- Added project technical governance docs and a content map for future ShipGlowz code/doc update gates.
+- Added project technical governance docs and a content map for future ShipGlows code/doc update gates.
 - Added `docs/technical/firebase-oidc-ci-playbook.md` with a reusable GitHub OIDC/WIF Firestore deploy runbook and troubleshooting matrix.
 
 ### Changed
@@ -60,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Changed the onboarding completion screen to group granted permissions inside the matching feature cards instead of stacking them as separate cards.
 - Moved the Settings onboarding card to the bottom once setup is fully configured, with `Tout est configuré` and a `Revisiter` action.
 - Changed Android/system Back handling inside the shell so Back returns to the previous app tab before exiting.
-- Migrated canonical project documentation from root files (`ARCHITECTURE.md`, `BRANDING.md`, `BUSINESS.md`, `GTM.md`, `GUIDELINES.md`, `PRODUCT.md`, `CONTENT_MAP.md`) to `shipglowz_data` and updated documentation/spec path references accordingly.
+- Migrated canonical project documentation from root files (`ARCHITECTURE.md`, `BRANDING.md`, `BUSINESS.md`, `GTM.md`, `GUIDELINES.md`, `PRODUCT.md`, `CONTENT_MAP.md`) to `shipglows_data` and updated documentation/spec path references accordingly.
 - Moved the missing Supabase configuration diagnostic out of the global shell banner and into Settings so local-mode screens are not crowded while the backend provider remains undecided.
 - Repaired the local Flox Flutter environment and pinned it to an executable Flutter SDK variant.
 - Protected direct app routes behind Supabase auth state instead of allowing private screens to load before sign-in.
@@ -70,9 +73,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Updated Android keyboard docs and spec trace to distinguish the implemented MVP from pending double-tap, long-press, drawable gesture, Android compile and device QA work.
 - Switched Firestore CI deploy from interactive Firebase CLI auth to GitHub OIDC/WIF in `.github/workflows/android-build.yml`.
 - Updated Firebase CI documentation to require `GCP_WIF_PROVIDER` and `GCP_WIF_SERVICE_ACCOUNT` instead of long-lived service account JSON secrets.
-- Archived Supabase migration target docs as legacy-only references and pointed execution to `shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md`.
+- Archived Supabase migration target docs as legacy-only references and pointed execution to `shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md`.
 - Removed unnecessary Firestore indexes that caused hosted deploy errors on `settings` and `transcriptions` collection groups.
-- Moved active task tracking to `shipglowz_data/workflow/TASKS.md` and synced tracker naming to WinGlowz.
+- Moved active task tracking to `shipglows_data/workflow/TASKS.md` and synced tracker naming to WinGlowz.
 
 ### Fixed
 - Fixed a Flutter crash when closing the clipboard item edit dialog with `Annuler` or `Sauvegarder` without changing content.

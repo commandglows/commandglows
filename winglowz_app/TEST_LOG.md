@@ -73,8 +73,8 @@
 - Confidence: medium
 - Result summary: Manual Windows checklist prepared for build, launch, hotkey, topmost overlay, clipboard fallback, paste delivery, focus recovery, multi-monitor/DPI, event queue, and diagnostic redaction.
 - Bug pointer: none
-- Evidence pointer: shipglowz_data/workflow/verification/windows-desktop-overlay-hotkeys-parity-checklist.md
-- Follow-up: /sf-test --local shipglowz_data/workflow/verification/windows-desktop-overlay-hotkeys-parity-checklist.md
+- Evidence pointer: shipglows_data/workflow/verification/windows-desktop-overlay-hotkeys-parity-checklist.md
+- Follow-up: /sf-test --local shipglows_data/workflow/verification/windows-desktop-overlay-hotkeys-parity-checklist.md
 
 ## 2026-05-31 - macOS and Linux desktop overlay and hotkeys parity
 
@@ -86,5 +86,5 @@
 - Confidence: medium
 - Result summary: Manual macOS/Linux checklist prepared for native launch, quick action/hotkey behavior, floating/keep-above overlay, clipboard fallback, best-effort paste delivery where available, permissions, Wayland/X11, multi-monitor/DPI, and diagnostic redaction.
 - Bug pointer: none
-- Evidence pointer: shipglowz_data/workflow/verification/macos-linux-desktop-overlay-hotkeys-parity-checklist.md
-- Follow-up: /sf-test --local shipglowz_data/workflow/verification/macos-linux-desktop-overlay-hotkeys-parity-checklist.md
+- Evidence pointer: shipglows_data/workflow/verification/macos-linux-desktop-overlay-hotkeys-parity-checklist.md
+- Follow-up: /sf-test --local shipglows_data/workflow/verification/macos-linux-desktop-overlay-hotkeys-parity-checklist.md

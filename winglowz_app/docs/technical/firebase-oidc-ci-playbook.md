@@ -20,11 +20,11 @@ linked_systems:
   - "Firebase CLI"
   - "Cloud Firestore"
 depends_on:
-  - "shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
+  - "shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
 supersedes: []
 evidence:
   - ".github/workflows/android-build.yml"
-  - "Hosted CI Firestore deploy proof referenced in shipglowz_data/workflow/TASKS.md"
+  - "Hosted CI Firestore deploy proof referenced in shipglows_data/workflow/TASKS.md"
 next_step: "Reuse this runbook for new repos before adding any Firebase deploy job."
 ---
 

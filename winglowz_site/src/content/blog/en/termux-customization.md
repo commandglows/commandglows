@@ -279,11 +279,11 @@ We use this exact configuration daily. Our dotfiles repo includes:
 
 ---
 
-## ShipGlowz \u2014 server dev environments
+## ShipGlows \u2014 server dev environments
 
-If you develop on a server (VPS, Codespace), ShipGlowz automates everything: isolation with Flox, process management with PM2, HTTPS with Caddy, SSH tunnels and public URLs via DuckDNS.
+If you develop on a server (VPS, Codespace), ShipGlows automates everything: isolation with Flox, process management with PM2, HTTPS with Caddy, SSH tunnels and public URLs via DuckDNS.
 
-**[github.com/dianedef/ShipGlowz](https://github.com/dianedef/ShipGlowz)** \u2014 an interactive CLI to deploy and manage your dev environments.
+**[github.com/dianedef/ShipGlows](https://github.com/dianedef/ShipGlows)** \u2014 an interactive CLI to deploy and manage your dev environments.
 
 ---
 

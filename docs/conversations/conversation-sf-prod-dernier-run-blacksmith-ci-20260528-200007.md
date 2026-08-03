@@ -23,7 +23,7 @@
 
 
 • Je vérifie le dernier run Blacksmith depuis les scripts/références
-  ShipGlowz puis je te retourne l’état (succès/échec + pointeur
+  ShipGlows puis je te retourne l’état (succès/échec + pointeur
   d’exécution).
 
 • Explored
@@ -55,7 +55,7 @@
   └ (no output)
 
 • Ran ls -la /home/claude/winglowz | sed -n '1,80p'; echo '---'; rg -n
-  │ "ShipGlowz Development Mode|development_mode|deployment_provider|
+  │ "ShipGlows Development Mode|development_mode|deployment_provider|
   │ validation_surface|blacksmith|blacksmith" /home/claude/winglowz/
   │ … +2 lines
   └ total 44
@@ -353,8 +353,8 @@ ime/WinGlowzKeyboardView.kt (+2 -2)
   chemin de destination sous la racine de l’utilisateur, puis je te
   demande validation avant d’écrire.
 
-• Ran SHIPGLOWZ_ROOT="${SHIPGLOWZ_ROOT:-$HOME/shipglowz}"
-  │ "$SHIPGLOWZ_ROOT/skills/tmux-capture-conversation/scripts/
+• Ran SHIPGLOWS_ROOT="${SHIPGLOWS_ROOT:-$HOME/shipglows}"
+  │ "$SHIPGLOWS_ROOT/skills/tmux-capture-conversation/scripts/
   │ capture_tmux_conversation.sh" --dry-run
   └ Title: Conversation sf-prod - dernier run blacksmith ci ?
     Destination: /home/claude/winglowz/docs/conversations/

@@ -21,7 +21,7 @@ linked_systems:
   - "Flutter MethodChannel"
 depends_on:
   - "CLAUDE.md@1.2.0"
-  - "shipglowz_data/technical/guidelines.md@0.1.0"
+  - "shipglows_data/technical/guidelines.md@0.1.0"
   - "docs/OVERLAY_ANDROID.md@0.1.0"
 supersedes: []
 evidence:

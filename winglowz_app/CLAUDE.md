@@ -21,10 +21,10 @@ linked_systems:
   - "Windows Desktop Overlay Host"
 evidence: []
 depends_on:
-  - "shipglowz_data/business/business.md@0.1.0"
-  - "shipglowz_data/business/product.md@0.1.0"
-  - "shipglowz_data/technical/architecture.md@0.1.0"
-  - "shipglowz_data/technical/guidelines.md@0.1.0"
+  - "shipglows_data/business/business.md@0.1.0"
+  - "shipglows_data/business/product.md@0.1.0"
+  - "shipglows_data/technical/architecture.md@0.1.0"
+  - "shipglows_data/technical/guidelines.md@0.1.0"
 supersedes:
   - "CLAUDE.md@1.0.0"
 next_review: "2026-05-26"
@@ -82,7 +82,7 @@ For Supabase:
 supabase db push
 ```
 
-## ShipGlowz Development Mode
+## ShipGlows Development Mode
 
 - development_mode: hybrid
 - validation_surface: mixed
@@ -113,7 +113,7 @@ Sentry can be used for runtime crash/error evidence from installed app sessions,
 
 ## Git Commit Guardrail
 
-Do not create commits unless Diane explicitly asks for a commit, or unless an invoked ShipGlowz chip/skill explicitly requires committing as part of its workflow. By default, leave changes in the working tree and report what changed. Diane handles commits herself. For small visual tweaks, quick copy changes, icons, spacing, or exploratory fixes, edit the files and report the diff/checks without committing.
+Do not create commits unless Diane explicitly asks for a commit, or unless an invoked ShipGlows chip/skill explicitly requires committing as part of its workflow. By default, leave changes in the working tree and report what changed. Diane handles commits herself. For small visual tweaks, quick copy changes, icons, spacing, or exploratory fixes, edit the files and report the diff/checks without committing.
 
 ## Architecture
 

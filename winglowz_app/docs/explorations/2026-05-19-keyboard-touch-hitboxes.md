@@ -24,7 +24,7 @@ evidence:
   - "KeyboardLayoutModels defines mode-specific rows with varying weights and leading/trailing spacers, so ABC, numbers, symbols, accents, and navigation do not share a stable grid."
 depends_on: []
 supersedes: []
-next_step: "shipglowz_data/workflow/specs/keyboard-stable-grid-touch-geometry.md"
+next_step: "shipglows_data/workflow/specs/keyboard-stable-grid-touch-geometry.md"
 ---
 
 # Exploration Report: Keyboard Touch Hitboxes
@@ -141,7 +141,7 @@ Update after spec creation: the chosen product rule is stricter than generic pre
 
 ## Handoff
 
-- Created spec: `shipglowz_data/workflow/specs/keyboard-stable-grid-touch-geometry.md`
+- Created spec: `shipglows_data/workflow/specs/keyboard-stable-grid-touch-geometry.md`
 - Why this next step: The implementation is feasible but interaction-sensitive, so the exact tactile geometry and clipping behavior are tracked in the chantier spec before code changes.
 
 ## Exploration Run History

@@ -40,7 +40,7 @@ next_step: "/sf-docs technical audit"
 | `macos/**` | macOS native desktop host | `docs/technical/flutter-app.md`; `docs/PLATFORM_BEHAVIOR.md`; `docs/VERIFICATION.md` | macOS runner/manual QA; future `flutter build macos` on supported host | Quick action monitoring, floating window, focus, clipboard, text delivery, macOS channel, permissions, or desktop launch behavior changes |
 | `linux/**` | Linux native desktop host | `docs/technical/flutter-app.md`; `docs/PLATFORM_BEHAVIOR.md`; `docs/VERIFICATION.md` | Linux runner/manual QA; future `flutter build linux` on supported host | GTK keep-above window, accelerator scope, clipboard fallback, Wayland/X11 limits, Linux channel, or desktop launch behavior changes |
 | `supabase/migrations/**`, `supabase/tests/**` | Supabase data | `docs/technical/supabase-data.md` | Supabase migration apply and `supabase/tests/rls_smoke.sql` against a linked project | Table, policy, constraint, RLS, realtime, repository metadata, or smoke-test changes |
-| `docs/**`, `README.md`, `shipglowz_data/business/product.md`, `shipglowz_data/business/business.md` | Documentation | `docs/technical/code-docs-map.md` plus target doc | Markdown review and relevant code checks | User-visible platform capability, setup, verification, API, or security promise changes |
+| `docs/**`, `README.md`, `shipglows_data/business/product.md`, `shipglows_data/business/business.md` | Documentation | `docs/technical/code-docs-map.md` plus target doc | Markdown review and relevant code checks | User-visible platform capability, setup, verification, API, or security promise changes |
 
 ## Documentation Update Plan Format
 

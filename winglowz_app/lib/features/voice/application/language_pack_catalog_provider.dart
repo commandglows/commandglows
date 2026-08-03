@@ -729,7 +729,7 @@ List<LanguagePackCatalogEntry> _defaultCatalogEntries() {
       'supports_offline': true,
       'benchmark_status': 'candidate',
       'benchmark_evidence':
-          'shipglowz_data/workflow/specs/on-device-asr-free-options-research.md',
+          'shipglows_data/workflow/specs/on-device-asr-free-options-research.md',
       'updated_at': updatedAt.toIso8601String(),
     }),
     LanguagePackCatalogEntry.fromMap({

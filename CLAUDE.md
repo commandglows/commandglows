@@ -6,9 +6,9 @@ This file provides root-level guidance for agents working in the WinGlowz monore
 
 - `winglowz_site/`: Astro site, content, account, commerce, Convex, and bridge API surfaces.
 - `winglowz_app/`: Flutter Android-first application.
-- `shipglowz_data/`: project governance, workflow, audit, task, bug, and spec artifacts.
+- `shipglows_data/`: project governance, workflow, audit, task, bug, and spec artifacts.
 
-## ShipGlowz Development Mode
+## ShipGlows Development Mode
 
 - development_mode: hybrid
 - validation_surface: mixed
@@ -38,8 +38,8 @@ Use focused checks from the changed subproject:
 (cd winglowz_app && flutter test)
 ```
 
-Run ShipGlowz metadata validation for governance docs:
+Run ShipGlows metadata validation for governance docs:
 
 ```bash
-/home/claude/shipglowz/tools/shipglowz_metadata_lint.py AGENT.md shipglowz_data
+/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENT.md shipglows_data
 ```

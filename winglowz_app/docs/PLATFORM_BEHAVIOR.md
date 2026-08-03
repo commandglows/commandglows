@@ -14,15 +14,15 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 depends_on:
-  - "shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
+  - "shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md@0.1.0"
 supersedes: []
 evidence:
-  - "shipglowz_data/workflow/specs/android-ime-winglowz_app-keyboard.md"
+  - "shipglows_data/workflow/specs/android-ime-winglowz_app-keyboard.md"
   - "lib/core/platform/platform_capabilities.dart"
   - "android/app/src/main/kotlin/com/winglowz_app/winglowz_app/ime/WinGlowzInputMethodService.kt"
-  - "shipglowz_data/workflow/specs/keyboard-stable-grid-touch-geometry.md"
-  - "shipglowz_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md"
-next_step: "/sf-start shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md"
+  - "shipglows_data/workflow/specs/keyboard-stable-grid-touch-geometry.md"
+  - "shipglows_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md"
+next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
 ---
 
 # Platform Behavior — WinGlowz

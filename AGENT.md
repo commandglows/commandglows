@@ -16,16 +16,16 @@ docs_impact: "yes"
 linked_systems:
   - "winglowz_site"
   - "winglowz_app"
-  - "shipglowz_data"
+  - "shipglows_data"
 depends_on:
-  - "shipglowz_data/technical/architecture.md"
-  - "shipglowz_data/technical/guidelines.md"
+  - "shipglows_data/technical/architecture.md"
+  - "shipglows_data/technical/guidelines.md"
 supersedes: []
 evidence:
   - "README.md"
   - "winglowz_site/AGENT.md"
   - "winglowz_app/AGENTS.md"
-next_step: "/sf-verify shipglowz_data/workflow/specs/winglowz-monorepo-migration.md"
+next_step: "/sf-verify shipglows_data/workflow/specs/winglowz-monorepo-migration.md"
 ---
 
 # AGENT
@@ -38,11 +38,11 @@ This repository is the canonical WinGlowz monorepo for the Astro site and Flutte
 
 - `winglowz_site/`: Astro site with content, account, commerce, Convex, and bridge API surfaces.
 - `winglowz_app/`: Flutter Android-first app with Firebase, native Android IME work, and app-level docs.
-- `shipglowz_data/`: monorepo-level governance, specs, bugs, audits, and workflow artifacts.
+- `shipglows_data/`: monorepo-level governance, specs, bugs, audits, and workflow artifacts.
 
 ## Working Rules
 
-- Treat `shipglowz_data/` at the repository root as the only canonical governance corpus.
+- Treat `shipglows_data/` at the repository root as the only canonical governance corpus.
 - Keep subproject changes inside their subproject unless root CI, docs, or governance files must change.
 - Preserve public content language rules in the site and app docs; user-facing French should remain natural and accented.
 - Do not add secrets to root or subproject docs, workflows, or env examples.
@@ -59,8 +59,8 @@ Use focused checks from the changed subproject:
 (cd winglowz_app && flutter test)
 ```
 
-Run ShipGlowz metadata validation for governance docs when governance files change:
+Run ShipGlows metadata validation for governance docs when governance files change:
 
 ```bash
-/home/claude/shipglowz/tools/shipglowz_metadata_lint.py AGENT.md shipglowz_data
+/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENT.md shipglows_data
 ```

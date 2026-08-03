@@ -3,7 +3,7 @@ export const SUITE_PRODUCT_ALLOWLIST = [
   'winglowz_formation',
   'gocharbon',
   'contentglowz',
-  'shipglowz',
+  'shipglows',
   'replayglowz',
   'socialglowz',
   'temu_shopping_lists',
@@ -12,7 +12,8 @@ export const SUITE_PRODUCT_ALLOWLIST = [
 export const WINGLOWZ_FORMATION_PRODUCT_ID = 'winglowz_formation'
 export const GOCHARBON_PRODUCT_ID = 'gocharbon'
 export const CONTENTGLOWZ_PRODUCT_ID = 'contentglowz'
-export const SHIPGLOWZ_PRODUCT_ID = 'shipglowz'
+export const SHIPGLOWS_PRODUCT_ID = 'shipglows'
+export const LEGACY_SHIPGLOWZ_PRODUCT_ID = 'shipglowz'
 export const REPLAYGLOWZ_PRODUCT_ID = 'replayglowz'
 export const SOCIALGLOWZ_PRODUCT_ID = 'socialglowz'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
@@ -21,7 +22,7 @@ export const DEFAULT_FREE_PRODUCT_IDS = [
   WINGLOWZ_FORMATION_PRODUCT_ID,
   GOCHARBON_PRODUCT_ID,
   CONTENTGLOWZ_PRODUCT_ID,
-  SHIPGLOWZ_PRODUCT_ID,
+  SHIPGLOWS_PRODUCT_ID,
   REPLAYGLOWZ_PRODUCT_ID,
   SOCIALGLOWZ_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
@@ -59,6 +60,12 @@ type BridgeEntitlement = {
   source?: string | null
 }
 const ALLOWED_PRODUCT_SET = new Set<string>(SUITE_PRODUCT_ALLOWLIST)
+
+export function normalizeSuiteProductId(productId: string): string {
+  return productId === LEGACY_SHIPGLOWZ_PRODUCT_ID
+    ? SHIPGLOWS_PRODUCT_ID
+    : productId
+}
 
 export type BridgeEntitlementSnapshot = {
   productId: string
@@ -422,7 +429,7 @@ export async function getReplayGlowzProductTokenJwks(
 }
 
 export function isAllowedSuiteProduct(productId: string): boolean {
-  return ALLOWED_PRODUCT_SET.has(productId)
+  return ALLOWED_PRODUCT_SET.has(normalizeSuiteProductId(productId))
 }
 
 export function isActiveAccessStatus(status: string): boolean {
@@ -435,7 +442,8 @@ export function hasActiveEntitlement(
 ): boolean {
   return entitlements.some(
     (entry) =>
-      entry.productId === productId && isActiveAccessStatus(entry.status)
+      normalizeSuiteProductId(entry.productId) === normalizeSuiteProductId(productId) &&
+      isActiveAccessStatus(entry.status)
   )
 }
 

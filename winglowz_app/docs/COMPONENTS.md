@@ -18,7 +18,7 @@ linked_systems:
   - "Android native overlay"
   - "Android native IME"
 depends_on:
-  - "../shipglowz_data/technical/architecture.md@0.1.0"
+  - "../shipglows_data/technical/architecture.md@0.1.0"
   - "../docs/MIGRATION_FLUTTER.md@0.1.0"
 supersedes: []
 evidence:

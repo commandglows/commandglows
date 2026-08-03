@@ -1,0 +1,7 @@
+---
+export const prerender = false
+
+const target = new URL('/fr/shipglows', Astro.url)
+target.search = Astro.url.search
+return Astro.redirect(`${target.pathname}${target.search}`, 301)
+---

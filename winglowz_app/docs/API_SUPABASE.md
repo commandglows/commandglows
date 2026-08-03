@@ -21,7 +21,7 @@ evidence:
   - "supabase/migrations/20260427084000_init_winglowz_app.sql"
   - "supabase/migrations/20260504210000_android_keyboard_ime.sql"
   - "supabase/tests/rls_smoke.sql"
-next_step: "/sf-start shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md"
+next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
 ---
 
 # API Supabase — WinGlowz
@@ -30,7 +30,7 @@ next_step: "/sf-start shipglowz_data/workflow/specs/firebase-backend-agnostic-mi
 > 2026-05-09 Firebase/backend-agnostic decision. Keep this document only for
 > migration comparison until Firebase parity lets the Supabase adapter be
 > archived or removed. The active backend chantier is
-> `shipglowz_data/workflow/specs/firebase-backend-agnostic-migration.md`.
+> `shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md`.
 >
 > Archived target contract: do not use this document to plan or implement new
 > backend work.

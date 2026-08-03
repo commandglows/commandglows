@@ -22,7 +22,7 @@ evidence:
   - "winglowz and winglowz_app are separate Git repositories with separate remotes."
   - "winglowz is an Astro/Vercel site with pnpm; winglowz_app is a Flutter/Firebase/Vercel app."
   - "ReplayGlowz and ContentGlowz use one canonical root with app/site/lab subdirectories."
-  - "Both WinGlows repositories currently contain separate shipglowz_data governance trees."
+  - "Both WinGlows repositories currently contain separate shipglows_data governance trees."
 depends_on: []
 supersedes: []
 next_step: "/sf-spec WinGlows monorepo migration"
@@ -40,7 +40,7 @@ Should `winglowz` and `winglowz_app` be reorganized into one monorepo, like the 
 - `/home/claude/winglowz_app/pubspec.yaml` - confirmed the app is Flutter Android-first with Firebase and Supabase dependencies.
 - `/home/claude/replayglowz/README.md` - used as the closest monorepo precedent for app/site/lab layout and deployment model.
 - `/home/claude/contentglowz/README.md` - used as the second monorepo precedent for canonical single-repository ownership.
-- `/home/claude/shipglowz/skills/references/canonical-paths.md` - confirmed the governance rule that monorepos should keep one root `shipglowz_data`.
+- `/home/claude/shipglows/skills/references/canonical-paths.md` - confirmed the governance rule that monorepos should keep one root `shipglows_data`.
 
 ## Internet Research
 
@@ -61,7 +61,7 @@ That split keeps each deployment simple, but it fragments product context, gover
 
 - Summary: Keep `winglowz` and `winglowz_app` as independent GitHub repositories.
 - Pros: Lowest migration cost, no deployment root changes, preserves current Git history and branch habits.
-- Cons: Duplicated `shipglowz_data`, harder cross-surface specs, more drift between site and app, less consistent with ReplayGlowz/ContentGlowz.
+- Cons: Duplicated `shipglows_data`, harder cross-surface specs, more drift between site and app, less consistent with ReplayGlowz/ContentGlowz.
 
 ### Option B: Move To One Monorepo
 
@@ -77,7 +77,7 @@ That split keeps each deployment simple, but it fragments product context, gover
 
 ## Comparison
 
-The strongest argument for monorepo is not dependency sharing. The site and app use different stacks, so a package workspace is not the main win. The real win is product governance and operational coherence: one root `shipglowz_data`, one set of specs, one README deployment map, and one place to coordinate app/site changes.
+The strongest argument for monorepo is not dependency sharing. The site and app use different stacks, so a package workspace is not the main win. The real win is product governance and operational coherence: one root `shipglows_data`, one set of specs, one README deployment map, and one place to coordinate app/site changes.
 
 The strongest argument against doing it immediately is active worktree risk. Both repositories currently have uncommitted changes, and `winglowz_app` has many modified files across native Android, Flutter, docs, tests, and specs. A migration should not be mixed with feature or bug-fix changes.
 
@@ -89,7 +89,7 @@ Yes, WinGlows should probably become a monorepo, but not as an opportunistic fil
 2. Choose the canonical repository and target layout.
 3. Preserve or explicitly abandon the secondary repository history.
 4. Move deployment configs to root-directory based deployment, matching ReplayGlowz/ContentGlowz.
-5. Consolidate `shipglowz_data` at the monorepo root.
+5. Consolidate `shipglows_data` at the monorepo root.
 
 The likely target layout:
 
@@ -98,7 +98,7 @@ winglowz/
   README.md
   AGENT.md
   CLAUDE.md
-  shipglowz_data/
+  shipglows_data/
   winglowz_site/
   winglowz_app/
 ```
@@ -111,7 +111,7 @@ winglowz/
 
 ## Rejected Paths
 
-- Creating nested `shipglowz_data` directories inside app/site after migration - rejected because the canonical monorepo rule expects one governance corpus at the root.
+- Creating nested `shipglows_data` directories inside app/site after migration - rejected because the canonical monorepo rule expects one governance corpus at the root.
 - Introducing a JS workspace as the primary migration goal - rejected because the Flutter app and Astro site do not need a shared JS package graph today.
 
 ## Risks And Unknowns
@@ -134,7 +134,7 @@ winglowz/
 - User story seed: As the maintainer, I want WinGlows app and site surfaces in one canonical repository so product, technical, and release work happens from one source of truth.
 - Scope in seed: repository layout, docs/governance consolidation, deployment path updates, CI/dependabot updates, README rules.
 - Scope out seed: feature work, dependency upgrades, app refactors, site redesign.
-- Invariants/constraints seed: preserve active work, keep app and site deployable independently, keep one root `shipglowz_data`.
+- Invariants/constraints seed: preserve active work, keep app and site deployable independently, keep one root `shipglows_data`.
 - Validation seed: app tests/analyze still run from nested app path, site build/check still run from nested site path, deployment config root directories are documented.
 
 ## Handoff
