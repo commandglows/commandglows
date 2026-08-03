@@ -9,10 +9,10 @@ contents: [
   "Gérer sa configuration avec des dotfiles et symlinks"
 ]
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Avatar de Diane"
 pubDate: 2026-03-23
-cardImage: "/images/WinGlowz.png"
+cardImage: "/images/CommandGlows.png"
 cardImageAlt: "Personnalisation de Termux sur Android"
 readTime: 15
 tags: ["termux", "android", "terminal", "personnalisation", "productivité", "développement mobile"]
@@ -266,7 +266,7 @@ terminal-cursor-style = underline
 
 ## 🎯 Formation : Coder sur mobile
 
-Tu veux aller plus loin ? [Module IX de la formation WinGlows](/fr/formations/module-9-mobile-coder/) t'apprend à :
+Tu veux aller plus loin ? [Module IX de la formation CommandGlows](/fr/formations/module-9-mobile-coder/) t'apprend à :
 
 - Configurer Termux pour un accès serveur optimisé
 - Comprendre pourquoi SSH ≠ Mosh pour coder avec les outils IA

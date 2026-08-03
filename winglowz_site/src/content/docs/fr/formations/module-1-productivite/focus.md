@@ -12,7 +12,7 @@ Quand tu perds ton focus, le problème n'est pas toujours un manque de disciplin
 
 > Le focus n'est pas seulement un effort intérieur. C'est une architecture.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu n'arrives pas à te concentrer, pose-toi d'abord ces quatre questions :
 

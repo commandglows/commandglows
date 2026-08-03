@@ -20,7 +20,7 @@ Motivation is not a stable fuel source. It is a signal that rises and falls depe
 
 So this lesson is less about "finding motivation" and more about building the conditions in which momentum appears more easily.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you are blocked or postponing action, ask four questions:
 

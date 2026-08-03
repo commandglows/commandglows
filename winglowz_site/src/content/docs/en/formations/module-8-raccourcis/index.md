@@ -10,7 +10,7 @@ Keyboard shortcuts are not mainly about "speed." They are about **protecting flo
 
 So the goal of this module is not to make you memorize 200 combinations. The goal is to internalize a few **control cores** that materially change the way you operate Windows, the browser, Gmail, YouTube, and Notion.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 If you want to know which shortcut to learn, do not start from lists. Start from friction.
 

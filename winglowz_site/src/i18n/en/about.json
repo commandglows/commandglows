@@ -1,7 +1,7 @@
 {
   "title": "About Me",
   "meta": {
-    "description": "Learn about me, Diane Defores, and the story behind WinGlows and the Windows productivity courses I build."
+    "description": "Learn about me, Diane Defores, and the story behind CommandGlows and the Windows productivity courses I build."
   },
   "hero": {
     "tagline": "From Lifetime Deals to Productivity Tools",
@@ -13,7 +13,7 @@
     "paragraphs": [
       "My journey started in the lifetime deal (LTD) community. For years, I’ve been an active member, discovering and testing countless productivity tools that promised to make work life easier. Through that experience, I developed a deep understanding of what makes a tool truly useful in daily use.",
       "This passion led me to create a productivity course on AppSumo, focused specifically on Windows productivity. The course was born from my own struggles to find comprehensive resources about maximizing Windows as a productivity powerhouse. I realized that while there are plenty of Mac productivity guides, Windows users often get overlooked.",
-      "WinGlows emerged from this gap. What started as educational content has grown into a suite of tools and resources designed specifically for Windows power users who want to work smarter, not harder."
+      "CommandGlows emerged from this gap. What started as educational content has grown into a suite of tools and resources designed specifically for Windows power users who want to work smarter, not harder."
     ]
   },
   "mission": {
@@ -53,10 +53,10 @@
   },
   "cta": {
     "title": "Ready to Boost Your Productivity?",
-    "description": "Join thousands of Windows users who have transformed their workflow with WinGlows.",
+    "description": "Join thousands of Windows users who have transformed their workflow with CommandGlows.",
     "button": "Explore My Tools"
   },
   "footer": {
-    "contact": "Questions? Feel free to reach out to me at hello@winglowz.com"
+    "contact": "Questions? Feel free to reach out to me at hello@commandglows.com"
   }
 }

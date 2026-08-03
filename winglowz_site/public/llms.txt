@@ -1,16 +1,16 @@
-# WinGlows
+# CommandGlows
 
-WinGlows helps Windows-first professionals and independent workers build practical, repeatable productivity systems. The flagship offer is Windows Mastery, supported by bilingual English and French educational content and companion products.
+CommandGlows helps Windows-first professionals and independent workers build practical, repeatable productivity systems. The flagship offer is Windows Mastery, supported by bilingual English and French educational content and companion products.
 
 ## Key pages
 
-- Windows Mastery: https://www.winflowz.com/windows-mastery
-- French Windows Mastery: https://www.winflowz.com/fr/maitrise-windows
-- Products: https://www.winflowz.com/products
-- French products: https://www.winflowz.com/fr/produits
-- Blog: https://www.winflowz.com/blog
-- French blog: https://www.winflowz.com/fr/blog
+- Windows Mastery: https://www.commandglows.com/windows-mastery
+- French Windows Mastery: https://www.commandglows.com/fr/maitrise-windows
+- Products: https://www.commandglows.com/products
+- French products: https://www.commandglows.com/fr/produits
+- Blog: https://www.commandglows.com/blog
+- French blog: https://www.commandglows.com/fr/blog
 
 ## Trust and scope
 
-WinGlows publishes practical Windows workflow education, structured learning, and implemented product information. Claims about outcomes, customer volume, pricing, support, or access duration should be verified on the relevant page and canonical project documentation.
+CommandGlows publishes practical Windows workflow education, structured learning, and implemented product information. Claims about outcomes, customer volume, pricing, support, or access duration should be verified on the relevant page and canonical project documentation.

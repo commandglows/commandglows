@@ -12,7 +12,7 @@ Avant d'optimiser ton temps, tes outils ou tes routines, tu dois clarifier une q
 
 **au service de quoi veux-tu être productif ?**
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu te sens dispersé ou démotivé malgré de "bons" systèmes, vérifie ces quatre couches :
 

@@ -104,8 +104,8 @@ describe('suiteBridge helpers', () => {
   })
 
   test('filters allowed suite products only', () => {
-    expect(isAllowedSuiteProduct('winglowz_app')).toBe(true)
-    expect(isAllowedSuiteProduct('winglowz_formation')).toBe(true)
+    expect(isAllowedSuiteProduct('commandglows_app')).toBe(true)
+    expect(isAllowedSuiteProduct('commandglows_formation')).toBe(true)
     expect(isAllowedSuiteProduct('gocharbon')).toBe(true)
     expect(isAllowedSuiteProduct('contentglowz')).toBe(true)
     expect(isAllowedSuiteProduct('shipglows')).toBe(true)
@@ -114,15 +114,15 @@ describe('suiteBridge helpers', () => {
     expect(isAllowedSuiteProduct('replayglowz')).toBe(true)
     expect(isAllowedSuiteProduct('socialglowz')).toBe(true)
     expect(isAllowedSuiteProduct('temu_shopping_lists')).toBe(true)
-    expect(isAllowedSuiteProduct('winglowz_android')).toBe(false)
+    expect(isAllowedSuiteProduct('commandglows_android')).toBe(false)
     expect(isAllowedSuiteProduct('old_youtube_product')).toBe(false)
     expect(isAllowedSuiteProduct('legacy_product')).toBe(false)
   })
 
   test('keeps default free access scoped to free-tier products', () => {
     expect(DEFAULT_FREE_PRODUCT_IDS).toEqual([
-      'winglowz_app',
-      'winglowz_formation',
+      'commandglows_app',
+      'commandglows_formation',
       'gocharbon',
       'contentglowz',
       'shipglows',
@@ -142,16 +142,16 @@ describe('suiteBridge helpers', () => {
     expect(
       hasActiveEntitlement(
         [
-          { productId: 'winglowz_app', status: 'trialing', plan: 'monthly' },
+          { productId: 'commandglows_app', status: 'trialing', plan: 'monthly' },
           { productId: 'old_youtube_product', status: 'refunded', plan: 'pro' },
         ],
-        'winglowz_app'
+        'commandglows_app'
       )
     ).toBe(true)
     expect(
       hasActiveEntitlement(
-        [{ productId: 'winglowz_app', status: 'refunded', plan: 'monthly' }],
-        'winglowz_app'
+        [{ productId: 'commandglows_app', status: 'refunded', plan: 'monthly' }],
+        'commandglows_app'
       )
     ).toBe(false)
   })
@@ -161,14 +161,14 @@ describe('suiteBridge helpers', () => {
       buildFirestoreSuiteAccessMirror({
         globalUserId: 'gu_123',
         entitlements: [
-          { productId: 'winglowz_app', status: 'active', plan: 'pro' },
+          { productId: 'commandglows_app', status: 'active', plan: 'pro' },
           { productId: 'replayglowz', status: 'active', plan: 'pro' },
         ],
       })
     ).toEqual({
       globalUserId: 'gu_123',
       products: {
-        winglowz_app: {
+        commandglows_app: {
           active: true,
           status: 'active',
           plan: 'pro',
@@ -180,20 +180,20 @@ describe('suiteBridge helpers', () => {
       buildFirestoreSuiteAccessMirror({
         globalUserId: 'gu_123',
         entitlements: [
-          { productId: 'winglowz_app', status: 'refunded', plan: 'pro' },
+          { productId: 'commandglows_app', status: 'refunded', plan: 'pro' },
         ],
-      }).products.winglowz_app.active
+      }).products.commandglows_app.active
     ).toBe(false)
   })
 
-  test('treats WinGlows free plan as active sync access and prefers paid plan metadata', () => {
+  test('treats CommandGlows free plan as active sync access and prefers paid plan metadata', () => {
     expect(
       buildFirestoreSuiteAccessMirror({
         globalUserId: 'gu_123',
         entitlements: [
-          { productId: 'winglowz_app', status: 'active', plan: 'free' },
+          { productId: 'commandglows_app', status: 'active', plan: 'free' },
         ],
-      }).products.winglowz_app
+      }).products.commandglows_app
     ).toEqual({
       active: true,
       status: 'active',
@@ -204,10 +204,10 @@ describe('suiteBridge helpers', () => {
       buildFirestoreSuiteAccessMirror({
         globalUserId: 'gu_123',
         entitlements: [
-          { productId: 'winglowz_app', status: 'active', plan: 'free' },
-          { productId: 'winglowz_app', status: 'active', plan: 'pro' },
+          { productId: 'commandglows_app', status: 'active', plan: 'free' },
+          { productId: 'commandglows_app', status: 'active', plan: 'pro' },
         ],
-      }).products.winglowz_app
+      }).products.commandglows_app
     ).toEqual({
       active: true,
       status: 'active',
@@ -421,7 +421,7 @@ describe('suiteBridge helpers', () => {
         globalUserId: 'gu_123',
         entitlements: [
           { productId: 'replayglowz', status: 'refunded', plan: 'pro' },
-          { productId: 'winglowz_app', status: 'active', plan: 'pro' },
+          { productId: 'commandglows_app', status: 'active', plan: 'pro' },
         ],
       })
     ).toEqual({
@@ -463,11 +463,11 @@ describe('suiteBridge helpers', () => {
     expect(
       isTrustedFirebaseIdTokenClaims(
         {
-          aud: 'winglowz-prod',
-          iss: 'https://securetoken.google.com/winglowz-prod',
+          aud: 'commandglows-prod',
+          iss: 'https://securetoken.google.com/commandglows-prod',
           sub: 'firebase-user-123',
         },
-        'winglowz-prod'
+        'commandglows-prod'
       )
     ).toBe(true)
   })
@@ -477,32 +477,32 @@ describe('suiteBridge helpers', () => {
       isTrustedFirebaseIdTokenClaims(
         {
           aud: 'wrong-project',
-          iss: 'https://securetoken.google.com/winglowz-prod',
+          iss: 'https://securetoken.google.com/commandglows-prod',
           sub: 'firebase-user-123',
         },
-        'winglowz-prod'
+        'commandglows-prod'
       )
     ).toBe(false)
 
     expect(
       isTrustedFirebaseIdTokenClaims(
         {
-          aud: 'winglowz-prod',
+          aud: 'commandglows-prod',
           iss: 'https://securetoken.google.com/wrong-project',
           sub: 'firebase-user-123',
         },
-        'winglowz-prod'
+        'commandglows-prod'
       )
     ).toBe(false)
 
     expect(
       isTrustedFirebaseIdTokenClaims(
         {
-          aud: 'winglowz-prod',
-          iss: 'https://securetoken.google.com/winglowz-prod',
+          aud: 'commandglows-prod',
+          iss: 'https://securetoken.google.com/commandglows-prod',
           sub: '',
         },
-        'winglowz-prod'
+        'commandglows-prod'
       )
     ).toBe(false)
   })
@@ -512,7 +512,7 @@ describe('suiteBridge helpers', () => {
     const env = {
       REPLAYGLOWZ_PRODUCT_JWT_PRIVATE_KEY_PEM: keys.privateKey,
       REPLAYGLOWZ_PRODUCT_JWT_KEY_ID: 'replayglowz-suite-2026-06-02',
-      REPLAYGLOWZ_PRODUCT_JWT_ISSUER: 'https://winglowz.com',
+      REPLAYGLOWZ_PRODUCT_JWT_ISSUER: 'https://commandglows.com',
       REPLAYGLOWZ_PRODUCT_JWT_AUDIENCE: 'replayglowz-convex',
     }
 
@@ -549,7 +549,7 @@ describe('suiteBridge helpers', () => {
       reasonCode: 'active_entitlement',
       productUserId: 'clerk_abc',
       productUserIdSource: 'clerk',
-      iss: 'https://winglowz.com',
+      iss: 'https://commandglows.com',
       aud: 'replayglowz-convex',
     })
     expect(payload.iat).toBe(Math.floor(now / 1000))

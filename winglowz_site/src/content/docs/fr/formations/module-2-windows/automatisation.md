@@ -162,7 +162,7 @@ Exemple :
 
 ```txt
 ; Taper /sig insère une signature complète
-::/sig::Cordialement,{Enter}Ton Nom{Enter}Winflowz
+::/sig::Cordialement,{Enter}Ton Nom{Enter}CommandGlows
 ```
 
 Pour des besoins plus avancés, tu peux aussi regarder des outils dédiés comme **Beeftext** ou **PhraseExpress**. L'important est moins l'outil que le réflexe : tout texte que tu retapes souvent devrait probablement devenir un snippet.

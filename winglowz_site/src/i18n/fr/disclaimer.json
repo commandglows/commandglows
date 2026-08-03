@@ -3,7 +3,7 @@
   "sections": {
     "general": {
       "title": "Informations Générales",
-      "content": "Les informations fournies par WinGlows (\"nous\", \"notre\" ou \"nos\") sur notre site web et à travers nos produits sont uniquement à titre informatif. Bien que toutes les informations soient fournies de bonne foi, nous ne faisons aucune déclaration ni garantie d'aucune sorte, expresse ou implicite, concernant l'exactitude, l'adéquation, la validité, la fiabilité, la disponibilité ou l'exhaustivité de toute information."
+      "content": "Les informations fournies par CommandGlows (\"nous\", \"notre\" ou \"nos\") sur notre site web et à travers nos produits sont uniquement à titre informatif. Bien que toutes les informations soient fournies de bonne foi, nous ne faisons aucune déclaration ni garantie d'aucune sorte, expresse ou implicite, concernant l'exactitude, l'adéquation, la validité, la fiabilité, la disponibilité ou l'exhaustivité de toute information."
     },
     "noGuarantee": {
       "title": "Absence de Résultats Garantis",
@@ -47,7 +47,7 @@
     },
     "liability": {
       "title": "Limitation de Responsabilité",
-      "content": "En aucun cas WinGlows ne sera responsable des dommages indirects, accessoires, consécutifs, spéciaux ou exemplaires découlant de :",
+      "content": "En aucun cas CommandGlows ne sera responsable des dommages indirects, accessoires, consécutifs, spéciaux ou exemplaires découlant de :",
       "items": [
         "L'utilisation ou l'impossibilité d'utiliser nos produits",
         "La perte de données ou l'interruption d'activité",
@@ -66,5 +66,5 @@
       ]
     }
   },
-  "contact": "Pour toute question concernant cette clause de non-responsabilité, veuillez contacter legal@winglowz.com"
+  "contact": "Pour toute question concernant cette clause de non-responsabilité, veuillez contacter legal@commandglows.com"
 }

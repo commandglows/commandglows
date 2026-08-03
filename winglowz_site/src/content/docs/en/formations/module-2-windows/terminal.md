@@ -18,7 +18,7 @@ The right logic is simpler<sup>[2](#concept-cognitive-load)</sup>:
 - GUI for one-off, visual, obvious tasks
 - CLI for repetitive, large-scale, scriptable, and reproducible work
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 Before using the terminal, ask four questions:
 

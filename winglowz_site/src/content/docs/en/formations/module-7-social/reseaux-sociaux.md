@@ -22,7 +22,7 @@ You may be on social platforms to:
 
 Those goals do not require the same intensity.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 For each platform, ask three questions:
 
@@ -128,7 +128,7 @@ I recommend it as a practical layer, not the center of the system.
 
 **Team / agency**: Hootsuite when you genuinely need monitoring, approval flows, and governance.
 
-## The Winflowz workflow
+## The CommandGlows workflow
 
 ### 1. Presence
 

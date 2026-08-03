@@ -1,18 +1,18 @@
 ---
 translationKey: "solo-productivity-windows"
 title: "How to stay productive when you work alone on Windows"
-description: "A WinGlows perspective on solo work, context, and keeping execution moving."
+description: "A CommandGlows perspective on solo work, context, and keeping execution moving."
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Diane avatar"
-cardImage: "/images/WinGlowz.png"
-cardImageAlt: "WinGlows solo work article cover"
+cardImage: "/images/CommandGlows.png"
+cardImageAlt: "CommandGlows solo work article cover"
 pubDate: 2026-06-18
 readTime: 8
 tags: ["solo work", "freelance", "windows", "productivity"]
 contents: [
   "Working alone sounds flexible until every decision lands on the same person. You plan, execute, review, and recover without much room to drop the thread.",
-  "WinGlows is relevant here because solo productivity is not just about speed. It is about keeping enough structure in place so the work does not reset every morning.",
+  "CommandGlows is relevant here because solo productivity is not just about speed. It is about keeping enough structure in place so the work does not reset every morning.",
   "This article focuses on the parts of solo work that usually waste the most time: context loss, repetitive setup, and low-friction execution."
 ]
 ---
@@ -29,7 +29,7 @@ When no one else is on the other side of the process, weak points stay hidden lo
 - you restart tasks instead of continuing them
 - you keep switching apps because nothing is clearly staged
 
-That is where a product like WinGlows becomes useful: it supports the shape of the work, not just the output.
+That is where a product like CommandGlows becomes useful: it supports the shape of the work, not just the output.
 
 ## What a solo system should do
 
@@ -47,7 +47,7 @@ That usually means:
 Many productivity systems are written as if the workspace itself does not matter.
 On Windows, the workspace is part of the job: multiple tools, multiple windows, multiple contexts, and a lot of opportunities to drift.
 
-WinGlows is meant to make that environment easier to use by helping the user keep one coherent working rhythm.
+CommandGlows is meant to make that environment easier to use by helping the user keep one coherent working rhythm.
 
 ## What to change first
 
@@ -62,4 +62,4 @@ If you work alone, start with the parts that repeat every day:
 
 The best solo productivity system is not the one with the most features. It is the one that lets you keep going without rebuilding your setup every time you sit down.
 
-That is the lane WinGlows fits into: practical structure for people who have to do the work themselves.
+That is the lane CommandGlows fits into: practical structure for people who have to do the work themselves.

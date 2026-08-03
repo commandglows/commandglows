@@ -37,7 +37,7 @@ Objectif :
 - ((shell commands))
 - ((configurations par application))
 
-## Positionnement Winflowz
+## Positionnement CommandGlows
 
 - excellent si :
   - tu écris souvent la même chose

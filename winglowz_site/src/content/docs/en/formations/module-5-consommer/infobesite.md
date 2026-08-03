@@ -24,7 +24,7 @@ So the right goal is not “read more intelligently.” The right goal is:
 
 **build a system that stops noise from becoming your default diet.**
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When a piece of content, a source, or a stream enters your day, ask four questions:
 

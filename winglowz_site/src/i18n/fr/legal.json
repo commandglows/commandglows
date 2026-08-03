@@ -6,16 +6,16 @@
       "title": "1. Informations Légales",
       "intro": "Ce site web et les services associés sont exploités par :",
       "items": [
-        "Nom de l'entreprise : WinGlows",
+        "Nom de l'entreprise : CommandGlows",
         "Propriétaire : Diane Defores",
         "Adresse : 4 Quai Juin 40, Loire Aution 49250, France",
-        "Email : hello@winglowz.com",
+        "Email : hello@commandglows.com",
         "Activité : Outils et Services de Productivité Numérique"
       ]
     },
     "activity": {
       "title": "2. Activité Professionnelle",
-      "intro": "WinGlows est spécialisée dans le développement et la fourniture d'outils et services de productivité numérique, notamment :",
+      "intro": "CommandGlows est spécialisée dans le développement et la fourniture d'outils et services de productivité numérique, notamment :",
       "items": [
         "Développement et distribution de logiciels",
         "Formation et conseil en productivité",
@@ -44,7 +44,7 @@
     },
     "ip": {
       "title": "5. Propriété Intellectuelle",
-      "intro": "L'ensemble du contenu et des matériaux disponibles sur ce site web et les produits associés sont la propriété de WinGlows, notamment :",
+      "intro": "L'ensemble du contenu et des matériaux disponibles sur ce site web et les produits associés sont la propriété de CommandGlows, notamment :",
       "items": [
         "Logiciels et code source",
         "Matériels de formation et documentation",
@@ -92,6 +92,6 @@
   },
   "footer": {
     "updates": "Ces mentions légales peuvent être mises à jour périodiquement. Les utilisateurs seront informés des changements significatifs via notre site web ou par email.",
-    "contact": "Pour toute question juridique, veuillez contacter legal@winglowz.com"
+    "contact": "Pour toute question juridique, veuillez contacter legal@commandglows.com"
   }
 }

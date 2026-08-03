@@ -106,7 +106,7 @@ The current unpublished product identity is reset to `CommandGlows`, canonical d
 - [x] Task 2 — Rename Flutter/Dart and shared product-facing source to CommandGlows.
 - [x] Task 3 — Reset Android application ID, Kotlin namespace/path, services, intents, channels, and resources to `com.commandglows.app`.
 - [x] Task 4 — Rename Windows executable/product metadata and verify desktop source coherence.
-- [ ] Task 5 — Rename Astro site identity, canonical URLs, metadata, legal/contact copy, auth/CORS/CSP configuration, and environment readers.
+- [x] Task 5 — Rename Astro site identity, canonical URLs, metadata, legal/contact copy, auth/CORS/CSP configuration, and environment readers.
 - [ ] Task 6 — Rename monorepo roots and update CI, scripts, Vercel roots, Dependabot, docs, and imports atomically.
 - [ ] Task 7 — Update active governance, product/GTM/brand contracts, operator instructions, and historical exceptions.
 - [ ] Task 8 — Run full local proof and prepare redacted external-console actions for Firebase, OAuth, stores, GitHub, Vercel, DNS, email, commerce, and observability.
@@ -119,8 +119,8 @@ Task 3 is atomic: the current `com.winglowz_app.winglowz_app` Gradle namespace/a
 - [x] AC 2: Flutter metadata and imports resolve under `commandglows_app` and user-visible app copy reads CommandGlows.
 - [x] AC 3: Android manifests, Gradle namespace/application ID, Kotlin packages/paths, services and tests agree on `com.commandglows.app`.
 - [x] AC 4: Windows runner metadata and generated build configuration resolve the CommandGlows product name without stale active identity.
-- [ ] AC 5: Site canonical URLs, sitemap, robots, structured data, social metadata, auth origins, legal links, and contact strings use `commandglows.com` where externally provisioned.
-- [ ] AC 6: Existing auth, commerce, webhook, privacy, and entitlement tests continue to pass without compatibility code added for nonexistent users.
+- [x] AC 5: Site canonical URLs, sitemap, robots, structured data, social metadata, auth origins, legal links, and contact strings use `commandglows.com` where externally provisioned.
+- [x] AC 6: Existing auth, commerce, webhook, privacy, and entitlement tests continue to pass without compatibility code added for nonexistent users.
 - [ ] AC 7: `flutter analyze`, `flutter test`, site `pnpm build:check`, site unit tests, metadata lint, link/path scans, and `git diff --check` pass.
 - [ ] AC 8: Android artifact proof is delegated to Blacksmith CI; no forbidden local Android/Gradle command runs.
 - [ ] AC 9: Every retained legacy spelling has a dated historical or immutable-provider reason.
@@ -170,6 +170,8 @@ None for local implementation. External provider availability is an execution ga
 | --- | --- | --- | --- | --- | --- |
 | 2026-08-03 23:09:59 UTC | 100-sg-spec | GPT-5.6 Codex | Replaced the legacy-user migration premise with a clean CommandGlows identity reset after the operator confirmed zero users and waived update continuity. | draft | Run readiness review, then execute bounded rename batches. |
 | 2026-08-03 23:11:14 UTC | 101-sg-ready | GPT-5.6 Codex | Reviewed the clean-reset contract against the active app/site inventory, native identifier coupling, provider boundaries, proof plan, and zero-user decision. | ready | Execute the app identity batch first; external provider mutations remain gated. |
+| 2026-08-03 23:31:13 UTC | 706-continue | GPT-5.6 Codex | Continued the resolved chantier through the site/domain batch: renamed active Astro content, canonical origins, commerce and entitlement contracts, campaign URLs, public assets and tests while retaining unprovisioned Clerk and CDN provider hosts. | complete | Execute the root/tooling identity batch and formalize the provider exception allowlist. |
+| 2026-08-03 23:36:44 UTC | 706-continue | GPT-5.6 Codex | Attached verified `commandglows.com` and `www.commandglows.com` domains to the existing Vercel project and configured a permanent apex-to-www redirect. Live HTTPS proof returned 308 for the apex and 200 for `www`. | complete | Deploy the already validated CommandGlows site before redirecting the former public domain. |
 
 ## Current Chantier Flow
 
@@ -177,7 +179,7 @@ None for local implementation. External provider availability is an execution ga
 | --- | --- | --- | --- |
 | 100-sg-spec | complete | Clean-reset contract created from the operator's domain purchase and zero-user decision. | Review readiness. |
 | 101-sg-ready | complete | Active/historical/provider boundaries, atomic Android/Dart coupling, external gates, checks, and stop conditions are explicit. | Start bounded implementation. |
-| 102-sg-start | partial | App identity batch completed: Flutter package, Android `com.commandglows.app`, Kotlin paths/classes/resources, Apple/Linux/web labels, Windows metadata, channels, rules and focused identity tests. Full Flutter suite still has 24 unrelated existing UI/behavior failures. | Execute the site/domain identity batch, then root/tooling and external-console checklist. |
+| 102-sg-start | partial | App and site identity batches completed. Astro checks report 0 errors and 90/90 unit tests pass; Flutter analysis and 43 targeted identity tests pass, while the full Flutter suite still has 24 unrelated existing UI/behavior failures. Vercel now serves both CommandGlows domains with verified DNS and apex-to-www canonical redirect, but the attached production deployment still contains the former brand. | Deploy the validated site, verify the live identity, then redirect the former public domain. |
 | 103-sg-verify | pending | Acceptance proof not yet run. | Verify after implementation. |
 | 104-sg-end | pending | No closure bookkeeping performed. | Close after verification. |
 | 005-sg-ship | pending | No commit, push, or deploy performed. | Ship only after explicit verified scope. |

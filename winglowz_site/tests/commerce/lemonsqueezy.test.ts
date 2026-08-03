@@ -53,21 +53,21 @@ describe('lemonsqueezy adapter', () => {
     })
   })
 
-  test('returns WinGlows founder config for the requested offer', () => {
+  test('returns CommandGlows founder config for the requested offer', () => {
     expect(
       getLemonSqueezyCheckoutConfig(
         {
           LEMONSQUEEZY_API_KEY: 'api-key',
           LEMONSQUEEZY_STORE_ID: 'store-id',
-          LEMONSQUEEZY_WINGLOWZ_APP_POWER_VARIANT_ID: 'winglowz-power-variant',
+          LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID: 'commandglows-power-variant',
         },
-        'winglowz_app/power'
+        'commandglows_app/power'
       )
     ).toEqual({
       apiUrl: 'https://api.lemonsqueezy.com',
       apiKey: 'api-key',
       storeId: 'store-id',
-      variantId: 'winglowz-power-variant',
+      variantId: 'commandglows-power-variant',
     })
   })
 
@@ -145,13 +145,13 @@ describe('lemonsqueezy adapter', () => {
     expect((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[1]?.body).not.toContain('cancel_url')
   })
 
-  test('creates WinGlows checkout with WinGlows variant metadata', async () => {
+  test('creates CommandGlows checkout with CommandGlows variant metadata', async () => {
     globalThis.fetch = vi
       .fn()
       .mockResolvedValue(
         new Response(
           JSON.stringify({
-            data: { id: 'co_wfz', attributes: { url: 'https://checkout.test/winglowz' } },
+            data: { id: 'co_wfz', attributes: { url: 'https://checkout.test/commandglows' } },
           }),
           { status: 200, headers: { 'content-type': 'application/json' } }
         ) as unknown as Response
@@ -159,30 +159,30 @@ describe('lemonsqueezy adapter', () => {
 
     const result = await createLemonSqueezyCheckout(
           {
-            offerId: 'winglowz_app/power',
-            successUrl: 'https://winglowz.com/purchase/success?offerId=winglowz_app%2Fpower',
-            cancelUrl: 'https://winglowz.com/purchase/cancel?offerId=winglowz_app%2Fpower',
+            offerId: 'commandglows_app/power',
+            successUrl: 'https://commandglows.com/purchase/success?offerId=commandglows_app%2Fpower',
+            cancelUrl: 'https://commandglows.com/purchase/cancel?offerId=commandglows_app%2Fpower',
             discountCode: 'FOUNDER',
-            metadata: { offer_id: 'winglowz_app/power' },
+            metadata: { offer_id: 'commandglows_app/power' },
           },
-      'winglowz_app/power',
+      'commandglows_app/power',
       {
         LEMONSQUEEZY_API_KEY: 'api-key',
         LEMONSQUEEZY_STORE_ID: 'store-id',
-        LEMONSQUEEZY_WINGLOWZ_APP_POWER_VARIANT_ID: 'winglowz-power-variant',
+        LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID: 'commandglows-power-variant',
       }
     )
 
     expect(result).toMatchObject({
       ok: true,
       provider: 'lemonsqueezy',
-      checkoutUrl: 'https://checkout.test/winglowz',
+      checkoutUrl: 'https://checkout.test/commandglows',
     })
 
     const body = String((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[1]?.body)
-    expect(body).toContain('"id":"winglowz-power-variant"')
-    expect(body).toContain('"offer_id":"winglowz_app/power"')
-    expect(body).toContain('"product_id":"winglowz_app"')
+    expect(body).toContain('"id":"commandglows-power-variant"')
+    expect(body).toContain('"offer_id":"commandglows_app/power"')
+    expect(body).toContain('"product_id":"commandglows_app"')
     expect(body).toContain('"plan":"power"')
     expect(body).toContain('"discount_code":"FOUNDER"')
   })
@@ -339,7 +339,7 @@ describe('lemonsqueezy adapter', () => {
     )
   })
 
-  test('validates WinGlows order_created webhook as paid event', async () => {
+  test('validates CommandGlows order_created webhook as paid event', async () => {
     const rawBody = JSON.stringify({
       data: {
         id: 'ord_wfz',
@@ -353,11 +353,11 @@ describe('lemonsqueezy adapter', () => {
       event_name: 'order_created',
       meta: {
         custom_data: {
-          offer_id: 'winglowz_app/power',
-          product_id: 'winglowz_app',
+          offer_id: 'commandglows_app/power',
+          product_id: 'commandglows_app',
           plan: 'power',
           source: 'direct',
-          source_ref: '/winglowz-founder',
+          source_ref: '/commandglows-founder',
         },
       },
     })
@@ -378,8 +378,8 @@ describe('lemonsqueezy adapter', () => {
     expect(parsed.normalizedEvent).toMatchObject({
       eventType: 'paid',
       status: 'applied',
-      offerId: 'winglowz_app/power',
-      productId: 'winglowz_app',
+      offerId: 'commandglows_app/power',
+      productId: 'commandglows_app',
       plan: 'power',
       providerOrderId: 'ord_wfz',
     })

@@ -12,7 +12,7 @@ sidebar:
 
 L'intelligence productive n'est pas le fait de penser plus longtemps. C'est le fait de **mieux réduire l'incertitude**, de mieux trier, et de mieux choisir.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu te sens bloqué devant trop d'options, vérifie ces quatre niveaux :
 

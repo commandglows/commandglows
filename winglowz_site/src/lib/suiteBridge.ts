@@ -1,6 +1,6 @@
 export const SUITE_PRODUCT_ALLOWLIST = [
-  'winglowz_app',
-  'winglowz_formation',
+  'commandglows_app',
+  'commandglows_formation',
   'gocharbon',
   'contentglowz',
   'shipglows',
@@ -9,7 +9,7 @@ export const SUITE_PRODUCT_ALLOWLIST = [
   'temu_shopping_lists',
 ] as const
 
-export const WINGLOWZ_FORMATION_PRODUCT_ID = 'winglowz_formation'
+export const COMMANDGLOWS_FORMATION_PRODUCT_ID = 'commandglows_formation'
 export const GOCHARBON_PRODUCT_ID = 'gocharbon'
 export const CONTENTGLOWZ_PRODUCT_ID = 'contentglowz'
 export const SHIPGLOWS_PRODUCT_ID = 'shipglows'
@@ -18,8 +18,8 @@ export const REPLAYGLOWZ_PRODUCT_ID = 'replayglowz'
 export const SOCIALGLOWZ_PRODUCT_ID = 'socialglowz'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
 export const DEFAULT_FREE_PRODUCT_IDS = [
-  'winglowz_app',
-  WINGLOWZ_FORMATION_PRODUCT_ID,
+  'commandglows_app',
+  COMMANDGLOWS_FORMATION_PRODUCT_ID,
   GOCHARBON_PRODUCT_ID,
   CONTENTGLOWZ_PRODUCT_ID,
   SHIPGLOWS_PRODUCT_ID,
@@ -30,7 +30,7 @@ export const DEFAULT_FREE_PRODUCT_IDS = [
 export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_KEY_ID =
   'replayglowz-suite-2026-06-02'
 // Protocol identifier kept for verifier compatibility; this is not an SEO origin.
-export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_ISSUER = 'https://winglowz.com'
+export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_ISSUER = 'https://commandglows.com'
 export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_AUDIENCE =
   'replayglowz-convex'
 export const REPLAYGLOWZ_PRODUCT_JWT_TTL_SECONDS = 10 * 60
@@ -51,7 +51,7 @@ export const SOCIALGLOWZ_ALLOWED_SOURCES = [
 ] as const
 
 const ACTIVE_ENTITLEMENT_STATUSES = new Set(['active', 'trialing'])
-const FIRESTORE_ENTITLEMENT_PRODUCTS = ['winglowz_app'] as const
+const FIRESTORE_ENTITLEMENT_PRODUCTS = ['commandglows_app'] as const
 
 type BridgeEntitlement = {
   productId: string

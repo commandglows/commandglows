@@ -24,7 +24,7 @@ That way, the browser becomes:
 
 but not a visual junk drawer<sup>[3](#concept-visual-clutter)</sup>.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 Before switching browsers or adding extensions, ask four questions:
 

@@ -18,7 +18,7 @@ Theme scheduling helps reduce two problems:
 
 The goal is not to make your week look neat. It is to give each period a coherent type of work.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you plan a day or week, ask three questions:
 

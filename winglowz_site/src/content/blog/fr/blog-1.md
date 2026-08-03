@@ -4,10 +4,10 @@ title: "Mon premier article de blog"
 description: "Description de mon premier article de blog"
 contents: ["Introduction", "Contenu principal", "Conclusion"]
 author: "Jacob"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Avatar de l'auteur"
 pubDate: 2024-02-06
-cardImage: "/images/WinGlowz.png"
+cardImage: "/images/CommandGlows.png"
 cardImageAlt: "Image de couverture de l'article"
 readTime: 5
 ---

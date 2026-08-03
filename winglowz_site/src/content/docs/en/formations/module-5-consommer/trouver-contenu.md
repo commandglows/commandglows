@@ -20,7 +20,7 @@ Finding the right content is not just "following the right people." It means mak
 - what **depth level** a topic deserves
 - what is worth **saving, rereading, or connecting**
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you encounter a source or piece of content, ask three questions:
 

@@ -25,7 +25,7 @@ export function isPolarLegacyConfigurationPresent(
   env: LegacyConfig
 ): boolean {
   const token = env.POLAR_ACCESS_TOKEN?.trim()
-  const product = (env.POLAR_WINGLOWZ_PRODUCT_ID || env.POLAR_PRODUCT_ID)?.trim()
+  const product = (env.POLAR_COMMANDGLOWS_PRODUCT_ID || env.POLAR_PRODUCT_ID)?.trim()
 
   return Boolean(token && product)
 }
@@ -40,7 +40,7 @@ export async function createPolarCheckout(
   }
 
   const productId =
-    env.POLAR_WINGLOWZ_PRODUCT_ID?.trim() || env.POLAR_PRODUCT_ID?.trim()
+    env.POLAR_COMMANDGLOWS_PRODUCT_ID?.trim() || env.POLAR_PRODUCT_ID?.trim()
 
   const message =
     `Offer ${offerId} is configured only in the legacy Polar route` +

@@ -15,8 +15,8 @@ type FormationAccess = {
 	user?: CourseUser | null
 }
 
-export const COURSE_ENTITLEMENT = 'winglowz-training'
-const CANONICAL_FORMATION_PRODUCT_ID = 'winglowz_formation'
+export const COURSE_ENTITLEMENT = 'commandglows-training'
+const CANONICAL_FORMATION_PRODUCT_ID = 'commandglows_formation'
 
 export function isFormationSlug(slug: string) {
 	return (

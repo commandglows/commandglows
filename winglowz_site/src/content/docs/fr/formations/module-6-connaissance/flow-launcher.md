@@ -27,7 +27,7 @@ Un lanceur clavier devient utile quand tu veux :
 
 Le vrai gain n'est pas seulement le temps. C'est la continuité d'attention.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Avant d'installer ou de surconfigurer un lanceur, pose-toi quatre questions :
 

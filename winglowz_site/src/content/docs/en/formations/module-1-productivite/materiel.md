@@ -14,7 +14,7 @@ So the goal is not to accumulate setup gear. The goal is to build a workspace th
 - lowers physical friction
 - stays simple to maintain
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 Before buying anything, ask four questions:
 

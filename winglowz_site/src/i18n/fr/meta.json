@@ -1,18 +1,18 @@
 {
   "global": {
-    "siteName": "WinGlows",
+    "siteName": "CommandGlows",
     "siteDescription": "Outils et formations de productivité numérique pour entrepreneurs ambitieux et professionnels déterminés"
   },
   "home": {
-    "title": "WinGlows - Outils et Formations de Productivité Numérique",
+    "title": "CommandGlows - Outils et Formations de Productivité Numérique",
     "description": "Transformez votre flux de travail numérique avec des outils puissants et des formations pensés pour des entrepreneurs ambitieux et des professionnels déterminés."
   },
   "products": {
-    "title": "Outils de Productivité Numérique | WinGlows",
+    "title": "Outils de Productivité Numérique | CommandGlows",
     "description": "Découvrez notre suite d'outils de productivité incluant des plugins Obsidian et des extensions Chrome conçus pour améliorer votre flux de travail numérique."
   },
   "services": {
-    "title": "Formation et Services de Productivité Numérique | WinGlows",
+    "title": "Formation et Services de Productivité Numérique | CommandGlows",
     "description": "Services experts de développement et de formation pour l'amélioration de la productivité numérique. Plugins personnalisés, extensions et coaching personnalisé."
   }
 } 

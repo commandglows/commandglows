@@ -8,10 +8,10 @@ contents: [
   "Comment installer un th\u00e8me en 30 secondes"
 ]
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Avatar de Diane"
 pubDate: 2026-03-23
-cardImage: "/images/WinGlowz.png"
+cardImage: "/images/CommandGlows.png"
 cardImageAlt: "Pr\u00e9visualisation des th\u00e8mes Termux"
 readTime: 8
 tags: ["termux", "android", "terminal", "th\u00e8mes", "couleurs", "personnalisation"]

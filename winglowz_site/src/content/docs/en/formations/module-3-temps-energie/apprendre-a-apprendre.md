@@ -17,7 +17,7 @@ This lesson is not here to make you "study more." It is here to help you choose 
 - what deserves real understanding
 - what deserves durable memory
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you learn something, ask three questions:
 

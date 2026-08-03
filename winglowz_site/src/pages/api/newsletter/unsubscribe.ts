@@ -34,8 +34,8 @@ export const GET: APIRoute = async ({ url }) => {
         <body style="${newsletterStyle('page')}">
           <div style="${newsletterStyle('pageShell')}">
             <h1 style="${newsletterStyle('pageHeading')}">Unsubscribed</h1>
-            <p style="${newsletterStyle('pageBody')}">You've been unsubscribed from WinGlows newsletter.</p>
-            <a href="/" style="${newsletterStyle('pageLink')}">Back to WinGlows</a>
+            <p style="${newsletterStyle('pageBody')}">You've been unsubscribed from CommandGlows newsletter.</p>
+            <a href="/" style="${newsletterStyle('pageLink')}">Back to CommandGlows</a>
           </div>
         </body>
       </html>

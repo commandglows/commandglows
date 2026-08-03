@@ -6,8 +6,8 @@ main:
   id: 1
   content: |
     Introducing FlowzSuite – the ultimate collection of premium Obsidian plugins designed to transform your note-taking into a seamless creative workflow. From content creation to project management, media handling to RSS feeds, FlowzSuite brings professional-grade tools to your fingertips. Created for ambitious builders who want maximum productivity and intuitive use.
-  imgCard: "@/images/WinGlowz.png"
-  imgMain: "@/images/WinGlowz.png"
+  imgCard: "@/images/CommandGlows.png"
+  imgMain: "@/images/CommandGlows.png"
   imgAlt: "FlowzSuite interface showcase in Obsidian"
 tabs:
   - id: "tabs-with-card-item-1"
@@ -51,6 +51,6 @@ specificationsRight:
   - title: "Community Driven"
     subTitle: "Join our active community of power users, share workflows, and influence future development. Plus, get priority support when you need it."
 blueprints:
-  first: "@/images/WinGlowz.png"
-  second: "@/images/WinGlowz.png"  
+  first: "@/images/CommandGlows.png"
+  second: "@/images/CommandGlows.png"
 ---

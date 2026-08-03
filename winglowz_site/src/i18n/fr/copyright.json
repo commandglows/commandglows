@@ -4,7 +4,7 @@
   "sections": {
     "protection": {
       "title": "1. Protection des Droits d'Auteur",
-      "content": "Tout le contenu, les logiciels et les matériaux disponibles sur ce site web et les produits associés (collectivement, le \"Contenu\") sont protégés par les lois sur la propriété intellectuelle et sont la propriété de WinGlows. Cela inclut, sans s'y limiter :",
+      "content": "Tout le contenu, les logiciels et les matériaux disponibles sur ce site web et les produits associés (collectivement, le \"Contenu\") sont protégés par les lois sur la propriété intellectuelle et sont la propriété de CommandGlows. Cela inclut, sans s'y limiter :",
       "items": [
         "Tous les plugins Obsidian (CreatorFlowz, RSSFlowz, PluginFlowz, MediaFlowz, EditorFlowz, MailingFlowz, LinkFlowz)",
         "Extensions Chrome (ReplayGlowz)",
@@ -29,7 +29,7 @@
     },
     "commercial": {
       "title": "3. Utilisation Commerciale",
-      "content": "Toute utilisation commerciale, y compris mais sans s'y limiter la revente, la modification ou l'incorporation dans d'autres produits, nécessite une autorisation écrite explicite de WinGlows."
+      "content": "Toute utilisation commerciale, y compris mais sans s'y limiter la revente, la modification ou l'incorporation dans d'autres produits, nécessite une autorisation écrite explicite de CommandGlows."
     },
     "enforcement": {
       "title": "4. Application",
@@ -47,7 +47,7 @@
     }
   },
   "footer": {
-    "notice": "En utilisant nos produits et services, vous reconnaissez et acceptez de respecter nos droits de propriété intellectuelle tels que décrits dans cette notice. WinGlows se réserve tous les droits non expressément accordés et peut mettre à jour cette notice à tout moment sans notification préalable.",
-    "contact": "Pour toute question concernant les droits d'auteur ou les autorisations, veuillez contacter copyright@winglowz.com"
+    "notice": "En utilisant nos produits et services, vous reconnaissez et acceptez de respecter nos droits de propriété intellectuelle tels que décrits dans cette notice. CommandGlows se réserve tous les droits non expressément accordés et peut mettre à jour cette notice à tout moment sans notification préalable.",
+    "contact": "Pour toute question concernant les droits d'auteur ou les autorisations, veuillez contacter copyright@commandglows.com"
   }
 }

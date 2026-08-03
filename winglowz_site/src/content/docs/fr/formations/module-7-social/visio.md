@@ -32,7 +32,7 @@ Une reunion utile est une **escalade** :
 
 Si la reunion sert surtout a lire ensemble quelque chose qui aurait pu etre envoye avant, ce n'est pas une reunion necessaire. C'est une dette de preparation.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Avant de planifier, pose-toi quatre questions :
 
@@ -41,7 +41,7 @@ Avant de planifier, pose-toi quatre questions :
 3. **Qui est vraiment requis ?**
 4. **Peut-on faire plus court ?** 15 ou 25 minutes au lieu de 30 ou 60
 
-L'outil **[Should It Be a Meeting](https://shoulditbeameeting.com/)** propose un questionnaire interactif pour trancher. Regle Winflowz : si l'objectif peut etre atteint par une video Loom de 2 minutes, ce n'est pas une reunion.
+L'outil **[Should It Be a Meeting](https://shoulditbeameeting.com/)** propose un questionnaire interactif pour trancher. Regle CommandGlows : si l'objectif peut etre atteint par une video Loom de 2 minutes, ce n'est pas une reunion.
 
 ## Le vrai objectif
 

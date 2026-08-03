@@ -29,7 +29,7 @@ Le probleme n'est pas seulement d'avoir trop d'apps ouvertes. C'est de laisser l
 
 Le chat doit accelerer. Pas devenir ton disque dur ni ta todo list.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand un message arrive, pose-toi trois questions :
 

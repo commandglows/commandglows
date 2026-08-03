@@ -12,7 +12,7 @@ sidebar:
 
 Productive intelligence is not mainly about thinking longer. It is about **reducing uncertainty better**, sorting better, and choosing better.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you feel blocked by too many options, check these four levels:
 

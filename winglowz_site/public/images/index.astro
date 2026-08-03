@@ -8,11 +8,11 @@ import FeaturesNavs from '@components/sections/features/FeaturesNavs.astro'
 import TestimonialsSection from '@components/sections/testimonials/TestimonialsSection.astro'
 import PricingSection from '@components/sections/pricing/PricingSection.astro'
 import FAQ from '@components/sections/misc/FAQ.astro'
-import heroImage from '@/assets/images/WinGlowz.png'
-import featureImage from '@/assets/images/WinGlowz.png'
-import windowsTools from '@/assets/images/WinGlowz.png'
-import tools from '@/assets/images/WinGlowz.png'
-import dashboard from '@/assets/images/WinGlowz.png'
+import heroImage from '@/assets/images/CommandGlows.png'
+import featureImage from '@/assets/images/CommandGlows.png'
+import windowsTools from '@/assets/images/CommandGlows.png'
+import tools from '@/assets/images/CommandGlows.png'
+import dashboard from '@/assets/images/CommandGlows.png'
 import { useTranslations } from '@/utils/i18n'
 import type { Language } from '@/types/i18n'
 import { getLocalizedSiteUrl } from '@/constants'
@@ -113,7 +113,7 @@ if (!hasValidStats) {
 		starCount={t.hero.starCount}
 		reviews={t.hero.reviews}
 		src={heroImage}
-		alt="Stack of WinGlows product boxes containing assorted productivity tools"
+		alt="Stack of CommandGlows product boxes containing assorted productivity tools"
 	/>
 
 	<ClientsSection title={t.clients.title} subTitle={t.clients.subTitle} />
@@ -122,7 +122,7 @@ if (!hasValidStats) {
 		title={t.features.title}
 		subTitle={t.features.subTitle}
 		src={featureImage}
-		alt="WinGlows products in floating boxes"
+		alt="CommandGlows products in floating boxes"
 		features={features}
 	/>
 

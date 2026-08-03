@@ -26,7 +26,7 @@ The right logic is:
 - choose few tools
 - build an environment you can actually keep
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you want to improve your Windows workstation, ask four questions:
 

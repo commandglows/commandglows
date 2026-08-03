@@ -1,9 +1,9 @@
-# WinGlows Windows Mastery Funnel Emails
+# CommandGlows Windows Mastery Funnel Emails
 
 These are ready-to-send markdown campaign drafts for the dedicated sales pages:
 
-- FR: `https://www.winflowz.com/fr/maitrise-windows`
-- EN: `https://www.winflowz.com/windows-mastery`
+- FR: `https://www.commandglows.com/fr/maitrise-windows`
+- EN: `https://www.commandglows.com/windows-mastery`
 
 They are intentionally plain and reusable.
 

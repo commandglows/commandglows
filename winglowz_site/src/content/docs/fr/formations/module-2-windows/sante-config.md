@@ -19,7 +19,7 @@ Cette page ne sert pas à "optimiser Windows" au sens vague. Elle sert à traite
 - corriger quelques goulets d'étranglement réseau ou système
 - juger si ta machine est vraiment insuffisante ou juste mal entretenue
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand une machine paraît lente, instable ou pénible, pose-toi quatre questions :
 

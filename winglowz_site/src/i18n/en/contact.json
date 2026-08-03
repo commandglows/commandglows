@@ -1,5 +1,5 @@
 {
-  "title": "Contact | WinGlows",
+  "title": "Contact | CommandGlows",
   "meta": {
     "description": "Have questions or want to discuss a project? Contact us and let's build the perfect solution together with our tools and services."
   },
@@ -32,7 +32,7 @@
     "title": "Other Ways to Reach Us",
     "email": {
       "label": "Email",
-      "value": "hello@winglowz.com"
+      "value": "hello@commandglows.com"
     },
     "location": {
       "label": "Location",
@@ -59,7 +59,7 @@
       {
         "title": "GitHub",
         "description": "Report issues or contribute to our open-source projects",
-        "link": "https://github.com/diane-defores/winglowz"
+        "link": "https://github.com/diane-defores/commandglows"
       }
     ]
   }

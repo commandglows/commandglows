@@ -1,16 +1,16 @@
 ---
-title: "WinGlows"
-description: "Practical Windows productivity training at the center of the WinGlows ecosystem"
+title: "CommandGlows"
+description: "Practical Windows productivity training at the center of the CommandGlows ecosystem"
 status: "available"
 main:
   id: 1
-  content: "WinGlows is a practical Windows productivity training path built around real daily workflows, shortcuts, and setup decisions."
-  imgCard: "/images/WinGlowz.png"
-  imgMain: "/images/WinGlowz.png"
-  imgAlt: "WinGlows product illustration"
+  content: "CommandGlows is a practical Windows productivity training path built around real daily workflows, shortcuts, and setup decisions."
+  imgCard: "/images/CommandGlows.png"
+  imgMain: "/images/CommandGlows.png"
+  imgAlt: "CommandGlows product illustration"
 longDescription:
   title: "Learn Windows workflows that actually save time"
-  subTitle: "WinGlows is the flagship training path, with companion Obsidian and Chrome tools to support it."
+  subTitle: "CommandGlows is the flagship training path, with companion Obsidian and Chrome tools to support it."
   btnTitle: "See the sales page"
   btnURL: "/windows-mastery"
 descriptionList:
@@ -47,6 +47,6 @@ specificationsRight:
   - title: "Internet Connection"
     subTitle: "Required for the online training and linked tools"
 blueprints:
-  first: "/images/WinGlowz.png"
-  second: "/images/WinGlowz.png"
+  first: "/images/CommandGlows.png"
+  second: "/images/CommandGlows.png"
 ---

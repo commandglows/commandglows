@@ -24,7 +24,7 @@ In cognitive science, retrieval is heavily dependent on the **cues** available w
 
 If your system depends only on perfect text search, it remains fragile.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you cannot find something, ask four questions:
 

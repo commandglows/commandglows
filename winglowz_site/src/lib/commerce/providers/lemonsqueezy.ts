@@ -330,17 +330,17 @@ function resolveLemonSqueezyVariantId(
   if (offerId === "socialglowz/lifetime_deal") {
     return env.LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID
   }
-  if (offerId === "winglowz_app/focus") {
-    return env.LEMONSQUEEZY_WINGLOWZ_APP_FOCUS_VARIANT_ID
+  if (offerId === "commandglows_app/focus") {
+    return env.LEMONSQUEEZY_COMMANDGLOWS_APP_FOCUS_VARIANT_ID
   }
-  if (offerId === "winglowz_app/power") {
-    return env.LEMONSQUEEZY_WINGLOWZ_APP_POWER_VARIANT_ID
+  if (offerId === "commandglows_app/power") {
+    return env.LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID
   }
-  if (offerId === "winglowz_app/control") {
-    return env.LEMONSQUEEZY_WINGLOWZ_APP_CONTROL_VARIANT_ID
+  if (offerId === "commandglows_app/control") {
+    return env.LEMONSQUEEZY_COMMANDGLOWS_APP_CONTROL_VARIANT_ID
   }
-  if (offerId === "winglowz_app/command") {
-    return env.LEMONSQUEEZY_WINGLOWZ_APP_COMMAND_VARIANT_ID
+  if (offerId === "commandglows_app/command") {
+    return env.LEMONSQUEEZY_COMMANDGLOWS_APP_COMMAND_VARIANT_ID
   }
   return undefined
 }

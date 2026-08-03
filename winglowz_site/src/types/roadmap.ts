@@ -37,8 +37,8 @@ export const projects: Project[] = [
     features: []
   },
   {
-    id: 'winglowz',
-    name: 'Winflowz',
+    id: 'commandglows',
+    name: 'CommandGlows',
     description: 'Windows automation',
     features: []
   }

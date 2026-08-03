@@ -14,7 +14,7 @@ En pratique, elle repose surtout sur :
 - un environnement qui aide
 - une récupération propre après écart
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand une habitude ne tient pas, le problème vient rarement d'un manque moral. Pose-toi plutôt cinq questions :
 

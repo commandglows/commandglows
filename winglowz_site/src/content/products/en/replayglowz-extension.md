@@ -6,8 +6,8 @@ main:
   id: 1
   content: |
     Discover ReplayGlowz – your ultimate YouTube productivity companion. This powerful Chrome extension transforms your video watching experience with advanced bookmarking features, customizable keyboard shortcuts, and seamless export options. Perfect for students, researchers, and anyone looking to organize their YouTube learning journey.
-  imgCard: "@/images/WinGlowz.png"
-  imgMain: "@/images/WinGlowz.png"
+  imgCard: "@/images/CommandGlows.png"
+  imgMain: "@/images/CommandGlows.png"
   imgAlt: "ReplayGlowz Chrome extension interface screenshot"
 tabs:
   - id: "tabs-with-card-item-1"
@@ -51,6 +51,6 @@ specificationsRight:
   - title: "Security"
     subTitle: "Robust error handling, secure data storage, and validated data imports for reliable operation."
 blueprints:
-  first: "@/images/WinGlowz.png"
-  second: "@/images/WinGlowz.png"  
+  first: "@/images/CommandGlows.png"
+  second: "@/images/CommandGlows.png"
 ---

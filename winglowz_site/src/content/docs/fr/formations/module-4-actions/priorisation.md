@@ -23,7 +23,7 @@ Prioriser ne consiste pas seulement à choisir "la première tâche". Cela consi
 - **tenir** ce choix dans le temps
 Le but caché : réduire l'espace mental disponible pour l'évitement et la procrastination en rendant l'engagement explicite<sup>[4](#concept-procrastination)</sup>.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu regardes une tâche, un projet ou une opportunité, pose-toi quatre questions :
 

@@ -1,18 +1,18 @@
 ---
 translationKey: "windows-workflow-durable"
 title: "Comment construire un workflow Windows qui tient vraiment"
-description: "WinGlows aide les utilisateurs Windows à transformer des tâches dispersées en système plus clair et plus répétable."
+description: "CommandGlows aide les utilisateurs Windows à transformer des tâches dispersées en système plus clair et plus répétable."
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Avatar de Diane"
-cardImage: "/images/WinGlowz.png"
-cardImageAlt: "Couverture d'article WinGlows sur le workflow"
+cardImage: "/images/CommandGlows.png"
+cardImageAlt: "Couverture d'article CommandGlows sur le workflow"
 pubDate: 2026-06-18
 readTime: 8
 tags: ["windows", "productivité", "workflow", "système"]
 contents: [
   "La plupart des conseils de productivité supposent que le vrai problème est la motivation. Sur Windows, le vrai problème est souvent la structure. Trop de fenêtres, trop de petites décisions, trop d'endroits où le contexte se perd.",
-  "WinGlows existe pour combler cet écart : non pas pour remplacer votre travail, mais pour vous aider à construire un système plus simple à répéter.",
+  "CommandGlows existe pour combler cet écart : non pas pour remplacer votre travail, mais pour vous aider à construire un système plus simple à répéter.",
   "Cet article montre ce qu'un workflow durable doit conserver, où il casse habituellement, et comment penser un meilleur rythme d'exécution."
 ]
 ---
@@ -36,11 +36,11 @@ Un bon système a généralement quatre propriétés :
 3. Un rythme de revue qui revient souvent.
 4. Un système qui ne s’écroule pas quand la journée devient bruyante.
 
-WinGlows cherche à soutenir exactement ce type d’environnement : une structure pratique pour les utilisateurs Windows, pas une couche de complexité supplémentaire.
+CommandGlows cherche à soutenir exactement ce type d’environnement : une structure pratique pour les utilisateurs Windows, pas une couche de complexité supplémentaire.
 
-## Là où WinGlows se place
+## Là où CommandGlows se place
 
-WinGlows ne cherche pas à enseigner tous les outils possibles.
+CommandGlows ne cherche pas à enseigner tous les outils possibles.
 Le but est d’aider les utilisateurs à construire un workflow cohérent autour des outils qu’ils utilisent déjà, afin que le système soit plus stable et moins improvisé.
 
 Cela compte parce qu’un workflow ne fonctionne que s’il survit à la vraie vie :
@@ -63,6 +63,6 @@ Ces questions comptent plus que le choix d’une nouvelle application.
 
 ## Ce qu’il faut retenir
 
-WinGlows part de l’idée que la productivité devrait ressembler à un système de travail, pas à une opération de sauvetage permanente. Si votre setup actuel ne fonctionne que quand vous êtes déjà très concentré, il n’est pas assez solide.
+CommandGlows part de l’idée que la productivité devrait ressembler à un système de travail, pas à une opération de sauvetage permanente. Si votre setup actuel ne fonctionne que quand vous êtes déjà très concentré, il n’est pas assez solide.
 
 Le but n’est pas d’être parfait. Le but est de rendre l’action utile suivante plus facile à atteindre.

@@ -30,7 +30,7 @@ Le suivi devient utile surtout pour :
 
 Le but n'est pas de construire la plus grande base. Le but est de garder un **reseau vivant et lisible**.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu ajoutes quelqu'un a ton systeme, pose-toi trois questions :
 
@@ -132,7 +132,7 @@ Ne commence pas par tout migrer. Commence par :
 
 **Chaque semaine** : regarde qui merite une relance, puis fais-en peu mais bien.
 
-:::tip[Philosophie Winflowz]
+:::tip[Philosophie CommandGlows]
 Le bon CRM relationnel ne te transforme pas en machine a follow-up. Il t'aide a etre plus attentif avec moins de friction.
 :::
 

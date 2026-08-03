@@ -15,7 +15,7 @@ type CheckoutUser = {
 	polarCustomerId?: string
 }
 
-const FORMATION_PRODUCT_ID = 'winglowz_formation'
+const FORMATION_PRODUCT_ID = 'commandglows_formation'
 
 export const prerender = false
 
@@ -36,7 +36,7 @@ export const GET: APIRoute = async ({ url, locals, redirect }) => {
 
 	const polarAccessToken = import.meta.env.POLAR_ACCESS_TOKEN
 	const polarProductId =
-		import.meta.env.POLAR_WINGLOWZ_PRODUCT_ID || import.meta.env.POLAR_PRODUCT_ID
+		import.meta.env.POLAR_COMMANDGLOWS_PRODUCT_ID || import.meta.env.POLAR_PRODUCT_ID
 	const convexUrl = import.meta.env.PUBLIC_CONVEX_URL
 
 	if (!polarAccessToken || !polarProductId) {

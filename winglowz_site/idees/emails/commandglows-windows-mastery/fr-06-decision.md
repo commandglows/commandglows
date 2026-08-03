@@ -1,6 +1,6 @@
 Subject: Tu n'as pas besoin de tout refaire. Tu dois arreter de subir.
 Preview: Le bon prochain pas n'est pas plus de volonte. C'est moins de friction.
-CTA: https://www.winflowz.com/fr/maitrise-windows
+CTA: https://www.commandglows.com/fr/maitrise-windows
 
 Si tu lis encore cette sequence, c'est probablement que tu sens deja une chose :
 
@@ -8,7 +8,7 @@ ton probleme n'est pas seulement le manque de temps.
 
 Ton probleme, c'est qu'une partie de ton energie se dissout chaque jour dans un environnement qui te ralentit.
 
-WinGlows a ete construit pour repondre a ca de maniere concrete.
+CommandGlows a ete construit pour repondre a ca de maniere concrete.
 
 La formation comprend :
 
@@ -34,7 +34,7 @@ Mais si tu preferes partir d'un systeme deja pense pour :
 
 alors la page de vente est ici :
 
-https://www.winflowz.com/fr/maitrise-windows
+https://www.commandglows.com/fr/maitrise-windows
 
 Et si tu veux aller encore plus loin ensuite, le bundle restera disponible plus tard.
 

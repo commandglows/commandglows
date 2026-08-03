@@ -14,7 +14,7 @@ In practice, it mostly depends on:
 - an environment that helps
 - clean recovery after missed days
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When a habit does not stick, the issue is rarely moral weakness. Ask five better questions:
 

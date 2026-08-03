@@ -6,8 +6,8 @@ main:
   id: 6
   content: |
     Découvrez RSSFlowz – votre solution complète pour la gestion de flux RSS dans Obsidian. Ce plugin puissant transforme vos flux RSS en notes Markdown avec des fonctionnalités avancées d'IA, incluant la génération automatique de résumés et la transcription de vidéos. Idéal pour les créateurs de contenu, les chercheurs et tous ceux qui souhaitent centraliser leur veille informationnelle dans Obsidian.
-  imgCard: "@/images/WinGlowz.png"
-  imgMain: "@/images/WinGlowz.png"
+  imgCard: "@/images/CommandGlows.png"
+  imgMain: "@/images/CommandGlows.png"
   imgAlt: "Interface du plugin RSSFlowz pour Obsidian"
 tabs:
   - id: "tabs-with-card-item-1"
@@ -51,6 +51,6 @@ specificationsRight:
   - title: "Avantages Supplémentaires"
     subTitle: "Support multilingue, documentation intégrée, mises à jour régulières et support communautaire."
 blueprints:
-  first: "@/images/WinGlowz.png"
-  second: "@/images/WinGlowz.png"
+  first: "@/images/CommandGlows.png"
+  second: "@/images/CommandGlows.png"
 --- 

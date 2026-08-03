@@ -8,7 +8,7 @@ import {
   REPLAYGLOWZ_PRODUCT_ID,
   SOCIALGLOWZ_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
-  WINGLOWZ_APP_PRODUCT_ID,
+  COMMANDGLOWS_APP_PRODUCT_ID,
   ensureDefaultFreeEntitlement,
   ensureMissingDefaultFreeEntitlements,
   isActiveAccessStatus,
@@ -34,7 +34,7 @@ const SOCIALGLOWZ_COMMERCE_GRANT_SOURCE = 'socialglowz_commerce'
 const SOCIALGLOWZ_COMMERCE_EVENT_SOURCE_PREFIX = 'socialglowz:commerce'
 const SUITE_COMMERCE_EVENT_SOURCE = 'suite_commerce'
 const SUITE_COMMERCE_EVENT_SOURCE_PREFIX = 'suite:commerce'
-const WINGLOWZ_APP_PLAN_ALLOWLIST = new Set([
+const COMMANDGLOWS_APP_PLAN_ALLOWLIST = new Set([
   'free',
   'focus',
   'power',
@@ -42,11 +42,11 @@ const WINGLOWZ_APP_PLAN_ALLOWLIST = new Set([
   'command',
   'lifetime_deal',
 ])
-const WINGLOWZ_APP_OFFER_PLAN_BY_ID = new Map([
-  ['winglowz_app/focus', 'focus'],
-  ['winglowz_app/power', 'power'],
-  ['winglowz_app/control', 'control'],
-  ['winglowz_app/command', 'command'],
+const COMMANDGLOWS_APP_OFFER_PLAN_BY_ID = new Map([
+  ['commandglows_app/focus', 'focus'],
+  ['commandglows_app/power', 'power'],
+  ['commandglows_app/control', 'control'],
+  ['commandglows_app/command', 'command'],
 ])
 const TEMU_SHOPPING_LISTS_PROVIDER = 'temu_shopping_lists_convex'
 const TEMU_SHOPPING_LISTS_BRIDGE_SOURCE = 'temu_shopping_lists_bridge_api'
@@ -653,8 +653,8 @@ function isAllowedSuiteCommercePlan(productId: string, planId: string) {
   if (productId === SOCIALGLOWZ_PRODUCT_ID) {
     return isAllowedSocialGlowzPlan(planId)
   }
-  if (productId === WINGLOWZ_APP_PRODUCT_ID) {
-    return WINGLOWZ_APP_PLAN_ALLOWLIST.has(planId)
+  if (productId === COMMANDGLOWS_APP_PRODUCT_ID) {
+    return COMMANDGLOWS_APP_PLAN_ALLOWLIST.has(planId)
   }
   return false
 }
@@ -667,10 +667,10 @@ function isSupportedSuiteCommerceOffer(
   if (isSupportedSocialGlowzCommerceOffer(offerId, productId, plan)) {
     return true
   }
-  if (productId !== WINGLOWZ_APP_PRODUCT_ID) {
+  if (productId !== COMMANDGLOWS_APP_PRODUCT_ID) {
     return false
   }
-  return WINGLOWZ_APP_OFFER_PLAN_BY_ID.get(offerId) === plan
+  return COMMANDGLOWS_APP_OFFER_PLAN_BY_ID.get(offerId) === plan
 }
 
 function buildSuiteCommerceSourceRef(args: {

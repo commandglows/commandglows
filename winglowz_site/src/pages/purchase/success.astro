@@ -7,16 +7,16 @@ const nextUrl = Astro.url.searchParams.get('next')
 const offerId = Astro.url.searchParams.get('offerId')
 const safeNextUrl = isSafePrivateCoursePath(nextUrl) ? nextUrl : null
 const lang = safeNextUrl?.includes('/dashboard/docs/fr/') ? 'fr' : 'en'
-const isWinGlowzAppOffer = offerId?.startsWith('winglowz_app/') ?? false
+const isCommandGlowsAppOffer = offerId?.startsWith('commandglows_app/') ?? false
 const isSocialGlowzOffer = offerId === 'socialglowz/lifetime_deal'
 const labels =
 	lang === 'fr'
 		? {
 				title: 'Achat confirmé',
 				body:
-					isWinGlowzAppOffer || isSocialGlowzOffer
-						? isWinGlowzAppOffer
-							? "Paiement reçu. L'accès WinGlows est confirmé par webhook signé et peut nécessiter une vérification de compte avant activation dans l'app."
+					isCommandGlowsAppOffer || isSocialGlowzOffer
+						? isCommandGlowsAppOffer
+							? "Paiement reçu. L'accès CommandGlows est confirmé par webhook signé et peut nécessiter une vérification de compte avant activation dans l'app."
 							: "Paiement reçu. L'accès SocialGlowz est confirmé par webhook signé et peut nécessiter une vérification de compte avant activation."
 						: 'Votre accès à la formation a été débloqué. Vous pouvez ouvrir la leçon privée maintenant.',
 				openLesson: 'Ouvrir la leçon',
@@ -28,9 +28,9 @@ const labels =
 		: {
 				title: 'Purchase Confirmed',
 				body:
-					isWinGlowzAppOffer || isSocialGlowzOffer
-						? isWinGlowzAppOffer
-							? 'Payment received. WinGlows access is confirmed by signed webhook and may require account verification before activation in the app.'
+					isCommandGlowsAppOffer || isSocialGlowzOffer
+						? isCommandGlowsAppOffer
+							? 'Payment received. CommandGlows access is confirmed by signed webhook and may require account verification before activation in the app.'
 							: 'Payment received. SocialGlowz access is confirmed by signed webhook and may require account verification before activation.'
 						: 'Your training access has been unlocked. You can open the private lesson now.',
 				openLesson: 'Open Lesson',
@@ -58,7 +58,7 @@ const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
 			</p>
 
 			<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
-				{isWinGlowzAppOffer || isSocialGlowzOffer ? (
+				{isCommandGlowsAppOffer || isSocialGlowzOffer ? (
 					<a href={contactUrl} class="btn-primary inline-flex items-center justify-center">
 						{labels.contact}
 					</a>

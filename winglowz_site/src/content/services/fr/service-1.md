@@ -2,7 +2,7 @@
 title: "Optimisation des Performances"
 description: "Améliorez les performances de votre système Windows"
 icon: "performance"
-image: "/images/WinGlowz.png"
+image: "/images/CommandGlows.png"
 imageAlt: "Illustration d'optimisation des performances"
 features:
   - "Analyse approfondie des performances système"

@@ -6,8 +6,8 @@ main:
   id: 7
   content: |
     Discover PluginFlowz – your complete solution for plugin management and evaluation in Obsidian. This powerful plugin allows you to organize, evaluate, and document your plugins with an advanced rating system and flexible interface. Perfect for advanced Obsidian users who want to optimize their plugin usage.
-  imgCard: "@/images/WinGlowz.png"
-  imgMain: "@/images/WinGlowz.png"
+  imgCard: "@/images/CommandGlows.png"
+  imgMain: "@/images/CommandGlows.png"
   imgAlt: "PluginFlowz Obsidian plugin interface screenshot"
 tabs:
   - id: "tabs-with-card-item-1"
@@ -51,6 +51,6 @@ specificationsRight:
   - title: "Support and Evolution"
     subTitle: "Regular updates, detailed documentation, active community support."
 blueprints:
-  first: "@/images/WinGlowz.png"
-  second: "@/images/WinGlowz.png"
+  first: "@/images/CommandGlows.png"
+  second: "@/images/CommandGlows.png"
 --- 

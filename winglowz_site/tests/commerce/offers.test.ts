@@ -6,10 +6,10 @@ import {
   normalizeCommerceProviderOrder,
   SOCIALGLOWZ_LTD_OFFER_ID,
   SOCIALGLOWZ_LETTER,
-  WINGLOWZ_APP_COMMAND_LTD_OFFER_ID,
-  WINGLOWZ_APP_CONTROL_LTD_OFFER_ID,
-  WINGLOWZ_APP_FOCUS_LTD_OFFER_ID,
-  WINGLOWZ_APP_POWER_LTD_OFFER_ID,
+  COMMANDGLOWS_APP_COMMAND_LTD_OFFER_ID,
+  COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID,
+  COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID,
+  COMMANDGLOWS_APP_POWER_LTD_OFFER_ID,
 } from '@/lib/commerce/offers'
 
 function withEnv(vars: Record<string, string | undefined>, test: () => void) {
@@ -48,24 +48,24 @@ describe('commerce offer configuration', () => {
     expect(allowed).toEqual(candidates)
   })
 
-  test('returns WinGlows founder offer configs', () => {
-    expect(getCommerceOffer(WINGLOWZ_APP_FOCUS_LTD_OFFER_ID)).toMatchObject({
-      productId: 'winglowz_app',
+  test('returns CommandGlows founder offer configs', () => {
+    expect(getCommerceOffer(COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID)).toMatchObject({
+      productId: 'commandglows_app',
       plan: 'focus',
       providers: ['lemonsqueezy'],
     })
-    expect(getCommerceOffer(WINGLOWZ_APP_POWER_LTD_OFFER_ID)).toMatchObject({
-      productId: 'winglowz_app',
+    expect(getCommerceOffer(COMMANDGLOWS_APP_POWER_LTD_OFFER_ID)).toMatchObject({
+      productId: 'commandglows_app',
       plan: 'power',
       providers: ['lemonsqueezy'],
     })
-    expect(getCommerceOffer(WINGLOWZ_APP_CONTROL_LTD_OFFER_ID)).toMatchObject({
-      productId: 'winglowz_app',
+    expect(getCommerceOffer(COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID)).toMatchObject({
+      productId: 'commandglows_app',
       plan: 'control',
       providers: ['lemonsqueezy'],
     })
-    expect(getCommerceOffer(WINGLOWZ_APP_COMMAND_LTD_OFFER_ID)).toMatchObject({
-      productId: 'winglowz_app',
+    expect(getCommerceOffer(COMMANDGLOWS_APP_COMMAND_LTD_OFFER_ID)).toMatchObject({
+      productId: 'commandglows_app',
       plan: 'command',
       providers: ['lemonsqueezy'],
     })
@@ -77,9 +77,9 @@ describe('commerce offer configuration', () => {
         LEMONSQUEEZY_API_KEY: 'api-key-123',
         LEMONSQUEEZY_STORE_ID: 'store-456',
         LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID: 'variant-789',
-        LEMONSQUEEZY_WINGLOWZ_APP_PRODUCT_ID: 'winglowz-product',
-        LEMONSQUEEZY_WINGLOWZ_APP_POWER_VARIANT_ID: 'winglowz-power-variant',
-        POLAR_WINGLOWZ_PRODUCT_ID: 'polar-winglowz',
+        LEMONSQUEEZY_COMMANDGLOWS_APP_PRODUCT_ID: 'commandglows-product',
+        LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID: 'commandglows-power-variant',
+        POLAR_COMMANDGLOWS_PRODUCT_ID: 'polar-commandglows',
       },
       () => {
         const lemonConfig = getOfferProviderConfig(
@@ -99,17 +99,17 @@ describe('commerce offer configuration', () => {
         )
         expect(polarConfig).toEqual({
           provider: 'polar',
-          productId: 'polar-winglowz',
+          productId: 'polar-commandglows',
         })
 
-        const winglowzConfig = getOfferProviderConfig(
-          WINGLOWZ_APP_POWER_LTD_OFFER_ID,
+        const commandglowsConfig = getOfferProviderConfig(
+          COMMANDGLOWS_APP_POWER_LTD_OFFER_ID,
           'lemonsqueezy'
         )
-        expect(winglowzConfig).toEqual({
+        expect(commandglowsConfig).toEqual({
           provider: 'lemonsqueezy',
-          productId: 'winglowz-product',
-          variantId: 'winglowz-power-variant',
+          productId: 'commandglows-product',
+          variantId: 'commandglows-power-variant',
           storeId: 'store-456',
         })
       }

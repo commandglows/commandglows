@@ -33,11 +33,11 @@ function buildWelcomeEmail(lang: SignupLang, source: SignupSource, email: string
       ? {
           subject:
             source === 'lead-magnet'
-              ? 'Bienvenue chez WinGlows — votre prochaine etape'
-              : 'Bienvenue chez WinGlows',
-          heading: 'Bienvenue chez WinGlows',
+              ? 'Bienvenue chez CommandGlows — votre prochaine etape'
+              : 'Bienvenue chez CommandGlows',
+          heading: 'Bienvenue chez CommandGlows',
           intro:
-            "Vous etes bien inscrit(e). Le point de depart le plus utile pour comprendre l'approche WinGlows est maintenant la page dediee a la formation Windows.",
+            "Vous etes bien inscrit(e). Le point de depart le plus utile pour comprendre l'approche CommandGlows est maintenant la page dediee a la formation Windows.",
           body:
             "L'idee centrale est simple : vous n'avez pas forcement besoin de plus de motivation. Vous avez souvent surtout besoin de moins de friction, moins de bruit et d'un environnement plus coherent.",
           cta: 'Voir la page de vente',
@@ -48,11 +48,11 @@ function buildWelcomeEmail(lang: SignupLang, source: SignupSource, email: string
       : {
           subject:
             source === 'lead-magnet'
-              ? 'Welcome to WinGlows — your next step'
-              : 'Welcome to WinGlows',
-          heading: 'Welcome to WinGlows',
+              ? 'Welcome to CommandGlows — your next step'
+              : 'Welcome to CommandGlows',
+          heading: 'Welcome to CommandGlows',
           intro:
-            'You are subscribed. The most useful starting point for understanding the WinGlows approach is now the dedicated Windows course sales page.',
+            'You are subscribed. The most useful starting point for understanding the CommandGlows approach is now the dedicated Windows course sales page.',
           body:
             'The core idea is simple: you probably do not need more motivation first. You mostly need less friction, less noise, and a more coherent work environment.',
           cta: 'See the sales page',

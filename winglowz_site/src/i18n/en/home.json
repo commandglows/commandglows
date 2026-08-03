@@ -1,11 +1,11 @@
 {
-  "title": "WinGlows - Windows Training and App",
+  "title": "CommandGlows - Windows Training and App",
   "meta": {
-    "description": "WinGlows focuses on practical Windows training, the WinGlows app, and proof-driven recommendations from the AppSumo launch."
+    "description": "CommandGlows focuses on practical Windows training, the CommandGlows app, and proof-driven recommendations from the AppSumo launch."
   },
   "hero": {
-    "title": "<span class=\"relative inline-flex sm:inline\"><span class=\"relative text-magenta\">Windows</span><span class=\"absolute inset-0 h-full w-full bg-gradient-rainbow opacity-30 blur-lg filter\"></span></span> Training & <span class=\"text-yellow\">WinGlows</span> App",
-    "subTitle": "A practical Windows course, the WinGlows Android app, and real recommendations from the July 2024 AppSumo launch.",
+    "title": "<span class=\"relative inline-flex sm:inline\"><span class=\"relative text-magenta\">Windows</span><span class=\"absolute inset-0 h-full w-full bg-gradient-rainbow opacity-30 blur-lg filter\"></span></span> Training & <span class=\"text-yellow\">CommandGlows</span> App",
+    "subTitle": "A practical Windows course, the CommandGlows Android app, and real recommendations from the July 2024 AppSumo launch.",
     "primaryBtn": "See Windows Mastery",
     "primaryBtnURL": "/windows-mastery",
     "secondaryBtn": "Recommendations",
@@ -28,7 +28,7 @@
     "title": "A workflow stack built from the ground up",
     "tabs": [
       {
-        "heading": "WinGlows app",
+        "heading": "CommandGlows app",
         "content": "Android screenshots and a working app surface that show the product as it exists today."
       },
       {
@@ -43,7 +43,7 @@
   },
   "testimonials": {
     "title": "What the offer includes",
-    "subTitle": "A training path, the WinGlows app, and a recommendations page built from real user feedback.",
+    "subTitle": "A training path, the CommandGlows app, and a recommendations page built from real user feedback.",
     "main": {
       "content": "Congratulations, Diane! I just spent 20 minutes in it and I'm already wondering what I've been doing with my life until now :)) Lots of goodies to improve my work. I love it!",
       "author": "Florin Muresan",
@@ -56,7 +56,7 @@
       },
       {
         "count": "1",
-        "description": "WinGlows app surface showcased on the homepage"
+        "description": "CommandGlows app surface showcased on the homepage"
       },
       {
         "count": "2",

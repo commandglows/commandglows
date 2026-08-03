@@ -13,7 +13,7 @@
     "paragraphs": [
       "Mon parcours a débuté dans la communauté dynamique des lifetime deals (LTD). J'y suis active depuis des années, découvrant et testant d'innombrables outils de productivité qui promettent de faciliter ma vie professionnelle. Grâce à cette expérience, j'ai développé une compréhension approfondie de ce qui rend vraiment un outil précieux au quotidien.",
       "Cette passion m'a conduite à créer un cours de productivité sur AppSumo, axé spécifiquement sur la productivité Windows. Ce cours est né de mes propres difficultés à trouver des ressources complètes pour optimiser le potentiel de Windows pour la productivité. J'ai réalisé que s'il existe de nombreux guides de productivité pour Mac, les utilisateurs Windows sont souvent négligés.",
-      "WinGlows est né de ce constat. Ce qui a commencé comme du contenu éducatif s'est transformé en une suite d'outils et de ressources conçus spécifiquement pour les utilisateurs avancés de Windows qui veulent travailler plus intelligemment, pas plus durement."
+      "CommandGlows est né de ce constat. Ce qui a commencé comme du contenu éducatif s'est transformé en une suite d'outils et de ressources conçus spécifiquement pour les utilisateurs avancés de Windows qui veulent travailler plus intelligemment, pas plus durement."
     ]
   },
   "mission": {
@@ -53,10 +53,10 @@
   },
   "cta": {
     "title": "Prêt à Booster Votre Productivité ?",
-    "description": "Rejoignez des milliers d'utilisateurs Windows qui ont transformé leur flux de travail avec WinGlows.",
+    "description": "Rejoignez des milliers d'utilisateurs Windows qui ont transformé leur flux de travail avec CommandGlows.",
     "button": "Découvrir mes outils"
   },
   "footer": {
-    "contact": "Des questions ? N'hésitez pas à me contacter à hello@winglowz.com"
+    "contact": "Des questions ? N'hésitez pas à me contacter à hello@commandglows.com"
   }
 }

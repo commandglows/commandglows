@@ -19,7 +19,7 @@ This page is not about “optimizing Windows” in a vague sense. It is about th
 - correcting a few network or system bottlenecks
 - judging whether your machine is truly insufficient or just poorly maintained
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When a machine feels slow, unstable, or painful, ask four questions:
 

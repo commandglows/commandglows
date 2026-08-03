@@ -1,6 +1,6 @@
 Subject: La productivite comme architecture, pas comme punition
 Preview: Travailler mieux sans te battre contre toi-meme toute la journee.
-CTA: https://www.winflowz.com/fr/maitrise-windows
+CTA: https://www.commandglows.com/fr/maitrise-windows
 
 Il y a une autre maniere d'aborder la productivite.
 
@@ -20,7 +20,7 @@ Autrement dit :
 - les raccourcis servent le travail au lieu de devenir un hobby
 - l'environnement retire du bruit avant de demander plus d'effort
 
-C'est cette logique que j'ai essaye de rendre explicite dans WinGlows.
+C'est cette logique que j'ai essaye de rendre explicite dans CommandGlows.
 
 La formation ne te demande pas de devenir une machine.
 
@@ -35,6 +35,6 @@ Un environnement dans lequel il devient plus facile :
 
 Si tu veux voir concretement comment la formation est structuree, la page est ici :
 
-https://www.winflowz.com/fr/maitrise-windows
+https://www.commandglows.com/fr/maitrise-windows
 
 Diane

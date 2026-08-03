@@ -21,7 +21,7 @@ Une réunion valable doit faire au moins une chose :
 - résoudre une ambiguïté qui persiste à l'écrit
 - produire un alignement qui ne peut pas attendre
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Avant d'accepter ou de planifier une réunion, pose-toi quatre questions :
 

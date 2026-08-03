@@ -6,8 +6,8 @@ main:
   id: 2
   content: |
     Discover GoalFlowz – your ultimate goal achievement companion. This powerful application transforms your most ambitious dreams into actionable plans through our revolutionary "goal-chaining" system. Perfect for entrepreneurs, ambitious professionals, and anyone looking to turn their goals into reality.
-  imgCard: "@/images/WinGlowz.png"
-  imgMain: "@/images/WinGlowz.png"
+  imgCard: "@/images/CommandGlows.png"
+  imgMain: "@/images/CommandGlows.png"
   imgAlt: "GoalFlowz application interface showing the goals dashboard"
 tabs:
   - id: "tabs-with-card-item-1"
@@ -51,6 +51,6 @@ specificationsRight:
   - title: "Security"
     subTitle: "Data encryption, secure authentication, and privacy protection."
 blueprints:
-  first: "@/images/WinGlowz.png"
-  second: "@/images/WinGlowz.png"
+  first: "@/images/CommandGlows.png"
+  second: "@/images/CommandGlows.png"
 --- 

@@ -10,7 +10,7 @@ Objectif :
 - ((le vrai problème n'est pas seulement le manque de temps, mais la mauvaise relation entre temps, énergie, levier et liberté))
 - ((échanger directement temps contre argent ou temps contre tâches reste une logique plafonnée))
 - ((le temps a une valeur d'usage différente selon l'âge, l'énergie, la santé et la marge de liberté))
-- ((meilleur angle Winflowz : investir du temps dans systèmes, compétences, automatisations et actifs de travail réutilisables))
+- ((meilleur angle CommandGlows : investir du temps dans systèmes, compétences, automatisations et actifs de travail réutilisables))
 
 ## Angle premium possible
 
@@ -34,7 +34,7 @@ Objectif :
 - ((l'idée "créer des systèmes et actifs réutilisables change la relation au temps"))
 - ((l'idée "investir son temps vaut mieux que le vendre en boucle"))
 
-## Reframing Winflowz
+## Reframing CommandGlows
 
 - ne pas glisser vers :
   - promesses de richesse

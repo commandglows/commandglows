@@ -5,8 +5,8 @@ import {
   ensureMissingDefaultFreeEntitlements,
 } from "./defaultFreeEntitlements";
 
-const FORMATION_PRODUCT_ID = "winglowz_formation";
-const LEGACY_FORMATION_PRODUCT_ID = "winglowz-training";
+const FORMATION_PRODUCT_ID = "commandglows_formation";
+const LEGACY_FORMATION_PRODUCT_ID = "commandglows-training";
 const FREE_PLAN_ID = "free";
 const PREMIUM_FORMATION_PLANS = new Set([
   "formation",

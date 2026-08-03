@@ -18,7 +18,7 @@ La planification thématique sert à réduire deux problèmes :
 
 L'idée n'est pas d'avoir une semaine "jolie". L'idée est de donner à chaque période un type de travail cohérent.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu planifies une journée ou une semaine, pose-toi trois questions :
 

@@ -1948,7 +1948,7 @@
   }
 
   .text-logo .text::before {
-    content: 'WinGlows';
+    content: 'CommandGlows';
     position: absolute;
     inset: 0;
     background-image:
@@ -1965,7 +1965,7 @@
   }
 
   .text-logo .text::after {
-    content: 'WinGlows';
+    content: 'CommandGlows';
     position: absolute;
     left: 0;
     top: 0;

@@ -24,7 +24,7 @@ Creating inside a good PKM system does not mean becoming a full-time content cre
 
 In other words, creation is the layer that turns knowledge into an asset.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you want to produce something from your notes, ask four questions:
 

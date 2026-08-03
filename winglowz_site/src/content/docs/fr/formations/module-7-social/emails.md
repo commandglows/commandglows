@@ -35,7 +35,7 @@ La recherche est assez claire: des interruptions frequentes ont un cout de repri
 
 Si tu ne fais pas cette separation, tu ne geres pas l'email. Tu geres un melange de canaux.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand un email arrive, pose-toi trois questions :
 

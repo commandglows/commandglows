@@ -20,7 +20,7 @@ Un web bien configuré doit te permettre de :
 - suivre des sources sans subir les plateformes
 - garder peu d'onglets, peu de bruit, peu de détours
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu touches à ton navigateur ou à tes flux web, pose-toi trois questions :
 

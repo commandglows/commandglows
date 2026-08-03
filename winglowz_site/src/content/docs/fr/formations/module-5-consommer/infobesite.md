@@ -24,7 +24,7 @@ Le bon objectif n'est donc pas "lire plus intelligemment". Le bon objectif est :
 
 **avoir un système qui empêche le bruit de devenir ton régime par défaut.**
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand un contenu, une source ou un flux arrive dans ta journée, pose-toi quatre questions :
 

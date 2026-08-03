@@ -32,7 +32,7 @@ A useful meeting is an **escalation path**:
 
 If the meeting mostly exists so people can read together what should have been sent earlier, it is not a necessary meeting. It is preparation debt.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 Before scheduling, ask four questions:
 
@@ -41,7 +41,7 @@ Before scheduling, ask four questions:
 3. **Who is truly required?**
 4. **Can it be shorter?** 15 or 25 minutes instead of 30 or 60
 
-The **[Should It Be a Meeting](https://shoulditbeameeting.com/)** tool gives you an interactive questionnaire to make the call. The WinGlows rule: if the goal can be achieved with a 2-minute Loom video, it is not a meeting.
+The **[Should It Be a Meeting](https://shoulditbeameeting.com/)** tool gives you an interactive questionnaire to make the call. The CommandGlows rule: if the goal can be achieved with a 2-minute Loom video, it is not a meeting.
 
 ## The real goal
 

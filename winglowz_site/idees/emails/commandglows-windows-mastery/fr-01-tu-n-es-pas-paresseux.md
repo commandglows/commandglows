@@ -1,6 +1,6 @@
 Subject: Tu n'es probablement pas paresseux. Tu subis un mauvais systeme.
 Preview: Le vrai probleme n'est souvent pas le manque de volonte.
-CTA: https://www.winflowz.com/fr/maitrise-windows
+CTA: https://www.commandglows.com/fr/maitrise-windows
 
 Tu t'es peut-etre deja dit des choses comme :
 
@@ -26,10 +26,10 @@ Ce n'est pas une excuse.
 
 C'est une meilleure lecture du probleme.
 
-Et c'est precisement sur ce point que WinGlows intervient : reduire la friction, rendre Windows plus soutenant, et remettre un peu de clarte la ou il y a aujourd'hui trop de bruit.
+Et c'est precisement sur ce point que CommandGlows intervient : reduire la friction, rendre Windows plus soutenant, et remettre un peu de clarte la ou il y a aujourd'hui trop de bruit.
 
 Si ce sujet te parle, la page de vente de la formation est ici :
 
-https://www.winflowz.com/fr/maitrise-windows
+https://www.commandglows.com/fr/maitrise-windows
 
 Diane

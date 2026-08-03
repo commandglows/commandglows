@@ -24,7 +24,7 @@ En cognition, la récupération dépend fortement des **indices de rappel** (cue
 
 Si ton système dépend uniquement d'une recherche textuelle parfaite, il reste fragile.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu ne retrouves pas quelque chose, pose-toi quatre questions :
 

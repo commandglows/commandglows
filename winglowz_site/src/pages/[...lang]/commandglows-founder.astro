@@ -157,7 +157,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				price: '$99',
 				founderPrice: '$49.50',
 				state: '50% off with FOUNDER',
-				offerId: 'winglowz_app/focus',
+				offerId: 'commandglows_app/focus',
 			},
 			{
 				title: 'Power',
@@ -169,7 +169,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				price: '$179',
 				founderPrice: '$89.50',
 				state: '50% off with FOUNDER',
-				offerId: 'winglowz_app/power',
+				offerId: 'commandglows_app/power',
 			},
 			{
 				title: 'Control',
@@ -181,7 +181,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				price: '$349',
 				founderPrice: '$174.50',
 				state: '50% off with FOUNDER',
-				offerId: 'winglowz_app/control',
+				offerId: 'commandglows_app/control',
 			},
 			{
 				title: 'Command',
@@ -193,7 +193,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				price: '$799',
 				founderPrice: '$399.50',
 				state: '50% off with FOUNDER',
-				offerId: 'winglowz_app/command',
+				offerId: 'commandglows_app/command',
 			},
 		],
 		trustHeading: 'A clear founder deal',
@@ -315,7 +315,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				price: '$99',
 				founderPrice: '$49.50',
 				state: '-50 % avec FOUNDER',
-				offerId: 'winglowz_app/focus',
+				offerId: 'commandglows_app/focus',
 			},
 			{
 				title: 'Power',
@@ -327,7 +327,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				price: '$179',
 				founderPrice: '$89.50',
 				state: '-50 % avec FOUNDER',
-				offerId: 'winglowz_app/power',
+				offerId: 'commandglows_app/power',
 			},
 			{
 				title: 'Control',
@@ -339,7 +339,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				price: '$349',
 				founderPrice: '$174.50',
 				state: '-50 % avec FOUNDER',
-				offerId: 'winglowz_app/control',
+				offerId: 'commandglows_app/control',
 			},
 			{
 				title: 'Command',
@@ -351,7 +351,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				price: '$799',
 				founderPrice: '$399.50',
 				state: '-50 % avec FOUNDER',
-				offerId: 'winglowz_app/command',
+				offerId: 'commandglows_app/command',
 			},
 		],
 		trustHeading: 'Un deal founder clair',
@@ -402,8 +402,8 @@ const copyByLang: Record<Language, CopyBlock> = {
 
 const { lang = 'en' as Language } = Astro.props
 const copy = copyByLang[lang]
-const pagePath = lang === 'fr' ? '/fr/winglowz-founder' : '/winglowz-founder'
-const defaultOfferId = 'winglowz_app/power'
+const pagePath = lang === 'fr' ? '/fr/commandglows-founder' : '/commandglows-founder'
+const defaultOfferId = 'commandglows_app/power'
 const founderCode = 'FOUNDER'
 
 function checkoutUrl(offerId: string) {
@@ -423,8 +423,8 @@ function checkoutUrl(offerId: string) {
 	structuredData={{
 		'@context': 'https://schema.org',
 		'@type': 'WebPage',
-		'@id': getLocalizedSiteUrl(lang, '/winglowz-founder'),
-		url: getLocalizedSiteUrl(lang, '/winglowz-founder'),
+		'@id': getLocalizedSiteUrl(lang, '/commandglows-founder'),
+		url: getLocalizedSiteUrl(lang, '/commandglows-founder'),
 		name: copy.metaTitle,
 		description: copy.metaDescription,
 		inLanguage: lang,

@@ -2,7 +2,7 @@
 artifact: documentation
 metadata_schema_version: '1.0'
 artifact_version: '1.0.0'
-project: winglowz
+project: commandglows
 created: '2026-04-25'
 updated: '2026-05-17'
 status: reviewed
@@ -22,11 +22,11 @@ evidence:
 next_step: /sf-docs update
 ---
 
-# WinGlows
+# CommandGlows
 
-WinGlows is a Windows-first productivity project centered on `Windows Mastery`, with bilingual content, gated learning surfaces, and companion product pages.
+CommandGlows is a Windows-first productivity project centered on `Windows Mastery`, with bilingual content, gated learning surfaces, and companion product pages.
 
-Production: https://www.winflowz.com
+Production: https://www.commandglows.com
 
 ## What This Subproject Contains
 
@@ -112,7 +112,7 @@ Copy `.env.example` to `.env` and fill the values required by your environment.
 - `SITE`
 - `PUBLIC_SITE_URL`
 - `PUBLIC_CONVEX_URL`
-- `SUITE_API_ALLOWED_ORIGINS` (comma-separated browser origins allowed to call API routes, including the WinGlows app web origin)
+- `SUITE_API_ALLOWED_ORIGINS` (comma-separated browser origins allowed to call API routes, including the CommandGlows app web origin)
 - `PORT`
 
 ### Firebase Admin bridge
@@ -133,9 +133,9 @@ For `POST /api/bridge/firebase`, the backend verifies Firebase ID tokens with Fi
 
 It recomputes entitlements from Convex (`productEntitlements` source of truth), discovers linked Firebase identity accounts, and writes server-owned Firestore `suiteAccess/{firebaseUid}` documents.
 
-The bridge also writes a server-owned Firestore mirror at `suiteAccess/{firebaseUid}` after Convex entitlement lookup. WinGlows app Firestore rules use that mirror to allow or deny `winglowz_app` data under `users/{uid}`.
+The bridge also writes a server-owned Firestore mirror at `suiteAccess/{firebaseUid}` after Convex entitlement lookup. CommandGlows app Firestore rules use that mirror to allow or deny `commandglows_app` data under `users/{uid}`.
 
-`POST /api/bridge/entitlement` verifies ReplayGlowz Clerk sessions server-side. A recognized Clerk account without active ReplayGlowz access receives a persisted `replayglowz/free` default entitlement for that product only; this does not unlock other WinGlows suite products.
+`POST /api/bridge/entitlement` verifies ReplayGlowz Clerk sessions server-side. A recognized Clerk account without active ReplayGlowz access receives a persisted `replayglowz/free` default entitlement for that product only; this does not unlock other CommandGlows suite products.
 
 `POST /api/bridge/socialglowz` accepts:
 
@@ -160,7 +160,7 @@ The route calls suite Convex bridge mutations for `socialglowz` entitlement snap
 
 - `POLAR_ACCESS_TOKEN`
 - `POLAR_PRODUCT_ID`
-- `POLAR_WINGLOWZ_PRODUCT_ID`
+- `POLAR_COMMANDGLOWS_PRODUCT_ID`
 - `POLAR_WEBHOOK_SECRET`
 - `POLAR_SERVER`
 - `SUITE_BRIDGE_SYNC_URL` (used by Convex Polar webhook handling to call `/api/bridge/sync`)
@@ -172,10 +172,10 @@ The route calls suite Convex bridge mutations for `socialglowz` entitlement snap
 - `LEMONSQUEEZY_STORE_ID`
 - `LEMONSQUEEZY_SOCIALGLOWZ_PRODUCT_ID`
 - `LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID`
-- `LEMONSQUEEZY_WINGLOWZ_APP_PRODUCT_ID`
-- `LEMONSQUEEZY_WINGLOWZ_APP_STARTER_FOUNDER_VARIANT_ID`
-- `LEMONSQUEEZY_WINGLOWZ_APP_PRO_FOUNDER_VARIANT_ID`
-- `LEMONSQUEEZY_WINGLOWZ_APP_STUDIO_FOUNDER_VARIANT_ID`
+- `LEMONSQUEEZY_COMMANDGLOWS_APP_PRODUCT_ID`
+- `LEMONSQUEEZY_COMMANDGLOWS_APP_STARTER_FOUNDER_VARIANT_ID`
+- `LEMONSQUEEZY_COMMANDGLOWS_APP_PRO_FOUNDER_VARIANT_ID`
+- `LEMONSQUEEZY_COMMANDGLOWS_APP_STUDIO_FOUNDER_VARIANT_ID`
 - `LEMONSQUEEZY_WEBHOOK_SECRET`
 - `COMMERCE_PROVIDER_ORDER` (optional provider preference, e.g. `lemonsqueezy,polar`)
 

@@ -138,7 +138,7 @@ Now, don't get me wrong. I'm not saying you need to become a nutrition ninja ove
 
 So, let's eat like champions and watch as our bodies and brains perform some serious culinary magic! Remember, you are what you eat, so choose wisely and get ready to conquer the world, one delicious bite at a time
 
-## winglowz
+## commandglows
 
 La seule formation qui t'aide à maximiser ta productivité à l'aide de logiciels étonnantes et d'astuces inconnues du grand public
 

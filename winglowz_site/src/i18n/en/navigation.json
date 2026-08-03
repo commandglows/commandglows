@@ -24,7 +24,7 @@
         { "name": "ObsiFlowz", "url": "/products/flowzsuite-obsidian" },
         { "name": "ReplayGlowz", "url": "/products/replayglowz-extension" },
         { "name": "Windows Mastery", "url": "/windows-mastery" },
-        { "name": "Productivity Suite", "url": "/products/winglowz" }
+        { "name": "Productivity Suite", "url": "/products/commandglows" }
       ]
     },
     {
@@ -48,7 +48,7 @@
     }
   ],
   "socialLinks": {
-    "github": "https://github.com/diane-defores/winglowz"
+    "github": "https://github.com/diane-defores/commandglows"
   },
   "newsletterSection": {
     "title": "This Week In Windows Productivity",

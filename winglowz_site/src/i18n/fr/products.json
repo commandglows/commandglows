@@ -1,11 +1,11 @@
 {
-  "title": "Produits | WinGlows",
+  "title": "Produits | CommandGlows",
   "description": "Découvrez d'abord l'offre cœur: la formation Maîtrise Windows, puis les outils compatibles.",
-  "siteDescription": "WinGlows se concentre sur une formation Windows pratique, des plugins Obsidian et des outils navigateur pour la prise de notes, les médias et YouTube.",
-  "subtitle": "Parcourez l'écosystème WinGlows: la formation Windows en premier, puis les outils Obsidian, YouTube et la veille de contenu.",
+  "siteDescription": "CommandGlows se concentre sur une formation Windows pratique, des plugins Obsidian et des outils navigateur pour la prise de notes, les médias et YouTube.",
+  "subtitle": "Parcourez l'écosystème CommandGlows: la formation Windows en premier, puis les outils Obsidian, YouTube et la veille de contenu.",
   "customerStories": "Témoignages Clients",
   "features": {
-    "title": "Pourquoi WinGlows ?",
+    "title": "Pourquoi CommandGlows ?",
     "subtitle": "L'offre est pensée pour les besoins déjà présents dans le site: focus, configuration Windows, capture d'information et réutilisation des connaissances.",
     "benefits": [
       "Une formation Windows orientée pratique, pas des conseils génériques",
@@ -54,8 +54,8 @@
       "link": "/fr/maitrise-windows"
     },
     "productivitysuite": {
-      "title": "Pack WinGlows",
-      "description": "L'écosystème WinGlows complet: formation et outils principaux",
+      "title": "Pack CommandGlows",
+      "description": "L'écosystème CommandGlows complet: formation et outils principaux",
       "features": [
         "Formation Windows et contenu du cours",
         "Plugins Obsidian et outils navigateur réunis",
@@ -63,7 +63,7 @@
         "Une logique de workflow commune"
       ],
       "price": "79,99",
-      "link": "/fr/produits/winglowz"
+      "link": "/fr/produits/commandglows"
     }
   }
 }

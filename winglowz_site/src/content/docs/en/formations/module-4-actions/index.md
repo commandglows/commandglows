@@ -21,7 +21,7 @@ Its logic fits into four verbs:
 - **sequence** what has to happen in the right order
 - **execute** without waiting for perfect motivation
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you face a goal or project, ask four questions:
 

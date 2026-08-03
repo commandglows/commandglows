@@ -9,10 +9,10 @@ contents: [
   "Managing your config with dotfiles and symlinks"
 ]
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Diane's avatar"
 pubDate: 2026-03-23
-cardImage: "/images/WinGlowz.png"
+cardImage: "/images/CommandGlows.png"
 cardImageAlt: "Customizing Termux on Android"
 readTime: 15
 tags: ["termux", "android", "terminal", "customization", "productivity", "mobile development"]
@@ -289,7 +289,7 @@ If you develop on a server (VPS, Codespace), ShipGlows automates everything: iso
 
 ## 🎯 Training: Code on Mobile
 
-Want to go further? [Module IX of the WinGlows Training](/en/formations/module-9-mobile-coder/) teaches you how to:
+Want to go further? [Module IX of the CommandGlows Training](/en/formations/module-9-mobile-coder/) teaches you how to:
 
 - Configure Termux for optimized server access
 - Understand why SSH ≠ Mosh for AI coding tools

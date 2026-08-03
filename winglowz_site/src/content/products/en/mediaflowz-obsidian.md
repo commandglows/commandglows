@@ -6,8 +6,8 @@ main:
   id: 5
   content: |
     Discover MediaFlowz – your complete solution for image and GIF management in Obsidian. This powerful plugin streamlines your workflow with advanced media management features, including cloud uploads and seamless integration with services like Cloudinary, Cloudflare Images, and TwicPics. Perfect for content creators, writers, and anyone looking for efficient media management in Obsidian.
-  imgCard: "@/images/WinGlowz.png"
-  imgMain: "@/images/WinGlowz.png"
+  imgCard: "@/images/CommandGlows.png"
+  imgMain: "@/images/CommandGlows.png"
   imgAlt: "MediaFlowz Obsidian plugin interface screenshot"
 tabs:
   - id: "tabs-with-card-item-1"
@@ -51,6 +51,6 @@ specificationsRight:
   - title: "Additional Benefits"
     subTitle: "Multilingual support, integrated documentation, regular updates, and community support."
 blueprints:
-  first: "@/images/WinGlowz.png"
-  second: "@/images/WinGlowz.png"
+  first: "@/images/CommandGlows.png"
+  second: "@/images/CommandGlows.png"
 --- 

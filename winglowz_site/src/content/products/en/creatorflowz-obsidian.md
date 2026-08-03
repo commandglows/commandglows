@@ -6,8 +6,8 @@ main:
   id: 4
   content: |
     Discover CreatorFlowz – your ultimate creative companion for Obsidian. This powerful plugin transforms your note-taking experience with advanced media management, project organization, and seamless integration with popular platforms like Giphy, Pexels, and Unsplash. Perfect for content creators, writers, and anyone looking to enhance their Obsidian workflow.
-  imgCard: "@/images/WinGlowz.png"
-  imgMain: "@/images/WinGlowz.png"
+  imgCard: "@/images/CommandGlows.png"
+  imgMain: "@/images/CommandGlows.png"
   imgAlt: "CreatorFlowz Obsidian plugin interface screenshot"
 tabs:
   - id: "tabs-with-card-item-1"
@@ -51,6 +51,6 @@ specificationsRight:
   - title: "Additional Benefits"
     subTitle: "Multilingual support, integrated documentation, regular updates, and community support."
 blueprints:
-  first: "@/images/WinGlowz.png"
-  second: "@/images/WinGlowz.png"  
+  first: "@/images/CommandGlows.png"
+  second: "@/images/CommandGlows.png"
 ---

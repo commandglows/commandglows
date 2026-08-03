@@ -18,7 +18,7 @@ La bonne logique est plus simple<sup>[2](#concept-cognitive-load)</sup> :
 - GUI pour le ponctuel, le visuel et l'évident
 - CLI pour le répétitif, le massif, le scriptable et le reproductible
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Avant de passer par le terminal, pose-toi quatre questions :
 

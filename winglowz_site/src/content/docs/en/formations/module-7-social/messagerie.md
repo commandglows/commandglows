@@ -29,7 +29,7 @@ The problem is not just having too many apps open. It is letting **messaging bec
 
 Chat should accelerate work. It should not become your hard drive or your task manager.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When a message arrives, ask three questions:
 

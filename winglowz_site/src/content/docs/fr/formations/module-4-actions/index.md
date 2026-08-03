@@ -21,7 +21,7 @@ La logique tient en quatre verbes :
 - **séquencer** ce qui doit arriver dans le bon ordre
 - **exécuter** sans attendre la motivation parfaite
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu fais face à un objectif ou à un projet, pose-toi quatre questions :
 

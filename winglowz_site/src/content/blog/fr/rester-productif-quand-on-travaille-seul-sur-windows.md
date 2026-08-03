@@ -1,18 +1,18 @@
 ---
 translationKey: "solo-productivity-windows"
 title: "Comment rester productif quand on travaille seul sur Windows"
-description: "Une perspective WinGlows sur le travail solo, le contexte et la continuité d'exécution."
+description: "Une perspective CommandGlows sur le travail solo, le contexte et la continuité d'exécution."
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Avatar de Diane"
-cardImage: "/images/WinGlowz.png"
-cardImageAlt: "Couverture d'article WinGlows sur le travail solo"
+cardImage: "/images/CommandGlows.png"
+cardImageAlt: "Couverture d'article CommandGlows sur le travail solo"
 pubDate: 2026-06-18
 readTime: 8
 tags: ["solo", "freelance", "windows", "productivité"]
 contents: [
   "Travailler seul semble plus flexible jusqu'au moment où chaque décision repose sur la même personne. On planifie, on exécute, on relit et on repart sans beaucoup de marge pour perdre le fil.",
-  "WinGlows est pertinent ici parce que la productivité solo n'est pas seulement une question de vitesse. C'est une question de structure suffisante pour ne pas repartir de zéro chaque matin.",
+  "CommandGlows est pertinent ici parce que la productivité solo n'est pas seulement une question de vitesse. C'est une question de structure suffisante pour ne pas repartir de zéro chaque matin.",
   "Cet article se concentre sur ce qui coûte le plus de temps en solo : la perte de contexte, la préparation répétée et l'exécution sans friction."
 ]
 ---
@@ -29,7 +29,7 @@ Quand personne n’est en face du processus, les points faibles restent cachés 
 - on redémarre au lieu de continuer
 - on change d’application parce que rien n’est bien préparé
 
-C’est là qu’un produit comme WinGlows devient utile : il soutient la forme du travail, pas seulement le résultat.
+C’est là qu’un produit comme CommandGlows devient utile : il soutient la forme du travail, pas seulement le résultat.
 
 ## Ce qu’un système solo doit faire
 
@@ -47,7 +47,7 @@ Cela veut souvent dire :
 Beaucoup de systèmes de productivité sont écrits comme si l’environnement de travail n’avait pas d’importance.
 Sur Windows, l’environnement fait partie du problème : plusieurs outils, plusieurs fenêtres, plusieurs contextes, et beaucoup d’occasions de dériver.
 
-WinGlows vise à rendre cet environnement plus simple à utiliser en aidant l’utilisateur à garder un rythme de travail cohérent.
+CommandGlows vise à rendre cet environnement plus simple à utiliser en aidant l’utilisateur à garder un rythme de travail cohérent.
 
 ## Ce qu’il faut changer en premier
 
@@ -62,4 +62,4 @@ Si vous travaillez seul, commencez par ce qui se répète tous les jours :
 
 Le meilleur système de productivité solo n’est pas celui qui a le plus de fonctionnalités. C’est celui qui permet d’avancer sans reconstruire son setup à chaque session.
 
-WinGlows se place dans cette logique : une structure pratique pour les personnes qui doivent faire le travail elles-mêmes.
+CommandGlows se place dans cette logique : une structure pratique pour les personnes qui doivent faire le travail elles-mêmes.

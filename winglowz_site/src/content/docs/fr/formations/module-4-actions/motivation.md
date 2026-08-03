@@ -20,7 +20,7 @@ La motivation n'est pas un carburant stable. C'est un signal qui monte ou descen
 
 Cette leçon sert donc moins à "retrouver la motivation" qu'à construire les conditions dans lesquelles l'élan apparaît plus facilement.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu bloques ou que tu repousses une action, pose-toi quatre questions :
 

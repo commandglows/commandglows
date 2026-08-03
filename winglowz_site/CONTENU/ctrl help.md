@@ -10,9 +10,9 @@ Objectif :
 - ((CtrlHelp = logiciel Windows de découverte et d'entraînement aux raccourcis clavier))
 - ((proposition principale : maintenir `Ctrl` pour afficher une cheat sheet selon l'application active))
 - ((intérêt réel : apprendre les raccourcis en contexte au lieu de lire une liste statique))
-- ((bon angle Winflowz : adoption de raccourcis, pas "logiciel miracle"))
+- ((bon angle CommandGlows : adoption de raccourcis, pas "logiciel miracle"))
 
-## Positionnement Winflowz
+## Positionnement CommandGlows
 
 - bon outil si :
   - tu veux apprendre les raccourcis d'apps précises sans changer de contexte

@@ -8,10 +8,10 @@ contents: [
   "How to install a theme in 30 seconds"
 ]
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Diane's avatar"
 pubDate: 2026-03-23
-cardImage: "/images/WinGlowz.png"
+cardImage: "/images/CommandGlows.png"
 cardImageAlt: "Termux theme preview"
 readTime: 8
 tags: ["termux", "android", "terminal", "themes", "colors", "customization"]

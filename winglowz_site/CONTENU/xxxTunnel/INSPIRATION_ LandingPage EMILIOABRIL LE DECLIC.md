@@ -28,7 +28,7 @@ Life isn't just about work. We believe in the concept of 'Work-Life Harmony', wh
 
 **More 'Me' Time**: By being more efficient during your work hours, you can find more time for yourself. Read that book !📚, go for a run !🏃, or just relax. Akiflow helps you find 'me' time.
 
-Winflowz is more than just a productivity tool; it's a lifestyle enhancer 
+CommandGlows is more than just a productivity tool; it's a lifestyle enhancer 
 
 
 # [Le Déclic - Emilio Abril](https://go.emilioabril.com/declic/)

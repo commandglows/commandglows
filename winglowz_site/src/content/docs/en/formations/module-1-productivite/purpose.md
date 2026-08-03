@@ -12,7 +12,7 @@ Before you optimize your time, tools, or routines, you need to clarify a more fu
 
 **what do you want your productivity to serve?**
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you feel scattered or unmotivated despite having "good" systems, check these four layers:
 

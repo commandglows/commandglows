@@ -10,7 +10,7 @@ Les raccourcis clavier ne servent pas surtout à "aller vite". Ils servent à **
 
 Le but de ce module n'est donc pas de te faire mémoriser 200 combinaisons. Le but est d'intégrer quelques **noyaux de pilotage** qui changent réellement ton rapport à Windows, au navigateur, à Gmail, à YouTube et à Notion.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Si tu veux savoir quel raccourci apprendre, ne pars pas des listes. Pars de la friction.
 

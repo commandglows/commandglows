@@ -1,6 +1,6 @@
 Subject: You are probably not lazy. You are working inside a bad system.
 Preview: The real problem is often not lack of willpower.
-CTA: https://www.winflowz.com/windows-mastery
+CTA: https://www.commandglows.com/windows-mastery
 
 You may have already told yourself things like:
 
@@ -26,10 +26,10 @@ That is not an excuse.
 
 It is a better diagnosis.
 
-And that is exactly where WinGlows starts: reduce friction, make Windows more supportive, and bring clarity back into a place that currently creates too much noise.
+And that is exactly where CommandGlows starts: reduce friction, make Windows more supportive, and bring clarity back into a place that currently creates too much noise.
 
 If that speaks to you, the sales page is here:
 
-https://www.winflowz.com/windows-mastery
+https://www.commandglows.com/windows-mastery
 
 Diane

@@ -3,7 +3,7 @@
   "sections": {
     "general": {
       "title": "General Information",
-      "content": "The information provided by WinGlows (\"we,\" \"us,\" or \"our\") on our website and through our products is for general informational purposes only. All information is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information."
+      "content": "The information provided by CommandGlows (\"we,\" \"us,\" or \"our\") on our website and through our products is for general informational purposes only. All information is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information."
     },
     "noGuarantee": {
       "title": "No Guaranteed Results",
@@ -47,7 +47,7 @@
     },
     "liability": {
       "title": "Limitation of Liability",
-      "content": "Under no circumstances shall WinGlows be liable for any indirect, incidental, consequential, special, or exemplary damages arising from:",
+      "content": "Under no circumstances shall CommandGlows be liable for any indirect, incidental, consequential, special, or exemplary damages arising from:",
       "items": [
         "Use or inability to use our products",
         "Data loss or business interruption",
@@ -66,5 +66,5 @@
       ]
     }
   },
-  "contact": "For any questions about this disclaimer, please contact legal@winglowz.com"
+  "contact": "For any questions about this disclaimer, please contact legal@commandglows.com"
 }

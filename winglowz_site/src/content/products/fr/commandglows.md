@@ -1,16 +1,16 @@
 ---
-title: "WinGlows"
-description: "Formation Windows pratique, cœur de l'écosystème WinGlows"
+title: "CommandGlows"
+description: "Formation Windows pratique, cœur de l'écosystème CommandGlows"
 status: "available"
 main:
   id: 1
-  content: "WinGlows est un parcours de formation Windows concret, construit autour des raccourcis, de la configuration et des décisions de workflow du quotidien."
-  imgCard: "/images/WinGlowz.png"
-  imgMain: "/images/WinGlowz.png"
-  imgAlt: "WinGlows product illustration"
+  content: "CommandGlows est un parcours de formation Windows concret, construit autour des raccourcis, de la configuration et des décisions de workflow du quotidien."
+  imgCard: "/images/CommandGlows.png"
+  imgMain: "/images/CommandGlows.png"
+  imgAlt: "CommandGlows product illustration"
 longDescription:
   title: "Apprenez des workflows Windows qui font vraiment gagner du temps"
-  subTitle: "WinGlows est le parcours principal: une formation Windows d'abord, puis les outils Obsidian et navigateur pour prolonger les habitudes."
+  subTitle: "CommandGlows est le parcours principal: une formation Windows d'abord, puis les outils Obsidian et navigateur pour prolonger les habitudes."
   btnTitle: "Voir la page de vente"
   btnURL: "/fr/maitrise-windows"
 descriptionList:
@@ -47,6 +47,6 @@ specificationsRight:
   - title: "Connexion Internet"
     subTitle: "Requise pour la formation en ligne et les outils liés"
 blueprints:
-  first: "/images/WinGlowz.png"
-  second: "/images/WinGlowz.png"
+  first: "/images/CommandGlows.png"
+  second: "/images/CommandGlows.png"
 ---

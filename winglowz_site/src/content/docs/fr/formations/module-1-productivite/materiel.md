@@ -14,7 +14,7 @@ Le but n'est donc pas d'accumuler du setup. Le but est de construire un espace q
 - diminue la friction physique
 - reste simple à maintenir
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Avant d'acheter quoi que ce soit, pose-toi ces quatre questions :
 

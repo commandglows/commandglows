@@ -26,7 +26,7 @@ Le probleme n'est donc pas seulement le volume. C'est l'absence de **decision fr
 
 ## La hiérarchie recommandee
 
-Dans Winflowz, on recommande de penser la communication par couches :
+Dans CommandGlows, on recommande de penser la communication par couches :
 
 1. **Asynchrone d'abord** — email, note partagee, message structure quand une reponse immediate n'est pas necessaire
 2. **Messagerie ensuite** — chat rapide pour lever un blocage, coordonner, confirmer
@@ -47,7 +47,7 @@ Ce module couvre cinq domaines complementaires pour reprendre le controle de ta 
 | **Relations & CRM** | Entretenir ton reseau sans dependre de ta memoire |
 | **Reseaux Sociaux** | Garder une presence utile sans transformer ton attention en flux public permanent |
 
-## La philosophie Winflowz
+## La philosophie CommandGlows
 
 L'objectif n'est pas de tout couper, mais de **communiquer avec intention**. Dans ce module, les outils ne sont utiles que s'ils t'aident a :
 
@@ -77,7 +77,7 @@ Si tu veux suivre une logique simple, lis le module dans cet ordre :
 
 Si tu as deja une douleur evidente, commence par la section qui represente ta plus grosse fuite attentionnelle.
 
-:::tip[Conseil Winflowz]
+:::tip[Conseil CommandGlows]
 La plupart des gens devraient commencer par l'email ou la messagerie, pas par les reseaux sociaux. C'est la que se joue le plus gros de la fragmentation quotidienne.
 :::
 

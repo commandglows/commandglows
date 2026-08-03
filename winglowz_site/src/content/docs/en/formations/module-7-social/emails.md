@@ -35,7 +35,7 @@ Research is fairly clear: frequent interruptions have a real resumption cost,<su
 
 If you do not make that separation, you are not managing email. You are managing a pile of channels.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When an email arrives, ask three questions:
 

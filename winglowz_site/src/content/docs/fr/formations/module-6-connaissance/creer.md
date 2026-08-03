@@ -24,7 +24,7 @@ Créer dans un bon système PKM ne veut pas dire devenir créateur de contenu à
 
 Autrement dit, la création est la couche qui transforme la connaissance en actif.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu veux produire quelque chose à partir de tes notes, pose-toi quatre questions :
 

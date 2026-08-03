@@ -27,7 +27,7 @@ A keyboard launcher becomes useful when you want to:
 
 The real gain is not only time. It is continuity of attention.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 Before installing or over-configuring a launcher, ask four questions:
 

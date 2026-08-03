@@ -33,24 +33,24 @@ const polar = new Polar({ accessToken: token ?? "dry-run", server: SERVER });
 // ──────────────────────────────────────────────────────────────
 
 const PRODUCTS = [
-  // ── WinGlows ──────────────────────────────────────────────
+  // ── CommandGlows ──────────────────────────────────────────────
   {
-    group: "WinGlows",
-    name: "WinGlows — Full Training",
+    group: "CommandGlows",
+    name: "CommandGlows — Full Training",
     description: "All 8 Windows productivity training modules. Lifetime access, FR + EN content, progress dashboard, priority support.",
     prices: [
       { type: "one_time", amountType: "fixed", priceAmount: 4900, priceCurrency: "usd" },
     ],
-    metadata: { entitlement: "winglowz_training", launch_price: "true" },
+    metadata: { entitlement: "commandglows_training", launch_price: "true" },
   },
   {
-    group: "WinGlows",
-    name: "WinGlows — Bundle",
+    group: "CommandGlows",
+    name: "CommandGlows — Bundle",
     description: "Full Training + SocialFlow Lifetime + 1 year ReplayGlowz Pro. Best value for the complete Flowz ecosystem.",
     prices: [
       { type: "one_time", amountType: "fixed", priceAmount: 14900, priceCurrency: "usd" },
     ],
-    metadata: { entitlement: "bundle_full", includes: "winglowz_training,socialflow_lifetime,replayglowz_pro_1yr" },
+    metadata: { entitlement: "bundle_full", includes: "commandglows_training,socialflow_lifetime,replayglowz_pro_1yr" },
   },
 
   // ── SocialFlow ────────────────────────────────────────────

@@ -30,7 +30,7 @@ Relationship tracking becomes useful mainly for:
 
 The goal is not to build the biggest database. The goal is to keep a **living, readable network**.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you add someone to your system, ask three questions:
 
@@ -132,7 +132,7 @@ Do not begin by migrating everything. Start with:
 
 **Each week**: review who deserves a follow-up, then do fewer follow-ups better.
 
-:::tip[Winflowz philosophy]
+:::tip[CommandGlows philosophy]
 The right relationship CRM does not turn you into a follow-up machine. It helps you be more attentive with less friction.
 :::
 

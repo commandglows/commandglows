@@ -1,18 +1,18 @@
 {
   "global": {
-    "siteName": "WinGlows",
+    "siteName": "CommandGlows",
     "siteDescription": "Digital productivity tools and training for ambitious builders and focused professionals"
   },
   "home": {
-    "title": "WinGlows - Digital Productivity Tools & Training",
+    "title": "CommandGlows - Digital Productivity Tools & Training",
     "description": "Transform your digital workflow with powerful tools and training built for ambitious entrepreneurs, creators, and focused professionals."
   },
   "products": {
-    "title": "Digital Productivity Tools | WinGlows",
+    "title": "Digital Productivity Tools | CommandGlows",
     "description": "Discover our suite of productivity tools including Obsidian plugins and Chrome extensions designed to enhance your digital workflow."
   },
   "services": {
-    "title": "Digital Productivity Training & Services | WinGlows",
+    "title": "Digital Productivity Training & Services | CommandGlows",
     "description": "Expert development and training services for digital productivity enhancement. Custom plugins, extensions, and personalized coaching."
   }
 } 

@@ -20,7 +20,7 @@ A well-configured web setup should let you:
 - follow sources without being trapped by platforms
 - keep few tabs, little noise, and few detours
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 Whenever you change your browser or web flows, ask three questions:
 

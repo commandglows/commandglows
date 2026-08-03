@@ -1,6 +1,6 @@
 Subject: Pourquoi les methodes de productivite s'effondrent si vite
 Preview: Une astuce isolee ne reconfigure pas un environnement.
-CTA: https://www.winflowz.com/fr/maitrise-windows
+CTA: https://www.commandglows.com/fr/maitrise-windows
 
 Tu as peut-etre deja teste :
 
@@ -31,7 +31,7 @@ Ce n'est pas que les hacks sont toujours inutiles.
 
 C'est qu'ils ne suffisent pas quand il manque une architecture globale.
 
-WinGlows n'essaie pas de t'impressionner avec une pile d'outils.
+CommandGlows n'essaie pas de t'impressionner avec une pile d'outils.
 
 La logique est beaucoup plus simple :
 
@@ -43,6 +43,6 @@ La logique est beaucoup plus simple :
 
 Si tu veux voir cette logique en page de vente, c'est ici :
 
-https://www.winflowz.com/fr/maitrise-windows
+https://www.commandglows.com/fr/maitrise-windows
 
 Diane

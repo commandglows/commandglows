@@ -1,11 +1,11 @@
 {
-  "title": "WinGlows - Formation Windows et Application",
+  "title": "CommandGlows - Formation Windows et Application",
   "meta": {
-    "description": "WinGlows met en avant une formation Windows pratique, l’application WinGlows, et des recommandations réelles issues du lancement AppSumo."
+    "description": "CommandGlows met en avant une formation Windows pratique, l’application CommandGlows, et des recommandations réelles issues du lancement AppSumo."
   },
   "hero": {
-    "title": "Formation <span class=\"relative inline-flex sm:inline\"><span class=\"relative text-magenta\">Windows</span><span class=\"absolute inset-0 h-full w-full bg-gradient-rainbow opacity-30 blur-lg filter\"></span></span> et <span class=\"text-yellow\">app</span> WinGlows",
-    "subTitle": "Une formation Windows concrète, l’application Android WinGlows, et des recommandations réelles du lancement AppSumo de juillet 2024.",
+    "title": "Formation <span class=\"relative inline-flex sm:inline\"><span class=\"relative text-magenta\">Windows</span><span class=\"absolute inset-0 h-full w-full bg-gradient-rainbow opacity-30 blur-lg filter\"></span></span> et <span class=\"text-yellow\">app</span> CommandGlows",
+    "subTitle": "Une formation Windows concrète, l’application Android CommandGlows, et des recommandations réelles du lancement AppSumo de juillet 2024.",
     "primaryBtn": "Voir la formation",
     "primaryBtnURL": "/fr/maitrise-windows",
     "secondaryBtn": "Recommandations",
@@ -28,7 +28,7 @@
     "title": "Une stack de workflow construite de bout en bout",
     "tabs": [
       {
-        "heading": "App WinGlows",
+        "heading": "App CommandGlows",
         "content": "Des captures Android et une vraie interface produit telle qu’elle existe aujourd’hui."
       },
       {
@@ -43,7 +43,7 @@
   },
   "testimonials": {
     "title": "Ce que l’offre inclut",
-    "subTitle": "Un parcours de formation, l’app WinGlows, et une page de preuves qui garde les captures dans le bon ordre.",
+    "subTitle": "Un parcours de formation, l’app CommandGlows, et une page de preuves qui garde les captures dans le bon ordre.",
     "main": {
       "content": "Félicitations, Diane ! Je viens de passer 20 minutes dessus et je me demande déjà ce que j'ai fait de ma vie jusqu'à maintenant :)) Plein de bonnes choses pour améliorer mon travail. J'adore !",
       "author": "Florin Muresan",
@@ -56,7 +56,7 @@
       },
       {
         "count": "1",
-        "description": "surface app WinGlows mise en avant sur la page d’accueil"
+        "description": "surface app CommandGlows mise en avant sur la page d’accueil"
       },
       {
         "count": "2",

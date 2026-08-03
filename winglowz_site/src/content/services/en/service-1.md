@@ -2,7 +2,7 @@
 title: "Performance Optimization"
 description: "Enhance your Windows system performance"
 icon: "performance"
-image: "/images/WinGlowz.png"
+image: "/images/CommandGlows.png"
 imageAlt: "Performance optimization illustration"
 features:
   - "In-depth system performance analysis"
@@ -11,7 +11,7 @@ features:
   - "Real-time resource monitoring"
 ---
 
-WinGlows provides powerful tools to optimize your Windows system performance. Our solution deeply analyzes your configuration and applies necessary optimizations for a smooth and efficient user experience.
+CommandGlows provides powerful tools to optimize your Windows system performance. Our solution deeply analyzes your configuration and applies necessary optimizations for a smooth and efficient user experience.
 
 
 I build fast, functional and beautiful websites and applications. I care deeply for the end-user experience and strive for my sites to be inclusive and useable by everyone, regardless of ability.

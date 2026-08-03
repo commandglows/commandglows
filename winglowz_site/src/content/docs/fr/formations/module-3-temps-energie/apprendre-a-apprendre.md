@@ -17,7 +17,7 @@ Cette leçon ne sert pas à te faire "étudier plus". Elle sert à mieux choisir
 - ce qui mérite une vraie compréhension
 - ce qui mérite une mémorisation durable
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu apprends quelque chose, pose-toi trois questions :
 

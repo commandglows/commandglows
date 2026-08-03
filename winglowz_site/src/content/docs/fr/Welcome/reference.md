@@ -1,19 +1,19 @@
 ---
-title: WinGlows docs
+title: CommandGlows docs
 head:
   - tag: title
-    content: WinGlows docs
-description: Explore WinGlows's comprehensive documentation for an in-depth look at our premium tools and services.
+    content: CommandGlows docs
+description: Explore CommandGlows's comprehensive documentation for an in-depth look at our premium tools and services.
 ---
 
 
-### Introduction à WinGlows
+### Introduction à CommandGlows
 <div class="video-container">
   <iframe
     width="100%"
     height="400"
     src="https://www.youtube.com/embed/VIDEO_ID"
-    title="Introduction à WinGlows"
+    title="Introduction à CommandGlows"
     frameborder="0"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen
@@ -23,8 +23,8 @@ description: Explore WinGlows's comprehensive documentation for an in-depth look
 ### Démonstration des Fonctionnalités
 <div class="video-container">
   <img
-    src="/images/WinGlowz.png"
-    alt="Aperçu WinGlows"
+    src="/images/CommandGlows.png"
+    alt="Aperçu CommandGlows"
     loading="lazy"
   />
 </div>

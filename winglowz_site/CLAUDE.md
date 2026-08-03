@@ -2,7 +2,7 @@
 artifact: documentation
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-04-25"
 updated: "2026-05-17"
 status: reviewed
@@ -32,7 +32,7 @@ evidence:
   - "convex/http.ts"
 next_step: "pnpm build:check"
 ---
-# winglowz
+# commandglows
 
 ## Repository Execution Contract
 
@@ -71,7 +71,7 @@ Use this file as the short operating contract before changing code or docs.
 
 - English routes are unprefixed and French routes are under `/fr`.
 - `PUBLIC_CONVEX_URL` must not be placeholder for Convex-backed logic.
-- Polar flows require `POLAR_ACCESS_TOKEN` and `POLAR_WINGLOWZ_PRODUCT_ID` (or fallback `POLAR_PRODUCT_ID`).
+- Polar flows require `POLAR_ACCESS_TOKEN` and `POLAR_COMMANDGLOWS_PRODUCT_ID` (or fallback `POLAR_PRODUCT_ID`).
 - Newsletter routes require `RESEND_API_KEY` and a valid audience id.
 
 ## Safe Change Pattern

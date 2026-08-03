@@ -60,15 +60,15 @@ vi.mock('@/utils/i18n', () => {
     getCurrentLocale: () => 'en',
     getLocalizedPath: () => Promise.resolve('/en/test'),
     getAlternateLinks: () => Promise.resolve([
-      { href: 'https://www.winflowz.com/en/test', hreflang: 'en' },
-      { href: 'https://www.winflowz.com/fr/test', hreflang: 'fr' }
+      { href: 'https://www.commandglows.com/en/test', hreflang: 'en' },
+      { href: 'https://www.commandglows.com/fr/test', hreflang: 'fr' }
     ]),
     getPageMeta: () => Promise.resolve({
       title: 'Test Page',
       description: 'Test Description',
       alternateLinks: [
-        { href: 'https://www.winflowz.com/en/test', hreflang: 'en' },
-        { href: 'https://www.winflowz.com/fr/test', hreflang: 'fr' }
+        { href: 'https://www.commandglows.com/en/test', hreflang: 'en' },
+        { href: 'https://www.commandglows.com/fr/test', hreflang: 'fr' }
       ]
     })
   }

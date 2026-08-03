@@ -10,7 +10,7 @@ Il n'y a pas de productivité durable sans fondations solides. Ton corps, ton sy
 
 Tu peux avoir un bon agenda, de bons outils et de bonnes méthodes. Si l'infrastructure humaine s'effondre, le reste devient instable.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand ta productivité baisse, ne commence pas toujours par revoir ton système de tâches. Vérifie d'abord ces quatre couches :
 

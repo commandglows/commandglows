@@ -23,7 +23,7 @@ Prioritization is not only about choosing "the first task." It is about doing fo
 - **holding** the choice over time
 The hidden goal: shrink the space for avoidance by making commitment explicit<sup>[4](#concept-procrastination)</sup>.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you look at a task, project, or opportunity, ask four questions:
 

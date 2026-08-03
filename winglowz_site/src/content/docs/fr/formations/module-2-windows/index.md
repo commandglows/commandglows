@@ -26,7 +26,7 @@ La bonne logique est :
 - choisir peu d'outils
 - construire un environnement que tu pourras garder
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu veux améliorer ton poste Windows, pose-toi quatre questions :
 

@@ -1,8 +1,8 @@
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
-const FORMATION_PRODUCT_ID = "winglowz_formation";
-const LEGACY_COURSE_ENTITLEMENT = "winglowz-training";
+const FORMATION_PRODUCT_ID = "commandglows_formation";
+const LEGACY_COURSE_ENTITLEMENT = "commandglows-training";
 const COMPAT_ENTITLEMENTS = [LEGACY_COURSE_ENTITLEMENT, FORMATION_PRODUCT_ID];
 const FREE_PLAN_ID = "free";
 

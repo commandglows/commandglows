@@ -56,7 +56,7 @@ describe('ShipGlows public installer', () => {
   test('publishes one sudo-free interactive command in English and French', () => {
     const content = readProjectFile('src/data/scriptInstallPages.ts')
     const shipglowsSection = content.slice(content.indexOf('\tshipglows: {'))
-    const command = 'curl -fsSL https://www.winflowz.com/shipglows-script | sh'
+    const command = 'curl -fsSL https://www.commandglows.com/shipglows-script | sh'
 
     expect(shipglowsSection.match(new RegExp(command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'))).toHaveLength(2)
     expect(shipglowsSection).not.toContain('shipglows-script | sudo sh')

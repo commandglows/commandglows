@@ -1,4 +1,4 @@
-import ogImageSrc from '@/assets/images/WinGlowz.png'
+import ogImageSrc from '@/assets/images/CommandGlows.png'
 
 const SITE_THEME_COLOR = 'gold'
 const SITE_MANIFEST_THEME_COLOR = 'black'
@@ -8,23 +8,23 @@ const SITE_SOCIAL_IMAGE_HEIGHT = 600
 const SITE_SOCIAL_IMAGE_TYPE = 'image/png'
 
 export const SITE = {
-  name: 'WinGlows',
-  title: 'WinGlows - Productivity Apps & Training',
+  name: 'CommandGlows',
+  title: 'CommandGlows - Productivity Apps & Training',
   description:
     'Windows training in 8 modules, Obsidian plugins, and Chrome tools for building a practical workflow.',
   author: 'Diane Defores',
   authorName: 'Diane Defores',
-  url: 'https://www.winflowz.com',
-  domain: 'www.winflowz.com',
-  githubUrl: 'https://github.com/diane-defores/winglowz',
-  ogImage: '/images/WinGlowz.png',
+  url: 'https://www.commandglows.com',
+  domain: 'www.commandglows.com',
+  githubUrl: 'https://github.com/diane-defores/commandglows',
+  ogImage: '/images/CommandGlows.png',
   emails: {
-    contact: 'hello@winglowz.com',
-    support: 'support@winglowz.com',
-    legal: 'legal@winglowz.com',
-    privacy: 'privacy@winglowz.com',
-    copyright: 'copyright@winglowz.com',
-    newsletter: 'newsletter@winglowz.com',
+    contact: 'hello@commandglows.com',
+    support: 'support@commandglows.com',
+    legal: 'legal@commandglows.com',
+    privacy: 'privacy@commandglows.com',
+    copyright: 'copyright@commandglows.com',
+    newsletter: 'newsletter@commandglows.com',
   },
 }
 
@@ -65,7 +65,7 @@ export const OG = {
   locale: 'en_US',
   type: 'website',
   url: SITE.url,
-  title: `WinGlows - Productivity Apps & Training`,
+  title: `CommandGlows - Productivity Apps & Training`,
   description:
     'Windows training in 8 modules, Obsidian plugins, and Chrome tools for building a practical workflow.',
   image: ogImageSrc,

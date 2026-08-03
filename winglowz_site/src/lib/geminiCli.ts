@@ -150,7 +150,7 @@ async function downloadImagesToTempDir(imageUrls: string[]): Promise<{
   tempDir: string
   imagePaths: string[]
 }> {
-  const tempDir = await mkdtemp(path.join(os.tmpdir(), 'winglowz-temu-gemini-'))
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), 'commandglows-temu-gemini-'))
   const selectedImages = imageUrls.slice(0, MAX_OCR_IMAGES)
   const imagePaths: string[] = []
 

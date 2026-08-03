@@ -8,9 +8,9 @@ function resetCommerceEnv() {
   delete process.env.LEMONSQUEEZY_API_KEY
   delete process.env.LEMONSQUEEZY_STORE_ID
   delete process.env.LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID
-  delete process.env.LEMONSQUEEZY_WINGLOWZ_APP_POWER_VARIANT_ID
+  delete process.env.LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID
   delete process.env.LEMONSQUEEZY_API_URL
-  delete process.env.POLAR_WINGLOWZ_PRODUCT_ID
+  delete process.env.POLAR_COMMANDGLOWS_PRODUCT_ID
   delete process.env.POLAR_PRODUCT_ID
   delete process.env.COMMERCE_PROVIDER_ORDER
 }
@@ -30,7 +30,7 @@ describe('commerce checkout route', () => {
     resetCommerceEnv()
 
     const response = await GET({
-      request: checkoutRequest('https://winglowz.test/api/commerce/checkout'),
+      request: checkoutRequest('https://commandglows.test/api/commerce/checkout'),
     })
 
     expect(response.status).toBe(400)
@@ -44,7 +44,7 @@ describe('commerce checkout route', () => {
 
     const response = await GET({
       request: checkoutRequest(
-        'https://winglowz.test/api/commerce/checkout?offerId=socialglowz/lifetime_deal&successUrl=https://socialglowz.test/purchase/success&cancelUrl=https://socialglowz.test/purchase/cancel'
+        'https://commandglows.test/api/commerce/checkout?offerId=socialglowz/lifetime_deal&successUrl=https://socialglowz.test/purchase/success&cancelUrl=https://socialglowz.test/purchase/cancel'
       ),
     })
 
@@ -61,7 +61,7 @@ describe('commerce checkout route', () => {
 
     const response = await GET({
       request: checkoutRequest(
-        'https://winglowz.test/api/commerce/checkout?offerId=unknown/offer'
+        'https://commandglows.test/api/commerce/checkout?offerId=unknown/offer'
       ),
     })
 
@@ -93,7 +93,7 @@ describe('commerce checkout route', () => {
 
     const response = await GET({
       request: checkoutRequest(
-        'https://winglowz.test/api/commerce/checkout?offerId=socialglowz/lifetime_deal&source=direct&successUrl=https://socialglowz.test/purchase/success&cancelUrl=https://socialglowz.test/purchase/cancel'
+        'https://commandglows.test/api/commerce/checkout?offerId=socialglowz/lifetime_deal&source=direct&successUrl=https://socialglowz.test/purchase/success&cancelUrl=https://socialglowz.test/purchase/cancel'
       ),
     })
 
@@ -110,18 +110,18 @@ describe('commerce checkout route', () => {
     expect(body).not.toContain('api-key')
   })
 
-  test('redirects WinGlows founder checkout to Lemon Squeezy', async () => {
+  test('redirects CommandGlows founder checkout to Lemon Squeezy', async () => {
     resetCommerceEnv()
     process.env.LEMONSQUEEZY_API_KEY = 'api-key'
     process.env.LEMONSQUEEZY_STORE_ID = 'store-id'
-    process.env.LEMONSQUEEZY_WINGLOWZ_APP_POWER_VARIANT_ID = 'winglowz-power-variant'
+    process.env.LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID = 'commandglows-power-variant'
 
     const fetchSpy = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
           data: {
             id: 'co_wfz_route',
-            attributes: { url: 'https://checkout.lemonsqueezy.test/winglowz' },
+            attributes: { url: 'https://checkout.lemonsqueezy.test/commandglows' },
           },
         }),
         { status: 200, headers: { 'content-type': 'application/json' } }
@@ -131,20 +131,20 @@ describe('commerce checkout route', () => {
 
     const response = await GET({
       request: checkoutRequest(
-        'https://winglowz.test/api/commerce/checkout?offerId=winglowz_app/power&provider=lemonsqueezy&source=direct&sourceRef=/winglowz-founder&successUrl=https://winglowz.test/purchase/success?offerId=winglowz_app%2Fpower&cancelUrl=https://winglowz.test/purchase/cancel?offerId=winglowz_app%2Fpower'
+        'https://commandglows.test/api/commerce/checkout?offerId=commandglows_app/power&provider=lemonsqueezy&source=direct&sourceRef=/commandglows-founder&successUrl=https://commandglows.test/purchase/success?offerId=commandglows_app%2Fpower&cancelUrl=https://commandglows.test/purchase/cancel?offerId=commandglows_app%2Fpower'
       ),
     })
 
     expect(response.status).toBe(302)
     expect(response.headers.get('location')).toBe(
-      'https://checkout.lemonsqueezy.test/winglowz'
+      'https://checkout.lemonsqueezy.test/commandglows'
     )
 
     const body = String(fetchSpy.mock.calls[0]?.[1]?.body)
-    expect(body).toContain('"offer_id":"winglowz_app/power"')
-    expect(body).toContain('"product_id":"winglowz_app"')
+    expect(body).toContain('"offer_id":"commandglows_app/power"')
+    expect(body).toContain('"product_id":"commandglows_app"')
     expect(body).toContain('"plan":"power"')
-    expect(body).toContain('"id":"winglowz-power-variant"')
+    expect(body).toContain('"id":"commandglows-power-variant"')
     expect(body).not.toContain('api-key')
   })
 })

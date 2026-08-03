@@ -21,7 +21,7 @@ A valid meeting should do at least one thing:
 - resolve an ambiguity that keeps surviving in writing
 - create alignment that cannot wait
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 Before accepting or scheduling a meeting, ask four questions:
 

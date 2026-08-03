@@ -4,21 +4,21 @@
   "sections": {
     "preamble": {
       "title": "1. Préambule",
-      "content": "Les présentes Conditions Générales de Vente (CGV) régissent l'ensemble des achats de produits et services numériques vendus par WinGlows (exploité par Diane Defores, entrepreneure individuelle). En effectuant un achat, vous acceptez ces conditions dans leur intégralité."
+      "content": "Les présentes Conditions Générales de Vente (CGV) régissent l'ensemble des achats de produits et services numériques vendus par CommandGlows (exploité par Diane Defores, entrepreneure individuelle). En effectuant un achat, vous acceptez ces conditions dans leur intégralité."
     },
     "products": {
       "title": "2. Produits et Services",
       "items": [
-        "WinGlows propose des produits numériques incluant des plugins Obsidian (RSSFlowz, PluginFlowz et le pack FlowzSuite), des extensions Chrome (ReplayGlowz) et des formations (guide Maîtrise Windows).",
-        "Les descriptions, fonctionnalités et tarifs des produits sont disponibles sur les pages produits de www.winflowz.com/fr/produits.",
-        "WinGlows se réserve le droit de modifier son catalogue de produits à tout moment."
+        "CommandGlows propose des produits numériques incluant des plugins Obsidian (RSSFlowz, PluginFlowz et le pack FlowzSuite), des extensions Chrome (ReplayGlowz) et des formations (guide Maîtrise Windows).",
+        "Les descriptions, fonctionnalités et tarifs des produits sont disponibles sur les pages produits de www.commandglows.com/fr/produits.",
+        "CommandGlows se réserve le droit de modifier son catalogue de produits à tout moment."
       ]
     },
     "pricing": {
       "title": "3. Tarifs",
       "items": [
         "Tous les prix sont affichés en USD, toutes taxes comprises.",
-        "WinGlows propose un plan Gratuit et des abonnements Pro payants (facturation mensuelle ou annuelle).",
+        "CommandGlows propose un plan Gratuit et des abonnements Pro payants (facturation mensuelle ou annuelle).",
         "Les prix peuvent être mis à jour à tout moment. Le prix applicable est celui affiché au moment de l'achat."
       ]
     },
@@ -43,38 +43,38 @@
       "items": [
         "Tous les produits sont numériques et livrés par voie électronique. Aucune expédition physique n'est impliquée.",
         "L'accès aux produits achetés est fourni immédiatement après confirmation du paiement via des liens de téléchargement ou l'activation du compte.",
-        "En cas de probleme technique empechant la livraison, contactez support@winglowz.com."
+        "En cas de probleme technique empechant la livraison, contactez support@commandglows.com."
       ]
     },
     "withdrawal": {
       "title": "7. Droit de Rétractation",
       "items": [
         "Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne s'applique pas aux contenus numériques fournis sur un support immatériel dont l'exécution a commencé avec votre accord préalable exprès.",
-        "Cependant, WinGlows offre une garantie satisfaction de 30 jours sur tous les produits numériques. En cas d'insatisfaction, contactez-nous pour un remboursement intégral.",
-        "Les demandes de remboursement doivent être envoyées à support@winglowz.com dans les 30 jours suivant l'achat."
+        "Cependant, CommandGlows offre une garantie satisfaction de 30 jours sur tous les produits numériques. En cas d'insatisfaction, contactez-nous pour un remboursement intégral.",
+        "Les demandes de remboursement doivent être envoyées à support@commandglows.com dans les 30 jours suivant l'achat."
       ]
     },
     "liability": {
       "title": "8. Responsabilité",
       "items": [
-        "WinGlows fournit ses produits « en l'état » et ne garantit pas un fonctionnement ininterrompu ou sans erreur.",
-        "WinGlows ne pourra être tenu responsable des dommages indirects, y compris la perte de données ou de revenus, résultant de l'utilisation de ses produits.",
+        "CommandGlows fournit ses produits « en l'état » et ne garantit pas un fonctionnement ininterrompu ou sans erreur.",
+        "CommandGlows ne pourra être tenu responsable des dommages indirects, y compris la perte de données ou de revenus, résultant de l'utilisation de ses produits.",
         "Notre responsabilité totale ne pourra excéder le montant payé par le client pour le produit en question."
       ]
     },
     "personalData": {
       "title": "9. Données Personnelles",
-      "content": "Les données personnelles collectées lors des achats sont traitées conformément à notre Politique de Confidentialité. Les données sont utilisées uniquement pour le traitement des commandes, la livraison des produits et le support client. Consultez notre Politique de Confidentialité sur www.winflowz.com/fr/confidentialite pour plus de détails."
+      "content": "Les données personnelles collectées lors des achats sont traitées conformément à notre Politique de Confidentialité. Les données sont utilisées uniquement pour le traitement des commandes, la livraison des produits et le support client. Consultez notre Politique de Confidentialité sur www.commandglows.com/fr/confidentialite pour plus de détails."
     },
     "disputes": {
       "title": "10. Litiges et Droit Applicable",
       "items": [
         "Les présentes conditions sont régies par le droit français.",
-        "En cas de litige, les parties chercheront d'abord une résolution amiable en contactant support@winglowz.com.",
+        "En cas de litige, les parties chercheront d'abord une résolution amiable en contactant support@commandglows.com.",
         "À défaut de résolution amiable, le litige sera soumis aux tribunaux français compétents.",
         "Les consommateurs européens peuvent également utiliser la plateforme européenne de résolution des litiges en ligne : https://ec.europa.eu/consumers/odr"
       ]
     }
   },
-  "contact": "Pour toute question concernant ces conditions, veuillez nous contacter à support@winglowz.com"
+  "contact": "Pour toute question concernant ces conditions, veuillez nous contacter à support@commandglows.com"
 }

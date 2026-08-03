@@ -26,7 +26,7 @@ So the real problem is not just volume. It is the lack of a **decision framework
 
 ## The recommended hierarchy
 
-In Winflowz, communication should be treated in layers:
+In CommandGlows, communication should be treated in layers:
 
 1. **Async first** - email, shared notes, structured messages when no immediate answer is needed
 2. **Messaging second** - quick chat for coordination, clarification, or unblocking
@@ -47,7 +47,7 @@ This module covers five complementary areas to help you regain control over your
 | **Relationships & CRM** | Maintain your network without relying on memory |
 | **Social Media** | Keep a useful presence without turning your attention into a public feed |
 
-## The WinGlows philosophy
+## The CommandGlows philosophy
 
 The goal is not to disconnect completely, but to **communicate with intention**. In this module, tools are only useful if they help you:
 
@@ -77,7 +77,7 @@ If you want a simple order, go through the module like this:
 
 If you already know your biggest pain point, start there.
 
-:::tip[WinGlows Tip]
+:::tip[CommandGlows Tip]
 Most people should start with email or messaging, not social media. That is where the biggest daily fragmentation usually happens.
 :::
 

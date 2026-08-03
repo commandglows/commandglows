@@ -36,12 +36,12 @@ describe('lemon squeezy webhook route', () => {
   })
 
   test.each([
-    ['focus', 'winglowz_app/focus'],
-    ['power', 'winglowz_app/power'],
-    ['control', 'winglowz_app/control'],
-    ['command', 'winglowz_app/command'],
+    ['focus', 'commandglows_app/focus'],
+    ['power', 'commandglows_app/power'],
+    ['control', 'commandglows_app/control'],
+    ['command', 'commandglows_app/command'],
   ])(
-    'forwards signed WinGlows %s events to the generic suite commerce processor',
+    'forwards signed CommandGlows %s events to the generic suite commerce processor',
     async (plan, offerId) => {
       const { POST } = await import('@/pages/api/commerce/webhooks/lemon-squeezy')
       mockMutation.mockResolvedValueOnce({
@@ -64,17 +64,17 @@ describe('lemon squeezy webhook route', () => {
         meta: {
           custom_data: {
             offer_id: offerId,
-            product_id: 'winglowz_app',
+            product_id: 'commandglows_app',
             plan,
             source: 'direct',
-            source_ref: '/winglowz-founder',
+            source_ref: '/commandglows-founder',
           },
         },
       })
       const signature = await signWebhook(body, 'webhook-secret')
 
       const response = await POST({
-        request: new Request('https://winglowz.test/api/commerce/webhooks/lemon-squeezy', {
+        request: new Request('https://commandglows.test/api/commerce/webhooks/lemon-squeezy', {
           method: 'POST',
           headers: {
             'x-signature': signature,
@@ -91,7 +91,7 @@ describe('lemon squeezy webhook route', () => {
         expect.objectContaining({
           provider: 'lemonsqueezy',
           offerId,
-          productId: 'winglowz_app',
+          productId: 'commandglows_app',
           plan,
           eventType: 'paid',
           providerOrderId: `ord_wfz_${plan}`,

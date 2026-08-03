@@ -10,7 +10,7 @@ Objectif :
 - ((TUI = interface textuelle interactive, plus riche qu'une CLI brute, plus légère qu'une GUI))
 - ((intérêt réel : vitesse clavier, faible friction, accès distant, usage terminal continu))
 - ((pas un sujet à traiter pour tout le monde : surtout utile pour profils clavier-first, devs, power users))
-- ((dans Winflowz, le bon angle n'est pas "retro-geek", mais "réduire la friction sur les tâches répétitives"))
+- ((dans CommandGlows, le bon angle n'est pas "retro-geek", mais "réduire la friction sur les tâches répétitives"))
 
 ## Exemples utiles à garder
 
@@ -19,7 +19,7 @@ Objectif :
 - ((yazi / ranger / midnight commander pour navigation fichiers si la souris devient un frein))
 - ((btop / htop pour surveillance système rapide))
 
-## Positionnement Winflowz
+## Positionnement CommandGlows
 
 - bon sujet si :
   - tu vis déjà dans le terminal

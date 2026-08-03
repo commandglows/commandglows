@@ -1,6 +1,6 @@
 Subject: Why productivity hacks collapse so quickly
 Preview: An isolated trick does not reconfigure an environment.
-CTA: https://www.winflowz.com/windows-mastery
+CTA: https://www.commandglows.com/windows-mastery
 
 You may already have tried:
 
@@ -31,7 +31,7 @@ It is not that hacks are always useless.
 
 It is that they are not enough when there is no underlying architecture.
 
-WinGlows is not trying to impress you with a giant stack of tools.
+CommandGlows is not trying to impress you with a giant stack of tools.
 
 The logic is much simpler:
 
@@ -43,6 +43,6 @@ The logic is much simpler:
 
 If you want to see that logic on the sales page, it is here:
 
-https://www.winflowz.com/windows-mastery
+https://www.commandglows.com/windows-mastery
 
 Diane

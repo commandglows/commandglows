@@ -23,7 +23,7 @@ La bonne logique est :
 
 Le problème n'est pas seulement la quantité d'information. C'est le fait que ton attention est une ressource rare et exploitée<sup>[1](#concept-attention-economy)</sup>, ce qui rend la surcharge très facile à fabriquer<sup>[2](#concept-information-overload)</sup>.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand un contenu, une source ou un flux arrive dans ton environnement, pose-toi quatre questions :
 

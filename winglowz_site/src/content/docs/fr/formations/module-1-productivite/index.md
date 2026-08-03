@@ -24,7 +24,7 @@ Le vrai problème de beaucoup de gens n'est donc pas un manque d'apps, de hacks 
 - l'énergie dont ils disposent
 - ce qu'ils exécutent réellement
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu te sens "pas productif", le problème vient généralement d'un de ces quatre niveaux :
 

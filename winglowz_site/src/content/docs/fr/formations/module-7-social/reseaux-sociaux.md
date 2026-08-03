@@ -22,7 +22,7 @@ Tu peux etre sur les reseaux pour :
 
 Mais ces objectifs ne demandent pas tous la meme intensite.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Pour chaque plateforme, pose-toi trois questions :
 
@@ -128,7 +128,7 @@ Je le recommande comme couche pratique, pas comme centre du systeme.
 
 **Equipe / agence** : Hootsuite si tu as besoin de monitoring, approval flows et gouvernance.
 
-## Le workflow Winflowz
+## Le workflow CommandGlows
 
 ### 1. Presence
 

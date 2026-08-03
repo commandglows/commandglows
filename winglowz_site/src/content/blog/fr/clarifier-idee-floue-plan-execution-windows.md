@@ -1,18 +1,18 @@
 ---
 translationKey: "vague-idea-clear-plan-windows"
 title: "Comment transformer une idée floue en plan clair sur Windows"
-description: "Un guide WinGlows pratique pour passer de l'intention à l'exécution."
+description: "Un guide CommandGlows pratique pour passer de l'intention à l'exécution."
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Avatar de Diane"
-cardImage: "/images/WinGlowz.png"
-cardImageAlt: "Couverture d'article WinGlows sur l'exécution"
+cardImage: "/images/CommandGlows.png"
+cardImageAlt: "Couverture d'article CommandGlows sur l'exécution"
 pubDate: 2026-06-18
 readTime: 8
 tags: ["exécution", "planification", "windows", "productivité"]
 contents: [
   "Une idée floue n'est pas une idée inutile. Elle a simplement besoin d'un peu de structure avant de devenir du travail.",
-  "WinGlows est pertinent ici parce qu'il aide les utilisateurs Windows à passer d'une pensée lâche à un plan exploitable sans rendre le processus plus compliqué.",
+  "CommandGlows est pertinent ici parce qu'il aide les utilisateurs Windows à passer d'une pensée lâche à un plan exploitable sans rendre le processus plus compliqué.",
   "Cet article montre comment transformer une intention vague en quelque chose de réellement exécutable."
 ]
 ---
@@ -44,9 +44,9 @@ Avant d’exécuter, forcez l’idée à passer par quatre questions :
 
 Cette séquence transforme une idée floue en chose que le cerveau n’a plus besoin de porter en continu.
 
-## Là où WinGlows aide
+## Là où CommandGlows aide
 
-WinGlows est utile ici parce qu’il soutient le passage de la pensée à la structure. Pour les utilisateurs Windows qui jonglent avec plusieurs tâches, cette transition est souvent la partie la plus difficile.
+CommandGlows est utile ici parce qu’il soutient le passage de la pensée à la structure. Pour les utilisateurs Windows qui jonglent avec plusieurs tâches, cette transition est souvent la partie la plus difficile.
 
 Le but n’est pas de trop planifier. Le but est de réduire l’écart entre l’idée et la première vraie action.
 
@@ -65,4 +65,4 @@ Cela suffit souvent à préserver l’élan.
 
 Si une idée reste trop longtemps dans votre tête, elle commence à concurrencer tout le reste.
 
-WinGlows est pensé pour réduire cette pression en aidant à transformer des idées floues en travail clair et répétable.
+CommandGlows est pensé pour réduire cette pression en aidant à transformer des idées floues en travail clair et répétable.

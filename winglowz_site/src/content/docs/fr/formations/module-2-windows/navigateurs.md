@@ -24,7 +24,7 @@ Le navigateur devient alors :
 
 mais pas un dépotoir visuel.
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Avant de changer de navigateur ou d'ajouter des extensions, pose-toi quatre questions :
 

@@ -23,7 +23,7 @@ The right logic is:
 
 The problem is not only the amount of information. It is that your attention is a scarce resource that gets engineered for capture<sup>[1](#concept-attention-economy)</sup>, which makes overload easy to manufacture<sup>[2](#concept-information-overload)</sup>.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When a piece of content, a source, or a stream enters your environment, ask four questions:
 

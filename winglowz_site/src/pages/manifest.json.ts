@@ -1,8 +1,8 @@
 export const prerender = true
 import type { APIRoute, ImageMetadata } from "astro";
 import { getImage } from "astro:assets";
-import icon from "@/assets/images/WinGlowz.png";
-import maskableIcon from "@/assets/images/WinGlowz.png";
+import icon from "@/assets/images/CommandGlows.png";
+import maskableIcon from "@/assets/images/CommandGlows.png";
 import { OG, SITE, SITE_VISUAL_TOKENS } from "@/constants";
 
 interface Favicon {

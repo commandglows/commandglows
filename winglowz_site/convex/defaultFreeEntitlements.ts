@@ -1,8 +1,8 @@
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx } from './_generated/server'
 
-export const WINGLOWZ_APP_PRODUCT_ID = 'winglowz_app'
-export const WINGLOWZ_FORMATION_PRODUCT_ID = 'winglowz_formation'
+export const COMMANDGLOWS_APP_PRODUCT_ID = 'commandglows_app'
+export const COMMANDGLOWS_FORMATION_PRODUCT_ID = 'commandglows_formation'
 export const GOCHARBON_PRODUCT_ID = 'gocharbon'
 export const CONTENTGLOWZ_PRODUCT_ID = 'contentglowz'
 export const SHIPGLOWS_PRODUCT_ID = 'shipglows'
@@ -12,8 +12,8 @@ export const SOCIALGLOWZ_PRODUCT_ID = 'socialglowz'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
 
 export const SUITE_PRODUCT_IDS = [
-  WINGLOWZ_APP_PRODUCT_ID,
-  WINGLOWZ_FORMATION_PRODUCT_ID,
+  COMMANDGLOWS_APP_PRODUCT_ID,
+  COMMANDGLOWS_FORMATION_PRODUCT_ID,
   GOCHARBON_PRODUCT_ID,
   CONTENTGLOWZ_PRODUCT_ID,
   SHIPGLOWS_PRODUCT_ID,
@@ -24,12 +24,12 @@ export const SUITE_PRODUCT_IDS = [
 
 export const DEFAULT_FREE_ENTITLEMENT_POLICIES = [
   {
-    productId: WINGLOWZ_APP_PRODUCT_ID,
+    productId: COMMANDGLOWS_APP_PRODUCT_ID,
     plan: 'free',
     source: 'product_default',
   },
   {
-    productId: WINGLOWZ_FORMATION_PRODUCT_ID,
+    productId: COMMANDGLOWS_FORMATION_PRODUCT_ID,
     plan: 'free',
     source: 'product_default',
   },

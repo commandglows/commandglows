@@ -4,12 +4,12 @@
   "sections": {
     "introduction": {
       "title": "1. Introduction",
-      "content": "These Terms of Service govern your use of WinGlows's digital products and services, including but not limited to Obsidian plugins (CreatorFlowz, RSSFlowz, PluginFlowz, MediaFlowz, EditorFlowz, MailingFlowz, LinkFlowz), Chrome extensions (ReplayGlowz), and training services."
+      "content": "These Terms of Service govern your use of CommandGlows's digital products and services, including but not limited to Obsidian plugins (CreatorFlowz, RSSFlowz, PluginFlowz, MediaFlowz, EditorFlowz, MailingFlowz, LinkFlowz), Chrome extensions (ReplayGlowz), and training services."
     },
     "license": {
       "title": "2. License and Usage Rights",
       "items": [
-        "WinGlows grants you a personal, non-exclusive, non-transferable license to use purchased products for personal use.",
+        "CommandGlows grants you a personal, non-exclusive, non-transferable license to use purchased products for personal use.",
         "The \"FlowzSuite for Obsidian\" pack includes lifetime access to all current plugins with updates.",
         "Individual plugins and extensions may be subject to separate licensing terms."
       ]
@@ -17,7 +17,7 @@
     "intellectual": {
       "title": "3. Intellectual Property",
       "items": [
-        "All products, including source code, designs, and documentation, remain the exclusive property of WinGlows.",
+        "All products, including source code, designs, and documentation, remain the exclusive property of CommandGlows.",
         "You may not redistribute, resell, or modify the products without explicit written permission."
       ]
     },
@@ -25,7 +25,7 @@
       "title": "4. API Usage and Data Processing",
       "items": [
         "Some products require third-party API keys (YouTube, Unsplash, Pexels, etc.). You are responsible for obtaining and managing these keys.",
-        "Data processing is performed locally on your device. WinGlows does not collect or store your personal data."
+        "Data processing is performed locally on your device. CommandGlows does not collect or store your personal data."
       ]
     },
     "training": {
@@ -46,13 +46,13 @@
       "title": "7. Liability Limitations",
       "items": [
         "Products are provided \"as is\" without warranty of any kind.",
-        "WinGlows is not liable for damages resulting from the use of our products."
+        "CommandGlows is not liable for damages resulting from the use of our products."
       ]
     },
     "updates": {
       "title": "8. Updates and Modifications",
       "items": [
-        "WinGlows reserves the right to update products and these terms at any time.",
+        "CommandGlows reserves the right to update products and these terms at any time.",
         "Users will be notified of significant changes to terms or features."
       ]
     },
@@ -66,10 +66,10 @@
     "termination": {
       "title": "10. Termination",
       "items": [
-        "WinGlows reserves the right to terminate services in case of abuse or violation of these terms.",
+        "CommandGlows reserves the right to terminate services in case of abuse or violation of these terms.",
         "Users may terminate their use of services at any time."
       ]
     }
   },
-  "contact": "For any questions regarding these terms, please contact us at support@winglowz.com"
+  "contact": "For any questions regarding these terms, please contact us at support@commandglows.com"
 }

@@ -162,7 +162,7 @@ Example:
 
 ```txt
 ; Typing /sig inserts a full signature
-::/sig::Best regards,{Enter}Your Name{Enter}Winflowz
+::/sig::Best regards,{Enter}Your Name{Enter}CommandGlows
 ```
 
 For more advanced needs, you can also look at dedicated tools like **Beeftext** or **PhraseExpress**. What matters most is not the tool but the reflex: any text you keep retyping should probably become a snippet.

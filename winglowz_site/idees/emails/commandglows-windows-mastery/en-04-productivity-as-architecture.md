@@ -1,6 +1,6 @@
 Subject: Productivity as architecture, not punishment
 Preview: Work better without fighting yourself all day.
-CTA: https://www.winflowz.com/windows-mastery
+CTA: https://www.commandglows.com/windows-mastery
 
 There is another way to think about productivity.
 
@@ -20,7 +20,7 @@ In other words:
 - shortcuts serve work instead of becoming a hobby
 - the environment removes noise before it demands more effort
 
-That is the logic I tried to make explicit inside WinGlows.
+That is the logic I tried to make explicit inside CommandGlows.
 
 The course does not ask you to become a machine.
 
@@ -35,6 +35,6 @@ An environment where it becomes easier:
 
 If you want to see how the course is structured, the page is here:
 
-https://www.winflowz.com/windows-mastery
+https://www.commandglows.com/windows-mastery
 
 Diane

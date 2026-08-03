@@ -24,7 +24,7 @@ So the real issue for most people is not a lack of apps, hacks, or willpower. It
 - the energy they actually have
 - what they truly execute
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you feel "unproductive," the problem usually comes from one of four layers:
 

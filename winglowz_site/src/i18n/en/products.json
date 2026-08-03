@@ -1,11 +1,11 @@
 {
-  "title": "Products | WinGlows",
-  "description": "Explore WinGlows's core offer first: Windows Mastery, then companion tools for the workflows you already use.",
-  "siteDescription": "WinGlows focuses on practical Windows training, Obsidian plugins, and browser tools for note-taking, media, and YouTube workflows.",
-  "subtitle": "Browse the WinGlows ecosystem, with Windows Mastery as the flagship path and companion tools built around the same workflow logic.",
+  "title": "Products | CommandGlows",
+  "description": "Explore CommandGlows's core offer first: Windows Mastery, then companion tools for the workflows you already use.",
+  "siteDescription": "CommandGlows focuses on practical Windows training, Obsidian plugins, and browser tools for note-taking, media, and YouTube workflows.",
+  "subtitle": "Browse the CommandGlows ecosystem, with Windows Mastery as the flagship path and companion tools built around the same workflow logic.",
   "customerStories": "Customer Stories",
   "features": {
-    "title": "Why WinGlows?",
+    "title": "Why CommandGlows?",
     "subtitle": "The offer is built around the problems the site already teaches: focus, Windows setup, information capture, and knowledge reuse.",
     "benefits": [
       "Windows-focused training with practical workflows instead of generic productivity advice",
@@ -54,8 +54,8 @@
       "link": "/windows-mastery"
     },
     "productivitysuite": {
-      "title": "WinGlows Bundle",
-      "description": "The full WinGlows ecosystem: training plus the core tools",
+      "title": "CommandGlows Bundle",
+      "description": "The full CommandGlows ecosystem: training plus the core tools",
       "features": [
         "Windows training and course content",
         "Obsidian plugins and browser tools in one offer",
@@ -63,7 +63,7 @@
         "Built around the same workflow system"
       ],
       "price": "79.99",
-      "link": "/products/winglowz"
+      "link": "/products/commandglows"
     }
   }
 }

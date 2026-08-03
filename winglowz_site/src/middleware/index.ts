@@ -10,14 +10,14 @@ const legacyRedirects = new Map<string, string>([
   ['/fr/produits/obsidian-plugins', '/fr/produits/flowzsuite-obsidian'],
   ['/products/chrome-extensions', '/products/replayglowz-extension'],
   ['/fr/produits/chrome-extensions', '/fr/produits/replayglowz-extension'],
-  ['/products/productivity-suite', '/products/winglowz'],
-  ['/fr/produits/productivity-suite', '/fr/produits/winglowz'],
+  ['/products/productivity-suite', '/products/commandglows'],
+  ['/fr/produits/productivity-suite', '/fr/produits/commandglows'],
   ['/fr/blog/termux-customization', '/fr/blog/termux-personnalisation'],
   ['/fr/blog/termux-themes-preview', '/fr/blog/termux-themes'],
-  ['/fr/blog/winglowz-android-keyboard', '/fr/blog/clavier-winglowz-android'],
+  ['/fr/blog/commandglows-android-keyboard', '/fr/blog/clavier-commandglows-android'],
   ['/blog/termux-personnalisation', '/blog/termux-customization'],
   ['/blog/termux-themes', '/blog/termux-themes-preview'],
-  ['/blog/clavier-winglowz-android', '/blog/winglowz-android-keyboard'],
+  ['/blog/clavier-commandglows-android', '/blog/commandglows-android-keyboard'],
   ['/fr/blog/post-4', '/fr/blog'],
 ]);
 

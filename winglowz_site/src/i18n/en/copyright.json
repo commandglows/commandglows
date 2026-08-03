@@ -4,7 +4,7 @@
   "sections": {
     "protection": {
       "title": "1. Copyright Protection",
-      "content": "All content, software, and materials available on this website and associated products (collectively, the \"Content\") are protected by intellectual property laws and are the property of WinGlows. This includes, but is not limited to:",
+      "content": "All content, software, and materials available on this website and associated products (collectively, the \"Content\") are protected by intellectual property laws and are the property of CommandGlows. This includes, but is not limited to:",
       "items": [
         "All Obsidian plugins (CreatorFlowz, RSSFlowz, PluginFlowz, MediaFlowz, EditorFlowz, MailingFlowz, LinkFlowz)",
         "Chrome extensions (ReplayGlowz)",
@@ -29,7 +29,7 @@
     },
     "commercial": {
       "title": "3. Commercial Use",
-      "content": "Any commercial use, including but not limited to resale, modification, or incorporation into other products, requires explicit written permission from WinGlows."
+      "content": "Any commercial use, including but not limited to resale, modification, or incorporation into other products, requires explicit written permission from CommandGlows."
     },
     "enforcement": {
       "title": "4. Enforcement",
@@ -47,7 +47,7 @@
     }
   },
   "footer": {
-    "notice": "By using our products and services, you acknowledge and agree to respect our intellectual property rights as outlined in this notice. WinGlows reserves all rights not expressly granted and may update this notice at any time without prior notification.",
-    "contact": "For copyright inquiries or permissions, please contact copyright@winglowz.com"
+    "notice": "By using our products and services, you acknowledge and agree to respect our intellectual property rights as outlined in this notice. CommandGlows reserves all rights not expressly granted and may update this notice at any time without prior notification.",
+    "contact": "For copyright inquiries or permissions, please contact copyright@commandglows.com"
   }
 }

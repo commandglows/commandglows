@@ -20,7 +20,7 @@ Trouver le bon contenu, ce n'est pas "suivre les bonnes personnes" au hasard. C'
 - quel **niveau de profondeur** un sujet merite
 - quel contenu vaut la peine d'etre **sauvegarde, relu ou relie**
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Quand tu rencontres une source ou un contenu, pose-toi trois questions :
 

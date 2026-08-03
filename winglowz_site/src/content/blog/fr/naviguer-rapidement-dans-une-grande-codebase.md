@@ -2,10 +2,10 @@
 title: "Comment naviguer rapidement dans une grande codebase"
 description: "Un cadre professionnel pour retrouver vite les fonctions importantes, réduire les recherches manuelles et documenter une grosse base de code sans l'alourdir."
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Avatar de Diane"
-cardImage: "/images/WinGlowz.png"
-cardImageAlt: "Couverture d'article WinGlows sur la navigation dans une codebase"
+cardImage: "/images/CommandGlows.png"
+cardImageAlt: "Couverture d'article CommandGlows sur la navigation dans une codebase"
 pubDate: 2026-06-29
 readTime: 10
 tags: ["codebase", "documentation", "architecture", "workflow", "developpement"]

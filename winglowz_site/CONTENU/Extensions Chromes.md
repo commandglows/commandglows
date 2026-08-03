@@ -72,7 +72,7 @@ Objectif :
 - ((FlyMSG / Text Blaze / autres si besoin d'autofill))
 - ((Violentmonkey pour scripts utilisateurs))
 
-## Recommandations à garder pour Winflowz
+## Recommandations à garder pour CommandGlows
 
 - ne recommander dans le cours que des extensions :
   - toujours maintenues

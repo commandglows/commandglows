@@ -18,7 +18,7 @@ This module is not here to help you fill your calendar more efficiently. It is h
 - place the right kind of work at the right moment
 - stop burning your best hours on the wrong tasks
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 The logic of the module has four steps:
 

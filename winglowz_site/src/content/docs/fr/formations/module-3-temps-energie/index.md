@@ -18,7 +18,7 @@ Ce module ne sert pas à remplir mieux ton agenda. Il sert à :
 - mettre le bon type de travail au bon moment
 - éviter de brûler tes meilleures heures sur les mauvaises tâches
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 La logique du module tient en quatre étapes :
 

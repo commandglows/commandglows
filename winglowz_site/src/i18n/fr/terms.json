@@ -4,12 +4,12 @@
   "sections": {
     "introduction": {
       "title": "1. Introduction",
-      "content": "Ces Conditions Générales d'Utilisation régissent votre utilisation des produits et services numériques de WinGlows, incluant notamment les plugins Obsidian (CreatorFlowz, RSSFlowz, PluginFlowz, MediaFlowz, EditorFlowz, MailingFlowz, LinkFlowz), les extensions Chrome (ReplayGlowz), et les services de formation."
+      "content": "Ces Conditions Générales d'Utilisation régissent votre utilisation des produits et services numériques de CommandGlows, incluant notamment les plugins Obsidian (CreatorFlowz, RSSFlowz, PluginFlowz, MediaFlowz, EditorFlowz, MailingFlowz, LinkFlowz), les extensions Chrome (ReplayGlowz), et les services de formation."
     },
     "license": {
       "title": "2. Licence et Droits d'Utilisation",
       "items": [
-        "WinGlows vous accorde une licence personnelle, non exclusive et non transférable pour utiliser les produits achetés à des fins personnelles.",
+        "CommandGlows vous accorde une licence personnelle, non exclusive et non transférable pour utiliser les produits achetés à des fins personnelles.",
         "Le pack \"FlowzSuite for Obsidian\" inclut un accès à vie à tous les plugins actuels avec leurs mises à jour.",
         "Les plugins et extensions individuels peuvent être soumis à des conditions de licence distinctes."
       ]
@@ -17,7 +17,7 @@
     "intellectual": {
       "title": "3. Propriété Intellectuelle",
       "items": [
-        "Tous les produits, y compris le code source, les designs et la documentation, restent la propriété exclusive de WinGlows.",
+        "Tous les produits, y compris le code source, les designs et la documentation, restent la propriété exclusive de CommandGlows.",
         "Vous ne pouvez pas redistribuer, revendre ou modifier les produits sans autorisation écrite explicite."
       ]
     },
@@ -25,7 +25,7 @@
       "title": "4. Utilisation des API et Traitement des Données",
       "items": [
         "Certains produits nécessitent des clés API tierces (YouTube, Unsplash, Pexels, etc.). Vous êtes responsable de l'obtention et de la gestion de ces clés.",
-        "Le traitement des données est effectué localement sur votre appareil. WinGlows ne collecte ni ne stocke vos données personnelles."
+        "Le traitement des données est effectué localement sur votre appareil. CommandGlows ne collecte ni ne stocke vos données personnelles."
       ]
     },
     "training": {
@@ -46,13 +46,13 @@
       "title": "7. Limitations de Responsabilité",
       "items": [
         "Les produits sont fournis \"en l'état\" sans garantie d'aucune sorte.",
-        "WinGlows n'est pas responsable des dommages résultant de l'utilisation de nos produits."
+        "CommandGlows n'est pas responsable des dommages résultant de l'utilisation de nos produits."
       ]
     },
     "updates": {
       "title": "8. Mises à Jour et Modifications",
       "items": [
-        "WinGlows se réserve le droit de mettre à jour les produits et ces conditions à tout moment.",
+        "CommandGlows se réserve le droit de mettre à jour les produits et ces conditions à tout moment.",
         "Les utilisateurs seront informés des changements significatifs apportés aux conditions ou aux fonctionnalités."
       ]
     },
@@ -66,10 +66,10 @@
     "termination": {
       "title": "10. Résiliation",
       "items": [
-        "WinGlows se réserve le droit de résilier les services en cas d'abus ou de violation de ces conditions.",
+        "CommandGlows se réserve le droit de résilier les services en cas d'abus ou de violation de ces conditions.",
         "Les utilisateurs peuvent mettre fin à leur utilisation des services à tout moment."
       ]
     }
   },
-  "contact": "Pour toute question concernant ces conditions, veuillez nous contacter à support@winglowz.com"
+  "contact": "Pour toute question concernant ces conditions, veuillez nous contacter à support@commandglows.com"
 }

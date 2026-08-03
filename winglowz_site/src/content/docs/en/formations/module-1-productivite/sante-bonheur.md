@@ -10,7 +10,7 @@ There is no sustainable productivity without solid foundations. Your body, nervo
 
 You can have a good calendar, good tools, and good methods. If the human infrastructure collapses, everything else becomes unstable.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When productivity drops, do not always start by redesigning your task system. First check these four layers:
 

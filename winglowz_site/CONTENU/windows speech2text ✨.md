@@ -34,7 +34,7 @@ Choisir selon :
 
 - ((Whisper Flow seulement si le besoin de collaboration ou de workflows équipe existe vraiment))
 
-## Positionnement Winflowz
+## Positionnement CommandGlows
 
 - la dictée n'est pas là pour remplacer le clavier partout
 - elle est surtout utile pour :

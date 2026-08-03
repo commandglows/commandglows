@@ -4,10 +4,10 @@ title: "Understanding TTY: From Teletypewriter to Modern Terminal"
 description: "What is a TTY, where does the term come from, and why does it still matter in 2026?"
 contents: ["Historical Origins", "The Modern TTY", "Why It Matters"]
 author: "Diane"
-authorImage: "/images/WinGlowz.png"
+authorImage: "/images/CommandGlows.png"
 authorImageAlt: "Author avatar"
 pubDate: 2024-02-06
-cardImage: "/images/WinGlowz.png"
+cardImage: "/images/CommandGlows.png"
 cardImageAlt: "Article cover image about TTY"
 readTime: 5
 tags: ["terminal", "linux", "history"]

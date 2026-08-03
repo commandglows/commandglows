@@ -32,7 +32,7 @@ Les frictions les plus courantes sont :
 - manipuler des données tabulaires
 - explorer une archive ou un lot de fichiers sans tout ouvrir à la main
 
-## Le decision framework Winflowz
+## Le decision framework CommandGlows
 
 Avant d'ajouter un outil, pose-toi quatre questions :
 

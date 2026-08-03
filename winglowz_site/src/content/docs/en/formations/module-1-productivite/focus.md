@@ -12,7 +12,7 @@ When you lose focus, the problem is not always weak discipline. Very often, it i
 
 > Focus is not only an inner effort. It is an architecture.
 
-## The Winflowz decision framework
+## The CommandGlows decision framework
 
 When you cannot concentrate, start with four questions:
 

@@ -1,4 +1,4 @@
-const defaultImage = '/images/WinGlowz.png'
+const defaultImage = '/images/CommandGlows.png'
 
 export const defaultImages = {
   blog: {

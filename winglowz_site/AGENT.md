@@ -2,7 +2,7 @@
 artifact: documentation
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "winglowz"
+project: "commandglows"
 created: "2026-04-26"
 updated: "2026-05-17"
 status: "reviewed"
@@ -37,7 +37,7 @@ next_step: "pnpm build:check"
 
 ## Mission
 
-WinGlows is a bilingual Astro application for Windows-focused productivity content, products, docs, and training sales. The repo combines:
+CommandGlows is a bilingual Astro application for Windows-focused productivity content, products, docs, and training sales. The repo combines:
 
 - marketing and editorial pages
 - gated training purchase flows
