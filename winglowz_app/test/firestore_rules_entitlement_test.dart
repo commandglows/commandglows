@@ -6,9 +6,9 @@ void main() {
   test('Firestore rules require the server-owned suite access mirror', () {
     final rules = File('firestore.rules').readAsStringSync();
 
-    expect(rules, contains('function hasWinGlowzAppAccess(userId)'));
+    expect(rules, contains('function hasCommandGlowsAppAccess(userId)'));
     expect(rules, contains(r'/documents/suiteAccess/$(userId)'));
-    expect(rules, contains('products.winglowz_app.active == true'));
+    expect(rules, contains('products.commandglows_app.active == true'));
     expect(rules, contains('match /suiteAccess/{uid}'));
     expect(rules, contains('allow read, write: if false;'));
   });
@@ -19,7 +19,7 @@ void main() {
     expect(rules, contains('match /keyboardConfigs/{configId}'));
     expect(rules, contains('isDefaultKeyboardConfig(configId)'));
     expect(rules, contains('configId == \'default\''));
-    expect(rules, contains('hasWinGlowzAppAccess(uid)'));
+    expect(rules, contains('hasCommandGlowsAppAccess(uid)'));
     expect(rules, contains('hasValidKeyboardConfig(request.resource.data)'));
     expect(rules, contains('payload.keys().hasOnly(['));
     expect(rules, contains('payload.keys().hasAll(['));

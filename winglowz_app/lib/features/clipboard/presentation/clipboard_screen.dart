@@ -284,7 +284,7 @@ class _ClipboardScreenState extends ConsumerState<ClipboardScreen> {
       context: context,
       title: 'Supprimer cet élément clipboard ?',
       message:
-          'Cette action supprime cet élément de l’historique WinGlowz. Il ne peut pas être annulé depuis cet écran.',
+          'Cette action supprime cet élément de l’historique CommandGlows. Il ne peut pas être annulé depuis cet écran.',
       confirmLabel: 'Supprimer',
       destructive: true,
       confirmationEnabled: settings.confirmDestructiveActions,
@@ -334,7 +334,7 @@ class _ClipboardScreenState extends ConsumerState<ClipboardScreen> {
           summary: AppPageHeroCard(
             title: 'Fil presse-papiers',
             subtitle:
-                'Retrouve les dernières captures WinGlowz, filtre ta liste et garde le même repère que sur l’accueil.',
+                'Retrouve les dernières captures CommandGlows, filtre ta liste et garde le même repère que sur l’accueil.',
             leadingIcon: Icons.content_paste_search_outlined,
             trailing: const AppProfileMenuButton(),
             metrics: [

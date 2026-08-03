@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/core/widgets/app_components.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/core/widgets/app_components.dart';
 
 void main() {
   testWidgets('shared search field and sync action stay independently usable', (

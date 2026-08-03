@@ -484,7 +484,7 @@ class _ActionBarActivationToggle extends StatelessWidget {
       title: const Text('Barre d’action Android IME'),
       subtitle: Text(
         isImeSupported
-            ? 'Les boutons compatibles apparaissent dans le clavier WinGlowz.'
+            ? 'Les boutons compatibles apparaissent dans le clavier CommandGlows.'
             : PlatformCapabilities.keyboardImeUnavailableReason,
       ),
       value: isImeSupported && isEnabled,
@@ -595,7 +595,7 @@ class _ActionValueField extends StatelessWidget {
       ),
       CustomActionKind.keySequence => ('Séquence clavier desktop', 'Ctrl+W, N'),
       CustomActionKind.keyboardExpression => (
-        'Expression clavier WinGlowz',
+        'Expression clavier CommandGlows',
         'action:Undo',
       ),
       CustomActionKind.macro => (

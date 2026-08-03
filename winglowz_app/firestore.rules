@@ -10,10 +10,10 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function hasWinGlowzAppAccess(userId) {
+    function hasCommandGlowsAppAccess(userId) {
       return isOwner(userId) &&
           exists(/databases/$(database)/documents/suiteAccess/$(userId)) &&
-          get(/databases/$(database)/documents/suiteAccess/$(userId)).data.products.winglowz_app.active == true;
+          get(/databases/$(database)/documents/suiteAccess/$(userId)).data.products.commandglows_app.active == true;
     }
 
     function hasValidRetentionHours(payload) {
@@ -165,57 +165,57 @@ service cloud.firestore {
       allow read, write: if false;
 
       match /settings/{settingId} {
-        allow read: if hasWinGlowzAppAccess(uid);
-        allow create, update: if hasWinGlowzAppAccess(uid) &&
+        allow read: if hasCommandGlowsAppAccess(uid);
+        allow create, update: if hasCommandGlowsAppAccess(uid) &&
           hasValidThemeMode(request.resource.data) &&
           hasValidRetentionHours(request.resource.data) &&
           hasSafeClientEventMetadata(request.resource.data);
-        allow delete: if hasWinGlowzAppAccess(uid);
+        allow delete: if hasCommandGlowsAppAccess(uid);
       }
 
       match /clipboardItems/{itemId} {
-        allow read: if hasWinGlowzAppAccess(uid);
-        allow create, update: if hasWinGlowzAppAccess(uid) && hasValidRetentionHours(request.resource.data);
-        allow delete: if hasWinGlowzAppAccess(uid);
+        allow read: if hasCommandGlowsAppAccess(uid);
+        allow create, update: if hasCommandGlowsAppAccess(uid) && hasValidRetentionHours(request.resource.data);
+        allow delete: if hasCommandGlowsAppAccess(uid);
       }
 
       match /transcriptions/{transcriptionId} {
-        allow read: if hasWinGlowzAppAccess(uid);
-        allow create, update: if hasWinGlowzAppAccess(uid) && hasValidRetentionHours(request.resource.data);
-        allow delete: if hasWinGlowzAppAccess(uid);
+        allow read: if hasCommandGlowsAppAccess(uid);
+        allow create, update: if hasCommandGlowsAppAccess(uid) && hasValidRetentionHours(request.resource.data);
+        allow delete: if hasCommandGlowsAppAccess(uid);
       }
 
       match /snippets/{snippetId} {
-        allow read: if hasWinGlowzAppAccess(uid);
-        allow create, update: if hasWinGlowzAppAccess(uid) && hasValidRetentionHours(request.resource.data);
-        allow delete: if hasWinGlowzAppAccess(uid);
+        allow read: if hasCommandGlowsAppAccess(uid);
+        allow create, update: if hasCommandGlowsAppAccess(uid) && hasValidRetentionHours(request.resource.data);
+        allow delete: if hasCommandGlowsAppAccess(uid);
       }
 
       match /dictionaryTerms/{termId} {
-        allow read: if hasWinGlowzAppAccess(uid);
-        allow create, update: if hasWinGlowzAppAccess(uid) && hasValidRetentionHours(request.resource.data);
-        allow delete: if hasWinGlowzAppAccess(uid);
+        allow read: if hasCommandGlowsAppAccess(uid);
+        allow create, update: if hasCommandGlowsAppAccess(uid) && hasValidRetentionHours(request.resource.data);
+        allow delete: if hasCommandGlowsAppAccess(uid);
       }
 
       match /clientEvents/{eventId} {
-        allow read: if hasWinGlowzAppAccess(uid);
-        allow create, update: if hasWinGlowzAppAccess(uid) &&
+        allow read: if hasCommandGlowsAppAccess(uid);
+        allow create, update: if hasCommandGlowsAppAccess(uid) &&
           hasValidRetentionHours(request.resource.data) &&
           hasSafeClientEventMetadata(request.resource.data);
-        allow delete: if hasWinGlowzAppAccess(uid);
+        allow delete: if hasCommandGlowsAppAccess(uid);
       }
 
       match /keyboardConfigs/{configId} {
-        allow read: if hasWinGlowzAppAccess(uid) && isDefaultKeyboardConfig(configId);
-        allow create, update: if hasWinGlowzAppAccess(uid) &&
+        allow read: if hasCommandGlowsAppAccess(uid) && isDefaultKeyboardConfig(configId);
+        allow create, update: if hasCommandGlowsAppAccess(uid) &&
           isDefaultKeyboardConfig(configId) &&
           hasValidKeyboardConfig(request.resource.data);
         allow delete: if false;
       }
 
       match /keyboardThemeAssets/{assetId} {
-        allow read: if hasWinGlowzAppAccess(uid);
-        allow create, update: if hasWinGlowzAppAccess(uid);
+        allow read: if hasCommandGlowsAppAccess(uid);
+        allow create, update: if hasCommandGlowsAppAccess(uid);
         allow delete: if false;
       }
     }

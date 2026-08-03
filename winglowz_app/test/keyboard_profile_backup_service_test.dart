@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_profile_backup_service.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_models.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_profile_backup_service.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_models.dart';
 
 void main() {
   test('exports, previews and applies a valid keyboard backup', () async {

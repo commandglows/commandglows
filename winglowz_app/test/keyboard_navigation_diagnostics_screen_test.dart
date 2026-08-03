@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/features/keyboard/presentation/keyboard_navigation_diagnostics_screen.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/features/keyboard/presentation/keyboard_navigation_diagnostics_screen.dart';
 
-const _keyboardChannel = MethodChannel('winglowz_app/keyboard');
+const _keyboardChannel = MethodChannel('commandglows_app/keyboard');
 
 void _installKeyboardMock({required List<MethodCall> calls}) {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

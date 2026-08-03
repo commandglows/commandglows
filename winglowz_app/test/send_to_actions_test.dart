@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/sync/sync_status.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/features/clipboard/application/clipboard_store_provider.dart';
-import 'package:winglowz_app/features/clipboard/application/keyboard_clipboard_event_importer.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_capture_event.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_store.dart';
-import 'package:winglowz_app/features/clipboard/presentation/clipboard_screen.dart';
-import 'package:winglowz_app/features/snippets/application/snippet_store_provider.dart';
-import 'package:winglowz_app/features/snippets/domain/snippet_store.dart';
-import 'package:winglowz_app/features/send_to/presentation/send_to_actions.dart';
-import 'package:winglowz_app/features/voice/application/transcription_store.dart';
-import 'package:winglowz_app/features/voice/application/transcription_store_provider.dart';
-import 'package:winglowz_app/features/voice/domain/transcription_draft.dart';
-import 'package:winglowz_app/features/voice/presentation/voice_screen.dart';
+import 'package:commandglows_app/core/sync/sync_status.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/features/clipboard/application/clipboard_store_provider.dart';
+import 'package:commandglows_app/features/clipboard/application/keyboard_clipboard_event_importer.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_capture_event.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_store.dart';
+import 'package:commandglows_app/features/clipboard/presentation/clipboard_screen.dart';
+import 'package:commandglows_app/features/snippets/application/snippet_store_provider.dart';
+import 'package:commandglows_app/features/snippets/domain/snippet_store.dart';
+import 'package:commandglows_app/features/send_to/presentation/send_to_actions.dart';
+import 'package:commandglows_app/features/voice/application/transcription_store.dart';
+import 'package:commandglows_app/features/voice/application/transcription_store_provider.dart';
+import 'package:commandglows_app/features/voice/domain/transcription_draft.dart';
+import 'package:commandglows_app/features/voice/presentation/voice_screen.dart';
 
-const _keyboardChannel = MethodChannel('winglowz_app/keyboard');
-const _overlayChannel = MethodChannel('winglowz_app/overlay');
+const _keyboardChannel = MethodChannel('commandglows_app/keyboard');
+const _overlayChannel = MethodChannel('commandglows_app/overlay');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +26,7 @@ void main() {
   setUp(_installPlatformMocks);
   tearDown(_clearPlatformMocks);
 
-  testWidgets('voice send-to adds a transcription to Clipboard WinGlowz', (
+  testWidgets('voice send-to adds a transcription to Clipboard CommandGlows', (
     tester,
   ) async {
     final now = DateTime.utc(2026, 5, 30, 20);

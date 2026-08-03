@@ -114,9 +114,9 @@ class OnboardingReadiness {
 const _stepDefinitions = <OnboardingStepDefinition>[
   OnboardingStepDefinition(
     id: OnboardingStepId.keyboardIme,
-    title: 'Clavier WinGlowz keyboard',
+    title: 'Clavier CommandGlows keyboard',
     description:
-        'Active et sélectionne WinGlowz keyboard comme clavier Android.',
+        'Active et sélectionne CommandGlows keyboard comme clavier Android.',
     why:
         'C’est le socle du produit: le clavier reste utile même si la dictée, le clipboard ou l’overlay sont ignorés.',
     category: OnboardingStepCategory.recommended,
@@ -135,7 +135,7 @@ const _stepDefinitions = <OnboardingStepDefinition>[
     category: OnboardingStepCategory.recommended,
     group: OnboardingStepGroup.clipboard,
     openActionLabel: 'Activer le clipboard clavier',
-    whereToFind: 'WinGlowz → Settings → Keyboard clipboard sync intent',
+    whereToFind: 'CommandGlows → Settings → Keyboard clipboard sync intent',
   ),
   OnboardingStepDefinition(
     id: OnboardingStepId.microphoneForDictation,
@@ -147,54 +147,54 @@ const _stepDefinitions = <OnboardingStepDefinition>[
     group: OnboardingStepGroup.voice,
     openActionLabel: 'Ouvrir les permissions micro',
     whereToFind:
-        'Réglages Android → Applications → WinGlowz → Autorisations → Microphone',
+        'Réglages Android → Applications → CommandGlows → Autorisations → Microphone',
   ),
   OnboardingStepDefinition(
     id: OnboardingStepId.mediaSessionAccess,
     title: 'Accès notifications et média',
-    description: 'Autorise WinGlowz à lire les notifications média Android.',
+    description: 'Autorise CommandGlows à lire les notifications média Android.',
     why:
         'Cet accès sert surtout au clavier pour afficher le titre en cours et ouvrir l’app qui lit le son. Il reste optionnel.',
     category: OnboardingStepCategory.recommended,
     group: OnboardingStepGroup.keyboard,
     openActionLabel: 'Ouvrir Accès aux notifications',
     whereToFind:
-        'Réglages Android → Applications → Accès spécial → Accès aux notifications → WinGlowz media access',
+        'Réglages Android → Applications → Accès spécial → Accès aux notifications → CommandGlows media access',
   ),
   OnboardingStepDefinition(
     id: OnboardingStepId.brightnessSystemSettings,
     title: 'Luminosité système',
-    description: 'Autorise WinGlowz à modifier la luminosité Android.',
+    description: 'Autorise CommandGlows à modifier la luminosité Android.',
     why:
         'Cet accès permet aux boutons Bri- et Bri+ du clavier d’ajuster la luminosité.',
     category: OnboardingStepCategory.recommended,
     group: OnboardingStepGroup.keyboard,
     openActionLabel: 'Ouvrir Modifier les paramètres système',
     whereToFind:
-        'Réglages Android → Applications → Accès spécial → Modifier les paramètres système → WinGlowz',
+        'Réglages Android → Applications → Accès spécial → Modifier les paramètres système → CommandGlows',
   ),
   OnboardingStepDefinition(
     id: OnboardingStepId.overlay,
     title: 'Overlay flottant',
-    description: 'Active la bulle flottante WinGlowz.',
+    description: 'Active la bulle flottante CommandGlows.',
     why:
         'L’overlay est désormais un complément: il sert aux usages hors clavier, pas au parcours principal.',
     category: OnboardingStepCategory.recommended,
     group: OnboardingStepGroup.extras,
     openActionLabel: 'Activer l’overlay',
     whereToFind:
-        'Réglages Android → Applications → WinGlowz → Autorisations → Afficher les fenêtres',
+        'Réglages Android → Applications → CommandGlows → Autorisations → Afficher les fenêtres',
   ),
   OnboardingStepDefinition(
     id: OnboardingStepId.accessibility,
     title: 'Service Accessibilité',
-    description: 'Active le service d’accessibilité WinGlowz.',
+    description: 'Active le service d’accessibilité CommandGlows.',
     why:
         'Améliore certains cas d’injection directe, mais le clavier reste utilisable sans ce service.',
     category: OnboardingStepCategory.recommended,
     group: OnboardingStepGroup.voice,
     openActionLabel: 'Ouvrir Accessibilité',
-    whereToFind: 'Réglages Android → Accessibilité → Service WinGlowz',
+    whereToFind: 'Réglages Android → Accessibilité → Service CommandGlows',
   ),
 ];
 
@@ -359,7 +359,7 @@ String? _stepBlockerReason({
   if (definition.id == OnboardingStepId.keyboardClipboard) {
     return keyboardStatus.clipboardSyncDesired
         ? null
-        : 'Clipboard clavier désactivé: les copies restent disponibles via le système, mais WinGlowz ne les synchronise pas.';
+        : 'Clipboard clavier désactivé: les copies restent disponibles via le système, mais CommandGlows ne les synchronise pas.';
   }
   if (definition.id == OnboardingStepId.accessibility) {
     return overlayStatus.accessibilityPermissionGranted
@@ -368,13 +368,13 @@ String? _stepBlockerReason({
   }
   if (definition.id == OnboardingStepId.keyboardIme) {
     if (!keyboardStatus.supported) {
-      return 'IME WinGlowz keyboard non disponible sur cet appareil.';
+      return 'IME CommandGlows keyboard non disponible sur cet appareil.';
     }
     if (!keyboardStatus.enabled) {
-      return 'Clavier WinGlowz keyboard non activé.';
+      return 'Clavier CommandGlows keyboard non activé.';
     }
     if (!keyboardStatus.active) {
-      return 'Le clavier WinGlowz keyboard n’est pas sélectionné actuellement.';
+      return 'Le clavier CommandGlows keyboard n’est pas sélectionné actuellement.';
     }
     return null;
   }

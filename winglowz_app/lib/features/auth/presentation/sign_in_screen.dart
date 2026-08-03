@@ -249,7 +249,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('WinGlowz')),
+      appBar: AppBar(title: const Text('CommandGlows')),
       body: SafeArea(
         child: DecoratedBox(
           decoration: BoxDecoration(
@@ -264,7 +264,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 child: AppSectionCard(
                   title: 'Connexion',
                   subtitle: widget.remoteOnly
-                      ? 'Connecte ton compte WinGlowz pour activer la synchronisation cloud.'
+                      ? 'Connecte ton compte CommandGlows pour activer la synchronisation cloud.'
                       : 'Accède à ton espace de dictée, clipboard et snippets.',
                   child: AutofillGroup(
                     child: Form(

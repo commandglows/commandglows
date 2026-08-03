@@ -97,9 +97,9 @@ class KeyboardThemePresetCatalog {
   const KeyboardThemePresetCatalog._();
 
   static const system = 'system';
-  static const winglowz = 'winglowz';
-  static const winglowzLight = 'winglowz_light';
-  static const winglowzDark = 'winglowz_dark';
+  static const commandglows = 'commandglows';
+  static const commandglowsLight = 'commandglows_light';
+  static const commandglowsDark = 'commandglows_dark';
   static const neonTerminal = 'neon_terminal';
   static const glassMint = 'glass_mint';
   static const sunsetGradient = 'sunset_gradient';
@@ -115,9 +115,9 @@ class KeyboardThemePresetCatalog {
       description: 'Follows the current app and Android theme.',
     ),
     KeyboardThemePreset(
-      id: winglowz,
-      name: 'WinGlowz',
-      description: 'Clean WinGlowz keyboard controlled by light or dark mode.',
+      id: commandglows,
+      name: 'CommandGlows',
+      description: 'Clean CommandGlows keyboard controlled by light or dark mode.',
     ),
     KeyboardThemePreset(
       id: neonTerminal,
@@ -161,7 +161,7 @@ class KeyboardThemePresetCatalog {
     Brightness brightness = Brightness.light,
   }) {
     final normalizedPresetId = switch (presetId) {
-      winglowzLight || winglowzDark => winglowz,
+      commandglowsLight || commandglowsDark => commandglows,
       _ => presetId,
     };
     final base = KeyboardThemeConfig.defaults().copyWith(
@@ -175,7 +175,7 @@ class KeyboardThemePresetCatalog {
     }
     return switch (normalizedPresetId) {
       system => KeyboardThemeConfig.defaults(),
-      winglowz => base,
+      commandglows => base,
       neonTerminal => base.copyWith(
         backgroundStartColor: 0xFF07120F,
         backgroundEndColor: 0xFF12241E,
@@ -325,7 +325,7 @@ class KeyboardThemePresetCatalog {
 
   static String _normalizedPresetId(String presetId) {
     return switch (presetId) {
-      winglowzLight || winglowzDark => winglowz,
+      commandglowsLight || commandglowsDark => commandglows,
       _ => presetId,
     };
   }
@@ -360,7 +360,7 @@ class KeyboardThemePresetCatalog {
   ) {
     return switch (presetId) {
       system => KeyboardThemeConfig.defaults(),
-      winglowz => base.copyWith(
+      commandglows => base.copyWith(
         backgroundStartColor: 0xFF121815,
         backgroundEndColor: 0xFF121815,
         keyColor: 0xFF232B27,
@@ -726,9 +726,9 @@ class KeyboardThemeConfig {
     final defaults = KeyboardThemeConfig.defaults();
     final rawPresetId = map['presetId'] as String? ?? defaults.presetId;
     final presetId = switch (rawPresetId) {
-      KeyboardThemePresetCatalog.winglowzLight ||
-      KeyboardThemePresetCatalog.winglowzDark =>
-        KeyboardThemePresetCatalog.winglowz,
+      KeyboardThemePresetCatalog.commandglowsLight ||
+      KeyboardThemePresetCatalog.commandglowsDark =>
+        KeyboardThemePresetCatalog.commandglows,
       _ => rawPresetId,
     };
     return KeyboardThemeConfig(

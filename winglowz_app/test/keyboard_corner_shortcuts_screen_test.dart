@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/features/custom_action_buttons/application/custom_action_button_store_provider.dart';
-import 'package:winglowz_app/features/custom_action_buttons/data/in_memory_custom_action_button_store.dart';
-import 'package:winglowz_app/features/custom_action_buttons/domain/custom_action_buttons.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_sync_providers.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_models.dart';
-import 'package:winglowz_app/features/keyboard/presentation/keyboard_corner_shortcuts_screen.dart';
-import 'package:winglowz_app/features/snippets/application/snippet_store_provider.dart';
-import 'package:winglowz_app/features/snippets/data/in_memory_snippet_store.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/features/custom_action_buttons/application/custom_action_button_store_provider.dart';
+import 'package:commandglows_app/features/custom_action_buttons/data/in_memory_custom_action_button_store.dart';
+import 'package:commandglows_app/features/custom_action_buttons/domain/custom_action_buttons.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_sync_providers.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_models.dart';
+import 'package:commandglows_app/features/keyboard/presentation/keyboard_corner_shortcuts_screen.dart';
+import 'package:commandglows_app/features/snippets/application/snippet_store_provider.dart';
+import 'package:commandglows_app/features/snippets/data/in_memory_snippet_store.dart';
 
-const _keyboardChannel = MethodChannel('winglowz_app/keyboard');
+const _keyboardChannel = MethodChannel('commandglows_app/keyboard');
 
 Widget _testWidget(
   InMemorySnippetStore snippetStore,

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/auth/data/firebase_auth_session_store.dart';
-import 'package:winglowz_app/features/auth/data/google_auth_client.dart';
-import 'package:winglowz_app/features/auth/domain/auth_failure.dart';
+import 'package:commandglows_app/features/auth/data/firebase_auth_session_store.dart';
+import 'package:commandglows_app/features/auth/data/google_auth_client.dart';
+import 'package:commandglows_app/features/auth/domain/auth_failure.dart';
 
 class _FakeGoogleAuthClient implements GoogleAuthClient {
   _FakeGoogleAuthClient({

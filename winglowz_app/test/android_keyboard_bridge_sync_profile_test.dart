@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/platform/android_keyboard_bridge.dart';
-import 'package:winglowz_app/features/custom_action_buttons/domain/custom_action_buttons.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_models.dart';
+import 'package:commandglows_app/core/platform/android_keyboard_bridge.dart';
+import 'package:commandglows_app/features/custom_action_buttons/domain/custom_action_buttons.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_models.dart';
 
-const _keyboardChannel = MethodChannel('winglowz_app/keyboard');
+const _keyboardChannel = MethodChannel('commandglows_app/keyboard');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -80,7 +80,7 @@ void main() {
       sourcePlatform: 'android',
       rawPayload: {
         'preferences': {'themeMode': 'system'},
-        'themeConfig': {'presetId': 'winglowz', 'useImage': false},
+        'themeConfig': {'presetId': 'commandglows', 'useImage': false},
       },
     );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -108,7 +108,7 @@ void main() {
         sourcePlatform: 'android',
         rawPayload: {
           'preferences': {'themeMode': 'system'},
-          'themeConfig': {'presetId': 'winglowz', 'useImage': false},
+          'themeConfig': {'presetId': 'commandglows', 'useImage': false},
         },
       );
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

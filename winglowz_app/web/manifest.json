@@ -1,6 +1,6 @@
 {
-    "name": "winglowz_app",
-    "short_name": "winglowz_app",
+    "name": "CommandGlows",
+    "short_name": "CommandGlows",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

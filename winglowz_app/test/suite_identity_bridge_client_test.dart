@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:winglowz_app/core/bootstrap/suite_identity_bridge_bootstrap.dart';
-import 'package:winglowz_app/features/auth/data/suite_identity_bridge_client.dart';
-import 'package:winglowz_app/features/auth/domain/product_entitlement.dart';
-import 'package:winglowz_app/features/auth/domain/suite_identity.dart';
+import 'package:commandglows_app/core/bootstrap/suite_identity_bridge_bootstrap.dart';
+import 'package:commandglows_app/features/auth/data/suite_identity_bridge_client.dart';
+import 'package:commandglows_app/features/auth/domain/product_entitlement.dart';
+import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
 
 void main() {
   const firebaseAccount = SuiteIdentityAccount(
@@ -33,7 +33,7 @@ void main() {
               }
             ],
             "entitlements": [
-              {"productId": "winglowz_app", "status": "active"},
+              {"productId": "commandglows_app", "status": "active"},
               {"productId": "legacy_video_app", "status": "trialing"},
               {"productId": "unknown_product", "status": "active"}
             ]
@@ -47,7 +47,7 @@ void main() {
 
       final identity = await client.resolveFromFirebaseSession(
         bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
-          bridgeUrl: 'https://suite.winglowz.test/api/bridge/firebase',
+          bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
         ),
         firebaseAccount: firebaseAccount,
         resolveIdToken: () async => 'firebase-id-token',
@@ -58,10 +58,10 @@ void main() {
       expect(identity.entitlements, hasLength(1));
       expect(
         identity.entitlements.map((item) => item.productId),
-        containsAll([ProductId.winglowzApp]),
+        containsAll([ProductId.commandglowsApp]),
       );
       expect(
-        identity.statusFor(ProductId.winglowzApp),
+        identity.statusFor(ProductId.commandglowsApp),
         SuiteAccountStatus.accessActive,
       );
       expect(identity.issue, isNull);
@@ -83,7 +83,7 @@ void main() {
               }
             ],
             "entitlements": [
-              {"productId": "winglowz_app", "status": "active", "plan": "pro"}
+              {"productId": "commandglows_app", "status": "active", "plan": "pro"}
             ]
           }
           ''',
@@ -95,7 +95,7 @@ void main() {
 
     final identity = await client.resolveFromFirebaseSession(
       bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
-        bridgeUrl: 'https://suite.winglowz.test/api/bridge/firebase',
+        bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
       ),
       firebaseAccount: firebaseAccount,
       resolveIdToken: () async => 'firebase-id-token',
@@ -107,7 +107,7 @@ void main() {
       identity.accounts.single.providerUserId,
       firebaseAccount.providerUserId,
     );
-    expect(identity.entitlements.single.productId, ProductId.winglowzApp);
+    expect(identity.entitlements.single.productId, ProductId.commandglowsApp);
     expect(identity.entitlements.single.plan, 'pro');
   });
 
@@ -144,7 +144,7 @@ void main() {
       }),
     );
     final config = SuiteIdentityBridgeBootstrap.resolveConfig(
-      bridgeUrl: 'https://suite.winglowz.test/api/bridge/firebase',
+      bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
     );
 
     final missingTokenIdentity = await client.resolveFromFirebaseSession(
@@ -180,7 +180,7 @@ void main() {
 
     final identity = await client.resolveFromFirebaseSession(
       bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
-        bridgeUrl: 'https://suite.winglowz.test/api/bridge/firebase',
+        bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
       ),
       firebaseAccount: firebaseAccount,
       resolveIdToken: () async => 'firebase-id-token',
@@ -201,7 +201,7 @@ void main() {
 
     final identity = await client.resolveFromFirebaseSession(
       bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
-        bridgeUrl: 'https://suite.winglowz.test/api/bridge/firebase',
+        bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
       ),
       firebaseAccount: firebaseAccount,
       resolveIdToken: () async => 'firebase-id-token',
@@ -222,7 +222,7 @@ void main() {
 
     final identity = await client.resolveFromFirebaseSession(
       bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
-        bridgeUrl: 'https://suite.winglowz.test/api/bridge/firebase',
+        bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
       ),
       firebaseAccount: firebaseAccount,
       resolveIdToken: () async => 'firebase-id-token',

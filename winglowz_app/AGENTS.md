@@ -1,4 +1,4 @@
-# AGENTS.md — WinGlowz
+# AGENTS.md — CommandGlows
 
 ## Local Command Guardrails
 

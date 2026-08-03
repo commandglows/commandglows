@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/custom_action_buttons/application/custom_action_button_runner.dart';
-import 'package:winglowz_app/features/custom_action_buttons/domain/custom_action_buttons.dart';
+import 'package:commandglows_app/features/custom_action_buttons/application/custom_action_button_runner.dart';
+import 'package:commandglows_app/features/custom_action_buttons/domain/custom_action_buttons.dart';
 
-const _windowsOverlayChannel = MethodChannel('winglowz_app/windows_overlay');
+const _windowsOverlayChannel = MethodChannel('commandglows_app/windows_overlay');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

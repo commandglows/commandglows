@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/features/custom_action_buttons/application/custom_action_button_store_provider.dart';
-import 'package:winglowz_app/features/custom_action_buttons/domain/custom_action_buttons.dart';
-import 'package:winglowz_app/features/custom_action_buttons/data/in_memory_custom_action_button_store.dart';
-import 'package:winglowz_app/features/snippets/presentation/custom_action_buttons_panel.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/features/custom_action_buttons/application/custom_action_button_store_provider.dart';
+import 'package:commandglows_app/features/custom_action_buttons/domain/custom_action_buttons.dart';
+import 'package:commandglows_app/features/custom_action_buttons/data/in_memory_custom_action_button_store.dart';
+import 'package:commandglows_app/features/snippets/presentation/custom_action_buttons_panel.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

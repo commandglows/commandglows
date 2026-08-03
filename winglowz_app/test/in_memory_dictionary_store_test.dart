@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/dictionary/data/in_memory_dictionary_store.dart';
+import 'package:commandglows_app/features/dictionary/data/in_memory_dictionary_store.dart';
 
 void main() {
   group('InMemoryDictionaryStore', () {

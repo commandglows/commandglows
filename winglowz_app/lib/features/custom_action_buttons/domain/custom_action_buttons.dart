@@ -43,7 +43,7 @@ extension CustomActionKindPresentation on CustomActionKind {
     return switch (this) {
       CustomActionKind.insertText => 'Texte',
       CustomActionKind.keySequence => 'Séquence clavier',
-      CustomActionKind.keyboardExpression => 'Action WinGlowz',
+      CustomActionKind.keyboardExpression => 'Action CommandGlows',
       CustomActionKind.clipboardCommand => 'Presse-papiers',
       CustomActionKind.mediaCommand => 'Média',
       CustomActionKind.macro => 'Macro',

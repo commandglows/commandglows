@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/platform/desktop_overlay_bridge.dart';
+import 'package:commandglows_app/core/platform/desktop_overlay_bridge.dart';
 
 void main() {
   test('parses desktop overlay status for macOS', () {

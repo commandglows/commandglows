@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:winglowz_app/core/theme/winglowz_theme_tokens.dart';
+import 'package:commandglows_app/core/theme/commandglows_theme_tokens.dart';
 
 enum AppThemeMode {
   system(ThemeMode.system, 'System'),
@@ -21,94 +21,94 @@ enum AppThemeMode {
 }
 
 class AppColors {
-  // Brand primitives exposés pour WinGlowz.
-  static const primary = WinGlowzThemeTokens.brandPrimary;
-  static const primaryDark = WinGlowzThemeTokens.brandPrimaryDark;
-  static const secondary = WinGlowzThemeTokens.brandSecondary;
+  // Brand primitives exposés pour CommandGlows.
+  static const primary = CommandGlowsThemeTokens.brandPrimary;
+  static const primaryDark = CommandGlowsThemeTokens.brandPrimaryDark;
+  static const secondary = CommandGlowsThemeTokens.brandSecondary;
   static const accent = secondary;
 
   // Neutral primitives (site theme base + app continuity).
-  static const dark = WinGlowzThemeTokens.appLightText;
-  static const gray = WinGlowzThemeTokens.siteMutedForeground;
+  static const dark = CommandGlowsThemeTokens.appLightText;
+  static const gray = CommandGlowsThemeTokens.siteMutedForeground;
   static const neutral = gray;
   static const slate = gray;
-  static const lightGray = WinGlowzThemeTokens.lightGray;
-  static const lightBlue = WinGlowzThemeTokens.brandSecondary;
-  static const white = WinGlowzThemeTokens.white;
-  static const black = WinGlowzThemeTokens.black;
+  static const lightGray = CommandGlowsThemeTokens.lightGray;
+  static const lightBlue = CommandGlowsThemeTokens.brandSecondary;
+  static const white = CommandGlowsThemeTokens.white;
+  static const black = CommandGlowsThemeTokens.black;
   static const transparent = Colors.transparent;
 
   // Semantic surfaces and text.
   static const textPrimary = dark;
-  static const siteBackground = WinGlowzThemeTokens.siteBackground;
-  static const siteForeground = WinGlowzThemeTokens.siteForeground;
+  static const siteBackground = CommandGlowsThemeTokens.siteBackground;
+  static const siteForeground = CommandGlowsThemeTokens.siteForeground;
   static const textMuted = gray;
-  static const surfaceBase = WinGlowzThemeTokens.appLightBackground;
-  static const surfaceRaised = WinGlowzThemeTokens.appLightCard;
-  static const surfaceOverlay = WinGlowzThemeTokens.appLightSurface;
-  static const surfaceSunken = WinGlowzThemeTokens.surfaceSunken;
+  static const surfaceBase = CommandGlowsThemeTokens.appLightBackground;
+  static const surfaceRaised = CommandGlowsThemeTokens.appLightCard;
+  static const surfaceOverlay = CommandGlowsThemeTokens.appLightSurface;
+  static const surfaceSunken = CommandGlowsThemeTokens.surfaceSunken;
   static const surfaceSubtle = lightGray;
-  static const surfaceTint = WinGlowzThemeTokens.appLightMuted;
+  static const surfaceTint = CommandGlowsThemeTokens.appLightMuted;
   static const surfaceCard = surfaceRaised;
   static const surfaceBaseDark = siteBackground;
-  static const surfaceRaisedDark = WinGlowzThemeTokens.surfaceRaisedDark;
-  static const surfaceOverlayDark = WinGlowzThemeTokens.surfaceOverlayDark;
-  static const surfaceSunkenDark = WinGlowzThemeTokens.surfaceSunkenDark;
-  static const overlayDark = WinGlowzThemeTokens.siteWhiteSubtle;
+  static const surfaceRaisedDark = CommandGlowsThemeTokens.surfaceRaisedDark;
+  static const surfaceOverlayDark = CommandGlowsThemeTokens.surfaceOverlayDark;
+  static const surfaceSunkenDark = CommandGlowsThemeTokens.surfaceSunkenDark;
+  static const overlayDark = CommandGlowsThemeTokens.siteWhiteSubtle;
   static const textOnDark = siteForeground;
-  static const textOnDarkMuted = WinGlowzThemeTokens.siteTextOnDarkMuted;
-  static const codeText = WinGlowzThemeTokens.siteCodeText;
-  static const badgeBg = WinGlowzThemeTokens.siteBadgeBg;
-  static const badgeText = WinGlowzThemeTokens.siteBadgeText;
+  static const textOnDarkMuted = CommandGlowsThemeTokens.siteTextOnDarkMuted;
+  static const codeText = CommandGlowsThemeTokens.siteCodeText;
+  static const badgeBg = CommandGlowsThemeTokens.siteBadgeBg;
+  static const badgeText = CommandGlowsThemeTokens.siteBadgeText;
 
   // Borders and overlays.
-  static const borderSubtle = WinGlowzThemeTokens.appLightBorderSubtle;
-  static const borderLight = WinGlowzThemeTokens.appLightBorder;
-  static const borderDarkSubtle = WinGlowzThemeTokens.siteBorderDarkSubtle;
-  static const overlayScrim = WinGlowzThemeTokens.siteScrim;
+  static const borderSubtle = CommandGlowsThemeTokens.appLightBorderSubtle;
+  static const borderLight = CommandGlowsThemeTokens.appLightBorder;
+  static const borderDarkSubtle = CommandGlowsThemeTokens.siteBorderDarkSubtle;
+  static const overlayScrim = CommandGlowsThemeTokens.siteScrim;
 
   // Support colors.
-  static const success = WinGlowzThemeTokens.brandSuccess;
-  static const warning = WinGlowzThemeTokens.brandWarning;
-  static const danger = WinGlowzThemeTokens.brandDanger;
-  static const dangerLight = WinGlowzThemeTokens.brandDangerLight;
+  static const success = CommandGlowsThemeTokens.brandSuccess;
+  static const warning = CommandGlowsThemeTokens.brandWarning;
+  static const danger = CommandGlowsThemeTokens.brandDanger;
+  static const dangerLight = CommandGlowsThemeTokens.brandDangerLight;
   static const info = accent;
 
   // Keyboard preview surface-specific tokens (copied from pages de debug).
-  static const keyboardPrivateFrame = WinGlowzThemeTokens.keyboardPrivateFrame;
-  static const keyboardDefaultFrame = WinGlowzThemeTokens.keyboardDefaultFrame;
-  static const keyboardStatusText = WinGlowzThemeTokens.keyboardStatusText;
-  static const keyboardKeyActive = WinGlowzThemeTokens.keyboardKeyActive;
-  static const keyboardKeySpecial = WinGlowzThemeTokens.keyboardKeySpecial;
-  static const keyboardKeyDisabled = WinGlowzThemeTokens.keyboardKeyDisabled;
+  static const keyboardPrivateFrame = CommandGlowsThemeTokens.keyboardPrivateFrame;
+  static const keyboardDefaultFrame = CommandGlowsThemeTokens.keyboardDefaultFrame;
+  static const keyboardStatusText = CommandGlowsThemeTokens.keyboardStatusText;
+  static const keyboardKeyActive = CommandGlowsThemeTokens.keyboardKeyActive;
+  static const keyboardKeySpecial = CommandGlowsThemeTokens.keyboardKeySpecial;
+  static const keyboardKeyDisabled = CommandGlowsThemeTokens.keyboardKeyDisabled;
   static const keyboardKeyForeground =
-      WinGlowzThemeTokens.keyboardKeyForeground;
-  static const keyboardCornerLabel = WinGlowzThemeTokens.keyboardCornerLabel;
+      CommandGlowsThemeTokens.keyboardKeyForeground;
+  static const keyboardCornerLabel = CommandGlowsThemeTokens.keyboardCornerLabel;
 }
 
 class AppTypography {
-  static const fontFamily = WinGlowzThemeTokens.fontSans;
-  static const fontFallback = WinGlowzThemeTokens.fontFallback;
-  static const monospace = WinGlowzThemeTokens.fontMonospace;
+  static const fontFamily = CommandGlowsThemeTokens.fontSans;
+  static const fontFallback = CommandGlowsThemeTokens.fontFallback;
+  static const monospace = CommandGlowsThemeTokens.fontMonospace;
 
-  // WinGlowz scale (cohérente avec le thème site, bornée à un set court).
-  static const xs = WinGlowzThemeTokens.typographyXs;
-  static const sm = WinGlowzThemeTokens.typographySm;
-  static const base = WinGlowzThemeTokens.typographySm;
-  static const lg = WinGlowzThemeTokens.typographyLg;
-  static const h3 = WinGlowzThemeTokens.typographyH3;
-  static const h2 = WinGlowzThemeTokens.typographyH2;
-  static const h1 = WinGlowzThemeTokens.typographyH1;
+  // CommandGlows scale (cohérente avec le thème site, bornée à un set court).
+  static const xs = CommandGlowsThemeTokens.typographyXs;
+  static const sm = CommandGlowsThemeTokens.typographySm;
+  static const base = CommandGlowsThemeTokens.typographySm;
+  static const lg = CommandGlowsThemeTokens.typographyLg;
+  static const h3 = CommandGlowsThemeTokens.typographyH3;
+  static const h2 = CommandGlowsThemeTokens.typographyH2;
+  static const h1 = CommandGlowsThemeTokens.typographyH1;
 
-  static const leadingTight = WinGlowzThemeTokens.lineHeightTight;
-  static const leadingSnug = WinGlowzThemeTokens.lineHeightSnug;
-  static const leadingNormal = WinGlowzThemeTokens.lineHeightNormal;
+  static const leadingTight = CommandGlowsThemeTokens.lineHeightTight;
+  static const leadingSnug = CommandGlowsThemeTokens.lineHeightSnug;
+  static const leadingNormal = CommandGlowsThemeTokens.lineHeightNormal;
   static const leadingCompact =
-      WinGlowzThemeTokens.settingsDiagnosticLogLineHeight;
+      CommandGlowsThemeTokens.settingsDiagnosticLogLineHeight;
   static const leadingRelaxed = 1.8;
 
-  static const trackingWide = WinGlowzThemeTokens.trackingWide;
-  static const trackingWider = WinGlowzThemeTokens.trackingWider;
+  static const trackingWide = CommandGlowsThemeTokens.trackingWide;
+  static const trackingWider = CommandGlowsThemeTokens.trackingWider;
 }
 
 class AppFontWeights {
@@ -121,18 +121,18 @@ class AppFontWeights {
 }
 
 class AppSpacing {
-  static const x1 = WinGlowzThemeTokens.spacing1;
-  static const x2 = WinGlowzThemeTokens.spacing2;
-  static const x3 = WinGlowzThemeTokens.spacing3;
-  static const x4 = WinGlowzThemeTokens.spacing4;
-  static const x5 = WinGlowzThemeTokens.spacing5;
-  static const x6 = WinGlowzThemeTokens.spacing6;
-  static const x8 = WinGlowzThemeTokens.spacing8;
-  static const x10 = WinGlowzThemeTokens.spacing10;
-  static const x12 = WinGlowzThemeTokens.spacing12;
-  static const x16 = WinGlowzThemeTokens.spacing16;
-  static const x20 = WinGlowzThemeTokens.spacing20;
-  static const x24 = WinGlowzThemeTokens.spacing24;
+  static const x1 = CommandGlowsThemeTokens.spacing1;
+  static const x2 = CommandGlowsThemeTokens.spacing2;
+  static const x3 = CommandGlowsThemeTokens.spacing3;
+  static const x4 = CommandGlowsThemeTokens.spacing4;
+  static const x5 = CommandGlowsThemeTokens.spacing5;
+  static const x6 = CommandGlowsThemeTokens.spacing6;
+  static const x8 = CommandGlowsThemeTokens.spacing8;
+  static const x10 = CommandGlowsThemeTokens.spacing10;
+  static const x12 = CommandGlowsThemeTokens.spacing12;
+  static const x16 = CommandGlowsThemeTokens.spacing16;
+  static const x20 = CommandGlowsThemeTokens.spacing20;
+  static const x24 = CommandGlowsThemeTokens.spacing24;
 }
 
 class AppInsets {
@@ -242,99 +242,99 @@ class AppNavigationMetrics {
   static const bottomIconSize = 23.0;
   static const bottomSelectedIconSize = 24.0;
   static const bottomNavIconBoxSize =
-      WinGlowzThemeTokens.appShellBottomNavIconBoxSize;
+      CommandGlowsThemeTokens.appShellBottomNavIconBoxSize;
   static const bottomNavSparkBadgeTop =
-      WinGlowzThemeTokens.appShellBottomNavSparkBadgeTop;
+      CommandGlowsThemeTokens.appShellBottomNavSparkBadgeTop;
   static const bottomNavSparkBadgeRight =
-      WinGlowzThemeTokens.appShellBottomNavSparkBadgeRight;
+      CommandGlowsThemeTokens.appShellBottomNavSparkBadgeRight;
   static const bottomNavSparkBorderWidth =
-      WinGlowzThemeTokens.appShellBottomNavSparkBorderWidth;
+      CommandGlowsThemeTokens.appShellBottomNavSparkBorderWidth;
   static const utilityIconBoxSize =
-      WinGlowzThemeTokens.appShellUtilityIconBoxSize;
+      CommandGlowsThemeTokens.appShellUtilityIconBoxSize;
   static const onboardingDotSize =
-      WinGlowzThemeTokens.appShellOnboardingDotSize;
+      CommandGlowsThemeTokens.appShellOnboardingDotSize;
   static const onboardingDotIconSize =
-      WinGlowzThemeTokens.appShellOnboardingDotIconSize;
-  static const dividerThickness = WinGlowzThemeTokens.dividerThickness;
+      CommandGlowsThemeTokens.appShellOnboardingDotIconSize;
+  static const dividerThickness = CommandGlowsThemeTokens.dividerThickness;
 }
 
 class AppLayoutMetrics {
   static const onboardingOverlayMaxWidth = 520.0;
   static const settingsTwoColumnBreakpoint = 1180.0;
   static const settingsFeatureCardWidth =
-      WinGlowzThemeTokens.settingsFeatureCardWidth;
+      CommandGlowsThemeTokens.settingsFeatureCardWidth;
   static const actionRailMinWidthLarge =
-      WinGlowzThemeTokens.actionRailMinWidthLarge;
+      CommandGlowsThemeTokens.actionRailMinWidthLarge;
   static const actionRailMinWidthSmall =
-      WinGlowzThemeTokens.actionRailMinWidthSmall;
-  static const authFormMaxWidth = WinGlowzThemeTokens.authFormMaxWidth;
+      CommandGlowsThemeTokens.actionRailMinWidthSmall;
+  static const authFormMaxWidth = CommandGlowsThemeTokens.authFormMaxWidth;
   static const authGateLoadingCardWidth =
-      WinGlowzThemeTokens.authGateLoadingCardWidth;
+      CommandGlowsThemeTokens.authGateLoadingCardWidth;
   static const authGateErrorCardWidth =
-      WinGlowzThemeTokens.authGateErrorCardWidth;
+      CommandGlowsThemeTokens.authGateErrorCardWidth;
   static const authWebSignInButtonHeight =
-      WinGlowzThemeTokens.authWebSignInButtonHeight;
+      CommandGlowsThemeTokens.authWebSignInButtonHeight;
   static const authWebSignInButtonMinWidth =
-      WinGlowzThemeTokens.authWebSignInButtonMinWidth;
+      CommandGlowsThemeTokens.authWebSignInButtonMinWidth;
   static const authWebSignInButtonMaxWidth =
-      WinGlowzThemeTokens.authWebSignInButtonMaxWidth;
+      CommandGlowsThemeTokens.authWebSignInButtonMaxWidth;
   static const authWebSignInButtonDisabledOpacity =
-      WinGlowzThemeTokens.authWebSignInButtonDisabledAlpha;
+      CommandGlowsThemeTokens.authWebSignInButtonDisabledAlpha;
   static const customActionChipWidth =
-      WinGlowzThemeTokens.customActionChipWidth;
+      CommandGlowsThemeTokens.customActionChipWidth;
   static const keyboardSyncDialogWidth =
-      WinGlowzThemeTokens.keyboardSyncDialogWidth;
+      CommandGlowsThemeTokens.keyboardSyncDialogWidth;
 }
 
 class AppBreakpoints {
-  static const double navigationRail = WinGlowzThemeTokens.navRailBreakpoint;
+  static const double navigationRail = CommandGlowsThemeTokens.navRailBreakpoint;
   static const double navigationRailExtended =
-      WinGlowzThemeTokens.navRailExtendedBreakpoint;
+      CommandGlowsThemeTokens.navRailExtendedBreakpoint;
 }
 
 class AppKeyboardPreview {
   static const double maxWidth =
-      WinGlowzThemeTokens.keyboardPreviewFrameMaxWidth;
+      CommandGlowsThemeTokens.keyboardPreviewFrameMaxWidth;
   static const double dropdownWidth = 188.0;
   static const double pinnedBadgeInset =
-      WinGlowzThemeTokens.keyboardPreviewPinnedBadgeInset;
+      CommandGlowsThemeTokens.keyboardPreviewPinnedBadgeInset;
   static const double statusHeight =
-      WinGlowzThemeTokens.keyboardPreviewStatusHeight;
+      CommandGlowsThemeTokens.keyboardPreviewStatusHeight;
   static const double rowHeightTiny =
-      WinGlowzThemeTokens.keyboardPreviewRowHeightMini;
+      CommandGlowsThemeTokens.keyboardPreviewRowHeightMini;
   static const double rowHeightMini = rowHeightTiny;
   static const double rowHeightCompact =
-      WinGlowzThemeTokens.keyboardPreviewRowHeightCompact;
+      CommandGlowsThemeTokens.keyboardPreviewRowHeightCompact;
   static const double rowHeightRegular =
-      WinGlowzThemeTokens.keyboardPreviewRowHeight;
+      CommandGlowsThemeTokens.keyboardPreviewRowHeight;
   static const double rowHeightControl =
-      WinGlowzThemeTokens.keyboardPreviewControlHeight;
+      CommandGlowsThemeTokens.keyboardPreviewControlHeight;
   static const double keyBorderWidth =
-      WinGlowzThemeTokens.keyboardKeyBorderWidth;
+      CommandGlowsThemeTokens.keyboardKeyBorderWidth;
   static const double keyDebugBorderWidth =
-      WinGlowzThemeTokens.keyboardKeyDebugBorderWidth;
+      CommandGlowsThemeTokens.keyboardKeyDebugBorderWidth;
   static const double cornerLabelPadding =
-      WinGlowzThemeTokens.keyboardCornerLabelPadding;
-  static const double keyWeightScale = WinGlowzThemeTokens.keyboardWeightScale;
+      CommandGlowsThemeTokens.keyboardCornerLabelPadding;
+  static const double keyWeightScale = CommandGlowsThemeTokens.keyboardWeightScale;
 }
 
 class AppSliders {
   static const double overlayBubbleSizeMin =
-      WinGlowzThemeTokens.overlayBubbleSizeMin;
+      CommandGlowsThemeTokens.overlayBubbleSizeMin;
   static const double overlayBubbleSizeMax =
-      WinGlowzThemeTokens.overlayBubbleSizeMax;
+      CommandGlowsThemeTokens.overlayBubbleSizeMax;
   static const int overlaySizeDivisions =
-      WinGlowzThemeTokens.overlaySizeDivisions;
+      CommandGlowsThemeTokens.overlaySizeDivisions;
   static const double overlayBubbleOpacityMin =
-      WinGlowzThemeTokens.overlayBubbleOpacityMin;
+      CommandGlowsThemeTokens.overlayBubbleOpacityMin;
   static const double overlayBubbleOpacityMax =
-      WinGlowzThemeTokens.overlayBubbleOpacityMax;
+      CommandGlowsThemeTokens.overlayBubbleOpacityMax;
   static const int overlayOpacityDivisions =
-      WinGlowzThemeTokens.overlayOpacityDivisions;
+      CommandGlowsThemeTokens.overlayOpacityDivisions;
   static const double overlayDefaultSize =
-      WinGlowzThemeTokens.overlayBubbleDefaultSize;
+      CommandGlowsThemeTokens.overlayBubbleDefaultSize;
   static const double overlayDefaultOpacity =
-      WinGlowzThemeTokens.overlayBubbleDefaultOpacity;
+      CommandGlowsThemeTokens.overlayBubbleDefaultOpacity;
 }
 
 class AppKeyboardStudioMetrics {
@@ -348,33 +348,33 @@ class AppKeyboardStudioMetrics {
   static const double colorValueWidth = 42.0;
   static const double fieldCornerRadius = 5.0;
   static const double presetDropdownWidth =
-      WinGlowzThemeTokens.keyboardCornerPresetDropdownWidth;
+      CommandGlowsThemeTokens.keyboardCornerPresetDropdownWidth;
   static const double previewLabelFontSize =
-      WinGlowzThemeTokens.settingsThemePreviewLabelFontSize;
+      CommandGlowsThemeTokens.settingsThemePreviewLabelFontSize;
   static const double previewSwatchHeight =
-      WinGlowzThemeTokens.settingsThemePreviewSwatchHeight;
+      CommandGlowsThemeTokens.settingsThemePreviewSwatchHeight;
   static const double previewSwatchRadius = 4.0;
 }
 
 class AppVoiceMetrics {
   static const double recordingSurfaceWidth =
-      WinGlowzThemeTokens.voiceRecordingSurfaceWidth;
+      CommandGlowsThemeTokens.voiceRecordingSurfaceWidth;
   static const double recordingSurfaceHeight =
-      WinGlowzThemeTokens.voiceRecordingSurfaceHeight;
+      CommandGlowsThemeTokens.voiceRecordingSurfaceHeight;
   static const double recordingBarWidth =
-      WinGlowzThemeTokens.voiceRecordingBarWidth;
+      CommandGlowsThemeTokens.voiceRecordingBarWidth;
   static const double recordingBarHeightBase =
-      WinGlowzThemeTokens.voiceRecordingBarHeightBase;
+      CommandGlowsThemeTokens.voiceRecordingBarHeightBase;
   static const double recordingBarHeightRange =
-      WinGlowzThemeTokens.voiceRecordingBarHeightRange;
+      CommandGlowsThemeTokens.voiceRecordingBarHeightRange;
   static const double recordingSurfaceRadius =
-      WinGlowzThemeTokens.voiceRecordingSurfaceRadius;
+      CommandGlowsThemeTokens.voiceRecordingSurfaceRadius;
 }
 
 class AppElevation {
-  static const overlay = WinGlowzThemeTokens.elevationOverlay;
-  static const cardLight = WinGlowzThemeTokens.cardElevationLight;
-  static const cardDark = WinGlowzThemeTokens.cardElevationDark;
+  static const overlay = CommandGlowsThemeTokens.elevationOverlay;
+  static const cardLight = CommandGlowsThemeTokens.cardElevationLight;
+  static const cardDark = CommandGlowsThemeTokens.cardElevationDark;
 }
 
 class AppGradients {
@@ -384,9 +384,9 @@ class AppGradients {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          WinGlowzThemeTokens.siteBackground,
-          WinGlowzThemeTokens.themeGradientDarkMid,
-          WinGlowzThemeTokens.siteCard,
+          CommandGlowsThemeTokens.siteBackground,
+          CommandGlowsThemeTokens.themeGradientDarkMid,
+          CommandGlowsThemeTokens.siteCard,
         ],
         stops: [0, 0.48, 1],
       );
@@ -396,9 +396,9 @@ class AppGradients {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        WinGlowzThemeTokens.appLightBackground,
-        WinGlowzThemeTokens.appLightSurface,
-        WinGlowzThemeTokens.themeGradientLightMid,
+        CommandGlowsThemeTokens.appLightBackground,
+        CommandGlowsThemeTokens.appLightSurface,
+        CommandGlowsThemeTokens.themeGradientLightMid,
       ],
       stops: [0, 0.52, 1],
     );
@@ -406,19 +406,19 @@ class AppGradients {
 }
 
 class AppRadii {
-  static const sm = WinGlowzThemeTokens.siteRadiusSm;
-  static const md = WinGlowzThemeTokens.themeRadiusMd;
-  static const lg = WinGlowzThemeTokens.siteRadiusLg;
-  static const xl = WinGlowzThemeTokens.siteRadiusXl;
-  static const x2l = WinGlowzThemeTokens.siteRadius2xl;
-  static const xxl = WinGlowzThemeTokens.themeRadiusXxl;
-  static const pill = WinGlowzThemeTokens.themeRadiusPill;
+  static const sm = CommandGlowsThemeTokens.siteRadiusSm;
+  static const md = CommandGlowsThemeTokens.themeRadiusMd;
+  static const lg = CommandGlowsThemeTokens.siteRadiusLg;
+  static const xl = CommandGlowsThemeTokens.siteRadiusXl;
+  static const x2l = CommandGlowsThemeTokens.siteRadius2xl;
+  static const xxl = CommandGlowsThemeTokens.themeRadiusXxl;
+  static const pill = CommandGlowsThemeTokens.themeRadiusPill;
 }
 
 class AppShadows {
   static const sm = [
     BoxShadow(
-      color: WinGlowzThemeTokens.shadowSoft,
+      color: CommandGlowsThemeTokens.shadowSoft,
       blurRadius: 8,
       offset: Offset(0, 2),
     ),
@@ -426,7 +426,7 @@ class AppShadows {
 
   static const card = [
     BoxShadow(
-      color: WinGlowzThemeTokens.shadowCard,
+      color: CommandGlowsThemeTokens.shadowCard,
       blurRadius: 20,
       offset: Offset(0, 4),
     ),
@@ -434,7 +434,7 @@ class AppShadows {
 
   static const cardHover = [
     BoxShadow(
-      color: WinGlowzThemeTokens.shadowCardHover,
+      color: CommandGlowsThemeTokens.shadowCardHover,
       blurRadius: 30,
       offset: Offset(0, 8),
     ),
@@ -442,7 +442,7 @@ class AppShadows {
 
   static const cardLarge = [
     BoxShadow(
-      color: WinGlowzThemeTokens.shadowCardLarge,
+      color: CommandGlowsThemeTokens.shadowCardLarge,
       blurRadius: 40,
       offset: Offset(0, 12),
     ),
@@ -450,7 +450,7 @@ class AppShadows {
 
   static const primary = [
     BoxShadow(
-      color: WinGlowzThemeTokens.shadowPrimary,
+      color: CommandGlowsThemeTokens.shadowPrimary,
       blurRadius: 15,
       offset: Offset(0, 4),
     ),
@@ -458,20 +458,20 @@ class AppShadows {
 }
 
 class AppMotion {
-  static const instant = WinGlowzThemeTokens.motionInstant;
-  static const micro = WinGlowzThemeTokens.motionMicro;
-  static const fast = WinGlowzThemeTokens.motionFast;
-  static const base = WinGlowzThemeTokens.motionBase;
-  static const slow = WinGlowzThemeTokens.motionSlow;
-  static const long = WinGlowzThemeTokens.motionLong;
-  static const navSelected = WinGlowzThemeTokens.motionNavSelected;
-  static const navUnselected = WinGlowzThemeTokens.motionNavUnselected;
-  static const voiceAction = WinGlowzThemeTokens.motionVoiceAction;
-  static const voiceBar = WinGlowzThemeTokens.motionVoiceBar;
-  static const onboardingPulse = WinGlowzThemeTokens.motionOnboardingPulse;
-  static const standardCurve = WinGlowzThemeTokens.motionStandard;
+  static const instant = CommandGlowsThemeTokens.motionInstant;
+  static const micro = CommandGlowsThemeTokens.motionMicro;
+  static const fast = CommandGlowsThemeTokens.motionFast;
+  static const base = CommandGlowsThemeTokens.motionBase;
+  static const slow = CommandGlowsThemeTokens.motionSlow;
+  static const long = CommandGlowsThemeTokens.motionLong;
+  static const navSelected = CommandGlowsThemeTokens.motionNavSelected;
+  static const navUnselected = CommandGlowsThemeTokens.motionNavUnselected;
+  static const voiceAction = CommandGlowsThemeTokens.motionVoiceAction;
+  static const voiceBar = CommandGlowsThemeTokens.motionVoiceBar;
+  static const onboardingPulse = CommandGlowsThemeTokens.motionOnboardingPulse;
+  static const standardCurve = CommandGlowsThemeTokens.motionStandard;
   static const outCurve = Curves.easeOut;
-  static const springCurve = WinGlowzThemeTokens.motionSpring;
+  static const springCurve = CommandGlowsThemeTokens.motionSpring;
 }
 
 class AppTheme {
@@ -480,27 +480,27 @@ class AppTheme {
       seedColor: AppColors.primary,
       brightness: Brightness.light,
     ).copyWith(
-      primary: WinGlowzThemeTokens.themeLightPrimary,
+      primary: CommandGlowsThemeTokens.themeLightPrimary,
       onPrimary: AppColors.white,
-      primaryContainer: WinGlowzThemeTokens.themeLightPrimaryContainer,
-      onPrimaryContainer: WinGlowzThemeTokens.themeLightOnPrimaryContainer,
-      secondary: WinGlowzThemeTokens.themeLightSecondary,
+      primaryContainer: CommandGlowsThemeTokens.themeLightPrimaryContainer,
+      onPrimaryContainer: CommandGlowsThemeTokens.themeLightOnPrimaryContainer,
+      secondary: CommandGlowsThemeTokens.themeLightSecondary,
       onSecondary: AppColors.white,
-      secondaryContainer: WinGlowzThemeTokens.themeLightSecondaryContainer,
-      onSecondaryContainer: WinGlowzThemeTokens.themeLightOnSecondaryContainer,
-      tertiary: WinGlowzThemeTokens.siteRing,
+      secondaryContainer: CommandGlowsThemeTokens.themeLightSecondaryContainer,
+      onSecondaryContainer: CommandGlowsThemeTokens.themeLightOnSecondaryContainer,
+      tertiary: CommandGlowsThemeTokens.siteRing,
       onTertiary: AppColors.white,
       error: AppColors.danger,
-      surface: WinGlowzThemeTokens.themeLightSurface,
-      onSurface: WinGlowzThemeTokens.themeLightOnSurface,
+      surface: CommandGlowsThemeTokens.themeLightSurface,
+      onSurface: CommandGlowsThemeTokens.themeLightOnSurface,
       surfaceContainerLowest:
-          WinGlowzThemeTokens.themeLightSurfaceContainerLowest,
-      surfaceContainerLow: WinGlowzThemeTokens.themeLightSurfaceContainerLow,
-      surfaceContainer: WinGlowzThemeTokens.themeLightSurfaceContainer,
+          CommandGlowsThemeTokens.themeLightSurfaceContainerLowest,
+      surfaceContainerLow: CommandGlowsThemeTokens.themeLightSurfaceContainerLow,
+      surfaceContainer: CommandGlowsThemeTokens.themeLightSurfaceContainer,
       surfaceContainerHighest:
-          WinGlowzThemeTokens.themeLightSurfaceContainerHighest,
-      outline: WinGlowzThemeTokens.themeLightOutline,
-      outlineVariant: WinGlowzThemeTokens.themeLightOutlineVariant,
+          CommandGlowsThemeTokens.themeLightSurfaceContainerHighest,
+      outline: CommandGlowsThemeTokens.themeLightOutline,
+      outlineVariant: CommandGlowsThemeTokens.themeLightOutlineVariant,
     ),
   );
 
@@ -509,27 +509,27 @@ class AppTheme {
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
     ).copyWith(
-      primary: WinGlowzThemeTokens.themeDarkPrimary,
-      onPrimary: WinGlowzThemeTokens.themeDarkOnPrimary,
-      primaryContainer: WinGlowzThemeTokens.themeDarkPrimaryContainer,
-      onPrimaryContainer: WinGlowzThemeTokens.themeDarkOnPrimaryContainer,
-      secondary: WinGlowzThemeTokens.themeDarkSecondary,
-      onSecondary: WinGlowzThemeTokens.themeDarkOnSecondary,
-      secondaryContainer: WinGlowzThemeTokens.themeDarkSecondaryContainer,
-      onSecondaryContainer: WinGlowzThemeTokens.themeDarkOnSecondaryContainer,
-      tertiary: WinGlowzThemeTokens.siteRing,
+      primary: CommandGlowsThemeTokens.themeDarkPrimary,
+      onPrimary: CommandGlowsThemeTokens.themeDarkOnPrimary,
+      primaryContainer: CommandGlowsThemeTokens.themeDarkPrimaryContainer,
+      onPrimaryContainer: CommandGlowsThemeTokens.themeDarkOnPrimaryContainer,
+      secondary: CommandGlowsThemeTokens.themeDarkSecondary,
+      onSecondary: CommandGlowsThemeTokens.themeDarkOnSecondary,
+      secondaryContainer: CommandGlowsThemeTokens.themeDarkSecondaryContainer,
+      onSecondaryContainer: CommandGlowsThemeTokens.themeDarkOnSecondaryContainer,
+      tertiary: CommandGlowsThemeTokens.siteRing,
       onTertiary: AppColors.white,
       error: AppColors.dangerLight,
-      surface: WinGlowzThemeTokens.themeDarkSurface,
+      surface: CommandGlowsThemeTokens.themeDarkSurface,
       onSurface: AppColors.textOnDark,
       surfaceContainerLowest:
-          WinGlowzThemeTokens.themeDarkSurfaceContainerLowest,
-      surfaceContainerLow: WinGlowzThemeTokens.themeDarkSurfaceContainerLow,
-      surfaceContainer: WinGlowzThemeTokens.themeDarkSurfaceContainer,
+          CommandGlowsThemeTokens.themeDarkSurfaceContainerLowest,
+      surfaceContainerLow: CommandGlowsThemeTokens.themeDarkSurfaceContainerLow,
+      surfaceContainer: CommandGlowsThemeTokens.themeDarkSurfaceContainer,
       surfaceContainerHighest:
-          WinGlowzThemeTokens.themeDarkSurfaceContainerHighest,
-      outline: WinGlowzThemeTokens.themeDarkOutline,
-      outlineVariant: WinGlowzThemeTokens.themeDarkOutlineVariant,
+          CommandGlowsThemeTokens.themeDarkSurfaceContainerHighest,
+      outline: CommandGlowsThemeTokens.themeDarkOutline,
+      outlineVariant: CommandGlowsThemeTokens.themeDarkOutlineVariant,
     ),
   );
 
@@ -554,7 +554,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        scrolledUnderElevation: WinGlowzThemeTokens.appBarElevation,
+        scrolledUnderElevation: CommandGlowsThemeTokens.appBarElevation,
         backgroundColor: colorScheme.surface.withValues(alpha: 0.98),
         foregroundColor: colorScheme.onSurface,
         surfaceTintColor: AppColors.transparent,
@@ -837,12 +837,12 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: isDark
-            ? WinGlowzThemeTokens.siteForeground
-            : WinGlowzThemeTokens.siteBackground,
+            ? CommandGlowsThemeTokens.siteForeground
+            : CommandGlowsThemeTokens.siteBackground,
         contentTextStyle: textTheme.bodyMedium?.copyWith(
           color: isDark
-              ? WinGlowzThemeTokens.sitePrimaryForeground
-              : WinGlowzThemeTokens.siteForeground,
+              ? CommandGlowsThemeTokens.sitePrimaryForeground
+              : CommandGlowsThemeTokens.siteForeground,
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -941,7 +941,7 @@ class AppTheme {
         height: AppTypography.leadingNormal,
         letterSpacing: 0,
         color: colorScheme.onSurface.withValues(
-          alpha: WinGlowzThemeTokens.surfaceSubtleAlpha,
+          alpha: CommandGlowsThemeTokens.surfaceSubtleAlpha,
         ),
       ),
       labelLarge: TextStyle(

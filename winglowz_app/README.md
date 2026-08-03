@@ -2,7 +2,7 @@
 artifact: documentation
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "WinGlowz"
+project: "CommandGlows"
 created: "2026-04-26"
 updated: "2026-05-30"
 status: "reviewed"
@@ -32,16 +32,16 @@ evidence:
 next_step: "$sf-docs update"
 ---
 
-# WinGlowz
+# CommandGlows
 
-WinGlowz is migrating to a Flutter Android-first architecture with backend-agnostic data/settings contracts. Firebase Auth + Firestore is the first planned remote adapter.
+CommandGlows is migrating to a Flutter Android-first architecture with backend-agnostic data/settings contracts. Firebase Auth + Firestore is the first planned remote adapter.
 
-WinGlowz is positioned as a sibling product of WinGlowz in the same ecosystem, with a product focus on voice-first capture and text workflow acceleration.
+CommandGlows is positioned as a sibling product of CommandGlows in the same ecosystem, with a product focus on voice-first capture and text workflow acceleration.
 
 This subproject now contains:
 - A Flutter multi-platform project scaffold.
 - Legacy Supabase SQL migrations with RLS-first contracts from the prior migration path.
-- Android native overlay, first native WinGlowz keyboard IME foundation, and a
+- Android native overlay, first native CommandGlows keyboard IME foundation, and a
   Windows desktop overlay/hotkeys parity chantier.
 - Migration docs and verification gates.
 - Legacy Expo/Convex contracts preserved in docs for parity validation; no app-level JS/TS implementation remains in the repo.
@@ -91,7 +91,7 @@ flutter test
 ## Firebase Runtime Defines
 
 Firebase is now wired as the first backend adapter behind backend-agnostic stores.
-If these values are missing, WinGlowz stays in local mode so UI development does
+If these values are missing, CommandGlows stays in local mode so UI development does
 not crash.
 
 Never use backend admin/service credentials in Flutter/web/desktop/mobile clients.
@@ -115,7 +115,7 @@ flow, so treat those cases as setup failures during QA.
 
 ## Sentry Runtime Defines
 
-Sentry is optional. If `SENTRY_DSN` is missing, WinGlowz does not initialize
+Sentry is optional. If `SENTRY_DSN` is missing, CommandGlows does not initialize
 Sentry and keeps diagnostics local-only.
 
 Use Dart defines for builds that should report Flutter/native crashes:
@@ -126,8 +126,8 @@ flutter run \
   --dart-define=SENTRY_ENVIRONMENT=debug
 ```
 
-WinGlowz configures Sentry with `sendDefaultPii=false`, screenshots disabled,
-view hierarchy disabled, and build tags from `WINGLOWZ_APP_BUILD_*` defines.
+CommandGlows configures Sentry with `sendDefaultPii=false`, screenshots disabled,
+view hierarchy disabled, and build tags from `COMMANDGLOWS_APP_BUILD_*` defines.
 
 ## GitHub Actions / Blacksmith APK
 
@@ -188,16 +188,16 @@ instead of a long-lived service account JSON key.
   explicitly. After Windows, the platform order is macOS, Linux, iOS, then web.
   Adapted UX is acceptable only when it improves the result; equivalent results
   should keep the shared interaction model.
-- Overlay model: Flutter owns the shared WinGlowz product UI, actions, states,
+- Overlay model: Flutter owns the shared CommandGlows product UI, actions, states,
   Settings patterns, and backend-agnostic stores. Each OS owns its system host:
   Android uses a native foreground overlay bubble; Windows now has a first
-  desktop overlay/hotkeys host version with a native `winglowz_app/windows_overlay`
+  desktop overlay/hotkeys host version with a native `commandglows_app/windows_overlay`
   channel for global hotkey, always-on-top window behavior, clipboard and
   best-effort paste delivery. macOS and Linux now follow the same desktop-host
-  pattern with native `winglowz_app/macos_overlay` and
-  `winglowz_app/linux_overlay` channels.
+  pattern with native `commandglows_app/macos_overlay` and
+  `commandglows_app/linux_overlay` channels.
 - Android overlay: Flutter now has a native foreground overlay bubble foundation with queued native events, visual states, accessibility delivery, clipboard fallback, and Settings size/opacity controls. Real-device QA is still required before deleting the legacy Expo overlay reference or snapshot archive.
-- Android IME: WinGlowz can be enabled as a native Android keyboard. The current foundation provides modular Canvas rows, tap + swipe-corner character selection, QWERTY/AZERTY profiles, Smart French corner defaults, normal/corner modes, numbers/accents/symbol layers, field-context variants (email/URL/phone/search), private-field gating, minimal navigation/emoji/clipboard/media/snippets/settings panels, basic double-space + punctuation auto-spacing corrections with exclusions, optional touch-debug overlay, local Android speech recognition, media key dispatch, and Settings status/preferences. Double-tap/long-press action policies from the full keyboard spec are still pending implementation. Cloud sync from the keyboard waits for Firebase CLI/emulator and real-device QA before it should be treated as production-ready.
+- Android IME: CommandGlows can be enabled as a native Android keyboard. The current foundation provides modular Canvas rows, tap + swipe-corner character selection, QWERTY/AZERTY profiles, Smart French corner defaults, normal/corner modes, numbers/accents/symbol layers, field-context variants (email/URL/phone/search), private-field gating, minimal navigation/emoji/clipboard/media/snippets/settings panels, basic double-space + punctuation auto-spacing corrections with exclusions, optional touch-debug overlay, local Android speech recognition, media key dispatch, and Settings status/preferences. Double-tap/long-press action policies from the full keyboard spec are still pending implementation. Cloud sync from the keyboard waits for Firebase CLI/emulator and real-device QA before it should be treated as production-ready.
 - Windows desktop target: no IME promise. The equivalent is a Flutter desktop
   overlay surface hosted by Windows-native hotkeys, always-on-top window
   behavior, clipboard, focus, and best-effort text delivery. The first native
@@ -241,7 +241,7 @@ Local Android builds, APK packaging, `flutter run -d android`, and Gradle tasks 
 - Dependency inventory baseline: keep `pubspec.lock` committed and regenerate a reviewable dependency snapshot with:
 
 ```bash
-flutter pub deps --json > /tmp/winglowz_app-pub-deps.json
+flutter pub deps --json > /tmp/commandglows_app-pub-deps.json
 flutter pub outdated
 ```
 

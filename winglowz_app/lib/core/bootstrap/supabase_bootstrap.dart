@@ -39,7 +39,7 @@ class SupabaseBootstrap {
       _initError =
           'Supabase configuration is missing: '
           '${config.missingEnvironmentNames.join(', ')}. '
-          'Rebuild or run WinGlowz with SUPABASE_URL and '
+          'Rebuild or run CommandGlows with SUPABASE_URL and '
           'SUPABASE_PUBLISHABLE_KEY.';
       return;
     }

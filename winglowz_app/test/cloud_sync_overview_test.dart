@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/sync/cloud_sync_overview.dart';
-import 'package:winglowz_app/core/sync/sync_status.dart';
-import 'package:winglowz_app/features/auth/domain/auth_session_store.dart';
-import 'package:winglowz_app/features/auth/domain/product_entitlement.dart';
-import 'package:winglowz_app/features/auth/domain/suite_identity.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_sync_controller.dart';
-import 'package:winglowz_app/features/sync/domain/local_cloud_sync_models.dart';
+import 'package:commandglows_app/core/sync/cloud_sync_overview.dart';
+import 'package:commandglows_app/core/sync/sync_status.dart';
+import 'package:commandglows_app/features/auth/domain/auth_session_store.dart';
+import 'package:commandglows_app/features/auth/domain/product_entitlement.dart';
+import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_sync_controller.dart';
+import 'package:commandglows_app/features/sync/domain/local_cloud_sync_models.dart';
 
 void main() {
   const signedInSession = AuthSessionSnapshot(
@@ -24,7 +24,7 @@ void main() {
     globalUserId: 'global-user',
     entitlements: [
       ProductEntitlement(
-        productId: ProductId.winglowzApp,
+        productId: ProductId.commandglowsApp,
         status: ProductEntitlementStatus.active,
       ),
     ],

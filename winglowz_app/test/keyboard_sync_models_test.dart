@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_models.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_policy.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_models.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_policy.dart';
 
 void main() {
   test('sanitized profile round-trips and validates', () {
@@ -12,7 +12,7 @@ void main() {
       sourcePlatform: 'android',
       rawPayload: {
         'preferences': {'themeMode': 'system', 'keySoundEnabled': false},
-        'themeConfig': {'presetId': 'winglowz_light', 'useImage': true},
+        'themeConfig': {'presetId': 'commandglows_light', 'useImage': true},
         'themeAsset': {
           'assetId': 'asset-1',
           'storagePath': 'users/firebase-a/keyboard_theme_assets/asset-1',

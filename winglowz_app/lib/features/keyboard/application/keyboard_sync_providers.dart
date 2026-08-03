@@ -122,7 +122,7 @@ final keyboardSyncAuthContextProvider = Provider<KeyboardSyncAuthContext>((
     isSignedIn: authSession?.isSignedIn ?? false,
     isLocalFallback: authSession?.isLocalFallback ?? true,
     hasEntitlement:
-        (identity?.statusFor(ProductId.winglowzApp) ??
+        (identity?.statusFor(ProductId.commandglowsApp) ??
             SuiteAccountStatus.unknown) ==
         SuiteAccountStatus.accessActive,
     firebaseUid: authSession?.user?.id,

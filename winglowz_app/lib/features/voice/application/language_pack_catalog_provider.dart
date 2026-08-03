@@ -696,7 +696,7 @@ class LanguagePackCatalogNotifier extends Notifier<LanguagePackCatalogState> {
 
   static String _defaultModelArtifactPathFor(LanguagePackCatalogEntry entry) {
     final language = entry.languageTag.toLowerCase().replaceAll('-', '_');
-    return '/data/user/0/com.winglowz_app.winglowz_app/files/asr/$language/${entry.packId}/model.bundle';
+    return '/data/user/0/com.commandglows.app/files/asr/$language/${entry.packId}/model.bundle';
   }
 }
 
@@ -714,12 +714,12 @@ List<LanguagePackCatalogEntry> _defaultCatalogEntries() {
       'runtime_mode': 'local',
       'fallback_policy': 'android_then_cloud_auto',
       'download_url':
-          'https://downloads.winglowz.local/asr/fr-fr-placeholder.zip',
+          'https://downloads.commandglows.local/asr/fr-fr-placeholder.zip',
       'download_size_mb': 82,
       'installed_size_mb': 148,
       'sha256':
           'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      'signature': 'winglowz-catalog-dev-signature',
+      'signature': 'commandglows-catalog-dev-signature',
       'license_id': 'MIT-model-license-review-required',
       'commercial_distribution_allowed': false,
       'min_android_sdk': 26,

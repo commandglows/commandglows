@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/platform/android_keyboard_bridge.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_models.dart';
-import 'package:winglowz_app/features/settings/application/settings_platform_controllers.dart';
+import 'package:commandglows_app/core/platform/android_keyboard_bridge.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_models.dart';
+import 'package:commandglows_app/features/settings/application/settings_platform_controllers.dart';
 
-const _keyboardChannel = MethodChannel('winglowz_app/keyboard');
+const _keyboardChannel = MethodChannel('commandglows_app/keyboard');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -454,7 +454,7 @@ void main() {
       packId: 'sherpa_onnx.fr-fr.whisper_candidate.2026_05_15',
       engine: 'sherpa_onnx',
       modelArtifactPath:
-          '/data/user/0/com.winglowz_app.winglowz_app/files/asr/fr_fr/model.bundle',
+          '/data/user/0/com.commandglows.app/files/asr/fr_fr/model.bundle',
     );
 
     expect(status.voiceLanguageTag, 'fr-FR');
@@ -486,7 +486,7 @@ void main() {
 
     final status = await AndroidKeyboardBridge.setKeyboardVoiceModelArtifact(
       modelArtifactPath:
-          '/data/user/0/com.winglowz_app.winglowz_app/files/asr/fr_fr/model.bundle',
+          '/data/user/0/com.commandglows.app/files/asr/fr_fr/model.bundle',
       languageTag: 'fr-FR',
       packId: 'sherpa_onnx.fr-fr.whisper_candidate.2026_05_15',
       engine: 'sherpa_onnx',
@@ -522,7 +522,7 @@ void main() {
       packId: 'sherpa_onnx.fr-fr.whisper_candidate.2026_05_15',
       engine: 'sherpa_onnx',
       modelArtifactPath:
-          '/data/user/0/com.winglowz_app.winglowz_app/files/asr/fr_fr/model.bundle',
+          '/data/user/0/com.commandglows.app/files/asr/fr_fr/model.bundle',
     );
 
     expect(status.voiceRuntimeMode, 'local');
@@ -554,7 +554,7 @@ void main() {
         packId: 'sherpa_onnx.fr-fr.whisper_candidate.2026_05_15',
         engine: 'sherpa_onnx',
         modelArtifactPath:
-            '/data/user/0/com.winglowz_app.winglowz_app/files/asr/fr_fr/model.bundle',
+            '/data/user/0/com.commandglows.app/files/asr/fr_fr/model.bundle',
       );
 
       expect(status.voiceRuntimeMode, 'android_fallback');

@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/sync/sync_status.dart';
-import 'package:winglowz_app/features/auth/application/auth_session_provider.dart';
-import 'package:winglowz_app/features/auth/application/suite_identity_provider.dart';
-import 'package:winglowz_app/features/auth/domain/auth_session_store.dart';
-import 'package:winglowz_app/features/auth/domain/product_entitlement.dart';
-import 'package:winglowz_app/features/auth/domain/suite_identity.dart';
+import 'package:commandglows_app/core/sync/sync_status.dart';
+import 'package:commandglows_app/features/auth/application/auth_session_provider.dart';
+import 'package:commandglows_app/features/auth/application/suite_identity_provider.dart';
+import 'package:commandglows_app/features/auth/domain/auth_session_store.dart';
+import 'package:commandglows_app/features/auth/domain/product_entitlement.dart';
+import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
 
 void main() {
   const signedOutSession = AuthSessionSnapshot(
@@ -93,7 +93,7 @@ void main() {
       expect(identity.accounts, hasLength(1));
       expect(identity.accounts.first.provider, SuiteIdentityProvider.local);
       expect(
-        identity.statusFor(ProductId.winglowzApp),
+        identity.statusFor(ProductId.commandglowsApp),
         SuiteAccountStatus.accessInactive,
       );
     },
@@ -120,7 +120,7 @@ void main() {
       expect(identity.accounts.first.maskedProviderUserId, 'fir...456');
       expect(identity.issue, contains('suite_identity_bridge_missing_env'));
       expect(
-        identity.statusFor(ProductId.winglowzFormation),
+        identity.statusFor(ProductId.commandglowsFormation),
         SuiteAccountStatus.accessInactive,
       );
     },

@@ -121,7 +121,7 @@ class _KeyboardNavigationDiagnosticsScreenState
           AppSectionCard(
             title: 'Banc de test',
             subtitle:
-                'Utilisez ce champ comme controle WinGlowz, puis revenez ici apres un test dans une autre app pour lire la telemetrie native.',
+                'Utilisez ce champ comme controle CommandGlows, puis revenez ici apres un test dans une autre app pour lire la telemetrie native.',
             leading: const Icon(Icons.science_outlined),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

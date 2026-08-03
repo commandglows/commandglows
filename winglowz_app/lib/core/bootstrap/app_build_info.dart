@@ -2,23 +2,23 @@ class AppBuildInfo {
   AppBuildInfo._();
 
   static const sha = String.fromEnvironment(
-    'WINGLOWZ_APP_BUILD_SHA',
+    'COMMANDGLOWS_APP_BUILD_SHA',
     defaultValue: 'local',
   );
   static const runId = String.fromEnvironment(
-    'WINGLOWZ_APP_BUILD_RUN_ID',
+    'COMMANDGLOWS_APP_BUILD_RUN_ID',
     defaultValue: 'local',
   );
   static const refName = String.fromEnvironment(
-    'WINGLOWZ_APP_BUILD_REF',
+    'COMMANDGLOWS_APP_BUILD_REF',
     defaultValue: 'local',
   );
   static const buildAtParis = String.fromEnvironment(
-    'WINGLOWZ_APP_BUILD_AT_PARIS',
+    'COMMANDGLOWS_APP_BUILD_AT_PARIS',
     defaultValue: 'unknown',
   );
   static const buildAtUtc = String.fromEnvironment(
-    'WINGLOWZ_APP_BUILD_AT_UTC',
+    'COMMANDGLOWS_APP_BUILD_AT_UTC',
     defaultValue: 'unknown',
   );
 

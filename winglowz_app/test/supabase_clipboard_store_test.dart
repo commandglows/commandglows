@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/data/supabase/clipboard_repository.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_capture_event.dart';
+import 'package:commandglows_app/data/supabase/clipboard_repository.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_capture_event.dart';
 
 void main() {
   group('SupabaseClipboardStore payload adapter', () {

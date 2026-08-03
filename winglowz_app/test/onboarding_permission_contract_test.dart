@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/platform/android_overlay_bridge.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_models.dart';
-import 'package:winglowz_app/features/settings/domain/onboarding_permission_contract.dart';
+import 'package:commandglows_app/core/platform/android_overlay_bridge.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_models.dart';
+import 'package:commandglows_app/features/settings/domain/onboarding_permission_contract.dart';
 
 void main() {
   const overlayStatus = AndroidOverlayStatus(

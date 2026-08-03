@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-import 'app/winglowz_app.dart';
+import 'app/commandglows_app.dart';
 import 'core/bootstrap/app_bootstrap.dart';
 import 'core/bootstrap/sentry_bootstrap.dart';
 import 'core/diagnostics/app_diagnostics.dart';
@@ -16,10 +16,10 @@ Future<void> main() async {
   } else {
     WidgetsFlutterBinding.ensureInitialized();
   }
-  await SentryBootstrap.init(appRunner: _runWinGlowz);
+  await SentryBootstrap.init(appRunner: _runCommandGlows);
 }
 
-Future<void> _runWinGlowz() async {
+Future<void> _runCommandGlows() async {
   _installLocalErrorHandlers();
   await AppBootstrap.init();
   final initialSettings = await LocalSettingsStore().load();
@@ -31,7 +31,7 @@ Future<void> _runWinGlowz() async {
       overrides: [
         initialAppThemeModeProvider.overrideWithValue(initialThemeMode),
       ],
-      child: const WinGlowz(),
+      child: const CommandGlows(),
     ),
   );
 }

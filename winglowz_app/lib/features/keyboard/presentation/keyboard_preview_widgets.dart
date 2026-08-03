@@ -271,8 +271,8 @@ class _KeyboardStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = snapshot.privateMode
-        ? 'WinGlowz keyboard - private input'
-        : 'WinGlowz keyboard - ${snapshot.fieldContext.label}';
+        ? 'CommandGlows keyboard - private input'
+        : 'CommandGlows keyboard - ${snapshot.fieldContext.label}';
     return SizedBox(
       height: AppKeyboardPreview.statusHeight,
       child: Center(

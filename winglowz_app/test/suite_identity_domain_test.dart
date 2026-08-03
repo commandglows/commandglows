@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/auth/domain/product_entitlement.dart';
-import 'package:winglowz_app/features/auth/domain/suite_identity.dart';
+import 'package:commandglows_app/features/auth/domain/product_entitlement.dart';
+import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
 
 void main() {
   test('product ids are parsed from the allowlist only', () {
-    expect(ProductId.parse('winglowz_app'), ProductId.winglowzApp);
-    expect(ProductId.parse('winglowz_formation'), ProductId.winglowzFormation);
+    expect(ProductId.parse('commandglows_app'), ProductId.commandglowsApp);
+    expect(ProductId.parse('commandglows_formation'), ProductId.commandglowsFormation);
     expect(ProductId.parse('voiceflowz'), isNull);
     expect(ProductId.parse('admin'), isNull);
   });
@@ -13,21 +13,21 @@ void main() {
   test('only active and trialing entitlements grant access', () {
     expect(
       const ProductEntitlement(
-        productId: ProductId.winglowzApp,
+        productId: ProductId.commandglowsApp,
         status: ProductEntitlementStatus.active,
       ).grantsAccess,
       isTrue,
     );
     expect(
       const ProductEntitlement(
-        productId: ProductId.winglowzApp,
+        productId: ProductId.commandglowsApp,
         status: ProductEntitlementStatus.trialing,
       ).grantsAccess,
       isTrue,
     );
     expect(
       const ProductEntitlement(
-        productId: ProductId.winglowzApp,
+        productId: ProductId.commandglowsApp,
         status: ProductEntitlementStatus.refunded,
       ).grantsAccess,
       isFalse,
@@ -47,18 +47,18 @@ void main() {
       ],
       entitlements: [
         ProductEntitlement(
-          productId: ProductId.winglowzFormation,
+          productId: ProductId.commandglowsFormation,
           status: ProductEntitlementStatus.active,
         ),
       ],
     );
 
     expect(
-      identity.statusFor(ProductId.winglowzFormation),
+      identity.statusFor(ProductId.commandglowsFormation),
       SuiteAccountStatus.accessActive,
     );
     expect(
-      identity.statusFor(ProductId.winglowzApp),
+      identity.statusFor(ProductId.commandglowsApp),
       SuiteAccountStatus.accessInactive,
     );
   });

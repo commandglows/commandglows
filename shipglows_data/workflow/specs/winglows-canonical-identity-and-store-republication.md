@@ -7,7 +7,8 @@ created: "2026-08-03"
 created_at: "2026-08-03 21:28:30 UTC"
 updated: "2026-08-03"
 updated_at: "2026-08-03 21:58:00 UTC"
-status: ready
+status: superseded
+superseded_by: "shipglows_data/workflow/specs/commandglows-clean-identity-reset.md"
 source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
 scope: migration
@@ -47,7 +48,7 @@ evidence:
   - "2026-08-03 Git proof: diane-defores/winglowz exists at HEAD f77118351feafa3eec53aff4a9011ecdcc2ab809; diane-defores/winglows did not yet exist."
   - "Operator decision 2026-08-03: winglows.com replaces www.winflowz.com with a permanent redirect from the previous canonical domain."
   - "Operator decision 2026-08-03: publish a new store application with new platform IDs; do not represent the change as an in-place update."
-next_step: "/102-sg-start winglows-canonical-identity-and-store-republication"
+next_step: "Follow shipglows_data/workflow/specs/commandglows-clean-identity-reset.md."
 ---
 
 # Title

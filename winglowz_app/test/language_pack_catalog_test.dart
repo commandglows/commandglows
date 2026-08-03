@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/voice/application/language_pack_catalog_provider.dart';
-import 'package:winglowz_app/features/voice/data/language_pack_state_repository.dart';
-import 'package:winglowz_app/features/voice/domain/language_pack_catalog.dart';
+import 'package:commandglows_app/features/voice/application/language_pack_catalog_provider.dart';
+import 'package:commandglows_app/features/voice/data/language_pack_state_repository.dart';
+import 'package:commandglows_app/features/voice/domain/language_pack_catalog.dart';
 
 void main() {
   test('LanguagePackCatalogEntry round-trips stable data contract fields', () {
@@ -751,7 +751,7 @@ void main() {
     final applied = notifier.setModelArtifactPath(
       entry,
       modelArtifactPath:
-          '/data/user/0/com.winglowz_app.winglowz_app/files/asr/fr_fr/model.bundle',
+          '/data/user/0/com.commandglows.app/files/asr/fr_fr/model.bundle',
     );
     final state = container
         .read(languagePackCatalogProvider)
@@ -760,7 +760,7 @@ void main() {
     expect(applied, isTrue);
     expect(
       state.modelArtifactPath,
-      '/data/user/0/com.winglowz_app.winglowz_app/files/asr/fr_fr/model.bundle',
+      '/data/user/0/com.commandglows.app/files/asr/fr_fr/model.bundle',
     );
   });
 }
@@ -775,11 +775,11 @@ Map<Object?, Object?> _validLocalPack() => {
   'quality_tier': 'experimental',
   'runtime_mode': 'local',
   'fallback_policy': 'prefer_local',
-  'download_url': 'https://downloads.winglowz.local/fr.zip',
+  'download_url': 'https://downloads.commandglows.local/fr.zip',
   'download_size_mb': 82,
   'installed_size_mb': 148,
   'sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-  'signature': 'winglowz-dev-signature',
+  'signature': 'commandglows-dev-signature',
   'license_id': 'MIT-review-required',
   'commercial_distribution_allowed': false,
   'min_android_sdk': 26,

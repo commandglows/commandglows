@@ -222,13 +222,13 @@ class DesktopOverlayBridge {
   DesktopOverlayBridge._();
 
   static const MethodChannel _windowsChannel = MethodChannel(
-    'winglowz_app/windows_overlay',
+    'commandglows_app/windows_overlay',
   );
   static const MethodChannel _macOSChannel = MethodChannel(
-    'winglowz_app/macos_overlay',
+    'commandglows_app/macos_overlay',
   );
   static const MethodChannel _linuxChannel = MethodChannel(
-    'winglowz_app/linux_overlay',
+    'commandglows_app/linux_overlay',
   );
 
   static Future<DesktopOverlayStatus> getStatus() async {

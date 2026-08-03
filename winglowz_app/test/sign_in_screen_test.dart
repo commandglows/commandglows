@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/core/sync/sync_status.dart';
-import 'package:winglowz_app/features/auth/application/auth_session_provider.dart';
-import 'package:winglowz_app/features/auth/domain/auth_failure.dart';
-import 'package:winglowz_app/features/auth/domain/auth_session_store.dart';
-import 'package:winglowz_app/features/auth/presentation/sign_in_screen.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/core/sync/sync_status.dart';
+import 'package:commandglows_app/features/auth/application/auth_session_provider.dart';
+import 'package:commandglows_app/features/auth/domain/auth_failure.dart';
+import 'package:commandglows_app/features/auth/domain/auth_session_store.dart';
+import 'package:commandglows_app/features/auth/presentation/sign_in_screen.dart';
 
 class _ThrowingAuthSessionStore implements AuthSessionStore {
   var emailPasswordCalls = 0;

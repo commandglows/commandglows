@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/winglowz_app.dart';
+import '../../../app/commandglows_app.dart';
 import '../../../core/bootstrap/app_build_info.dart';
 import '../../../core/bootstrap/firebase_bootstrap.dart';
 import '../../../core/bootstrap/sentry_bootstrap.dart';
@@ -1096,22 +1096,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         }
         return suiteIdentityAsync.when(
           data: (identity) {
-            final suiteStatus = identity.statusFor(ProductId.winglowzApp);
+            final suiteStatus = identity.statusFor(ProductId.commandglowsApp);
             if (suiteStatus == SuiteAccountStatus.accessActive) {
-              return 'Compte cloud vérifié. Accès WinGlowz actif; '
+              return 'Compte cloud vérifié. Accès CommandGlows actif; '
                   'les catégories synchronisables sont évaluées.';
             }
             if (suiteStatus == SuiteAccountStatus.linkingRequired) {
-              return 'Compte cloud vérifié. Liaison WinGlowz requise. '
+              return 'Compte cloud vérifié. Liaison CommandGlows requise. '
                   'Les données restent locales pour l’instant.';
             }
-            return 'Compte cloud vérifié. Pas encore d’accès WinGlowz actif; '
+            return 'Compte cloud vérifié. Pas encore d’accès CommandGlows actif; '
                 'les données restent locales.';
           },
           loading: () =>
-              'Compte cloud vérifié. Vérification de l’accès WinGlowz en cours.',
+              'Compte cloud vérifié. Vérification de l’accès CommandGlows en cours.',
           error: (error, _) =>
-              'Compte cloud vérifié, mais l’accès WinGlowz n’a pu être vérifié.',
+              'Compte cloud vérifié, mais l’accès CommandGlows n’a pu être vérifié.',
         );
       },
       loading: () => 'Compte cloud en cours de vérification.',
@@ -1168,7 +1168,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
     final status = _backendStatus(authAsync);
     final lines = <String>[
-      'WinGlowz backend diagnostic',
+      'CommandGlows backend diagnostic',
       'diagnostic_version: 5',
       'generated_at_utc: ${DateTime.now().toUtc().toIso8601String()}',
       'secret_values_redacted: true',
@@ -1800,7 +1800,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _BackendProviderSection(
           summary: FirebaseBootstrap.isConfigured
               ? 'Firebase est configuré comme adaptateur backend principal.'
-              : 'La synchronisation distante n’est pas configurée. WinGlowz fonctionne en mode local.',
+              : 'La synchronisation distante n’est pas configurée. CommandGlows fonctionne en mode local.',
           detail:
               '${_appearanceSyncDetail(authAsync)}\nStatut du compte Suite: ${_suiteIdentitySummary(suiteIdentityAsync)}',
           diagnosticText: _backendDiagnosticText(suiteIdentityAsync),

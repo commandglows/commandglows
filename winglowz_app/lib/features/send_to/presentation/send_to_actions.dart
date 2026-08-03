@@ -85,7 +85,7 @@ Future<bool> confirmSensitiveSendToClipboard({
       return AlertDialog(
         title: const Text('Contenu sensible'),
         content: Text(
-          'Ce texte ressemble à: ${classification.label}. Souhaites-tu quand même l’ajouter au Clipboard WinGlowz ?',
+          'Ce texte ressemble à: ${classification.label}. Souhaites-tu quand même l’ajouter au Clipboard CommandGlows ?',
         ),
         actions: [
           TextButton(
@@ -113,7 +113,7 @@ IconData _targetIcon(SendToTarget target) {
 String _targetLabel(SendToTarget target) {
   return switch (target) {
     SendToTarget.snippet => 'Snippet',
-    SendToTarget.clipboard => 'Clipboard WinGlowz',
+    SendToTarget.clipboard => 'Clipboard CommandGlows',
   };
 }
 

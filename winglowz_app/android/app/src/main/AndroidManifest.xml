@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <application
-        android:label="winglowz_app"
+        android:label="CommandGlows"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -64,7 +64,7 @@
         </service>
 
         <service
-            android:name=".ime.WinGlowzInputMethodService"
+            android:name=".ime.CommandGlowsInputMethodService"
             android:enabled="true"
             android:exported="true"
             android:label="@string/keyboard_name"
@@ -74,14 +74,14 @@
             </intent-filter>
             <meta-data
                 android:name="android.view.im"
-                android:resource="@xml/winglowz_app_input_method" />
+                android:resource="@xml/commandglows_app_input_method" />
         </service>
 
         <service
-            android:name=".WinGlowzNotificationListenerService"
+            android:name=".CommandGlowsNotificationListenerService"
             android:enabled="true"
             android:exported="false"
-            android:label="WinGlowz media access"
+            android:label="CommandGlows media access"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />

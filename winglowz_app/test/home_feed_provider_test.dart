@@ -1,18 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/sync/sync_status.dart';
-import 'package:winglowz_app/core/widgets/app_components.dart';
-import 'package:winglowz_app/features/clipboard/application/clipboard_store_provider.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_capture_event.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_store.dart';
-import 'package:winglowz_app/features/dictionary/application/dictionary_store_provider.dart';
-import 'package:winglowz_app/features/dictionary/domain/dictionary_store.dart';
-import 'package:winglowz_app/features/home/application/home_feed_provider.dart';
-import 'package:winglowz_app/features/snippets/application/snippet_store_provider.dart';
-import 'package:winglowz_app/features/snippets/domain/snippet_store.dart';
-import 'package:winglowz_app/features/voice/application/transcription_store.dart';
-import 'package:winglowz_app/features/voice/application/transcription_store_provider.dart';
-import 'package:winglowz_app/features/voice/domain/transcription_draft.dart';
+import 'package:commandglows_app/core/sync/sync_status.dart';
+import 'package:commandglows_app/core/widgets/app_components.dart';
+import 'package:commandglows_app/features/clipboard/application/clipboard_store_provider.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_capture_event.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_store.dart';
+import 'package:commandglows_app/features/dictionary/application/dictionary_store_provider.dart';
+import 'package:commandglows_app/features/dictionary/domain/dictionary_store.dart';
+import 'package:commandglows_app/features/home/application/home_feed_provider.dart';
+import 'package:commandglows_app/features/snippets/application/snippet_store_provider.dart';
+import 'package:commandglows_app/features/snippets/domain/snippet_store.dart';
+import 'package:commandglows_app/features/voice/application/transcription_store.dart';
+import 'package:commandglows_app/features/voice/application/transcription_store_provider.dart';
+import 'package:commandglows_app/features/voice/domain/transcription_draft.dart';
 
 void main() {
   test('home feed aggregates, sorts and maps sync states', () async {

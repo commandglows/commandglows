@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">WinGlowz</string>
-    <string name="keyboard_name">WinGlowz keyboard</string>
-    <string name="keyboard_settings_name">WinGlowz keyboard settings</string>
+    <string name="app_name">CommandGlows</string>
+    <string name="keyboard_name">CommandGlows keyboard</string>
+    <string name="keyboard_settings_name">CommandGlows keyboard settings</string>
     <string name="keyboard_subtype_fr">Francais</string>
     <string name="keyboard_subtype_en">English</string>
 </resources>

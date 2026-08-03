@@ -5,32 +5,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/core/bootstrap/supabase_bootstrap.dart';
-import 'package:winglowz_app/core/platform/android_keyboard_bridge.dart';
-import 'package:winglowz_app/core/platform/android_overlay_bridge.dart';
-import 'package:winglowz_app/core/platform/platform_capabilities.dart';
-import 'package:winglowz_app/core/sync/sync_status.dart';
-import 'package:winglowz_app/features/clipboard/application/clipboard_store_provider.dart';
-import 'package:winglowz_app/features/clipboard/data/in_memory_clipboard_history_store.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_store.dart';
-import 'package:winglowz_app/features/clipboard/presentation/clipboard_screen.dart';
-import 'package:winglowz_app/features/auth/application/auth_session_provider.dart';
-import 'package:winglowz_app/features/auth/application/suite_identity_provider.dart';
-import 'package:winglowz_app/features/auth/domain/auth_session_store.dart';
-import 'package:winglowz_app/features/auth/domain/product_entitlement.dart';
-import 'package:winglowz_app/features/auth/domain/suite_identity.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_models.dart';
-import 'package:winglowz_app/features/keyboard/presentation/keyboard_preview_screen.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_normalizer.dart';
-import 'package:winglowz_app/features/shell/presentation/app_shell_screen.dart';
-import 'package:winglowz_app/features/settings/application/settings_store_provider.dart';
-import 'package:winglowz_app/features/settings/domain/settings_store.dart';
-import 'package:winglowz_app/features/settings/presentation/settings_screen.dart';
-import 'package:winglowz_app/features/voice/domain/transcription_draft.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/core/bootstrap/supabase_bootstrap.dart';
+import 'package:commandglows_app/core/platform/android_keyboard_bridge.dart';
+import 'package:commandglows_app/core/platform/android_overlay_bridge.dart';
+import 'package:commandglows_app/core/platform/platform_capabilities.dart';
+import 'package:commandglows_app/core/sync/sync_status.dart';
+import 'package:commandglows_app/features/clipboard/application/clipboard_store_provider.dart';
+import 'package:commandglows_app/features/clipboard/data/in_memory_clipboard_history_store.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_store.dart';
+import 'package:commandglows_app/features/clipboard/presentation/clipboard_screen.dart';
+import 'package:commandglows_app/features/auth/application/auth_session_provider.dart';
+import 'package:commandglows_app/features/auth/application/suite_identity_provider.dart';
+import 'package:commandglows_app/features/auth/domain/auth_session_store.dart';
+import 'package:commandglows_app/features/auth/domain/product_entitlement.dart';
+import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_models.dart';
+import 'package:commandglows_app/features/keyboard/presentation/keyboard_preview_screen.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_normalizer.dart';
+import 'package:commandglows_app/features/shell/presentation/app_shell_screen.dart';
+import 'package:commandglows_app/features/settings/application/settings_store_provider.dart';
+import 'package:commandglows_app/features/settings/domain/settings_store.dart';
+import 'package:commandglows_app/features/settings/presentation/settings_screen.dart';
+import 'package:commandglows_app/features/voice/domain/transcription_draft.dart';
 
-const _overlayChannel = MethodChannel('winglowz_app/overlay');
-const _keyboardChannel = MethodChannel('winglowz_app/keyboard');
+const _overlayChannel = MethodChannel('commandglows_app/overlay');
+const _keyboardChannel = MethodChannel('commandglows_app/keyboard');
 const _secureStorageChannel = MethodChannel(
   'plugins.it_nomads.com/flutter_secure_storage',
 );
@@ -275,7 +275,7 @@ const _postAuthSuiteActiveIdentity = SuiteIdentitySnapshot(
   globalUserId: 'global-user-id',
   entitlements: [
     ProductEntitlement(
-      productId: ProductId.winglowzApp,
+      productId: ProductId.commandglowsApp,
       status: ProductEntitlementStatus.active,
       plan: 'pro',
     ),
@@ -749,14 +749,14 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Bienvenue dans WinGlowz'), findsOneWidget);
+    expect(find.text('Bienvenue dans CommandGlows'), findsOneWidget);
     expect(find.text('Ouvrir le guide'), findsOneWidget);
     expect(find.textContaining('Ton compte est prêt.'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Commencer'));
     await _pumpNavigationFrame(tester);
 
-    expect(find.text('Bienvenue dans WinGlowz'), findsNothing);
+    expect(find.text('Bienvenue dans CommandGlows'), findsNothing);
   });
 
   testWidgets('settings can resume onboarding overlay', (tester) async {
@@ -771,7 +771,7 @@ void main() {
       await _pumpNavigationFrame(tester);
 
       expect(find.text('Accueil'), findsWidgets);
-      expect(find.text('Configuration WinGlowz'), findsOneWidget);
+      expect(find.text('Configuration CommandGlows'), findsOneWidget);
       final refreshAccessButton = find.widgetWithText(
         OutlinedButton,
         'Re-vérifier les accès',
@@ -786,7 +786,7 @@ void main() {
       expect(find.widgetWithText(OutlinedButton, 'Paramètres'), findsNothing);
       await tester.tap(find.widgetWithText(OutlinedButton, 'Plus tard').last);
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
-      expect(find.text('Configuration WinGlowz'), findsOneWidget);
+      expect(find.text('Configuration CommandGlows'), findsOneWidget);
       expect(find.text('Onboarding mis en pause'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Plus tard'), findsNothing);
       expect(
@@ -797,7 +797,7 @@ void main() {
       );
       await tester.tap(find.widgetWithText(FilledButton, 'OK'));
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
-      expect(find.text('Configuration WinGlowz'), findsNothing);
+      expect(find.text('Configuration CommandGlows'), findsNothing);
       expect(find.text('Apparence'), findsWidgets);
       expect(find.text('Onboarding mis en pause'), findsNothing);
 
@@ -814,7 +814,7 @@ void main() {
       await tester.tap(resumeButton, warnIfMissed: false);
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
-      expect(find.text('Configuration WinGlowz'), findsOneWidget);
+      expect(find.text('Configuration CommandGlows'), findsOneWidget);
       expect(
         find.text('Choisis les usages que tu veux activer'),
         findsOneWidget,
@@ -909,8 +909,8 @@ void main() {
 
       expect(find.text('Compte & synchronisation'), findsOneWidget);
       expect(find.textContaining('Connecte ton compte'), findsOneWidget);
-      expect(find.text('Compte WinGlowz'), findsNothing);
-      expect(find.text('Accès WinGlowz'), findsNothing);
+      expect(find.text('Compte CommandGlows'), findsNothing);
+      expect(find.text('Accès CommandGlows'), findsNothing);
       await _tapVisible(
         tester,
         find.byKey(const Key('settings-connect-cloud-account')),
@@ -997,7 +997,7 @@ void main() {
 
       expect(
         find.text(
-          'Compte cloud vérifié. Accès WinGlowz actif; les catégories '
+          'Compte cloud vérifié. Accès CommandGlows actif; les catégories '
           'synchronisables sont évaluées.',
         ),
         findsOneWidget,
@@ -1060,18 +1060,18 @@ void main() {
         find.text('Aucune donnée synchronisée pour le moment.'),
         findsNothing,
       );
-      expect(find.text('Apparence · Accès WinGlowz inactif'), findsOneWidget);
-      expect(find.text('Papiers · Accès WinGlowz inactif'), findsOneWidget);
-      expect(find.text('Dico · Accès WinGlowz inactif'), findsOneWidget);
-      expect(find.text('Voix · Accès WinGlowz inactif'), findsOneWidget);
+      expect(find.text('Apparence · Accès CommandGlows inactif'), findsOneWidget);
+      expect(find.text('Papiers · Accès CommandGlows inactif'), findsOneWidget);
+      expect(find.text('Dico · Accès CommandGlows inactif'), findsOneWidget);
+      expect(find.text('Voix · Accès CommandGlows inactif'), findsOneWidget);
       expect(find.text('Clés IA · Local uniquement'), findsOneWidget);
       expect(
         find.textContaining('Compte connecté · Accès inactif'),
         findsOneWidget,
       );
       expect(find.text('Compte & synchronisation'), findsOneWidget);
-      expect(find.text('Compte WinGlowz'), findsNothing);
-      expect(find.text('Accès WinGlowz'), findsNothing);
+      expect(find.text('Compte CommandGlows'), findsNothing);
+      expect(find.text('Accès CommandGlows'), findsNothing);
     } finally {
       debugDefaultTargetPlatformOverride = previousPlatform;
       _clearAndroidBridgeMocks();
@@ -1156,7 +1156,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      final keyboardSection = find.text('Clavier WinGlowz').first;
+      final keyboardSection = find.text('Clavier CommandGlows').first;
       await tester.scrollUntilVisible(
         keyboardSection,
         500,
@@ -1165,7 +1165,7 @@ void main() {
       await tester.tap(keyboardSection, warnIfMissed: false);
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
-      expect(find.text('Clavier WinGlowz'), findsOneWidget);
+      expect(find.text('Clavier CommandGlows'), findsOneWidget);
       expect(find.text('État du clavier'), findsOneWidget);
       expect(find.textContaining('enabled='), findsNothing);
       expect(find.textContaining('active='), findsNothing);
@@ -1339,7 +1339,7 @@ void main() {
         AppColors.success,
       );
       expect(find.text('Clavier'), findsOneWidget);
-      expect(find.text('Clavier WinGlowz keyboard'), findsNothing);
+      expect(find.text('Clavier CommandGlows keyboard'), findsNothing);
       expect(find.widgetWithText(TextButton, 'Activé'), findsNothing);
       expect(find.widgetWithText(TextButton, 'Plus tard'), findsNothing);
       expect(find.widgetWithText(FilledButton, 'Modifier'), findsOneWidget);
@@ -1366,7 +1366,7 @@ void main() {
       );
       await _pumpNavigationFrame(tester);
 
-      expect(find.text('Configuration WinGlowz'), findsOneWidget);
+      expect(find.text('Configuration CommandGlows'), findsOneWidget);
       expect(find.text('Luminosité système'), findsOneWidget);
       expect(find.text('Micro et voix'), findsNothing);
       expect(
@@ -1449,7 +1449,7 @@ void main() {
       await tester.pumpWidget(_appShellTestWidget());
       await _pumpNavigationFrame(tester);
 
-      expect(find.text('WinGlowz est prêt'), findsOneWidget);
+      expect(find.text('CommandGlows est prêt'), findsOneWidget);
       expect(find.text('Dictée depuis le clavier'), findsOneWidget);
       expect(find.text('Microphone'), findsOneWidget);
       expect(find.text('Service Accessibilité'), findsOneWidget);
@@ -1645,7 +1645,7 @@ void main() {
       await tester.pumpWidget(_appShellTestWidget());
       await _pumpNavigationFrame(tester);
 
-      expect(find.text('Configuration WinGlowz'), findsOneWidget);
+      expect(find.text('Configuration CommandGlows'), findsOneWidget);
       final overlayCardTopLeft = tester.getTopLeft(
         find.byKey(const Key('onboarding-overlay-card-frame')),
       );
@@ -1657,7 +1657,7 @@ void main() {
       );
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
-      expect(find.text('Configuration WinGlowz'), findsNothing);
+      expect(find.text('Configuration CommandGlows'), findsNothing);
       expect(find.text('Accueil'), findsWidgets);
     } finally {
       debugDefaultTargetPlatformOverride = previousPlatform;

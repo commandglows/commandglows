@@ -423,7 +423,7 @@ class _AppearanceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppSectionCard(
       subtitle:
-          'Utilise la palette WinGlowz et les tokens d’interface partagés. '
+          'Utilise la palette CommandGlows et les tokens d’interface partagés. '
           '$syncStateLabel',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -701,7 +701,7 @@ class _PlatformCapabilitiesSection extends StatelessWidget {
               : 'Dictée locale indisponible sur ${PlatformCapabilities.currentPlatformLabel}',
           subtitle: PlatformCapabilities.localSpeechSupported
               ? 'Le moteur local de la plateforme peut être utilisé.'
-              : '${PlatformCapabilities.localSpeechUnavailableReason} WinGlowz bascule vers l’enregistrement avancé et Whisper.',
+              : '${PlatformCapabilities.localSpeechUnavailableReason} CommandGlows bascule vers l’enregistrement avancé et Whisper.',
         ),
         AppStatusCard(
           icon: Icons.bubble_chart_outlined,
@@ -718,7 +718,7 @@ class _PlatformCapabilitiesSection extends StatelessWidget {
               ? 'IME clavier Android pris en charge'
               : 'Clavier Android indisponible sur ${PlatformCapabilities.currentPlatformLabel}',
           subtitle: PlatformCapabilities.keyboardImeSupported
-              ? 'Le clavier WinGlowz fonctionne comme méthode de saisie native Android.'
+              ? 'Le clavier CommandGlows fonctionne comme méthode de saisie native Android.'
               : PlatformCapabilities.keyboardImeUnavailableReason,
         ),
       ],
@@ -871,7 +871,7 @@ class _KeyboardSettingsSection extends StatelessWidget {
                 leading: Icon(Icons.info_outline),
                 title: Text('Clavier non activé'),
                 subtitle: Text(
-                  'Activez le clavier WinGlowz dans les paramètres de méthode de saisie Android, puis sélectionnez-le depuis n’importe quel champ texte.',
+                  'Activez le clavier CommandGlows dans les paramètres de méthode de saisie Android, puis sélectionnez-le depuis n’importe quel champ texte.',
                 ),
               ),
             Padding(
@@ -1636,7 +1636,7 @@ class _OnDeviceSpeechSection extends StatelessWidget {
             onChanged: onAllowCloudFallbackChanged,
             title: const Text('Autoriser fallback cloud'),
             subtitle: const Text(
-              'Quand il est désactivé, WinGlowz affiche indisponible au lieu d’envoyer la dictée au fallback cloud.',
+              'Quand il est désactivé, CommandGlows affiche indisponible au lieu d’envoyer la dictée au fallback cloud.',
             ),
           ),
           if (state.hasError || state.isStale)
@@ -1967,9 +1967,9 @@ class _SpeechPill extends StatelessWidget {
 
 String _normalizedPresetId(String presetId) {
   return switch (presetId) {
-    KeyboardThemePresetCatalog.winglowzLight ||
-    KeyboardThemePresetCatalog.winglowzDark =>
-      KeyboardThemePresetCatalog.winglowz,
+    KeyboardThemePresetCatalog.commandglowsLight ||
+    KeyboardThemePresetCatalog.commandglowsDark =>
+      KeyboardThemePresetCatalog.commandglows,
     _ => presetId,
   };
 }

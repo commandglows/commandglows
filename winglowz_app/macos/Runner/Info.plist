@@ -25,9 +25,9 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>$(PRODUCT_COPYRIGHT)</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>WinGlowz needs microphone access only while you are recording speech.</string>
+	<string>CommandGlows needs microphone access only while you are recording speech.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>WinGlowz uses speech recognition only when you start dictation.</string>
+	<string>CommandGlows uses speech recognition only when you start dictation.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

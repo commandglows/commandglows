@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.winglowz_app" "\0"
-            VALUE "FileDescription", "winglowz_app" "\0"
+            VALUE "CompanyName", "CommandGlows" "\0"
+            VALUE "FileDescription", "CommandGlows" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "winglowz_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.winglowz_app. All rights reserved." "\0"
-            VALUE "OriginalFilename", "winglowz_app.exe" "\0"
-            VALUE "ProductName", "winglowz_app" "\0"
+            VALUE "InternalName", "commandglows_app" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 CommandGlows. All rights reserved." "\0"
+            VALUE "OriginalFilename", "commandglows_app.exe" "\0"
+            VALUE "ProductName", "CommandGlows" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

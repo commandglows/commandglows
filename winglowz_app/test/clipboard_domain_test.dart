@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_capture_event.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_normalizer.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_capture_event.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_normalizer.dart';
 
 void main() {
   group('clipboard normalizer', () {
@@ -11,7 +11,7 @@ void main() {
 
     test('builds stable sha256 hash', () {
       expect(
-        sha256Hex('winglowz_app'),
+        sha256Hex('commandglows_app'),
         'fd1753d3ff71c04e9100d53eece3364ee21fabb55460acae8bbab64c1e5ebb80',
       );
     });

@@ -25,16 +25,16 @@ final clipboardStoreProvider = Provider<ClipboardHistoryStore>((ref) {
   );
   final hasRemoteSession =
       session != null && session.isSignedIn && !session.isLocalFallback;
-  final hasWinGlowzAppAccess = ref
+  final hasCommandGlowsAppAccess = ref
       .watch(suiteIdentityProvider)
       .maybeWhen(
-        data: (identity) => identity.hasAccessTo(ProductId.winglowzApp),
+        data: (identity) => identity.hasAccessTo(ProductId.commandglowsApp),
         orElse: () => false,
       );
 
   if (FirebaseBootstrap.isConfigured &&
       hasRemoteSession &&
-      hasWinGlowzAppAccess &&
+      hasCommandGlowsAppAccess &&
       firebase_auth.FirebaseAuth.instance.currentUser != null) {
     return FirebaseClipboardHistoryStore();
   }

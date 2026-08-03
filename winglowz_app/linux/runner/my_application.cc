@@ -261,7 +261,7 @@ static void register_linux_overlay_channel(MyApplication* self, FlView* view) {
   FlBinaryMessenger* messenger = fl_engine_get_binary_messenger(fl_view_get_engine(view));
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
   self->linux_overlay_channel = fl_method_channel_new(
-      messenger, "winglowz_app/linux_overlay", FL_METHOD_CODEC(codec));
+      messenger, "commandglows_app/linux_overlay", FL_METHOD_CODEC(codec));
   fl_method_channel_set_method_call_handler(
       self->linux_overlay_channel, linux_overlay_method_call_cb, self, nullptr);
 }
@@ -298,11 +298,11 @@ static void my_application_activate(GApplication* application) {
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "winglowz_app");
+    gtk_header_bar_set_title(header_bar, "CommandGlows");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "winglowz_app");
+    gtk_window_set_title(window, "CommandGlows");
   }
 
   gtk_window_set_default_size(window, 1280, 720);

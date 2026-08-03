@@ -3,14 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/app/winglowz_app.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/features/settings/application/settings_store_provider.dart';
-import 'package:winglowz_app/features/settings/data/local_settings_store.dart';
-import 'package:winglowz_app/features/settings/domain/settings_store.dart';
-import 'package:winglowz_app/features/settings/domain/user_retention_policy.dart';
+import 'package:commandglows_app/app/commandglows_app.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/features/settings/application/settings_store_provider.dart';
+import 'package:commandglows_app/features/settings/data/local_settings_store.dart';
+import 'package:commandglows_app/features/settings/domain/settings_store.dart';
+import 'package:commandglows_app/features/settings/domain/user_retention_policy.dart';
 
-const _keyboardChannel = MethodChannel('winglowz_app/keyboard');
+const _keyboardChannel = MethodChannel('commandglows_app/keyboard');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

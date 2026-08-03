@@ -275,10 +275,10 @@ class _KeyboardPreviewScreenState extends State<KeyboardPreviewScreen> {
         _setStatus('Keyboard picker is Android-only.');
         break;
       case KeyboardPreviewKeyAction.openAppSettings:
-        _setStatus('Would open WinGlowz settings on Android.');
+        _setStatus('Would open CommandGlows settings on Android.');
         break;
       case KeyboardPreviewKeyAction.openThemeSettings:
-        _setStatus('Would open WinGlowz appearance settings on Android.');
+        _setStatus('Would open CommandGlows appearance settings on Android.');
         break;
       case KeyboardPreviewKeyAction.toggleVibration:
         setState(() {
@@ -422,7 +422,7 @@ class _KeyboardPreviewScreenState extends State<KeyboardPreviewScreen> {
         const AppSectionCard(
           title: 'Keyboard preview',
           subtitle:
-              'Browser review surface for WinGlowz keyboard layouts. Native IME behavior still needs Android device validation.',
+              'Browser review surface for CommandGlows keyboard layouts. Native IME behavior still needs Android device validation.',
           child: SizedBox.shrink(),
         ),
         AppGaps.x4,

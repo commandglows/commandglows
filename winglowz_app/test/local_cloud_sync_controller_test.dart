@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/sync/application/local_cloud_sync_controller.dart';
-import 'package:winglowz_app/features/sync/data/local_cloud_sync_metadata_store.dart';
-import 'package:winglowz_app/features/sync/domain/local_cloud_sync_models.dart';
+import 'package:commandglows_app/features/sync/application/local_cloud_sync_controller.dart';
+import 'package:commandglows_app/features/sync/data/local_cloud_sync_metadata_store.dart';
+import 'package:commandglows_app/features/sync/domain/local_cloud_sync_models.dart';
 
 void main() {
   test('inactive remote context never touches cloud', () async {

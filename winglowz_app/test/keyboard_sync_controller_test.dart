@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_sync_controller.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_sync_queue.dart';
-import 'package:winglowz_app/features/keyboard/data/firebase_keyboard_theme_asset_store.dart';
-import 'package:winglowz_app/features/keyboard/data/local_keyboard_sync_queue_store.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_models.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_store.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_sync_controller.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_sync_queue.dart';
+import 'package:commandglows_app/features/keyboard/data/firebase_keyboard_theme_asset_store.dart';
+import 'package:commandglows_app/features/keyboard/data/local_keyboard_sync_queue_store.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_models.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_store.dart';
 
 void main() {
   test('does not touch cloud while entitlement/session is inactive', () async {

@@ -247,7 +247,7 @@ CloudSyncCategoryStatus _accountStatus({
   if (!remoteAuthConfigured) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.account,
-      title: 'Compte WinGlowz',
+      title: 'Compte CommandGlows',
       state: CloudSyncCategoryState.unavailable,
       stateLabel: 'Cloud désactivé',
       detail:
@@ -257,7 +257,7 @@ CloudSyncCategoryStatus _accountStatus({
   if (error != null) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.account,
-      title: 'Compte WinGlowz',
+      title: 'Compte CommandGlows',
       state: CloudSyncCategoryState.unavailable,
       stateLabel: 'Compte indisponible',
       detail:
@@ -267,7 +267,7 @@ CloudSyncCategoryStatus _accountStatus({
   if (authLoading || authSession == null) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.account,
-      title: 'Compte WinGlowz',
+      title: 'Compte CommandGlows',
       state: CloudSyncCategoryState.checking,
       stateLabel: 'Vérification',
       detail: 'L’état du compte cloud est vérifié.',
@@ -276,7 +276,7 @@ CloudSyncCategoryStatus _accountStatus({
   if (!authSession.isSignedIn) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.account,
-      title: 'Compte WinGlowz',
+      title: 'Compte CommandGlows',
       state: CloudSyncCategoryState.localOnly,
       stateLabel: 'Non connecté',
       detail: 'Mode local actif.',
@@ -285,7 +285,7 @@ CloudSyncCategoryStatus _accountStatus({
   if (authSession.isLocalFallback) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.account,
-      title: 'Compte WinGlowz',
+      title: 'Compte CommandGlows',
       state: CloudSyncCategoryState.localOnly,
       stateLabel: 'Mode local',
       detail: 'Compte de secours actif. Le mode local reste séparé du cloud.',
@@ -293,7 +293,7 @@ CloudSyncCategoryStatus _accountStatus({
   }
   return CloudSyncCategoryStatus(
     category: CloudSyncCategory.account,
-    title: 'Compte WinGlowz',
+    title: 'Compte CommandGlows',
     state: CloudSyncCategoryState.synced,
     stateLabel: 'Compte vérifié',
     detail:
@@ -313,44 +313,44 @@ CloudSyncCategoryStatus _suiteAccessStatus({
   if (!remoteAuthConfigured) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.suiteAccess,
-      title: 'Accès WinGlowz',
+      title: 'Accès CommandGlows',
       state: CloudSyncCategoryState.unavailable,
       stateLabel: 'Non configuré',
-      detail: 'Le cloud WinGlowz n’est pas disponible dans cette version.',
+      detail: 'Le cloud CommandGlows n’est pas disponible dans cette version.',
     );
   }
   if (authError != null) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.suiteAccess,
-      title: 'Accès WinGlowz',
+      title: 'Accès CommandGlows',
       state: CloudSyncCategoryState.unavailable,
       stateLabel: 'Accès indisponible',
-      detail: 'Le statut d’accès WinGlowz est indisponible pour l’instant.',
+      detail: 'Le statut d’accès CommandGlows est indisponible pour l’instant.',
     );
   }
   if (authLoading || authSession == null || suiteLoading) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.suiteAccess,
-      title: 'Accès WinGlowz',
+      title: 'Accès CommandGlows',
       state: CloudSyncCategoryState.checking,
       stateLabel: 'Vérification',
-      detail: 'L’accès WinGlowz est vérifié.',
+      detail: 'L’accès CommandGlows est vérifié.',
     );
   }
   if (!authSession.isSignedIn || authSession.isLocalFallback) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.suiteAccess,
-      title: 'Accès WinGlowz',
+      title: 'Accès CommandGlows',
       state: CloudSyncCategoryState.localOnly,
       stateLabel: 'Non connecté',
       detail:
-          'Connecte ton compte WinGlowz pour activer la synchronisation de données.',
+          'Connecte ton compte CommandGlows pour activer la synchronisation de données.',
     );
   }
   if (suiteError != null) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.suiteAccess,
-      title: 'Accès WinGlowz',
+      title: 'Accès CommandGlows',
       state: CloudSyncCategoryState.failed,
       stateLabel: 'Vérification impossible',
       detail:
@@ -359,22 +359,22 @@ CloudSyncCategoryStatus _suiteAccessStatus({
     );
   }
   final hasAccess =
-      suiteIdentity?.statusFor(ProductId.winglowzApp) ==
+      suiteIdentity?.statusFor(ProductId.commandglowsApp) ==
       SuiteAccountStatus.accessActive;
   if (hasAccess) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.suiteAccess,
-      title: 'Accès WinGlowz',
+      title: 'Accès CommandGlows',
       state: CloudSyncCategoryState.synced,
       stateLabel: 'Active',
       detail:
-          'Le compte a bien accès WinGlowz. La synchronisation peut être active '
+          'Le compte a bien accès CommandGlows. La synchronisation peut être active '
           'quand le store distant est engagé.',
     );
   }
   return CloudSyncCategoryStatus(
     category: CloudSyncCategory.suiteAccess,
-    title: 'Accès WinGlowz',
+    title: 'Accès CommandGlows',
     state: suiteIdentity?.status == SuiteAccountStatus.linkingRequired
         ? CloudSyncCategoryState.failed
         : CloudSyncCategoryState.unavailable,
@@ -382,7 +382,7 @@ CloudSyncCategoryStatus _suiteAccessStatus({
         ? 'Liaison requise'
         : 'Inactif',
     detail: suiteIdentity?.status == SuiteAccountStatus.linkingRequired
-        ? 'La liaison de compte WinGlowz doit être confirmée.'
+        ? 'La liaison de compte CommandGlows doit être confirmée.'
         : 'Accès cloud non activé pour ce compte, les données restent locales.',
   );
 }
@@ -447,9 +447,9 @@ CloudSyncCategoryStatus _dataCategoryStatus({
       category: category,
       title: title,
       state: CloudSyncCategoryState.localOnly,
-      stateLabel: 'Accès WinGlowz inactif',
+      stateLabel: 'Accès CommandGlows inactif',
       detail:
-          'Le compte existe mais pas d’accès WinGlowz actif pour cette catégorie.',
+          'Le compte existe mais pas d’accès CommandGlows actif pour cette catégorie.',
     );
   }
   if (!remoteEnabled) {
@@ -607,17 +607,17 @@ CloudSyncCategoryStatus _keyboardStatus({
       state: CloudSyncCategoryState.localOnly,
       stateLabel: 'Session locale',
       detail:
-          'Le profil clavier Android dépend d’un compte cloud WinGlowz actif.',
+          'Le profil clavier Android dépend d’un compte cloud CommandGlows actif.',
     );
   }
-  if (suiteIdentity?.statusFor(ProductId.winglowzApp) !=
+  if (suiteIdentity?.statusFor(ProductId.commandglowsApp) !=
       SuiteAccountStatus.accessActive) {
     return const CloudSyncCategoryStatus(
       category: CloudSyncCategory.keyboardProfile,
       title: 'Profil clavier Android',
       state: CloudSyncCategoryState.localOnly,
       stateLabel: 'Accès inactif',
-      detail: 'Sans accès WinGlowz actif, le profil clavier reste local.',
+      detail: 'Sans accès CommandGlows actif, le profil clavier reste local.',
     );
   }
   if (!keyboardRemoteSyncActive) {

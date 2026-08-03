@@ -1,6 +1,6 @@
 enum ProductId {
-  winglowzFormation('winglowz_formation'),
-  winglowzApp('winglowz_app');
+  commandglowsFormation('commandglows_formation'),
+  commandglowsApp('commandglows_app');
 
   const ProductId(this.value);
 

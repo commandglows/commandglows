@@ -30,7 +30,7 @@ class MainFlutterWindow: NSWindow {
     flutterViewController: FlutterViewController
   ) {
     let channel = FlutterMethodChannel(
-      name: "winglowz_app/macos_overlay",
+      name: "commandglows_app/macos_overlay",
       binaryMessenger: flutterViewController.engine.binaryMessenger
     )
     channel.setMethodCallHandler { [weak self] call, result in

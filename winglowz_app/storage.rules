@@ -10,14 +10,14 @@ service firebase.storage {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function hasWinGlowzAppAccess(userId) {
+    function hasCommandGlowsAppAccess(userId) {
       return isOwner(userId) &&
           firestore.exists(
             /databases/(default)/documents/suiteAccess/$(userId),
           ) &&
           firestore.get(
             /databases/(default)/documents/suiteAccess/$(userId),
-          ).data.products.winglowz_app.active == true;
+          ).data.products.commandglows_app.active == true;
     }
 
     function hasAllowedImageMetadata() {
@@ -28,8 +28,8 @@ service firebase.storage {
     }
 
     match /users/{uid}/keyboard_theme_assets/{assetId} {
-      allow read: if hasWinGlowzAppAccess(uid);
-      allow write: if hasWinGlowzAppAccess(uid) &&
+      allow read: if hasCommandGlowsAppAccess(uid);
+      allow write: if hasCommandGlowsAppAccess(uid) &&
           assetId.size() > 0 &&
           assetId.size() <= 128 &&
           hasAllowedImageMetadata();

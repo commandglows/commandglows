@@ -26,7 +26,7 @@ class AndroidKeyboardBridgeException implements Exception {
 class AndroidKeyboardBridge {
   AndroidKeyboardBridge._();
 
-  static const MethodChannel _channel = MethodChannel('winglowz_app/keyboard');
+  static const MethodChannel _channel = MethodChannel('commandglows_app/keyboard');
   static const Uuid _uuid = Uuid();
 
   static Future<AndroidKeyboardStatus> getStatus() async {

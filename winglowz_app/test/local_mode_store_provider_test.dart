@@ -1,20 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/sync/sync_status.dart';
-import 'package:winglowz_app/features/auth/application/auth_session_provider.dart';
-import 'package:winglowz_app/features/auth/application/suite_identity_provider.dart';
-import 'package:winglowz_app/features/auth/domain/auth_session_store.dart';
-import 'package:winglowz_app/features/auth/domain/suite_identity.dart';
-import 'package:winglowz_app/features/clipboard/application/clipboard_store_provider.dart';
-import 'package:winglowz_app/features/clipboard/data/persistent_clipboard_history_store.dart';
-import 'package:winglowz_app/features/dictionary/application/dictionary_store_provider.dart';
-import 'package:winglowz_app/features/dictionary/data/in_memory_dictionary_store.dart';
-import 'package:winglowz_app/features/settings/application/settings_store_provider.dart';
-import 'package:winglowz_app/features/settings/data/local_settings_store.dart';
-import 'package:winglowz_app/features/snippets/application/snippet_store_provider.dart';
-import 'package:winglowz_app/features/snippets/data/in_memory_snippet_store.dart';
-import 'package:winglowz_app/features/voice/application/transcription_store_provider.dart';
-import 'package:winglowz_app/features/voice/data/in_memory_transcription_store.dart';
+import 'package:commandglows_app/core/sync/sync_status.dart';
+import 'package:commandglows_app/features/auth/application/auth_session_provider.dart';
+import 'package:commandglows_app/features/auth/application/suite_identity_provider.dart';
+import 'package:commandglows_app/features/auth/domain/auth_session_store.dart';
+import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
+import 'package:commandglows_app/features/clipboard/application/clipboard_store_provider.dart';
+import 'package:commandglows_app/features/clipboard/data/persistent_clipboard_history_store.dart';
+import 'package:commandglows_app/features/dictionary/application/dictionary_store_provider.dart';
+import 'package:commandglows_app/features/dictionary/data/in_memory_dictionary_store.dart';
+import 'package:commandglows_app/features/settings/application/settings_store_provider.dart';
+import 'package:commandglows_app/features/settings/data/local_settings_store.dart';
+import 'package:commandglows_app/features/snippets/application/snippet_store_provider.dart';
+import 'package:commandglows_app/features/snippets/data/in_memory_snippet_store.dart';
+import 'package:commandglows_app/features/voice/application/transcription_store_provider.dart';
+import 'package:commandglows_app/features/voice/data/in_memory_transcription_store.dart';
 
 void main() {
   test('local mode keeps every product store on local implementations', () {

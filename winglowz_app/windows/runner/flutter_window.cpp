@@ -13,7 +13,7 @@
 namespace {
 
 constexpr const char kWindowsOverlayChannelName[] =
-    "winglowz_app/windows_overlay";
+    "commandglows_app/windows_overlay";
 
 int64_t CurrentEpochMillis() {
   const auto now = std::chrono::system_clock::now();

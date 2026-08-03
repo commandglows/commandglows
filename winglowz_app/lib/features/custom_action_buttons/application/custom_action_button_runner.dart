@@ -42,7 +42,7 @@ class CustomActionButtonRunner {
         return CustomActionButtonRunResult(
           success: false,
           message:
-              'Action clavier WinGlowz enregistrée. Exécution directe non disponible depuis cet écran sur ${PlatformCapabilities.currentPlatformLabel}.',
+              'Action clavier CommandGlows enregistrée. Exécution directe non disponible depuis cet écran sur ${PlatformCapabilities.currentPlatformLabel}.',
         );
       case CustomActionKind.macro:
         return CustomActionButtonRunResult(

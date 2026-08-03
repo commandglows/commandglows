@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/clipboard/data/in_memory_clipboard_history_store.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_capture_event.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_store.dart';
+import 'package:commandglows_app/features/clipboard/data/in_memory_clipboard_history_store.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_capture_event.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_store.dart';
 
 void main() {
   group('InMemoryClipboardHistoryStore', () {

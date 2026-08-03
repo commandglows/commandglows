@@ -151,7 +151,7 @@ class WindowsOverlayBridge {
   WindowsOverlayBridge._();
 
   static const MethodChannel _channel = MethodChannel(
-    'winglowz_app/windows_overlay',
+    'commandglows_app/windows_overlay',
   );
 
   static Future<WindowsOverlayStatus> getStatus() async {

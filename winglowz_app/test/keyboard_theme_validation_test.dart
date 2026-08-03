@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_models.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_theme_validation.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_models.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_theme_validation.dart';
 
 void main() {
   test('ships the full v1 preset catalog', () {
@@ -10,7 +10,7 @@ void main() {
     expect(
       KeyboardThemePresetCatalog.presets.map((preset) => preset.name),
       containsAll([
-        'WinGlowz',
+        'CommandGlows',
         'Glass Mint',
         'Midnight Aurora',
         'Paper Ink',
@@ -242,7 +242,7 @@ void main() {
   test('blocks unreadable key labels', () {
     final result = KeyboardThemeValidator.validate(
       KeyboardThemeConfig.defaults().copyWith(
-        presetId: KeyboardThemePresetCatalog.winglowzLight,
+        presetId: KeyboardThemePresetCatalog.commandglowsLight,
         keyColor: 0xFF111111,
         specialKeyColor: 0xFF111111,
         pressedKeyColor: 0xFF111111,

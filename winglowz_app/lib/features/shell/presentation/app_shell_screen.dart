@@ -26,7 +26,7 @@ import '../../snippets/presentation/snippets_screen.dart';
 import '../../voice/application/transcription_store_provider.dart';
 import '../../voice/domain/transcription_draft.dart';
 import '../../voice/presentation/voice_screen.dart';
-import '../../../app/winglowz_app.dart';
+import '../../../app/commandglows_app.dart';
 
 class AppShellScreen extends ConsumerStatefulWidget {
   const AppShellScreen({
@@ -1186,7 +1186,7 @@ class _WelcomeGuideOverlay extends StatelessWidget {
           scopesRoute: true,
           namesRoute: true,
           explicitChildNodes: true,
-          label: 'Bienvenue dans WinGlowz',
+          label: 'Bienvenue dans CommandGlows',
           child: ColoredBox(
             color: AppColors.overlayScrim,
             child: SafeArea(
@@ -1211,7 +1211,7 @@ class _WelcomeGuideOverlay extends StatelessWidget {
                               AppGaps.horizontalX2,
                               Expanded(
                                 child: Text(
-                                  'Bienvenue dans WinGlowz',
+                                  'Bienvenue dans CommandGlows',
                                   style: Theme.of(
                                     context,
                                   ).textTheme.titleMedium,
@@ -1433,7 +1433,7 @@ class _OnboardingOverlay extends StatelessWidget {
                                         AppGaps.horizontalX2,
                                         Expanded(
                                           child: Text(
-                                            'Configuration WinGlowz',
+                                            'Configuration CommandGlows',
                                             style: Theme.of(
                                               context,
                                             ).textTheme.titleSmall,
@@ -1520,7 +1520,7 @@ class _OnboardingOverviewContentState
       stepId: OnboardingStepId.keyboardIme,
       icon: Icons.keyboard_outlined,
       title: 'Clavier',
-      subtitle: 'Clavier Android WinGlowz et options liées.',
+      subtitle: 'Clavier Android CommandGlows et options liées.',
     ),
     _OnboardingUseCasePage(
       stepId: OnboardingStepId.mediaSessionAccess,
@@ -2073,9 +2073,9 @@ class _OnboardingCompletionContent extends StatelessWidget {
       children: [
         AppBannerCard(
           icon: Icons.check_circle_outline,
-          title: allActive ? 'WinGlowz est prêt' : 'Configuration terminée',
+          title: allActive ? 'CommandGlows est prêt' : 'Configuration terminée',
           message: allActive
-              ? 'Tu vas pouvoir profiter au maximum de WinGlowz.'
+              ? 'Tu vas pouvoir profiter au maximum de CommandGlows.'
               : 'Les modules que tu as choisis sont prêts. Tu peux terminer maintenant ou revoir les réglages.',
           accentColor: AppColors.success,
         ),

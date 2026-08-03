@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/platform/android_keyboard_bridge.dart';
-import 'package:winglowz_app/features/clipboard/application/clipboard_history_api.dart';
-import 'package:winglowz_app/features/clipboard/application/keyboard_clipboard_event_importer.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_capture_event.dart';
-import 'package:winglowz_app/features/clipboard/domain/clipboard_store.dart';
+import 'package:commandglows_app/core/platform/android_keyboard_bridge.dart';
+import 'package:commandglows_app/features/clipboard/application/clipboard_history_api.dart';
+import 'package:commandglows_app/features/clipboard/application/keyboard_clipboard_event_importer.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_capture_event.dart';
+import 'package:commandglows_app/features/clipboard/domain/clipboard_store.dart';
 
 void main() {
   group('ClipboardHistoryApi', () {

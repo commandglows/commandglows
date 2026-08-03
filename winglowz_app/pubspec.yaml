@@ -1,5 +1,5 @@
-name: winglowz_app
-description: "WinGlowz Flutter Android-first app with backend-agnostic data contracts."
+name: commandglows_app
+description: "CommandGlows Flutter Android-first app with backend-agnostic data contracts."
 publish_to: "none"
 version: 1.0.0+1
 

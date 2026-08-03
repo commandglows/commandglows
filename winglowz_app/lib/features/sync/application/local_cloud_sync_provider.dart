@@ -42,7 +42,7 @@ final localCloudSyncAuthContextProvider = Provider<LocalCloudSyncAuthContext>((
   return LocalCloudSyncAuthContext(
     isSignedIn: session?.isSignedIn ?? false,
     isLocalFallback: session?.isLocalFallback ?? true,
-    hasEntitlement: suiteIdentity?.hasAccessTo(ProductId.winglowzApp) ?? false,
+    hasEntitlement: suiteIdentity?.hasAccessTo(ProductId.commandglowsApp) ?? false,
     firebaseUid: firebaseUid,
     globalUserId: suiteIdentity?.globalUserId,
   );

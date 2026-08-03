@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/platform/windows_overlay_bridge.dart';
+import 'package:commandglows_app/core/platform/windows_overlay_bridge.dart';
 
-const _channel = MethodChannel('winglowz_app/windows_overlay');
+const _channel = MethodChannel('commandglows_app/windows_overlay');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

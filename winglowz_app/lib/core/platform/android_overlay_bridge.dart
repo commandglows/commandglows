@@ -226,7 +226,7 @@ class AndroidOverlayBridgeException implements Exception {
 class AndroidOverlayBridge {
   AndroidOverlayBridge._();
 
-  static const MethodChannel _channel = MethodChannel('winglowz_app/overlay');
+  static const MethodChannel _channel = MethodChannel('commandglows_app/overlay');
 
   static Future<bool> isPermissionGranted() async {
     final status = await getStatus();

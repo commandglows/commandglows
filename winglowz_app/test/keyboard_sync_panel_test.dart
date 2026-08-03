@@ -2,21 +2,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:winglowz_app/core/sync/sync_status.dart';
-import 'package:winglowz_app/features/auth/application/auth_session_provider.dart';
-import 'package:winglowz_app/features/auth/application/suite_identity_provider.dart';
-import 'package:winglowz_app/features/auth/domain/auth_session_store.dart';
-import 'package:winglowz_app/features/auth/domain/product_entitlement.dart';
-import 'package:winglowz_app/features/auth/domain/suite_identity.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_profile_backup_service.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_sync_controller.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_sync_providers.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_sync_queue.dart';
-import 'package:winglowz_app/features/keyboard/data/firebase_keyboard_theme_asset_store.dart';
-import 'package:winglowz_app/features/keyboard/data/local_keyboard_sync_queue_store.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_models.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_store.dart';
-import 'package:winglowz_app/features/keyboard/presentation/keyboard_sync_panel.dart';
+import 'package:commandglows_app/core/sync/sync_status.dart';
+import 'package:commandglows_app/features/auth/application/auth_session_provider.dart';
+import 'package:commandglows_app/features/auth/application/suite_identity_provider.dart';
+import 'package:commandglows_app/features/auth/domain/auth_session_store.dart';
+import 'package:commandglows_app/features/auth/domain/product_entitlement.dart';
+import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_profile_backup_service.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_sync_controller.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_sync_providers.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_sync_queue.dart';
+import 'package:commandglows_app/features/keyboard/data/firebase_keyboard_theme_asset_store.dart';
+import 'package:commandglows_app/features/keyboard/data/local_keyboard_sync_queue_store.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_models.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_store.dart';
+import 'package:commandglows_app/features/keyboard/presentation/keyboard_sync_panel.dart';
 
 void main() {
   testWidgets('shows unsupported messaging on non-Android platforms', (
@@ -50,7 +50,7 @@ void main() {
       expect(find.text('Clavier Android indisponible sur iOS'), findsOneWidget);
       expect(
         find.text(
-          'Le clavier WinGlowz est une IME native Android et ne peut pas être installé sur iOS.',
+          'Le clavier CommandGlows est une IME native Android et ne peut pas être installé sur iOS.',
         ),
         findsOneWidget,
       );
@@ -238,7 +238,7 @@ SuiteIdentitySnapshot _identityWithAccess() {
     globalUserId: 'global-user',
     entitlements: [
       ProductEntitlement(
-        productId: ProductId.winglowzApp,
+        productId: ProductId.commandglowsApp,
         status: ProductEntitlementStatus.active,
       ),
     ],

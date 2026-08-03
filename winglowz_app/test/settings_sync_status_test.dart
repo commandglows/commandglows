@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:winglowz_app/core/theme/app_theme.dart';
-import 'package:winglowz_app/features/settings/application/settings_store_provider.dart';
-import 'package:winglowz_app/features/settings/data/local_settings_store.dart';
-import 'package:winglowz_app/features/settings/presentation/settings_screen.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/features/settings/application/settings_store_provider.dart';
+import 'package:commandglows_app/features/settings/data/local_settings_store.dart';
+import 'package:commandglows_app/features/settings/presentation/settings_screen.dart';
 
 const _secureStorageChannel = MethodChannel(
   'plugins.it_nomads.com/flutter_secure_storage',

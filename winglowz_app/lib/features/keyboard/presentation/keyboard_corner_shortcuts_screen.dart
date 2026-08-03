@@ -194,7 +194,7 @@ class _KeyboardCornerShortcutsScreenState
     if (!PlatformCapabilities.keyboardImeSupported) {
       setState(() {
         _message =
-            'Save disabled here: only Android can persist WinGlowz keyboard IME settings.';
+            'Save disabled here: only Android can persist CommandGlows keyboard IME settings.';
       });
       return;
     }

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/snippets/data/in_memory_snippet_store.dart';
+import 'package:commandglows_app/features/snippets/data/in_memory_snippet_store.dart';
 
 void main() {
   group('InMemorySnippetStore', () {

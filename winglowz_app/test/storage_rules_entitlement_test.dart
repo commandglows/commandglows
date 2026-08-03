@@ -15,7 +15,7 @@ void main() {
         r"firestore.get(" "\n            " r"/databases/(default)/documents/suiteAccess/$(userId)",
       ),
     );
-    expect(rules, contains("products.winglowz_app.active == true"));
+    expect(rules, contains("products.commandglows_app.active == true"));
     expect(rules, contains("request.resource.size <= 8 * 1024 * 1024"));
     expect(rules, contains("request.resource.contentType.matches('image/.*')"));
     expect(rules, contains('allow delete: if false;'));

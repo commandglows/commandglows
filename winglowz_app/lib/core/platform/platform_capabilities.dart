@@ -30,7 +30,7 @@ class PlatformCapabilities {
       return 'La version web s’exécute dans le navigateur: elle ne peut pas utiliser le moteur de dictée local du téléphone.';
     }
     if (isLinux) {
-      return 'Linux n’expose pas encore le moteur de dictée locale attendu par WinGlowz.';
+      return 'Linux n’expose pas encore le moteur de dictée locale attendu par CommandGlows.';
     }
     return 'Cette fonctionnalité dépend du moteur de dictée local de la plateforme.';
   }
@@ -48,14 +48,14 @@ class PlatformCapabilities {
     if (isLinux) {
       return 'L’overlay Linux utilise un hôte desktop dédié: fenêtre flottante, raccourci global quand le gestionnaire de fenêtres le permet, clipboard et livraison best-effort, sans IME Linux.';
     }
-    return 'L’overlay WinGlowz dépend des APIs natives Android pour afficher une bulle au-dessus des autres apps.';
+    return 'L’overlay CommandGlows dépend des APIs natives Android pour afficher une bulle au-dessus des autres apps.';
   }
 
   static String get keyboardImeUnavailableReason {
     if (isWeb) {
       return 'La version web s’exécute dans le navigateur: elle ne peut pas installer ni sélectionner un clavier système.';
     }
-    return 'Le clavier WinGlowz est une IME native Android et ne peut pas être installé sur $currentPlatformLabel.';
+    return 'Le clavier CommandGlows est une IME native Android et ne peut pas être installé sur $currentPlatformLabel.';
   }
 
   static bool get localSpeechSupported => !isWeb && !isLinux;

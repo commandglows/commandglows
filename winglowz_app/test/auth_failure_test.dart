@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:winglowz_app/features/auth/data/google_auth_client.dart';
-import 'package:winglowz_app/features/auth/domain/auth_failure.dart';
+import 'package:commandglows_app/features/auth/data/google_auth_client.dart';
+import 'package:commandglows_app/features/auth/domain/auth_failure.dart';
 
 void main() {
   test('redacts tokens api keys and password-like values', () {

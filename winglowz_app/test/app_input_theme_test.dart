@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/core/theme/app_theme.dart';
+import 'package:commandglows_app/core/theme/app_theme.dart';
 
 void main() {
   testWidgets('text inputs keep a readable minimum height', (tester) async {

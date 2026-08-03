@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_models.dart';
-import 'package:winglowz_app/features/keyboard/application/keyboard_sync_providers.dart';
-import 'package:winglowz_app/features/keyboard/presentation/keyboard_theme_studio_screen.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_models.dart';
+import 'package:commandglows_app/features/keyboard/application/keyboard_sync_providers.dart';
+import 'package:commandglows_app/features/keyboard/presentation/keyboard_theme_studio_screen.dart';
 
 void main() {
-  const channel = MethodChannel('winglowz_app/keyboard');
+  const channel = MethodChannel('commandglows_app/keyboard');
 
   TestWidgetsFlutterBinding.ensureInitialized();
 

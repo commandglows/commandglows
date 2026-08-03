@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winglowz_app/features/keyboard/domain/keyboard_sync_policy.dart';
+import 'package:commandglows_app/features/keyboard/domain/keyboard_sync_policy.dart';
 
 void main() {
   test('redacts sensitive shortcuts from corner config', () {
