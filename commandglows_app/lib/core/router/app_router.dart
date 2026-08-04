@@ -45,7 +45,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/home',
         name: 'home',
-        builder: (context, state) => const AppShellScreen(initialIndex: 0),
+        builder: (context, state) => AppShellScreen(
+          initialIndex: 0,
+          initialOnboardingStep: state.uri.queryParameters['onboarding'],
+        ),
       ),
       GoRoute(
         path: '/voice',
@@ -62,6 +65,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'settings',
         builder: (context, state) => SettingsScreen(
           initialSectionId: state.uri.queryParameters['section'],
+          onResumeOnboarding: () => context.go('/home?onboarding=resume'),
         ),
       ),
       GoRoute(

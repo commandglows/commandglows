@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/diagnostics/app_diagnostics.dart';
 import '../../../core/platform/android_keyboard_bridge.dart';
@@ -154,6 +155,14 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant AppShellScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialOnboardingStep != widget.initialOnboardingStep) {
+      Future.microtask(_refreshOnboardingState);
+    }
   }
 
   @override
@@ -449,6 +458,7 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen>
         overlaySkipped: rawSettings.onboardingOverlaySkipped,
       );
       final forcedStep = _forcedOnboardingStepIndex(readiness);
+      final resumeRequested = widget.initialOnboardingStep?.trim() == 'resume';
       if (forcedStep != null) {
         readiness = OnboardingReadiness(
           platformSupported: readiness.platformSupported,
@@ -475,7 +485,7 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen>
         _onboardingReadiness = readiness;
         _onboardingSettings = nextSettings;
         _onboardingBusy = false;
-        if (forcedStep != null) {
+        if (forcedStep != null || resumeRequested) {
           _onboardingVisible = true;
           _onboardingDismissed = false;
           _onboardingOpenedManually = true;
@@ -772,7 +782,7 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen>
     if (!mounted) {
       return;
     }
-    _selectTab(_homeTabIndex);
+    context.push('/settings');
   }
 
   void _startWelcomeGuide() {
@@ -802,7 +812,7 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen>
     setState(() {
       _onboardingDeferPromptVisible = false;
     });
-    _selectTab(_homeTabIndex);
+    context.push('/settings');
   }
 
   void _openHomeSource(HomeFeedSourceType sourceType) {

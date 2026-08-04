@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:commandglows_app/core/theme/app_theme.dart';
 import 'package:commandglows_app/features/settings/application/settings_store_provider.dart';
@@ -118,15 +119,11 @@ void main() {
     (tester) async {
       await _pumpSettings(
         tester,
+        initialLocation: '/settings?section=keys',
         overrides: [
           settingsStoreProvider.overrideWithValue(LocalSettingsStore()),
         ],
       );
-
-      await tester.tap(
-        find.byKey(const ValueKey('settings_section_keys_false')),
-      );
-      await tester.pumpAndSettle();
 
       await tester.enterText(
         find.widgetWithText(TextField, 'Clé API OpenAI'),
@@ -169,16 +166,29 @@ void main() {
 Future<void> _pumpSettings(
   WidgetTester tester, {
   List<Object> overrides = const [],
+  String initialLocation = '/settings',
 }) async {
   await tester.binding.setSurfaceSize(const Size(1400, 2200));
   addTearDown(() => tester.binding.setSurfaceSize(null));
+  final router = GoRouter(
+    initialLocation: initialLocation,
+    routes: [
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => SettingsScreen(
+          initialSectionId: state.uri.queryParameters['section'],
+        ),
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
   await tester.pumpWidget(
     ProviderScope(
       overrides: overrides.cast(),
-      child: MaterialApp(
+      child: MaterialApp.router(
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        home: const SettingsScreen(),
+        routerConfig: router,
       ),
     ),
   );

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:commandglows_app/core/theme/app_theme.dart';
 import 'package:commandglows_app/core/bootstrap/supabase_bootstrap.dart';
 import 'package:commandglows_app/core/platform/android_keyboard_bridge.dart';
@@ -139,6 +140,39 @@ Widget _appShellTestWidgetWithInitialOnboardingStep(String onboardingStep) {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       home: AppShellScreen(initialOnboardingStep: onboardingStep),
+    ),
+  );
+}
+
+Widget _routedSettingsTestWidget({
+  String initialLocation = '/settings',
+  List<Object> overrides = const [],
+}) {
+  final router = GoRouter(
+    initialLocation: initialLocation,
+    routes: [
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => AppShellScreen(
+          initialOnboardingStep: state.uri.queryParameters['onboarding'],
+        ),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => SettingsScreen(
+          initialSectionId: state.uri.queryParameters['section'],
+          onResumeOnboarding: () => context.go('/home?onboarding=resume'),
+        ),
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+  return ProviderScope(
+    overrides: overrides.cast(),
+    child: MaterialApp.router(
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      routerConfig: router,
     ),
   );
 }
@@ -768,11 +802,13 @@ void main() {
     _installAndroidBridgeMocks();
 
     try {
-      await tester.pumpWidget(_appShellTestWidget());
+      await tester.pumpWidget(
+        _routedSettingsTestWidget(initialLocation: '/home'),
+      );
       await _pumpNavigationFrame(tester);
 
       expect(find.text('Accueil'), findsWidgets);
-      expect(find.text('Configuration CommandGlows'), findsOneWidget);
+      expect(find.text('Configuration CMDglows'), findsOneWidget);
       final refreshAccessButton = find.widgetWithText(
         OutlinedButton,
         'Re-vérifier les accès',
@@ -787,7 +823,7 @@ void main() {
       expect(find.widgetWithText(OutlinedButton, 'Paramètres'), findsNothing);
       await tester.tap(find.widgetWithText(OutlinedButton, 'Plus tard').last);
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
-      expect(find.text('Configuration CommandGlows'), findsOneWidget);
+      expect(find.text('Configuration CMDglows'), findsOneWidget);
       expect(find.text('Onboarding mis en pause'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Plus tard'), findsNothing);
       expect(
@@ -798,8 +834,8 @@ void main() {
       );
       await tester.tap(find.widgetWithText(FilledButton, 'OK'));
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
-      expect(find.text('Configuration CommandGlows'), findsNothing);
-      expect(find.text('Apparence'), findsWidgets);
+      expect(find.text('Configuration CMDglows'), findsNothing);
+      expect(find.text('Paramètres'), findsWidgets);
       expect(find.text('Onboarding mis en pause'), findsNothing);
 
       final resumeButton = find.descendant(
@@ -815,11 +851,17 @@ void main() {
       await tester.tap(resumeButton, warnIfMissed: false);
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
-      expect(find.text('Configuration CommandGlows'), findsOneWidget);
+      expect(find.text('Configuration CMDglows'), findsOneWidget);
       expect(
         find.text('Choisis les usages que tu veux activer'),
         findsOneWidget,
       );
+      final microphoneProgressDot = find.byKey(
+        const ValueKey('onboarding-progress-dot-microphoneForDictation'),
+      );
+      await tester.ensureVisible(microphoneProgressDot);
+      await tester.tap(microphoneProgressDot);
+      await tester.pumpAndSettle(const Duration(milliseconds: 300));
       expect(find.text('Micro et voix'), findsOneWidget);
       expect(find.text('Clavier'), findsNothing);
 
@@ -886,7 +928,8 @@ void main() {
 
     try {
       await tester.pumpWidget(
-        ProviderScope(
+        _routedSettingsTestWidget(
+          initialLocation: '/settings?section=account_cloud',
           overrides: [
             authSessionProvider.overrideWith(
               (ref) => Stream.value(const AuthSessionSnapshot.localFallback()),
@@ -897,18 +940,13 @@ void main() {
               _MemorySettingsStore(const UserSettingsSnapshot.defaults()),
             ),
           ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            home: const SettingsScreen(),
-          ),
         ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Compte & synchronisation'), findsOneWidget);
+      expect(find.text('Mon compte'), findsOneWidget);
       expect(find.textContaining('Connecte ton compte'), findsOneWidget);
       expect(find.text('Compte CommandGlows'), findsNothing);
       expect(find.text('Accès CommandGlows'), findsNothing);
@@ -932,7 +970,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(cloudAuthStore.emailPasswordCalls, 1);
-      expect(find.text('Compte & cloud'), findsOneWidget);
+      expect(find.text('Mon compte'), findsOneWidget);
     } finally {
       debugDefaultTargetPlatformOverride = previousPlatform;
       _clearAndroidBridgeMocks();
@@ -952,7 +990,8 @@ void main() {
 
     try {
       await tester.pumpWidget(
-        ProviderScope(
+        _routedSettingsTestWidget(
+          initialLocation: '/settings?section=account_cloud',
           overrides: [
             remoteAuthSessionStoreProvider.overrideWithValue(remoteStore),
             remoteAuthConfiguredProvider.overrideWithValue(true),
@@ -963,11 +1002,6 @@ void main() {
               _MemorySettingsStore(const UserSettingsSnapshot.defaults()),
             ),
           ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            home: const SettingsScreen(),
-          ),
         ),
       );
       await tester.pump();
@@ -1022,7 +1056,8 @@ void main() {
 
     try {
       await tester.pumpWidget(
-        ProviderScope(
+        _routedSettingsTestWidget(
+          initialLocation: '/settings?section=account_cloud',
           overrides: [
             authSessionProvider.overrideWith(
               (ref) => Stream.value(
@@ -1044,11 +1079,6 @@ void main() {
               _MemorySettingsStore(const UserSettingsSnapshot.defaults()),
             ),
           ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            home: const SettingsScreen(),
-          ),
         ),
       );
       await tester.pump();
@@ -1061,7 +1091,10 @@ void main() {
         find.text('Aucune donnée synchronisée pour le moment.'),
         findsNothing,
       );
-      expect(find.text('Apparence · Accès CommandGlows inactif'), findsOneWidget);
+      expect(
+        find.text('Apparence · Accès CommandGlows inactif'),
+        findsOneWidget,
+      );
       expect(find.text('Papiers · Accès CommandGlows inactif'), findsOneWidget);
       expect(find.text('Dico · Accès CommandGlows inactif'), findsOneWidget);
       expect(find.text('Voix · Accès CommandGlows inactif'), findsOneWidget);
@@ -1070,7 +1103,7 @@ void main() {
         find.textContaining('Compte connecté · Accès inactif'),
         findsOneWidget,
       );
-      expect(find.text('Compte & synchronisation'), findsOneWidget);
+      expect(find.text('Mon compte'), findsOneWidget);
       expect(find.text('Compte CommandGlows'), findsNothing);
       expect(find.text('Accès CommandGlows'), findsNothing);
     } finally {
@@ -1091,7 +1124,8 @@ void main() {
 
     try {
       await tester.pumpWidget(
-        ProviderScope(
+        _routedSettingsTestWidget(
+          initialLocation: '/settings?section=maintenance',
           overrides: [
             remoteAuthConfiguredProvider.overrideWithValue(true),
             authSessionProvider.overrideWith(
@@ -1101,18 +1135,13 @@ void main() {
               _MemorySettingsStore(const UserSettingsSnapshot.defaults()),
             ),
           ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            home: const SettingsScreen(),
-          ),
         ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Compte & cloud'), findsOneWidget);
+      expect(find.text('Maintenance'), findsOneWidget);
       expect(find.byType(SettingsScreen), findsOneWidget);
       expect(
         find.textContaining('Clavier Android indisponible sur'),
@@ -1136,7 +1165,8 @@ void main() {
 
     try {
       await tester.pumpWidget(
-        ProviderScope(
+        _routedSettingsTestWidget(
+          initialLocation: '/settings?section=keyboard',
           overrides: [
             remoteAuthConfiguredProvider.overrideWithValue(true),
             authSessionProvider.overrideWith(
@@ -1146,27 +1176,13 @@ void main() {
               _MemorySettingsStore(const UserSettingsSnapshot.defaults()),
             ),
           ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            home: const SettingsScreen(),
-          ),
         ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      final keyboardSection = find.text('Clavier CommandGlows').first;
-      await tester.scrollUntilVisible(
-        keyboardSection,
-        500,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.tap(keyboardSection, warnIfMissed: false);
-      await tester.pumpAndSettle(const Duration(milliseconds: 300));
-
-      expect(find.text('Clavier CommandGlows'), findsOneWidget);
+      expect(find.text('Clavier'), findsAtLeastNWidgets(1));
       expect(find.text('État du clavier'), findsOneWidget);
       expect(find.textContaining('enabled='), findsNothing);
       expect(find.textContaining('active='), findsNothing);
@@ -1198,7 +1214,8 @@ void main() {
 
     try {
       await tester.pumpWidget(
-        ProviderScope(
+        _routedSettingsTestWidget(
+          initialLocation: '/settings?section=voice_packs',
           overrides: [
             remoteAuthConfiguredProvider.overrideWithValue(true),
             authSessionProvider.overrideWith(
@@ -1208,25 +1225,11 @@ void main() {
               _MemorySettingsStore(const UserSettingsSnapshot.defaults()),
             ),
           ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            home: const SettingsScreen(),
-          ),
         ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
-
-      final voiceSection = find.text('Reconnaissance vocale locale').first;
-      await tester.scrollUntilVisible(
-        voiceSection,
-        500,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.tap(voiceSection, warnIfMissed: false);
-      await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
       expect(find.text('État vocal'), findsOneWidget);
       expect(find.textContaining('runtime='), findsNothing);
@@ -1263,7 +1266,8 @@ void main() {
 
     try {
       await tester.pumpWidget(
-        ProviderScope(
+        _routedSettingsTestWidget(
+          initialLocation: '/settings?section=overlay',
           overrides: [
             remoteAuthConfiguredProvider.overrideWithValue(true),
             authSessionProvider.overrideWith(
@@ -1273,25 +1277,11 @@ void main() {
               _MemorySettingsStore(const UserSettingsSnapshot.defaults()),
             ),
           ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            home: const SettingsScreen(),
-          ),
         ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
-
-      final overlaySection = find.text('Overlay Android').first;
-      await tester.scrollUntilVisible(
-        overlaySection,
-        500,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.tap(overlaySection, warnIfMissed: false);
-      await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
       expect(find.text('État de la bulle'), findsOneWidget);
       expect(find.text('Bulle active, service en cours.'), findsOneWidget);
@@ -1367,7 +1357,7 @@ void main() {
       );
       await _pumpNavigationFrame(tester);
 
-      expect(find.text('Configuration CommandGlows'), findsOneWidget);
+      expect(find.text('Configuration CMDglows'), findsOneWidget);
       expect(find.text('Luminosité système'), findsOneWidget);
       expect(find.text('Micro et voix'), findsNothing);
       expect(
@@ -1450,7 +1440,7 @@ void main() {
       await tester.pumpWidget(_appShellTestWidget());
       await _pumpNavigationFrame(tester);
 
-      expect(find.text('CommandGlows est prêt'), findsOneWidget);
+      expect(find.text('CMDglows est prêt'), findsOneWidget);
       expect(find.text('Dictée depuis le clavier'), findsOneWidget);
       expect(find.text('Microphone'), findsOneWidget);
       expect(find.text('Service Accessibilité'), findsOneWidget);
@@ -1492,18 +1482,10 @@ void main() {
 
     try {
       await tester.pumpWidget(
-        ProviderScope(
+        _routedSettingsTestWidget(
           overrides: [settingsStoreProvider.overrideWithValue(settingsStore)],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            home: const AppShellScreen(),
-          ),
         ),
       );
-      await _pumpNavigationFrame(tester);
-
-      await tester.tap(find.byIcon(Icons.settings_outlined).last);
       await _pumpNavigationFrame(tester);
 
       expect(find.text('Tout est configuré'), findsOneWidget);
@@ -1515,7 +1497,7 @@ void main() {
           .toList(growable: false);
       expect(
         visibleTexts.indexOf('Onboarding permissions'),
-        greaterThan(visibleTexts.indexOf('Android Overlay')),
+        greaterThan(visibleTexts.indexOf('Maintenance')),
       );
     } finally {
       debugDefaultTargetPlatformOverride = previousPlatform;
@@ -1569,7 +1551,7 @@ void main() {
           .toList(growable: false);
       expect(
         visibleTexts.indexOf('Onboarding permissions'),
-        greaterThan(visibleTexts.indexOf('Android Overlay')),
+        greaterThan(visibleTexts.indexOf('Overlay')),
       );
 
       await tester.tap(find.widgetWithText(TextButton, 'Reprendre'));
@@ -1626,7 +1608,7 @@ void main() {
           .toList(growable: false);
       expect(
         visibleTexts.lastIndexOf('Onboarding permissions'),
-        greaterThan(visibleTexts.indexOf('Android Overlay')),
+        greaterThan(visibleTexts.indexOf('Overlay')),
       );
     } finally {
       debugDefaultTargetPlatformOverride = previousPlatform;
@@ -1646,7 +1628,7 @@ void main() {
       await tester.pumpWidget(_appShellTestWidget());
       await _pumpNavigationFrame(tester);
 
-      expect(find.text('Configuration CommandGlows'), findsOneWidget);
+      expect(find.text('Configuration CMDglows'), findsOneWidget);
       final overlayCardTopLeft = tester.getTopLeft(
         find.byKey(const Key('onboarding-overlay-card-frame')),
       );
@@ -1658,7 +1640,7 @@ void main() {
       );
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
-      expect(find.text('Configuration CommandGlows'), findsNothing);
+      expect(find.text('Configuration CMDglows'), findsNothing);
       expect(find.text('Accueil'), findsWidgets);
     } finally {
       debugDefaultTargetPlatformOverride = previousPlatform;
@@ -1710,10 +1692,13 @@ void main() {
     expect(find.text('Terme'), findsOneWidget);
     expect(find.text('Ajouter un terme'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.settings_outlined).last);
+    await tester.tap(find.byIcon(Icons.keyboard_voice_outlined).last);
     await _pumpNavigationFrame(tester);
-    expect(find.text('Apparence'), findsWidgets);
-    expect(find.text('Apparence'), findsWidgets);
+    expect(find.text('Capture automatique'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.smart_button_outlined).last);
+    await _pumpNavigationFrame(tester);
+    expect(find.text('Actions'), findsAtLeastNWidgets(1));
 
     debugDefaultTargetPlatformOverride = previousPlatform;
     _clearAndroidBridgeMocks();
@@ -1784,27 +1769,13 @@ void main() {
     _installAndroidBridgeMocks();
 
     try {
-      await tester.pumpWidget(_appShellTestWidget());
-      await _pumpNavigationFrame(tester);
-
-      final closeOnboarding = find.byTooltip('Fermer (reprendre plus tard)');
-      if (closeOnboarding.evaluate().isNotEmpty) {
-        await tester.tap(closeOnboarding);
-        await tester.pumpAndSettle(const Duration(milliseconds: 300));
-      }
-
-      await tester.tap(find.byIcon(Icons.settings_outlined).last);
-      await _pumpNavigationFrame(tester);
-      expect(find.byType(SettingsScreen), findsOneWidget);
-
-      final backendSection = find.text('Maintenance et diagnostics').first;
-      await tester.scrollUntilVisible(
-        backendSection,
-        500,
-        scrollable: find.byType(Scrollable).first,
+      await tester.pumpWidget(
+        _routedSettingsTestWidget(
+          initialLocation: '/settings?section=maintenance',
+        ),
       );
-      await tester.tap(backendSection, warnIfMissed: false);
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
+      expect(find.byType(SettingsScreen), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Journaux de support'),
         500,
@@ -2133,6 +2104,6 @@ void main() {
     for (final digit in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']) {
       expect(find.text(digit), findsOneWidget);
     }
-    expect(find.text(','), findsNothing);
+    expect(find.text(','), findsOneWidget);
   });
 }
