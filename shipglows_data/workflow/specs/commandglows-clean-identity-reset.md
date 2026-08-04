@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.3.1"
 project: "CommandGlows"
 created: "2026-08-03"
 created_at: "2026-08-03 23:09:59 UTC"
 updated: "2026-08-03"
-updated_at: "2026-08-04 20:51:10 UTC"
+updated_at: "2026-08-04 21:12:25 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5.6 Codex"
@@ -331,6 +331,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 2026-08-04 15:27:00 UTC | 006-sg-design | GPT-5.6 Codex | Applied the operator-approved public wordmark `CMDglows` to visible site/app branding and regenerated the raster wordmark asset with verified RGBA transparency; legal, domain, package, provider, and technical identity remain `CommandGlows`. | partial | Run design drift and focused site/app checks; visual browser proof remains required for hosted surfaces. |
 | 2026-08-04 20:51:10 UTC | 006-sg-design | GPT-5.6 Codex | Formalized and implemented `BRAND-CMD-001`: modern neon wordmark, compact `CMD` monogram, tokenized yellow-red-magenta-violet gradient and controlled glow, plus refreshed web/Android/iOS/macOS/Windows icon assets. | complete | Preserve the approved asset family during provider/store publication. |
 | 2026-08-04 20:51:10 UTC | 108-sg-browser | GPT-5.6 Codex | Collected local Chromium proof at desktop light, desktop dark and 390 px mobile; the wordmark remains readable, unclipped and balanced in the responsive navigation. A 16/32/64/128 px icon sheet confirmed the monogram remains recognizable on light and dark backgrounds. The dev server emitted a pre-existing React invalid-hook warning unrelated to the logo. | partial | Visual objective passes locally; investigate the separate runtime warning before claiming whole-page browser health, and collect hosted proof only after an authorized deployment. |
+| 2026-08-04 21:12:25 UTC | 006-sg-design | GPT-5.6 Codex | Corrected the raster wordmark after operator feedback that the former thin neon treatment could read as a transparent graphic with only a pink border. The new asset uses broad fully opaque gradient-filled letter faces with a secondary external glow, propagated to every site compatibility path and checked on light, dark, and reduced-size proof canvases. | complete | Preserve solid face opacity and keep glow subordinate in future brand exports. |
 
 ## Current Chantier Flow
 
@@ -339,7 +340,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 100-sg-spec | complete | v1.2 defines complete active-surface coverage, canonical `www` identity, exception taxonomy, provider/store/signing/asset gates, and exhaustive proof. | Review readiness. |
 | 101-sg-ready | ready | v1.2 has complete mandatory sections, concrete task targets, scenario IDs/results, security rules, current official provider constraints, stop conditions, and no unresolved material question. | Begin bounded implementation. |
 | 102-sg-start | partial | Local app/site/root/governance batches are implemented. Site `astro check` reports no issues and 90/90 unit tests pass; focused identity tests pass 13/13; Flutter analyze passes, while the full Flutter suite reports 285 passed and 22 existing UI/behavior failures. External provider, Android artifact/device, store/signing, CDN replacement, and final legacy-proof gates remain. | Verify hosted/device/provider surfaces. |
-| 006-sg-design | complete | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. Local Chromium proves desktop light/dark and mobile fit; 16/32/64/128 px icon proof passes; design drift reports zero findings; site checks and Flutter analyze pass. A separate pre-existing React invalid-hook warning prevents a whole-page browser-health claim but does not affect the visual acceptance result. | Keep the approved visual family intact during hosted/store publication. |
+| 006-sg-design | complete | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. The corrected raster wordmark now has alpha-transparent surroundings but fully opaque gradient-filled letter faces; light, dark, and reduced-size canvases prove that the graphic remains visible independently of its controlled external glow. Prior local Chromium desktop/mobile proof and 16/32/64/128 px icon proof remain valid; the `/bio` development route returned 200 after the replacement. | Keep the approved visual family intact during hosted/store publication. |
 | 103-sg-verify | pending | Acceptance proof not yet run. | Verify after implementation. |
 | 104-sg-end | pending | No closure bookkeeping performed. | Close after verification. |
 | 005-sg-ship | pending | No commit, push, or deploy performed. | Ship only after explicit verified scope. |
