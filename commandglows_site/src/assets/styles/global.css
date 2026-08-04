@@ -1997,6 +1997,10 @@
   }
 
   .text-logo .glow-effect {
+    /* The full-word blurred backdrop forms a distracting plaque in dark mode.
+       Keep the element for the existing pointer interaction, but render glow
+       exclusively from the per-glyph text layers above. */
+    display: none;
     position: absolute;
     inset: var(--text-logo-glow-inset);
     background: var(--gradient-logo);

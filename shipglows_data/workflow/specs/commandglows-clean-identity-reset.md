@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.3.8"
+artifact_version: "1.3.9"
 project: "CommandGlows"
 created: "2026-08-03"
 created_at: "2026-08-03 23:09:59 UTC"
 updated: "2026-08-03"
-updated_at: "2026-08-04 22:44:59 UTC"
+updated_at: "2026-08-04 23:45:20 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5.6 Codex"
@@ -339,6 +339,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 2026-08-04 22:27:00 UTC | 006-sg-design | GPT-5.6 Codex | Diagnosed why the operator still saw no motion on the home navbar: the wordmark had been mistakenly included in the broad reduced-motion selector added during the prior change. Removed only that selector inclusion so the explicitly requested historical gradient animation is always visible on the home logo; typography, dimensions, white core, palette, and glow remain untouched. | complete | Verify the visible movement on the published home navbar after cache refresh. |
 | 2026-08-04 22:35:00 UTC | 006-sg-design | GPT-5.6 Codex | Root-caused the persistent oversized dark contour in the CSS actually served by production: a later responsive `clamp(-5px, -1vw - 3px, …)` overrode the shared tight glow inset and expanded it to `-5px` on normal screens. Replaced the override with the canonical shared inset token, preserving the same compact glow in every responsive state and theme. | complete | Publish this source correction, then inspect the home navbar at desktop and mobile widths. |
 | 2026-08-04 22:44:59 UTC | 108-sg-browser | GPT-5.6 Codex | Browser proof preflight correctly blocked: the active Playwright MCP config points to a missing Chromium 1228 executable while only Chromium 1217 is installed. Production source verification nevertheless confirmed that the new Vercel deployment loads `global.CLGyptIa.css`, which contains the canonical compact `inset: var(--text-logo-glow-inset-sm)` and no legacy responsive `-5px` clamp. | partial | Reload or repair the Playwright MCP runtime, then collect visual desktop/mobile proof in an actual browser. |
+| 2026-08-04 23:45:20 UTC | 006-sg-design | GPT-5.6 Codex | Reverted the remaining full-word blurred gradient backdrop after operator review: it was the dark-mode “plaque” rather than a glyph glow. The backdrop element remains only for the existing pointer interaction, but is not rendered; the animated gradient, white face edge, and glow that follows individual glyphs remain unchanged and shared across light and dark. | partial | Publish and verify the home navbar; collect browser proof after the Playwright MCP runtime is repaired. |
 
 ## Current Chantier Flow
 
@@ -347,7 +348,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 100-sg-spec | complete | v1.2 defines complete active-surface coverage, canonical `www` identity, exception taxonomy, provider/store/signing/asset gates, and exhaustive proof. | Review readiness. |
 | 101-sg-ready | ready | v1.2 has complete mandatory sections, concrete task targets, scenario IDs/results, security rules, current official provider constraints, stop conditions, and no unresolved material question. | Begin bounded implementation. |
 | 102-sg-start | partial | Local app/site/root/governance batches are implemented. Site `astro check` reports no issues and 90/90 unit tests pass; focused identity tests pass 13/13; Flutter analyze passes, while the full Flutter suite reports 285 passed and 22 existing UI/behavior failures. External provider, Android artifact/device, store/signing, CDN replacement, and final legacy-proof gates remain. | Verify hosted/device/provider surfaces. |
-| 006-sg-design | partial | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. The production source-root cause of the oversized dark contour is removed and deployed: the responsive rule now consumes the same `-1px` / `-2px` shared glow token as every other state, rather than expanding to `-5px`. The original animated gradient remains on the visible home wordmark without changing type, size, white core, or palette. Production asset inspection proves the correct CSS is served, but visual desktop/mobile proof is blocked until the stale Playwright MCP executable path is repaired. | Reload or repair Playwright MCP, then collect visual proof in an actual browser. |
+| 006-sg-design | partial | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. The operator’s reported dark “plaque” is structurally removed: the full-word blurred backdrop is not rendered in either theme, leaving the animated gradient, white face edge, and per-glyph glow intact. Visual desktop/mobile proof is blocked until the stale Playwright MCP executable path is repaired. | Publish the correction, then collect visual proof in an actual browser. |
 | 103-sg-verify | pending | Acceptance proof not yet run. | Verify after implementation. |
 | 104-sg-end | pending | No closure bookkeeping performed. | Close after verification. |
 | 005-sg-ship | pending | No commit, push, or deploy performed. | Ship only after explicit verified scope. |
