@@ -2236,9 +2236,7 @@ html.dark .cookie-consent-glass {
   .navbar-header,
   .navbar-header *,
   .mobile-menu,
-  .mobile-menu *,
-  .text-logo,
-  .text-logo * {
+  .mobile-menu * {
     animation: none !important;
     transition: none !important;
     transform: none !important;
