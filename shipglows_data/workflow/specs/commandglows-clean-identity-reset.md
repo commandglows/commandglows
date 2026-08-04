@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.3.4"
+artifact_version: "1.3.5"
 project: "CommandGlows"
 created: "2026-08-03"
 created_at: "2026-08-03 23:09:59 UTC"
 updated: "2026-08-03"
-updated_at: "2026-08-04 22:02:00 UTC"
+updated_at: "2026-08-04 22:15:00 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5.6 Codex"
@@ -335,6 +335,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 2026-08-04 21:36:40 UTC | 006-sg-design | GPT-5.6 Codex | Identified Dark Reader as the external recoloring source, added the supported page-level lock to site-owned themed surfaces, and refined `CMDglows` with a white luminous edge plus theme-specific short pink/violet glows. Dark mode no longer relies on a broad black shadow, while light mode receives a higher-contrast halo; raster compatibility exports now include the same white highlight. | complete | Validate once in the operator's Dark Reader browser profile after deployment; preserve native site theme ownership. |
 | 2026-08-04 21:52:09 UTC | 006-sg-design | GPT-5.6 Codex | Removed the remaining light/dark identity divergence after operator review: every face, filter, glow, inset, hover, and active token is now identical across both themes, as are the raster light/dark files. Increased the white face stroke from `0.035em` to `0.055em`, shortened the halo footprint, and moved the gradient transition earlier toward violet so light mode keeps visible violet without dark-mode bloom reducing perceived letter width. | complete | Preserve one canonical logo treatment across all themes; only the surrounding surface may vary. |
 | 2026-08-04 22:02:00 UTC | 006-sg-design | GPT-5.6 Codex | Operator reported an incompletely documented defect: dark mode still had a broad contour halo that visually consumed the letter spacing and counterforms. Reduced the shared glow-effect inset, blur, opacity, and shadow footprint so the glow hugs the glyph edges instead of forming a surrounding plaque; the same values remain shared by light and dark. | complete | Recheck the rendered navbar in both themes; preserve the explicit defect note in future visual reviews. |
+| 2026-08-04 22:15:00 UTC | 006-sg-design | GPT-5.6 Codex | Restored the historical `logo-gradient` motion on the actual clipped wordmark gradient, keeping the current typeface, dimensions, white face edge, palette, and tight glow unchanged. The animation uses the original 0% → 100% → 0% background-position loop and is disabled under reduced-motion preferences. | complete | Preserve the animated gradient as the single shared logo treatment across light and dark themes. |
 
 ## Current Chantier Flow
 
@@ -343,7 +344,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 100-sg-spec | complete | v1.2 defines complete active-surface coverage, canonical `www` identity, exception taxonomy, provider/store/signing/asset gates, and exhaustive proof. | Review readiness. |
 | 101-sg-ready | ready | v1.2 has complete mandatory sections, concrete task targets, scenario IDs/results, security rules, current official provider constraints, stop conditions, and no unresolved material question. | Begin bounded implementation. |
 | 102-sg-start | partial | Local app/site/root/governance batches are implemented. Site `astro check` reports no issues and 90/90 unit tests pass; focused identity tests pass 13/13; Flutter analyze passes, while the full Flutter suite reports 285 passed and 22 existing UI/behavior failures. External provider, Android artifact/device, store/signing, CDN replacement, and final legacy-proof gates remain. | Verify hosted/device/provider surfaces. |
-| 006-sg-design | complete | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. Light and dark modes consume byte-equivalent raster exports and value-identical face/glow tokens; the separate contour halo is now reduced to a tight, low-opacity edge treatment so it cannot swallow letter spacing or counters. The defect and prior under-reporting are recorded explicitly. Site-owned themed pages retain `darkreader-lock`; Astro check passes with zero errors, 93/93 tests pass, and design drift reports zero findings. | Recheck the rendered navbar in both themes, then preserve this single canonical treatment during publication. |
+| 006-sg-design | complete | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. Light and dark modes consume byte-equivalent raster exports and value-identical face/glow tokens; the separate contour halo remains tight and low-opacity. The original animated gradient is restored on the visible wordmark itself without changing type, size, white core, or palette, and reduced motion disables it. The defect and prior under-reporting remain explicit. Site-owned themed pages retain `darkreader-lock`; Astro check passes with zero errors, 93/93 tests pass, and design drift reports zero findings. | Preserve this single animated treatment during publication. |
 | 103-sg-verify | pending | Acceptance proof not yet run. | Verify after implementation. |
 | 104-sg-end | pending | No closure bookkeeping performed. | Close after verification. |
 | 005-sg-ship | pending | No commit, push, or deploy performed. | Ship only after explicit verified scope. |

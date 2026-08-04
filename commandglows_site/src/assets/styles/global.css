@@ -669,6 +669,7 @@
     --text-logo-glow-shadow: 0 0 0.18rem rgb(255 0 200 / 0.34), 0 0 0.34rem rgb(124 60 255 / 0.32);
     --text-logo-glow-animation: logo-gradient 6s ease infinite;
     --text-logo-glow-animation-hover: logo-gradient 4s ease infinite;
+    --text-logo-gradient-animation: logo-gradient 6s ease infinite;
     --text-logo-shadow-rest: 0 0 0.18rem rgb(255 0 200 / 0.35);
     --text-logo-shadow-hover: 0 0 0.3rem rgb(255 0 200 / 0.5);
     --text-logo-shadow-active: 0 0 0.14rem rgb(124 60 255 / 0.4);
@@ -857,6 +858,7 @@
     --text-logo-glow-shadow: 0 0 0.18rem rgb(255 0 200 / 0.34), 0 0 0.34rem rgb(124 60 255 / 0.32);
     --text-logo-glow-animation: logo-gradient 6s ease infinite;
     --text-logo-glow-animation-hover: logo-gradient 4s ease infinite;
+    --text-logo-gradient-animation: logo-gradient 6s ease infinite;
     --text-logo-shadow-rest: 0.5px 0.5px 0 white, 1px 1px 0 white, 1.5px 1.5px 0 rgba(255, 255, 255, 0.7), 0 2px 5px rgba(0, 0, 0, 0.2);
     --text-logo-shadow-hover: 1px 1px 0 white, 1.5px 1.5px 0 white, 2px 2px 0 rgba(255, 255, 255, 0.7), 0 4px 8px rgba(0, 0, 0, 0.3);
     --text-logo-shadow-active: 0.5px 0.5px 0 white, 0.75px 0.75px 0 white, 1px 1px 0 rgba(255, 255, 255, 0.7), 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -1956,6 +1958,8 @@
     background: var(--gradient-logo);
     background-clip: text;
     -webkit-background-clip: text;
+    background-size: 200% 200%;
+    animation: var(--text-logo-gradient-animation);
     color: transparent;
     -webkit-text-fill-color: transparent;
     -webkit-text-stroke: 0.055em var(--text-logo-face-stroke);
@@ -2232,7 +2236,9 @@ html.dark .cookie-consent-glass {
   .navbar-header,
   .navbar-header *,
   .mobile-menu,
-  .mobile-menu * {
+  .mobile-menu *,
+  .text-logo,
+  .text-logo * {
     animation: none !important;
     transition: none !important;
     transform: none !important;
