@@ -2,7 +2,7 @@
 artifact: gtm_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-17"
 status: reviewed
@@ -86,4 +86,3 @@ next_step: "/sf-docs update"
 - visit-to-purchase conversion on flagship routes
 - post-purchase activation into gated surfaces
 - retention in premium learning journeys
-

@@ -1,0 +1,317 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro'
+import { getLocalizedSiteUrl } from '@/constants'
+import type { Language } from '@/types'
+import type { InstallVariant, ScriptInstallPageContent } from '@/data/scriptInstallPages'
+
+interface Props {
+	lang: Language
+	page: ScriptInstallPageContent
+}
+
+const { lang, page } = Astro.props
+const canonicalPath = `/${page.slug}`
+const accentClasses = {
+	cyan: {
+		text: 'text-cyan-500 dark:text-cyan-300',
+		border: 'border-cyan-300/70 dark:border-cyan-500/40',
+		bg: 'bg-cyan-500',
+		soft: 'bg-cyan-50 text-cyan-900 dark:bg-cyan-950/40 dark:text-cyan-100',
+	},
+	magenta: {
+		text: 'text-fuchsia-500 dark:text-fuchsia-300',
+		border: 'border-fuchsia-300/70 dark:border-fuchsia-500/40',
+		bg: 'bg-fuchsia-500',
+		soft: 'bg-fuchsia-50 text-fuchsia-900 dark:bg-fuchsia-950/40 dark:text-fuchsia-100',
+	},
+	green: {
+		text: 'text-emerald-600 dark:text-emerald-300',
+		border: 'border-emerald-300/70 dark:border-emerald-500/40',
+		bg: 'bg-emerald-500',
+		soft: 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100',
+	},
+}[page.accent]
+
+const surfaceCardClasses =
+	'rounded-3xl border border-content-border bg-content-bg-elevated p-6 shadow-sm dark:border-content-border-strong dark:bg-content-bg-elevated'
+
+const installVariants: InstallVariant[] = page.installVariants ?? [
+	{
+		id: 'default',
+		platform: 'unix',
+		mode: 'local',
+		command: page.command,
+		note: page.installNote,
+		available: true,
+	},
+]
+const defaultVariant = installVariants[0]
+const installLabels =
+	lang === 'fr'
+		? {
+			platform: 'Plateforme',
+			mode: 'Mode',
+			unix: 'Unix / macOS',
+			windows: 'Windows natif',
+			termux: 'Android Termux',
+			local: 'Local',
+			full: 'Full / remote',
+			unavailable: 'Non disponible ici',
+		}
+		: {
+			platform: 'Platform',
+			mode: 'Mode',
+			unix: 'Unix / macOS',
+			windows: 'Native Windows',
+			termux: 'Android Termux',
+			local: 'Local',
+			full: 'Full / remote',
+			unavailable: 'Not available here',
+		}
+---
+
+<MainLayout
+	title={`${page.name} | CMDglows`}
+	meta={{
+		title: `${page.name} | CMDglows`,
+		description: page.description,
+		canonicalURL: getLocalizedSiteUrl(lang, canonicalPath),
+		image: '/images/CommandGlows.png',
+	}}
+	lang={lang}
+	structuredData={{
+		'@context': 'https://schema.org',
+		'@type': 'SoftwareApplication',
+		name: page.name,
+		description: page.description,
+		applicationCategory: 'DeveloperApplication',
+		operatingSystem: page.slug === 'termux' ? 'Android' : page.slug === 'shipglows' ? 'Windows, Linux, Android' : 'Linux',
+		url: getLocalizedSiteUrl(lang, canonicalPath),
+		codeRepository: page.githubUrl,
+	}}
+>
+	<section class="script-hero relative isolate overflow-hidden rounded-3xl border border-content-border bg-content-bg-inverse px-5 py-10 text-white shadow-2xl dark:border-content-border-strong sm:px-8 lg:px-12">
+		<img
+			src="/images/CommandGlows.png"
+			alt=""
+			aria-hidden="true"
+			class="absolute right-0 top-0 -z-10 h-full w-full object-cover opacity-18 mix-blend-screen"
+			loading="eager"
+		/>
+		<div class="absolute inset-0 -z-10 bg-gradient-to-br from-magenta/25 via-content-bg to-cyan/20"></div>
+
+		<div class="grid gap-8 lg:grid-cols-2 lg:items-center">
+			<div class="max-w-3xl">
+				<p class={`mb-4 inline-flex rounded-full border ${accentClasses.border} bg-white/10 px-3 py-1 text-sm font-semibold uppercase tracking-widest ${accentClasses.text}`}>
+					{page.kicker}
+				</p>
+				<h1 class="max-w-4xl text-4xl font-bold leading-none tracking-normal text-white sm:text-5xl lg:text-6xl">
+					{page.title}
+				</h1>
+				<p class="mt-5 max-w-2xl text-base leading-7 text-content-text-quaternary sm:text-lg">
+					{page.description}
+				</p>
+				<div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+					<button
+						type="button"
+						class="copy-command inline-flex min-h-12 items-center justify-center rounded-lg bg-white px-5 text-sm font-semibold text-content-text-primary transition hover:bg-content-bg-subtle dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover dark:hover:text-content-text-primary"
+						data-copy-command={defaultVariant.command}
+						data-copy-label={page.copyLabel}
+						data-copied-label={page.copiedLabel}
+					>
+						{page.copyLabel}
+					</button>
+					<a
+						href={page.rawScriptUrl}
+						class="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/20 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
+					>
+						{page.rawScriptLabel}
+					</a>
+					<a
+						href={page.githubUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/20 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
+					>
+						{page.githubLabel}
+					</a>
+				</div>
+			</div>
+
+			<div class="terminal-visual rounded-3xl border border-white/20 bg-black/80 shadow-2xl">
+				<div class="flex items-center justify-between border-b border-white/10 px-4 py-3">
+					<div class="flex gap-2" aria-hidden="true">
+						<span class="h-3 w-3 rounded-full bg-red-400"></span>
+						<span class="h-3 w-3 rounded-full bg-yellow-300"></span>
+						<span class="h-3 w-3 rounded-full bg-emerald-400"></span>
+					</div>
+					<span class="text-xs font-semibold uppercase tracking-widest text-content-text-muted">{page.visualLabel}</span>
+				</div>
+				<div class="space-y-4 p-4 font-mono text-sm">
+					{page.installVariants && (
+						<div class="space-y-3 font-sans text-left" data-install-selector>
+							<div>
+								<p class="mb-2 text-xs font-semibold uppercase tracking-widest text-content-text-muted">{installLabels.platform}</p>
+								<div class="flex flex-wrap gap-2" role="tablist" aria-label={installLabels.platform}>
+									{(['unix', 'windows', 'termux'] as const).map((platform, index) => (
+										<button
+											type="button"
+											class={`install-platform rounded-lg border px-3 py-2 text-xs font-semibold transition ${index === 0 ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100' : 'border-white/15 text-content-text-muted hover:border-white/30 hover:text-white'}`}
+											data-platform={platform}
+											aria-selected={index === 0 ? 'true' : 'false'}
+											role="tab"
+										>
+												{installLabels[platform]}
+											</button>
+										))}
+								</div>
+							</div>
+							<div>
+								<p class="mb-2 text-xs font-semibold uppercase tracking-widest text-content-text-muted">{installLabels.mode}</p>
+								<div class="flex flex-wrap gap-2" role="tablist" aria-label={installLabels.mode}>
+									{(['local', 'full'] as const).map((mode, index) => (
+										<button
+											type="button"
+											class={`install-mode rounded-lg border px-3 py-2 text-xs font-semibold transition ${index === 0 ? 'border-emerald-300 bg-emerald-300/20 text-emerald-100' : 'border-white/15 text-content-text-muted hover:border-white/30 hover:text-white'}`}
+											data-mode={mode}
+											aria-selected={index === 0 ? 'true' : 'false'}
+											role="tab"
+										>
+												{installLabels[mode]}
+											</button>
+										))}
+								</div>
+							</div>
+						</div>
+					)}
+					<pre class="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-white/5 p-4 text-cyan-100"><code data-install-command>{defaultVariant.command}</code></pre>
+					<p class="m-0 text-sm leading-6 text-content-text-muted" data-install-status>{defaultVariant.note}</p>
+					<div class="space-y-2 text-content-text-muted">
+						{page.terminalLines.map((line) => <p class="m-0 text-sm leading-6 text-content-text-muted">$ {line}</p>)}
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="grid gap-5 py-8 lg:grid-cols-3">
+		<article class={surfaceCardClasses}>
+			<h2 class="text-2xl font-bold tracking-normal text-content-text-primary dark:text-content-text-over-dark">{page.fitTitle}</h2>
+			<ul class="mt-5 space-y-3">
+				{page.fit.map((item) => (
+					<li class="flex gap-3 text-base leading-6 text-content-text-secondary dark:text-content-text-muted">
+						<span class={`mt-2 h-2 w-2 shrink-0 rounded-full ${accentClasses.bg}`}></span>
+						<span>{item}</span>
+					</li>
+				))}
+			</ul>
+		</article>
+
+		<article class={surfaceCardClasses}>
+			<h2 class="text-2xl font-bold tracking-normal text-content-text-primary dark:text-content-text-over-dark">{page.installedTitle}</h2>
+			<ul class="mt-5 space-y-3">
+				{page.installed.map((item) => (
+					<li class="flex gap-3 text-base leading-6 text-content-text-secondary dark:text-content-text-muted">
+						<span class="mt-0.5 text-emerald-500">✓</span>
+						<span>{item}</span>
+					</li>
+				))}
+			</ul>
+		</article>
+
+		<article class={surfaceCardClasses}>
+			<h2 class="text-2xl font-bold tracking-normal text-content-text-primary dark:text-content-text-over-dark">{page.excludedTitle}</h2>
+			<ul class="mt-5 space-y-3">
+				{page.excluded.map((item) => (
+					<li class="flex gap-3 text-base leading-6 text-content-text-secondary dark:text-content-text-muted">
+						<span class="mt-0.5 text-red-500">×</span>
+						<span>{item}</span>
+					</li>
+				))}
+			</ul>
+		</article>
+	</section>
+
+	<section class={`mb-10 rounded-3xl border ${accentClasses.border} ${accentClasses.soft} p-6`}>
+		<div class="grid gap-6 lg:grid-cols-2 lg:items-center">
+			<div>
+				<h2 class="text-2xl font-bold tracking-normal">{page.linksTitle}</h2>
+				<p class="mt-3 text-base leading-7 text-content-text-secondary dark:text-content-text-muted" data-install-note>{defaultVariant.note}</p>
+			</div>
+			<div class="flex flex-col gap-3 sm:flex-row lg:flex-col">
+				{page.links.map((link) => (
+					<a
+						href={link.href}
+						class="inline-flex min-h-11 items-center justify-center rounded-lg bg-content-bg-inverse px-4 text-sm font-semibold text-content-text-over-dark transition hover:bg-content-bg-strong dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover"
+					>
+						{link.label}
+					</a>
+				))}
+			</div>
+		</div>
+	</section>
+
+	<script define:vars={{ installVariants }}>
+		const installSelector = document.querySelector('[data-install-selector]')
+		if (installSelector) {
+			let selectedPlatform = 'unix'
+			let selectedMode = 'local'
+			const command = document.querySelector('[data-install-command]')
+			const status = document.querySelector('[data-install-status]')
+			const note = document.querySelector('[data-install-note]')
+			const copyButton = document.querySelector('.copy-command')
+			const updateSelection = (selector, selectedButton, activeClasses, inactiveClasses) => {
+				installSelector.querySelectorAll(selector).forEach((item) => {
+					const isSelected = item === selectedButton
+					item.setAttribute('aria-selected', String(isSelected))
+					activeClasses.forEach((className) => item.classList.toggle(className, isSelected))
+					inactiveClasses.forEach((className) => item.classList.toggle(className, !isSelected))
+				})
+			}
+
+			const selectVariant = () => {
+				const variant = installVariants.find((item) => item.platform === selectedPlatform && item.mode === selectedMode)
+				if (!variant || !command || !status || !note || !copyButton) return
+				command.textContent = variant.command || '—'
+				status.textContent = variant.note
+				note.textContent = variant.note
+				copyButton.dataset.copyCommand = variant.command
+				copyButton.disabled = !variant.available
+				copyButton.classList.toggle('opacity-50', !variant.available)
+				copyButton.classList.toggle('cursor-not-allowed', !variant.available)
+			}
+
+			installSelector.querySelectorAll('[data-platform]').forEach((button) => {
+				button.addEventListener('click', () => {
+					selectedPlatform = button.dataset.platform || selectedPlatform
+					updateSelection('[data-platform]', button, ['border-cyan-300', 'bg-cyan-300/20', 'text-cyan-100'], ['border-white/15', 'text-content-text-muted'])
+					selectVariant()
+				})
+			})
+			installSelector.querySelectorAll('[data-mode]').forEach((button) => {
+				button.addEventListener('click', () => {
+					selectedMode = button.dataset.mode || selectedMode
+					updateSelection('[data-mode]', button, ['border-emerald-300', 'bg-emerald-300/20', 'text-emerald-100'], ['border-white/15', 'text-content-text-muted'])
+					selectVariant()
+				})
+			})
+		}
+
+		document.querySelectorAll('.copy-command').forEach((button) => {
+			button.addEventListener('click', async () => {
+				const command = button.dataset.copyCommand
+				if (!command) return
+
+				try {
+					await navigator.clipboard.writeText(command)
+					button.textContent = button.dataset.copiedLabel || 'Copied'
+					window.setTimeout(() => {
+						button.textContent = button.dataset.copyLabel || 'Copy command'
+					}, 1800)
+				} catch {
+					button.textContent = command
+				}
+			})
+		})
+	</script>
+</MainLayout>

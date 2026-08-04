@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-17"
 status: reviewed
@@ -32,7 +32,7 @@ next_step: "/sf-docs technical audit"
 
 ## Purpose
 
-This directory is the canonical internal technical governance layer for WinGlows. It maps code areas to subsystem docs, records stable invariants, and defines the documentation update surface for future code changes.
+This directory is the canonical internal technical governance layer for CommandGlows. It maps code areas to subsystem docs, records stable invariants, and defines the documentation update surface for future code changes.
 
 ## Owned Files
 

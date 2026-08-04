@@ -1,0 +1,45 @@
+---
+interface Props {
+  class?: string
+  style?: string
+  title?: string
+}
+
+const { class: className, style, title = 'CMDglows' } = Astro.props
+---
+
+<svg
+  class={className}
+  style={style}
+  viewBox="0 0 470 140"
+  role="img"
+  aria-label={title}
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <linearGradient id="cmdglows-wordmark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="var(--brand-yellow)" />
+      <stop offset="0.48" stop-color="var(--brand-magenta)" />
+      <stop offset="1" stop-color="var(--brand-red)" />
+    </linearGradient>
+    <filter id="cmdglows-shadow" x="-20%" y="-30%" width="140%" height="170%">
+      <feDropShadow dx="0" dy="7" stdDeviation="4" flood-color="var(--brand-magenta)" flood-opacity="0.35" />
+    </filter>
+  </defs>
+  <text
+    x="235"
+    y="88"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#cmdglows-wordmark)"
+    stroke="white"
+    stroke-width="3"
+    paint-order="stroke"
+    filter="url(#cmdglows-shadow)"
+    font-family="Arial Black, Arial, sans-serif"
+    font-size="74"
+    font-weight="900"
+    letter-spacing="-3"
+  >CMDglows</text>
+</svg>

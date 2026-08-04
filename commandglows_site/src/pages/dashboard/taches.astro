@@ -1,0 +1,48 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro'
+
+const auth = Astro.locals.auth()
+if (!auth.userId) {
+	return Astro.redirect('/signin')
+}
+---
+
+<MainLayout title="Tasks - Dashboard">
+	<div class="min-h-screen py-12">
+		<div class="mx-auto max-w-4xl">
+			<div class="mb-8 flex items-center gap-4">
+				<a href="/dashboard" class="text-sm text-content-text-tertiary hover:text-content-text-secondary dark:text-content-text-muted dark:hover:text-content-text-muted">
+					&larr; Dashboard
+				</a>
+				<h1 class="text-3xl font-bold text-content-text-primary dark:text-content-text-primary">
+					Tasks
+				</h1>
+			</div>
+
+			<div class="rounded-xl border border-content-border bg-content-bg-elevated p-8 dark:border-content-border-strong dark:bg-content-bg-strong">
+				<div class="mb-6 flex items-center justify-between">
+					<h2 class="text-lg font-semibold text-content-text-primary dark:text-content-text-over-dark">My Tasks</h2>
+				</div>
+
+				<ul class="space-y-3" id="task-list">
+					<li class="flex items-center gap-3 rounded-lg border border-content-border p-4 dark:border-content-border-strong">
+						<input type="checkbox" class="h-5 w-5 rounded border-content-border-strong text-magenta focus:ring-magenta" />
+						<span class="text-content-text-secondary dark:text-content-text-muted">Explore CMDglows extensions</span>
+					</li>
+					<li class="flex items-center gap-3 rounded-lg border border-content-border p-4 dark:border-content-border-strong">
+						<input type="checkbox" class="h-5 w-5 rounded border-content-border-strong text-magenta focus:ring-magenta" />
+						<span class="text-content-text-secondary dark:text-content-text-muted">Complete Windows Mastery guide</span>
+					</li>
+					<li class="flex items-center gap-3 rounded-lg border border-content-border p-4 dark:border-content-border-strong">
+						<input type="checkbox" class="h-5 w-5 rounded border-content-border-strong text-magenta focus:ring-magenta" />
+						<span class="text-content-text-secondary dark:text-content-text-muted">Try ObsiFlowz plugin</span>
+					</li>
+				</ul>
+
+				<p class="mt-6 text-center text-sm text-content-text-tertiary dark:text-content-text-muted">
+					Full task management coming soon with Convex sync.
+				</p>
+			</div>
+		</div>
+	</div>
+</MainLayout>

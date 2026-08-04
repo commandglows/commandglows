@@ -1,4 +1,4 @@
-# Tasks — WinGlows
+# Tasks — CommandGlows
 
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
@@ -11,48 +11,48 @@
 
 The following records were consolidated from the former nested site tracker during the canonical ShipGlows governance migration.
 
-🟡 [WinGlows] task: Collections for grouping group items | status: todo | area: app | id: winglowz-app-collections-group-items
-🟡 [WinGlows] task: Replace item action icons with better action menu | status: todo | area: app | id: winglowz-app-swipe-actions
-🟡 [WinGlows] task: Analyze CopyCat clipboard background flow | status: todo | area: app | id: winglowz-app-copycat-clipboard-benchmark | notes: Background clipboard detection for copied text only; persistent notification shown for transparency while the service runs in the background; battery optimization setting to stop Android from killing the process; overlay permission with a transparent overlay shown briefly during copy or immediately after to read clipboard content; accessibility service used as a background listener; service restarts after device reboot; use this as a benchmark to compare against WinGlows clipboard tracking and identify what is already implemented vs what can be improved or inspired.
-🟠 [WinGlows] task: Clarify Quick Action arrow icons and labels | status: todo | area: app | id: winglowz-app-quick-action-arrow-icons
-🟡 [WinGlows] task: Split premium and non-premium features clearly | status: todo | area: app | id: winglowz-app-premium-scope-clarity
-🟡 [WinGlows] task: Show premium feature badges by user state | status: todo | area: app | id: winglowz-app-premium-feature-badges
+🟡 [CommandGlows] task: Collections for grouping group items | status: todo | area: app | id: winglowz-app-collections-group-items
+🟡 [CommandGlows] task: Replace item action icons with better action menu | status: todo | area: app | id: winglowz-app-swipe-actions
+🟡 [CommandGlows] task: Analyze CopyCat clipboard background flow | status: todo | area: app | id: winglowz-app-copycat-clipboard-benchmark | notes: Background clipboard detection for copied text only; persistent notification shown for transparency while the service runs in the background; battery optimization setting to stop Android from killing the process; overlay permission with a transparent overlay shown briefly during copy or immediately after to read clipboard content; accessibility service used as a background listener; service restarts after device reboot; use this as a benchmark to compare against CommandGlows clipboard tracking and identify what is already implemented vs what can be improved or inspired.
+🟠 [CommandGlows] task: Clarify Quick Action arrow icons and labels | status: todo | area: app | id: winglowz-app-quick-action-arrow-icons
+🟡 [CommandGlows] task: Split premium and non-premium features clearly | status: todo | area: app | id: winglowz-app-premium-scope-clarity
+🟡 [CommandGlows] task: Show premium feature badges by user state | status: todo | area: app | id: winglowz-app-premium-feature-badges
 
-🟢 [WinGlowsApp] task: Verify persistent local clipboard fallback, search, and copy action | status: done | area: clipboard-local | id: wfz-clipboard-persistent-local-verify
-🟠 [WinGlowsApp] task: Push or ship the verified persistent local clipboard fallback changes | status: todo | area: clipboard-local | id: wfz-clipboard-persistent-local-ship
-✅ [WinGlowsApp] task: Retest Android IME clipboard bridge on physical device after APK/CI handoff | status: done | area: clipboard-ime | id: wfz-ime-clipboard-device-qa
-🟠 [WinGlowsApp] task: Redeploy the Flutter web auth patch and rerun Google plus email/password smoke on app.winglowz.com | status: todo | area: suite-auth | id: wfz-suite-auth-web-smoke
-✅ [WinGlowsApp] task: Ship cross-surface Send to actions for Voice, Clipboard, and Snippets | status: done | area: send-to-actions | id: wfz-send-to-actions
-🟠 [WinGlowsApp] task: Run Windows overlay/hotkeys native QA checklist on a Windows machine | status: todo | area: windows-overlay | id: wfz-windows-overlay-native-qa
-🟡 [WinGlowsApp] task: Fix or refine Windows overlay host after first Windows QA results | status: todo | area: windows-overlay | id: wfz-windows-overlay-qa-followup
-🟠 [WinGlowsApp] task: Run macOS overlay/hotkeys native QA checklist on a macOS machine | status: todo | area: macos-overlay | id: wfz-macos-overlay-native-qa
-🟠 [WinGlowsApp] task: Run Linux overlay/hotkeys native QA checklist on a Linux machine | status: todo | area: linux-overlay | id: wfz-linux-overlay-native-qa
-✅ [WinGlowsApp] task: Ship first local macOS/Linux desktop overlay host version for native QA handoff | status: done | area: desktop-overlay | id: wfz-macos-linux-overlay-local-ship
-🟡 [WinGlowsApp] task: Decide and implement stronger Linux global hotkey/paste integration after first Linux QA results | status: todo | area: linux-overlay | id: wfz-linux-overlay-host-followup
-🟠 [winglowz] task: Configure Lemon Squeezy test-mode env and run hosted commerce proof for SocialGlowz LTD webhooks, idempotent replay, refund revoke, and Convex fulfillment | status: blocked | area: commerce | id: wfz-commerce-lemonsqueezy-hosted-smoke
-🟠 [WinGlowsApp] task: Retest BUG-2026-05-24-001 onboarding active-state info box on Android APK | status: fixed_pending_verify | area: onboarding | id: BUG-2026-05-24-001
-✅ [WinGlowsApp] task: Retest BUG-2026-05-24-002 clipboard edit dialog cancel/save on Android APK | status: done | area: clipboard | id: BUG-2026-05-24-002
-🟢 [WinGlowsApp] task: Reduce Android IME layout rebuilds during rapid typing | status: done | area: keyboard-ime-performance | id: wfz-ime-rapid-typing-layout-rebuild
-🟡 [WinGlowsApp] task: Verify Android IME multi-pointer rollover on hosted build and physical device | status: fixed_pending_verify | area: keyboard-ime-performance | id: wfz-ime-multipointer-touch-dispatch
-🟢 [WinGlowsApp] task: Downsample Android IME theme background images before drawing key visuals | status: done | area: keyboard-ime-visual-performance | id: wfz-ime-theme-image-downsample
-🟡 [WinGlowsApp] task: Validate Android IME image-background memory and scroll smoothness on hosted build and physical device | status: fixed_pending_verify | area: keyboard-ime-visual-performance | id: wfz-ime-theme-image-device-verify
-🟢 [WinGlowsApp] task: Remove expensive theme draft serialization from Flutter keyboard theme studio dirty checks | status: done | area: keyboard-theme-performance | id: wfz-keyboard-theme-dirty-check
-🟡 [WinGlowsApp] task: Fix keyboard theme preset auto light/dark switching after non-color theme options | status: fixed_pending_verify | area: keyboard-theme | id: BUG-2026-06-01-001
-🟠 [WinGlowsApp] task: Run Android physical-device QA for IME navigation/editing actions with the new navigation diagnostics playground (`DelW←`, `DelW→`, `DelS←`, `DelS→`, `Début`, `Fin`, `All`) and capture per-app failures/fallbacks | status: todo | area: keyboard-ime-navigation | id: wfz-ime-navigation-diagnostics-device-qa
-🔴 [WinGlowsApp] task: Specify and implement a shared ProductPageScaffold for Voice, Papier, Snippets, and Dico | status: todo | area: product-pages-components | id: wfz-product-page-scaffold
-🟠 [WinGlowsApp] task: Extract shared metric/status pill primitives and remove duplicated private metric widgets across product pages | status: todo | area: product-pages-components | id: wfz-shared-metric-status-pills
-🟠 [WinGlowsApp] task: Split oversized Flutter page widgets and studios into smaller render/controller components with focused widget tests | status: todo | area: component-architecture | id: wfz-split-god-widgets
+🟢 [CommandGlowsApp] task: Verify persistent local clipboard fallback, search, and copy action | status: done | area: clipboard-local | id: wfz-clipboard-persistent-local-verify
+🟠 [CommandGlowsApp] task: Push or ship the verified persistent local clipboard fallback changes | status: todo | area: clipboard-local | id: wfz-clipboard-persistent-local-ship
+✅ [CommandGlowsApp] task: Retest Android IME clipboard bridge on physical device after APK/CI handoff | status: done | area: clipboard-ime | id: wfz-ime-clipboard-device-qa
+🟠 [CommandGlowsApp] task: Redeploy the Flutter web auth patch and rerun Google plus email/password smoke on www.commandglows.com | status: todo | area: suite-auth | id: wfz-suite-auth-web-smoke
+✅ [CommandGlowsApp] task: Ship cross-surface Send to actions for Voice, Clipboard, and Snippets | status: done | area: send-to-actions | id: wfz-send-to-actions
+🟠 [CommandGlowsApp] task: Run Windows overlay/hotkeys native QA checklist on a Windows machine | status: todo | area: windows-overlay | id: wfz-windows-overlay-native-qa
+🟡 [CommandGlowsApp] task: Fix or refine Windows overlay host after first Windows QA results | status: todo | area: windows-overlay | id: wfz-windows-overlay-qa-followup
+🟠 [CommandGlowsApp] task: Run macOS overlay/hotkeys native QA checklist on a macOS machine | status: todo | area: macos-overlay | id: wfz-macos-overlay-native-qa
+🟠 [CommandGlowsApp] task: Run Linux overlay/hotkeys native QA checklist on a Linux machine | status: todo | area: linux-overlay | id: wfz-linux-overlay-native-qa
+✅ [CommandGlowsApp] task: Ship first local macOS/Linux desktop overlay host version for native QA handoff | status: done | area: desktop-overlay | id: wfz-macos-linux-overlay-local-ship
+🟡 [CommandGlowsApp] task: Decide and implement stronger Linux global hotkey/paste integration after first Linux QA results | status: todo | area: linux-overlay | id: wfz-linux-overlay-host-followup
+🟠 [CommandGlows] task: Configure Lemon Squeezy test-mode env and run hosted commerce proof for SocialGlowz LTD webhooks, idempotent replay, refund revoke, and Convex fulfillment | status: blocked | area: commerce | id: wfz-commerce-lemonsqueezy-hosted-smoke
+🟠 [CommandGlowsApp] task: Retest BUG-2026-05-24-001 onboarding active-state info box on Android APK | status: fixed_pending_verify | area: onboarding | id: BUG-2026-05-24-001
+✅ [CommandGlowsApp] task: Retest BUG-2026-05-24-002 clipboard edit dialog cancel/save on Android APK | status: done | area: clipboard | id: BUG-2026-05-24-002
+🟢 [CommandGlowsApp] task: Reduce Android IME layout rebuilds during rapid typing | status: done | area: keyboard-ime-performance | id: wfz-ime-rapid-typing-layout-rebuild
+🟡 [CommandGlowsApp] task: Verify Android IME multi-pointer rollover on hosted build and physical device | status: fixed_pending_verify | area: keyboard-ime-performance | id: wfz-ime-multipointer-touch-dispatch
+🟢 [CommandGlowsApp] task: Downsample Android IME theme background images before drawing key visuals | status: done | area: keyboard-ime-visual-performance | id: wfz-ime-theme-image-downsample
+🟡 [CommandGlowsApp] task: Validate Android IME image-background memory and scroll smoothness on hosted build and physical device | status: fixed_pending_verify | area: keyboard-ime-visual-performance | id: wfz-ime-theme-image-device-verify
+🟢 [CommandGlowsApp] task: Remove expensive theme draft serialization from Flutter keyboard theme studio dirty checks | status: done | area: keyboard-theme-performance | id: wfz-keyboard-theme-dirty-check
+🟡 [CommandGlowsApp] task: Fix keyboard theme preset auto light/dark switching after non-color theme options | status: fixed_pending_verify | area: keyboard-theme | id: BUG-2026-06-01-001
+🟠 [CommandGlowsApp] task: Run Android physical-device QA for IME navigation/editing actions with the new navigation diagnostics playground (`DelW←`, `DelW→`, `DelS←`, `DelS→`, `Début`, `Fin`, `All`) and capture per-app failures/fallbacks | status: todo | area: keyboard-ime-navigation | id: wfz-ime-navigation-diagnostics-device-qa
+🔴 [CommandGlowsApp] task: Specify and implement a shared ProductPageScaffold for Voice, Papier, Snippets, and Dico | status: todo | area: product-pages-components | id: wfz-product-page-scaffold
+🟠 [CommandGlowsApp] task: Extract shared metric/status pill primitives and remove duplicated private metric widgets across product pages | status: todo | area: product-pages-components | id: wfz-shared-metric-status-pills
+🟠 [CommandGlowsApp] task: Split oversized Flutter page widgets and studios into smaller render/controller components with focused widget tests | status: todo | area: component-architecture | id: wfz-split-god-widgets
 
 ### Site 404 Remediation
 
-🟠 [WinGlows] task: Repair bilingual route translation mapping | status: todo | area: site-routing | id: wfz-site-route-translation-helper | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: production crawl found broken language-switch destinations | next: 106-sg-fix
-🟠 [WinGlows] task: Restore production Roadmap routes for both locales | status: todo | area: site-roadmap | id: wfz-site-roadmap-production-routes | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: /roadmap and /fr/roadmap return 404 in production | next: 106-sg-fix
-🟠 [WinGlows] task: Fix product image public URLs across EN and FR listing and detail pages | status: todo | area: site-products | id: wfz-site-product-image-urls | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: 20 browser-loaded product image URLs return 404 | next: 106-sg-fix
-🟠 [WinGlows] task: Fix Services Astro image rendering contract | status: todo | area: site-services | id: wfz-site-services-image-rendering | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: Services pages load serialized function URLs as images | next: 106-sg-fix
-🟡 [WinGlows] task: Return correct 404 status for the French error page and serve the root favicon | status: todo | area: site-errors | id: wfz-site-error-status-favicon | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: /fr/404 returns 200 and /favicon.ico returns 404 | next: 106-sg-fix
-🟠 [WinGlows] task: Repair localized content links and aliases for blog training and Welcome pages | status: todo | area: site-i18n | id: wfz-site-localized-content-links | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: EN and FR content alternate links produce 15 production 404 destinations | paired: wfz-site-route-translation-helper | next: 106-sg-fix
-🟠 [WinGlows] task: Add an exhaustive sitemap link and browser resource 404 regression crawl | status: todo | area: site-quality | id: wfz-site-anti-404-regression | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: 23 internal destinations or resources fail in production | next: 105-sg-check
-🟡 [WinGlows] task: Align production URL and Node validation requirements in project documentation | status: todo | area: site-governance | id: wfz-site-validation-environment-docs | surface: winglowz_site | source: 103-sg-verify-404-audit | evidence: documented production host is stale and local runtime is Node 22 while package requires Node 24 | next: 300-sg-docs
+🟠 [CommandGlows] task: Repair bilingual route translation mapping | status: todo | area: site-routing | id: wfz-site-route-translation-helper | surface: commandglows_site | source: 103-sg-verify-404-audit | evidence: production crawl found broken language-switch destinations | next: 106-sg-fix
+🟠 [CommandGlows] task: Restore production Roadmap routes for both locales | status: todo | area: site-roadmap | id: wfz-site-roadmap-production-routes | surface: commandglows_site | source: 103-sg-verify-404-audit | evidence: /roadmap and /fr/roadmap return 404 in production | next: 106-sg-fix
+🟠 [CommandGlows] task: Fix product image public URLs across EN and FR listing and detail pages | status: todo | area: site-products | id: wfz-site-product-image-urls | surface: commandglows_site | source: 103-sg-verify-404-audit | evidence: 20 browser-loaded product image URLs return 404 | next: 106-sg-fix
+🟠 [CommandGlows] task: Fix Services Astro image rendering contract | status: todo | area: site-services | id: wfz-site-services-image-rendering | surface: commandglows_site | source: 103-sg-verify-404-audit | evidence: Services pages load serialized function URLs as images | next: 106-sg-fix
+🟡 [CommandGlows] task: Return correct 404 status for the French error page and serve the root favicon | status: todo | area: site-errors | id: wfz-site-error-status-favicon | surface: commandglows_site | source: 103-sg-verify-404-audit | evidence: /fr/404 returns 200 and /favicon.ico returns 404 | next: 106-sg-fix
+🟠 [CommandGlows] task: Repair localized content links and aliases for blog training and Welcome pages | status: todo | area: site-i18n | id: wfz-site-localized-content-links | surface: commandglows_site | source: 103-sg-verify-404-audit | evidence: EN and FR content alternate links produce 15 production 404 destinations | paired: wfz-site-route-translation-helper | next: 106-sg-fix
+🟠 [CommandGlows] task: Add an exhaustive sitemap link and browser resource 404 regression crawl | status: todo | area: site-quality | id: wfz-site-anti-404-regression | surface: commandglows_site | source: 103-sg-verify-404-audit | evidence: 23 internal destinations or resources fail in production | next: 105-sg-check
+🟡 [CommandGlows] task: Align production URL and Node validation requirements in project documentation | status: todo | area: site-governance | id: wfz-site-validation-environment-docs | surface: commandglows_site | source: 103-sg-verify-404-audit | evidence: documented production host is stale and local runtime is Node 22 while package requires Node 24 | next: 300-sg-docs
 
 ---
 
@@ -63,7 +63,7 @@ The following records were consolidated from the former nested site tracker duri
 | 🟠 | Rename canonical ShipGlowz surfaces to ShipGlows across governance, site routes, installers, entitlements, app references, and documentation | 🚀 shipped with validation remaining — migration-specific checks pass; 22 unrelated inherited Flutter UI/theme tests remain failing |
 | ✅ | Replace Supabase target coupling with backend-agnostic contracts and Firebase first-adapter spec | ✅ done — `shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md` created |
 | ✅ | Reorganize legacy product docs to `shipglows_data` canonical locations and replace root path references | ✅ done — root doctrine docs (`BRANDING.md`, `BUSINESS.md`, `ARCHITECTURE.md`, etc.) replaced by canonical files |
-| ✅ | Finalize identity migration to WinGlows across app packages, docs, specs, and trackers | ✅ done — commit `bd81825` |
+| ✅ | Finalize identity migration to CommandGlows across app packages, docs, specs, and trackers | ✅ done — commit `bd81825` |
 | ✅ | Create Firebase CLI workflow for project config, Auth/Firestore setup, rules, indexes, emulator/dev validation and GitHub Secrets/Blacksmith integration | ✅ done — GitHub OIDC/WIF wired; Firestore rules/indexes deploy proven in hosted CI (`run 25636532417`, Firestore job `75249317806`) and re-validated after IAM hardening (`run 25636936089`, Firestore job `75250395805`) |
 | ✅ | Run the verification gate end-to-end: `dart format --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter build web` | ✅ done |
 | 🟠 | Detach Supabase runtime target path (`task 7`) while preserving legacy compile compatibility until the final parity decision | ✅ done — Supabase removed from active bootstrap/providers/diagnostics; legacy adapters/tests remain in-place for compile compatibility |

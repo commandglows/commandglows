@@ -2,7 +2,7 @@
 artifact: editorial_governance
 metadata_schema_version: "1.0"
 artifact_version: "1.0.1"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-23"
 status: reviewed
@@ -45,7 +45,7 @@ Track sensitive public claims and the proof level currently available in the rep
 
 | Claim area | Current claim boundary | Proof status | Evidence | Notes |
 | --- | --- | --- | --- | --- |
-| Bilingual publishing | WinGlows ships English and French public surfaces | verified | `src/pages/[...lang]/**`, `src/content/{blog,docs,products}/{en,fr}/` | safe public claim |
+| Bilingual publishing | CommandGlows ships English and French public surfaces | verified | `src/pages/[...lang]/**`, `src/content/{blog,docs,products}/{en,fr}/` | safe public claim |
 | Flagship curriculum scope | `Windows Mastery` presents an 8-module training structure | verified | `src/content/docs/{en,fr}/formations/**`, sales-page copy | do not strengthen into lesson-count claims without recounting |
 | Gated training access | some training access depends on auth and checkout flows | verified | `src/pages/api/polar/checkout.ts`, `convex/http.ts` | safe if phrased as implemented flow, not entitlement guarantee under all conditions |
 | Newsletter capture | signup and unsubscribe flows exist | verified | `src/pages/api/newsletter/subscribe.ts`, `src/pages/api/newsletter/unsubscribe.ts` | avoid deliverability guarantees |

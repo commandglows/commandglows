@@ -2,7 +2,7 @@
 artifact: documentation
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-17"
 status: reviewed
@@ -125,4 +125,3 @@ python3 /home/claude/shipglows/tools/shipglows_metadata_lint.py shipglows_data/t
 ## Maintenance Rule
 
 Update this doc when the request pipeline or integration flow changes materially.
-

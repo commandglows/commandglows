@@ -2,7 +2,7 @@
 artifact: business_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-17"
 status: reviewed
@@ -22,7 +22,7 @@ supersedes:
   - BUSINESS.md
 evidence:
   - README.md
-  - src/content/products/en/winglowz.md
+  - src/content/products/en/commandglows.md
   - src/content/docs/en/formations.mdx
 next_review: "2026-06-17"
 next_step: "/sf-docs update"
@@ -31,7 +31,7 @@ next_step: "/sf-docs update"
 
 ## Mission
 
-WinGlows exists to help Windows users build practical, repeatable productivity systems, with `Windows Mastery` as the commercial anchor.
+CommandGlows exists to help Windows users build practical, repeatable productivity systems, with `Windows Mastery` as the commercial anchor.
 
 ## Business Anchor
 
@@ -64,7 +64,7 @@ Secondary audience:
 
 ## Positioning Guardrails
 
-- Keep WinGlows anchored to Windows workflow mastery, not generic productivity claims.
+- Keep CommandGlows anchored to Windows workflow mastery, not generic productivity claims.
 - Keep the commercial story centered on `Windows Mastery`.
 - Avoid traction, market-size, or quantified outcome claims unless they are backed by in-repo evidence.
 - Keep sister products as ecosystem context, not as the replacement narrative.

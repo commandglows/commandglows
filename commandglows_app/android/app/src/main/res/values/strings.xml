@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CMDglows</string>
+    <string name="keyboard_name">CMDglows keyboard</string>
+    <string name="keyboard_settings_name">CMDglows keyboard settings</string>
+    <string name="keyboard_subtype_fr">Francais</string>
+    <string name="keyboard_subtype_en">English</string>
+</resources>

@@ -2,7 +2,7 @@
 artifact: content_map
 metadata_schema_version: "1.0"
 artifact_version: "1.0.1"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-23"
 status: reviewed

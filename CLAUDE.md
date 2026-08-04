@@ -1,11 +1,11 @@
 # CLAUDE.md
 
-This file provides root-level guidance for agents working in the WinGlowz monorepo.
+This file provides root-level guidance for agents working in the CommandGlows monorepo.
 
 ## Project Overview
 
-- `winglowz_site/`: Astro site, content, account, commerce, Convex, and bridge API surfaces.
-- `winglowz_app/`: Flutter Android-first application.
+- `commandglows_site/`: Astro site, content, account, commerce, Convex, and bridge API surfaces.
+- `commandglows_app/`: Flutter Android-first application.
 - `shipglows_data/`: project governance, workflow, audit, task, bug, and spec artifacts.
 
 ## ShipGlows Development Mode
@@ -16,7 +16,7 @@ This file provides root-level guidance for agents working in the WinGlowz monore
 - post_ship_verification: sf-prod
 - deployment_provider: vercel
 - preview_source: Vercel MCP deployment target_url for hosted web surfaces; local tooling for Flutter/Android preflight
-- production_url: https://winglowz.com
+- production_url: https://www.commandglows.com
 - notes: Use local checks for structural, Flutter, and unit validation. Use Vercel preview validation before claiming hosted site/app web behavior, serverless API behavior, auth callbacks, bridge endpoints, checkout, or production-like deployment behavior.
 - last_reviewed: 2026-05-24
 
@@ -32,10 +32,10 @@ This file provides root-level guidance for agents working in the WinGlowz monore
 Use focused checks from the changed subproject:
 
 ```bash
-(cd winglowz_site && pnpm build:check)
-(cd winglowz_site && pnpm test:unit)
-(cd winglowz_app && flutter analyze)
-(cd winglowz_app && flutter test)
+(cd commandglows_site && pnpm build:check)
+(cd commandglows_site && pnpm test:unit)
+(cd commandglows_app && flutter analyze)
+(cd commandglows_app && flutter test)
 ```
 
 Run ShipGlows metadata validation for governance docs:

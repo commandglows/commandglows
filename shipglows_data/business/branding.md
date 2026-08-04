@@ -2,7 +2,7 @@
 artifact: brand_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-17"
 status: reviewed
@@ -28,7 +28,9 @@ next_step: "/sf-docs update"
 
 ## Brand Core
 
-- Name: `WinGlows`
+- Legal/product name: `CommandGlows`
+- Public wordmark: `CMDglows`
+- Display rule: use `CMDglows` in logos, navigation, app labels, screenshots, and promotional copy; retain `CommandGlows` for domains, package IDs, provider registrations, legal identity, and technical contracts.
 - Core promise: improve real Windows workflows through structured education and practical systems
 - Commercial center: `Windows Mastery`
 - Language posture: bilingual (`en` and `fr`) with parity on core commercial surfaces

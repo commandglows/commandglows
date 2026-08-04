@@ -2,12 +2,12 @@
 artifact: market_study
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "WinGlows"
+project: "CommandGlows"
 created: "2026-06-12"
 updated: "2026-06-12"
 status: "draft"
 source_skill: "204-sf-market-study"
-scope: "winglowz-android-ltd-pricing"
+scope: "commandglows-android-ltd-pricing"
 owner: "Diane"
 confidence: "medium"
 risk_level: "high"
@@ -18,19 +18,19 @@ value_proposition: "Voice-first text capture and reuse across Android now, with 
 docs_impact: "yes"
 security_impact: "yes"
 linked_systems:
-  - "winglowz_site"
-  - "winglowz_app"
+  - "commandglows_site"
+  - "commandglows_app"
   - "Lemon Squeezy"
   - "Firebase"
-  - "shipglows_data/workflow/specs/winglowz-android-lifetime-deal-launch.md"
+  - "shipglows_data/workflow/specs/commandglows-android-lifetime-deal-launch.md"
 depends_on:
-  - artifact: "shipglows_data/business/winglowz_app/business.md"
+  - artifact: "shipglows_data/business/commandglows_app/business.md"
     artifact_version: "unknown"
     required_status: "reviewed"
-  - artifact: "shipglows_data/business/winglowz_app/product.md"
+  - artifact: "shipglows_data/business/commandglows_app/product.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
-  - artifact: "shipglows_data/business/winglowz_app/gtm.md"
+  - artifact: "shipglows_data/business/commandglows_app/gtm.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
 supersedes: []
@@ -52,11 +52,11 @@ next_review: "2026-06-26"
 next_step: "Diane validates one recommended pricing ladder before 101-sf-ready"
 ---
 
-# WinGlows Android LTD Pricing Audit
+# CommandGlows Android LTD Pricing Audit
 
 ## Executive Verdict
 
-WinGlows should not launch one cheap "all included" lifetime deal.
+CommandGlows should not launch one cheap "all included" lifetime deal.
 
 The sustainable shape is a ladder:
 
@@ -79,11 +79,11 @@ Minimum no-bankruptcy rule: **do not sell all-platforms + cloud sync below $499*
 - Early Bird framing: beta pricing that may change, not a fake fixed deadline.
 - Other platforms: Windows, iOS, and Linux can be promised as intended future directions only; no release date commitment.
 - Cloud: must be fair-use/capped or separated from cheap tiers.
-- Future AppSumo launch is likely; site pricing should preserve room for AppSumo to negotiate the lowest public deal without forcing WinGlows into an unsustainable all-in package.
+- Future AppSumo launch is likely; site pricing should preserve room for AppSumo to negotiate the lowest public deal without forcing CommandGlows into an unsustainable all-in package.
 
 ## Competitor Pricing Snapshot
 
-| Product | Current public pricing signal | Relevant lesson for WinGlows |
+| Product | Current public pricing signal | Relevant lesson for CommandGlows |
 | --- | --- | --- |
 | Wispr Flow | Free tier, Pro shown at $15/user/month monthly and $12/user/month annual; Basic limits words by platform, with Android temporarily unlimited. Source: [Wispr Flow pricing](https://wisprflow.ai/pricing). | Cross-platform voice dictation can support $144-$180/year pricing. Unlimited Android as "limited time" shows that unlimited usage is risky to promise permanently. |
 | Superwhisper | Pro docs list $8.49/month, $84.99/year, and $249.99 lifetime; all plans include same features and work on all platforms. Source: [Superwhisper Pro docs](https://superwhisper.com/docs/get-started/sw-pro). | $249 lifetime is a real anchor for multi-platform dictation when the product is mature and mostly local/on-device. |
@@ -91,14 +91,14 @@ Minimum no-bankruptcy rule: **do not sell all-platforms + cloud sync below $499*
 | Otter.ai | Basic free includes 300 monthly transcription minutes; Pro is $8.33/user/month annual, Business $19.99/user/month annual, with transcription/import limits and team features. Source: [Otter pricing](https://otter.ai/pricing). | AI transcription users accept recurring subscriptions with usage limits. Lifetime should not include unbounded hosted transcription. |
 | Notta | Pro $8.17/month annual with 1,800 minutes/month; Business $16.67/month annual with unlimited/customized usage wording. Source: [Notta pricing](https://www.notta.ai/en/pricing). | Transcription quotas are normal even in paid plans. |
 | Descript | Official pricing shows annual Hobbyist at $16/person/month and monthly at $24/person/month. Source: [Descript pricing](https://www.descript.com/pricing). | Advanced media/AI tools monetize above simple dictation; strong AI/editorial features justify higher tiers. |
-| TextExpander | Individual $4.16/month, Business $10.41/month, Growth $13.54/month, billed annually. Source: [TextExpander pricing](https://textexpander.com/pricing). | Snippets/text productivity alone supports low recurring prices; WinGlows needs voice + Android IME + future platform story to justify higher LTD. |
+| TextExpander | Individual $4.16/month, Business $10.41/month, Growth $13.54/month, billed annually. Source: [TextExpander pricing](https://textexpander.com/pricing). | Snippets/text productivity alone supports low recurring prices; CommandGlows needs voice + Android IME + future platform story to justify higher LTD. |
 | Voice In | Voice In positions Plus at $60/year and compares against Dragon at $300-$2500+. Source: [Voice In](https://dictanote.co/voicein/). | Browser dictation is cheaper; native app + keyboard + workflow reuse must be the differentiator. |
 
 ## Future AppSumo Constraint
 
 AppSumo should be treated as a future negotiated channel, not as the first source of truth for the offer. AppSumo's public help center explains that its displayed list price is based on the partner's existing monthly plan annualized plus extra included features, and that AppSumo commonly negotiates better price and/or better terms for the deal. AppSumo also supports multiple deal tiers. Sources: [AppSumo list price calculation](https://help.appsumo.com/article/680-how-is-the-list-price-calculated), [AppSumo multiple tiers](https://help.appsumo.com/article/678-how-can-i-list-multiple-plan-tiers).
 
-Practical rule for WinGlows:
+Practical rule for CommandGlows:
 
 - Do not make the site Early Bird a permanent low reference price.
 - Keep the site launch framed as a limited beta founder price that can end or increase before AppSumo.
@@ -140,7 +140,7 @@ Cloud sync for text/snippets/dictionary can be low cost if payloads are small an
 
 ### AI / Hosted Transcription
 
-If WinGlows ever includes hosted transcription rather than BYO/local, current OpenAI pricing lists transcription estimates at $0.006/minute for `gpt-4o-transcribe` and $0.003/minute for `gpt-4o-mini-transcribe`. Source: [OpenAI API pricing](https://developers.openai.com/api/docs/pricing).
+If CommandGlows ever includes hosted transcription rather than BYO/local, current OpenAI pricing lists transcription estimates at $0.006/minute for `gpt-4o-transcribe` and $0.003/minute for `gpt-4o-mini-transcribe`. Source: [OpenAI API pricing](https://developers.openai.com/api/docs/pricing).
 
 At $0.003/minute, 10 hours/month costs about $1.80/month before infrastructure and support. A $149 LTD could be consumed by a single heavy user over a few years if hosted transcription is included. Therefore:
 
@@ -210,7 +210,7 @@ Includes:
 - Local/BYO-first workflow.
 - Cloud sync limited or excluded except activation/basic account state.
 
-Why: Superwhisper anchors all-platform lifetime around $249. WinGlows can match this if the promise is future platform access with activation limits, no guaranteed deadlines, and no unbounded cloud.
+Why: Superwhisper anchors all-platform lifetime around $249. CommandGlows can match this if the promise is future platform access with activation limits, no guaranteed deadlines, and no unbounded cloud.
 
 ### Tier 4: Everything / Cloud LTD
 

@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-17"
 status: reviewed
@@ -32,7 +32,7 @@ evidence:
 next_review: "2026-06-17"
 next_step: "pnpm build:check"
 ---
-# WinGlows Engineering Guidelines
+# CommandGlows Engineering Guidelines
 
 ## Purpose
 

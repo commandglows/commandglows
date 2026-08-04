@@ -1,0 +1,372 @@
+---
+import ThemePicker from '@/components/ui/ThemePicker.astro'
+import NavLink from '@components/ui/links/NavLink.astro'
+import TextLogo from '@components/ui/TextLogo.astro'
+import { getLangFromUrl, useTranslations } from '@/utils/i18n'
+
+interface NavItem {
+  label: string
+  href: string
+}
+
+interface Props {
+  navItems?: NavItem[]
+  forceDark?: boolean
+  showThemePicker?: boolean
+}
+
+const {
+  navItems: propNavItems,
+  forceDark = false,
+  showThemePicker = true,
+} = Astro.props
+
+const lang = getLangFromUrl(Astro.url)
+const t = await useTranslations(lang, 'navigation')
+const homeUrl = lang === 'fr' ? '/fr' : '/'
+
+const navItems: NavItem[] =
+  propNavItems ||
+  t.navBarLinks?.map((link: { name: string; url: string }) => ({
+    label: link.name,
+    href: link.url,
+  })) ||
+  []
+
+const altLang = lang === 'fr' ? 'en' : 'fr'
+const altLangLabel = lang === 'fr' ? 'EN' : 'FR'
+
+const routeMappings: Record<string, string> = {
+  about: 'a-propos',
+  'windows-mastery': 'maitrise-windows',
+  recommendations: 'recommandations',
+  testimonials: 'temoignages',
+  'en/formations': 'formations',
+  'products/obsidian-plugins': 'produits/obsidian-plugins',
+  'products/chrome-extensions': 'produits/chrome-extensions',
+  'products/productivity-suite': 'produits/productivity-suite',
+  terms: 'cgu',
+  disclaimer: 'non-responsabilite',
+  privacy: 'confidentialite',
+  copyright: 'droits',
+  legal: 'mentions-legales',
+  products: 'produits',
+  'products/obsidian': 'produits/obsidian',
+  'products/chrome': 'produits/chrome',
+  'products/windows': 'produits/windows',
+  services: 'services',
+  blog: 'blog',
+  contact: 'contact',
+  roadmap: 'roadmap',
+  signin: 'signin',
+}
+
+function getTranslatedPath(path: string, targetLang: string): string {
+  if (path === '/' || path === '/fr' || path === '/fr/') {
+    return targetLang === 'fr' ? '/fr' : '/'
+  }
+
+  const cleanPath = path.replace(/^\/fr\//, '/')
+
+  if (targetLang === 'fr') {
+    for (const [en, fr] of Object.entries(routeMappings)) {
+      if (cleanPath === `/${en}` || cleanPath.startsWith(`/${en}/`)) {
+        return `/fr/${fr}${cleanPath.substring(en.length + 1)}`
+      }
+    }
+    return `/fr${cleanPath}`
+  }
+
+  for (const [en, fr] of Object.entries(routeMappings)) {
+    if (cleanPath === `/${fr}` || cleanPath.startsWith(`/${fr}/`)) {
+      return `/${en}${cleanPath.substring(fr.length + 1)}`
+    }
+  }
+
+  return cleanPath
+}
+
+const altLangUrl = getTranslatedPath(Astro.url.pathname, altLang)
+
+const signInLabel = lang === 'fr' ? 'Connexion' : 'Sign In'
+const ctaLabel = lang === 'fr' ? 'Parcours Windows' : 'Start with CMDglows'
+const signInUrl = lang === 'fr' ? '/fr/signin' : '/signin'
+const ctaUrl =
+  lang === 'fr'
+    ? '/fr/signin?next=%2Fdashboard%2Fdocs%2Ffr%2Fformations%2Fmodule-2-windows%2F'
+    : '/signin?next=%2Fdashboard%2Fdocs%2Fen%2Fformations%2Fmodule-2-windows%2F'
+const menuLabel = lang === 'fr' ? 'Ouvrir le menu' : 'Open menu'
+const closeMenuLabel = lang === 'fr' ? 'Fermer le menu' : 'Close menu'
+const darkModeLabel = lang === 'fr' ? 'Mode sombre' : 'Dark mode'
+const lightModeLabel = lang === 'fr' ? 'Mode clair' : 'Light mode'
+const mobileTagline =
+  lang === 'fr'
+    ? 'Apps & Formation pour la Productivité'
+    : 'Productivity Apps & Training'
+
+const navShellClass = forceDark
+  ? 'relative flex items-center justify-between rounded-full border border-navbar-border bg-navbar-force-shell-bg px-4 py-3 shadow-none backdrop-blur-md'
+  : 'relative flex items-center justify-between rounded-full border border-navbar-border/60 bg-navbar-bg/80 px-4 py-3 shadow-sm backdrop-blur-md dark:border-navbar-border dark:bg-navbar-bg dark:shadow-none'
+
+const navLinkClass =
+  'no-hover-animation relative rounded-full px-3 py-2 text-sm font-medium transition-colors'
+const navLinkActiveClass = forceDark
+  ? 'text-navbar-textPrimary'
+  : 'text-navbar-textPrimary dark:text-navbar-textPrimary'
+const navLinkInactiveClass = forceDark
+  ? 'text-navbar-textSecondary hover:text-navbar-textPrimary'
+  : 'text-navbar-textSecondary hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:hover:text-navbar-textPrimary'
+
+const langLinkClass = forceDark
+  ? 'no-hover-animation rounded-full px-2.5 py-1.5 text-xs font-semibold text-navbar-textTertiary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary'
+  : 'no-hover-animation rounded-full px-2.5 py-1.5 text-xs font-semibold text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textTertiary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary'
+
+const signInButtonClass = forceDark
+  ? 'rounded-full px-3 py-1.5 text-sm text-navbar-textSecondary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary'
+  : 'rounded-full px-3 py-1.5 text-sm font-medium text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary'
+
+const ctaButtonClass = forceDark
+  ? 'shimmer-btn rounded-full bg-navbar-cta-text px-4 py-1.5 text-sm font-medium text-navbar-cta-bg hover:bg-navbar-cta-bg-hover'
+  : 'shimmer-btn rounded-full bg-navbar-cta-bg px-4 py-1.5 text-sm font-medium text-navbar-cta-text hover:bg-navbar-cta-bg-hover'
+---
+
+<header
+  class="navbar-header fixed inset-x-0 top-4 z-50 mx-auto box-border w-full px-4"
+>
+  <nav class:list={[navShellClass, 'box-border w-full min-w-0', !forceDark && 'navbar-shell-glass']}>
+    <!-- The landing layout has no ClientRouter; keep this layered logo out of a cross-layout transition. -->
+    <a
+      href={homeUrl}
+      data-astro-reload
+      class="no-hover-animation flex items-center gap-2"
+    >
+      <TextLogo />
+    </a>
+
+    <p
+      class="navbar-mobile-tagline mx-4 hidden flex-1 text-center font-semibold uppercase tracking-wider text-navbar-textSecondary max-md:block"
+    >
+      {mobileTagline}
+    </p>
+
+    <div class="hidden items-center gap-1 md:flex">
+      {
+        navItems.map((item) => (
+          <NavLink
+            url={item.href}
+            name={item.label}
+            class={navLinkClass}
+            activeClass={navLinkActiveClass}
+            inactiveClass={navLinkInactiveClass}
+          />
+        ))
+      }
+    </div>
+
+    <div class="hidden items-center gap-1 md:flex">
+      <a href={altLangUrl} class={langLinkClass}>
+        {altLangLabel}
+      </a>
+      {showThemePicker && !forceDark && <ThemePicker />}
+      <a href={signInUrl} class={signInButtonClass}>{signInLabel}</a>
+      <a href={ctaUrl} class={ctaButtonClass}>{ctaLabel}</a>
+    </div>
+
+    <details class="mobile-menu relative md:hidden">
+      <summary
+        class="mobile-menu-toggle flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full bg-navbar-bg-hover/80 text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--navbar-ring)] dark:bg-navbar-bg-hover dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary dark:focus-visible:outline-[var(--navbar-ring)]"
+        aria-label={menuLabel}
+        aria-controls="mobile-navigation-menu"
+        aria-expanded="false"
+        data-open-label={menuLabel}
+        data-close-label={closeMenuLabel}
+      >
+        <span class="sr-only">{menuLabel}</span>
+        <svg class="hamburger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" x2="20" y1="6" y2="6"/>
+          <line x1="4" x2="20" y1="12" y2="12"/>
+          <line x1="4" x2="20" y1="18" y2="18"/>
+        </svg>
+      </summary>
+
+      <div
+        id="mobile-navigation-menu"
+        class:list={[
+          'mobile-menu-panel navbar-mobile-menu-panel absolute right-0 top-full border shadow-2xl',
+          forceDark
+            ? 'border-navbar-drawer-border bg-navbar-force-drawer-bg'
+            : 'navbar-drawer-glass border-navbar-drawer-border/60 dark:border-navbar-drawer-border',
+        ]}
+      >
+        <div class="mobile-menu-list flex flex-col">
+          {
+            navItems.map((item) => (
+            <NavLink
+              url={item.href}
+              name={item.label}
+              class="mobile-menu-item rounded-lg px-4 py-3.5 text-base font-semibold text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+              activeClass={
+                forceDark ? 'text-navbar-textPrimary' : 'text-navbar-textPrimary dark:text-navbar-textPrimary'
+              }
+              inactiveClass={
+                forceDark
+                  ? 'text-navbar-textSecondary'
+                  : 'text-navbar-textQuaternary dark:text-navbar-textSecondary'
+              }
+            />
+            ))
+          }
+          <hr class="mobile-menu-divider border-navbar-drawer-border" />
+          <div
+            class={`grid ${showThemePicker && !forceDark ? 'grid-cols-3' : 'grid-cols-2'} mobile-menu-list`}
+          >
+            <a
+              href={altLangUrl}
+              class="rounded-lg px-2 py-3 text-center text-sm font-bold text-navbar-textTertiary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textTertiary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+            >
+              {altLangLabel}
+            </a>
+            {
+              showThemePicker && !forceDark && (
+                <div class="flex items-center justify-center">
+                  <button
+                    type="button"
+                    data-hs-theme-click-value="dark"
+                    aria-label={darkModeLabel}
+                    class="flex h-10 w-10 items-center justify-center rounded-lg text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm hs-dark-mode-active:hidden dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+                  >
+                    <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    data-hs-theme-click-value="light"
+                    aria-label={lightModeLabel}
+                    class="hidden h-10 w-10 items-center justify-center rounded-lg text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm hs-dark-mode-active:flex dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+                  >
+                    <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="4"></circle>
+                      <path d="M12 8a2 2 0 1 0 4 4"></path>
+                      <path d="M12 2v2"></path>
+                      <path d="M12 20v2"></path>
+                      <path d="m4.93 4.93 1.41 1.41"></path>
+                      <path d="m17.66 17.66 1.41 1.41"></path>
+                      <path d="M2 12h2"></path>
+                      <path d="M20 12h2"></path>
+                      <path d="m6.34 17.66-1.41 1.41"></path>
+                      <path d="m19.07 4.93-1.41 1.41"></path>
+                    </svg>
+                  </button>
+                </div>
+              )
+            }
+              <a href={signInUrl} class="flex items-center">
+                <span
+                  class="block w-full rounded-lg px-2 py-3 text-center text-base font-semibold text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+                >
+                {signInLabel}
+              </span>
+            </a>
+          </div>
+          <a href={ctaUrl}>
+            <span
+              class="shimmer-btn inline-flex w-full items-center justify-center rounded-full bg-navbar-cta-bg px-4 py-2.5 text-base font-semibold text-navbar-cta-text transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-cta-bg-hover"
+            >
+              {ctaLabel}
+            </span>
+          </a>
+        </div>
+      </div>
+    </details>
+  </nav>
+</header>
+
+<script>
+  function initializeMobileMenus() {
+    document
+      .querySelectorAll<HTMLDetailsElement>('details.mobile-menu')
+      .forEach((menu) => {
+        if (menu.dataset.initialized === 'true') return
+
+        const toggle = menu.querySelector<HTMLElement>('.mobile-menu-toggle')
+        const accessibleLabel = toggle?.querySelector<HTMLElement>('.sr-only')
+        if (!toggle) return
+
+        const syncState = () => {
+          const label = menu.open
+            ? toggle.dataset.closeLabel
+            : toggle.dataset.openLabel
+
+          toggle.setAttribute('aria-expanded', String(menu.open))
+          if (label) {
+            toggle.setAttribute('aria-label', label)
+            if (accessibleLabel) accessibleLabel.textContent = label
+          }
+        }
+
+        menu.addEventListener('toggle', syncState)
+        menu.addEventListener('keydown', (event) => {
+          if (event.key !== 'Escape' || !menu.open) return
+
+          menu.open = false
+          toggle.focus()
+        })
+        menu.addEventListener('click', (event) => {
+          if ((event.target as Element).closest('a')) menu.open = false
+        })
+        document.addEventListener('pointerdown', (event) => {
+          if (!menu.open) return
+
+          const target = event.target as Node | null
+          if (target && !menu.contains(target)) menu.open = false
+        })
+
+        menu.dataset.initialized = 'true'
+        syncState()
+      })
+  }
+
+  initializeMobileMenus()
+  document.addEventListener('astro:page-load', initializeMobileMenus)
+</script>
+
+<style>
+  .navbar-header {
+    max-width: var(--navbar-shell-max-width);
+    animation: var(--navbar-slide-down-animation);
+  }
+
+  @keyframes navbar-slide-down {
+    0% {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .navbar-header :global(.text-logo) {
+    width: fit-content;
+  }
+
+  .navbar-mobile-tagline {
+    font-size: var(--navbar-mobile-tagline-size);
+    line-height: var(--navbar-mobile-tagline-line-height);
+  }
+
+  .mobile-menu > #mobile-navigation-menu {
+    width: min(var(--navbar-dropdown-min-width), calc(100vw - var(--navbar-mobile-gutter)));
+    min-width: 0;
+  }
+
+  .mobile-menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .hamburger-icon {
+    display: block;
+  }
+</style>

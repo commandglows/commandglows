@@ -2,7 +2,7 @@
 artifact: editorial_governance
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-17"
 status: reviewed
@@ -31,7 +31,7 @@ next_step: "/sf-docs editorial audit"
 
 ## Purpose
 
-Keep blog and article recommendations aligned with the current WinGlows public-content model.
+Keep blog and article recommendations aligned with the current CommandGlows public-content model.
 
 ## Surface Rules
 

@@ -2,7 +2,7 @@
 artifact: architecture_context
 metadata_schema_version: '1.0'
 artifact_version: '1.0.1'
-project: winglowz
+project: commandglows
 created: '2026-05-17'
 updated: '2026-06-12'
 status: reviewed
@@ -58,7 +58,7 @@ next_step: 'pnpm build:check'
 
 ## Purpose
 
-Describe the stable system boundaries for WinGlows so technical and docs changes stay aligned with the current runtime.
+Describe the stable system boundaries for CommandGlows so technical and docs changes stay aligned with the current runtime.
 
 ## Owned Files
 
@@ -80,7 +80,7 @@ Describe the stable system boundaries for WinGlows so technical and docs changes
 
 ## System Overview
 
-WinGlows is a server-rendered Astro application deployed to Vercel. It combines public content, gated training routes, and backend integrations for authentication, billing, newsletter operations, and user entitlements.
+CommandGlows is a server-rendered Astro application deployed to Vercel. It combines public content, gated training routes, and backend integrations for authentication, billing, newsletter operations, and user entitlements.
 
 ## Core Architectural Layers
 
@@ -114,7 +114,7 @@ Astro API routes act as thin integration controllers for:
 - Clerk webhook intake
 - roadmap voting and suggestion intake
 - suite bridge endpoints:
-  - `POST /api/bridge/firebase` maps Firebase users to suite identities and mirrors `winglowz_app` access into Firestore.
+  - `POST /api/bridge/firebase` maps Firebase users to suite identities and mirrors `commandglows_app` access into Firestore.
   - `POST /api/bridge/sync` refreshes the Firestore access mirror by `globalUserId`.
   - `POST /api/bridge/entitlement` verifies a Clerk session token server-side and returns a redacted ReplayGlowz entitlement snapshot for `product_id=replayglowz`; old YouTube-product ids are no longer accepted. When a recognized Clerk account has no active ReplayGlowz entitlement yet, the bridge persists a product-scoped `replayglowz/free` default grant instead of granting suite-wide access.
 

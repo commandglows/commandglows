@@ -2,7 +2,7 @@
 artifact: editorial_governance
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-17"
 status: reviewed
@@ -57,4 +57,3 @@ Standardize how public-content changes are reviewed when routes, claims, curricu
 ## Maintenance Rule
 
 Update this gate when the editorial planning format or public-review thresholds change.
-

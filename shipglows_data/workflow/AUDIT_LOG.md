@@ -1,10 +1,10 @@
 # Audit Log
 
-🟡 [WinGlowsApp] audit: Flutter dependencies and supply chain | date: 2026-06-12 | overall: B- | issues: no current OSV advisories for direct pub deps; main risk is stale Firebase or Supabase runtime packages, missing project license declaration, and weak explicit Flutter or Dart pinning outside Flox | scope: dependencies
-🟡 [WinGlowsApp] audit: Android IME rapid typing responsiveness | date: 2026-05-26 | overall: B | issues: fixed layout-rebuild hotspot and implemented multi-pointer rollover; pending hosted Android and device QA | scope: keyboard-ime-performance
-🟡 [WinGlowsApp] audit: IME clavier et visuels des touches | date: 2026-06-11 | overall: B+ | issues: fixed full-resolution theme image decode in native IME and removed Flutter theme draft diff serialization hotspot; pending Android IME image-background validation on hosted build and device | scope: keyboard-ime-visual-performance
-🟠 [WinGlowsApp] audit: Flutter component architecture remaster | date: 2026-06-10 | overall: C+ | issues: top-heavy page widgets, duplicated metric/status primitives, missing shared product-page frame | scope: product-pages-components
-🟡 [WinGlowsApp] audit: Design tokens | date: 2026-06-22 | overall: B | issues: improved token values (spacing, shadows, semantic palette), fixed 5 hardcoded values in Settings; motion tokenization deferred due to analyzer resolution gap; drift-check clean | scope: design-tokens
+🟡 [CommandGlowsApp] audit: Flutter dependencies and supply chain | date: 2026-06-12 | overall: B- | issues: no current OSV advisories for direct pub deps; main risk is stale Firebase or Supabase runtime packages, missing project license declaration, and weak explicit Flutter or Dart pinning outside Flox | scope: dependencies
+🟡 [CommandGlowsApp] audit: Android IME rapid typing responsiveness | date: 2026-05-26 | overall: B | issues: fixed layout-rebuild hotspot and implemented multi-pointer rollover; pending hosted Android and device QA | scope: keyboard-ime-performance
+🟡 [CommandGlowsApp] audit: IME clavier et visuels des touches | date: 2026-06-11 | overall: B+ | issues: fixed full-resolution theme image decode in native IME and removed Flutter theme draft diff serialization hotspot; pending Android IME image-background validation on hosted build and device | scope: keyboard-ime-visual-performance
+🟠 [CommandGlowsApp] audit: Flutter component architecture remaster | date: 2026-06-10 | overall: C+ | issues: top-heavy page widgets, duplicated metric/status primitives, missing shared product-page frame | scope: product-pages-components
+🟡 [CommandGlowsApp] audit: Design tokens | date: 2026-06-22 | overall: B | issues: improved token values (spacing, shadows, semantic palette), fixed 5 hardcoded values in Settings; motion tokenization deferred due to analyzer resolution gap; drift-check clean | scope: design-tokens
 
 | Date       | Scope        | Code | Design | Copy | SEO | GTM | Translate | Deps | Perf | Overall | Issues |
 |------------|--------------|------|--------|------|-----|-----|-----------|------|------|---------|--------|

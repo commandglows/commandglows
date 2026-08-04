@@ -1,0 +1,80 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro'
+import { isSafePrivateCoursePath } from '@/utils/courseGating'
+
+const auth = Astro.locals.auth()
+const nextUrl = Astro.url.searchParams.get('next')
+const offerId = Astro.url.searchParams.get('offerId')
+const safeNextUrl = isSafePrivateCoursePath(nextUrl) ? nextUrl : null
+const lang = safeNextUrl?.includes('/dashboard/docs/fr/') ? 'fr' : 'en'
+const isCommandGlowsAppOffer = offerId?.startsWith('commandglows_app/') ?? false
+const isSocialGlowzOffer = offerId === 'socialglowz/lifetime_deal'
+const labels =
+	lang === 'fr'
+		? {
+				title: 'Achat confirmé',
+				body:
+					isCommandGlowsAppOffer || isSocialGlowzOffer
+						? isCommandGlowsAppOffer
+							? "Paiement reçu. L'accès CMDglows est confirmé par webhook signé et peut nécessiter une vérification de compte avant activation dans l'app."
+							: "Paiement reçu. L'accès SocialGlowz est confirmé par webhook signé et peut nécessiter une vérification de compte avant activation."
+						: 'Votre accès à la formation a été débloqué. Vous pouvez ouvrir la leçon privée maintenant.',
+				openLesson: 'Ouvrir la leçon',
+				goToDashboard: 'Aller au dashboard',
+				signIn: 'Se connecter pour accéder',
+				viewProducts: 'Voir les produits',
+				contact: 'Contacter le support',
+			}
+		: {
+				title: 'Purchase Confirmed',
+				body:
+					isCommandGlowsAppOffer || isSocialGlowzOffer
+						? isCommandGlowsAppOffer
+							? 'Payment received. CMDglows access is confirmed by signed webhook and may require account verification before activation in the app.'
+							: 'Payment received. SocialGlowz access is confirmed by signed webhook and may require account verification before activation.'
+						: 'Your training access has been unlocked. You can open the private lesson now.',
+				openLesson: 'Open Lesson',
+				goToDashboard: 'Go to Dashboard',
+				signIn: 'Sign In to Access',
+				viewProducts: 'View Products',
+				contact: 'Contact Support',
+			}
+const productsUrl = lang === 'fr' ? '/fr/produits' : '/products'
+const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
+---
+
+<MainLayout title={labels.title}>
+	<div class="site-main-shell flex min-h-screen items-center justify-center py-12">
+		<div class="mx-auto max-w-lg text-center">
+			<div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-content-bg-subtle dark:bg-content-bg-strong">
+				<svg class="h-8 w-8 text-content-text-primary dark:text-content-text-over-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M20 6 9 17l-5-5"/>
+				</svg>
+			</div>
+
+			<h1 class="mb-4 text-3xl font-bold text-content-text-primary dark:text-content-text-primary">{labels.title}</h1>
+			<p class="mb-8 text-lg text-content-text-tertiary dark:text-content-text-muted">
+				{labels.body}
+			</p>
+
+			<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
+				{isCommandGlowsAppOffer || isSocialGlowzOffer ? (
+					<a href={contactUrl} class="btn-primary inline-flex items-center justify-center">
+						{labels.contact}
+					</a>
+				) : auth.userId ? (
+					<a href={safeNextUrl || '/dashboard'} class="btn-primary inline-flex items-center justify-center">
+						{safeNextUrl ? labels.openLesson : labels.goToDashboard}
+					</a>
+				) : (
+					<a href={safeNextUrl ? `/signin?next=${encodeURIComponent(safeNextUrl)}` : '/signin'} class="btn-primary inline-flex items-center justify-center">
+						{labels.signIn}
+					</a>
+				)}
+				<a href={productsUrl} class="btn-secondary inline-flex items-center justify-center">
+					{labels.viewProducts}
+				</a>
+			</div>
+		</div>
+	</div>
+</MainLayout>

@@ -1,0 +1,525 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro'
+import type { Language } from '@/types'
+import { getLocalizedSiteUrl } from '@/constants'
+
+export const prerender = true
+
+export async function getStaticPaths() {
+	return [
+		{
+			params: { lang: undefined },
+			props: { lang: 'en' as Language },
+		},
+		{
+			params: { lang: 'fr' },
+			props: { lang: 'fr' as Language },
+		},
+	]
+}
+
+interface WorkflowStep {
+	step: string
+	title: string
+	description: string
+}
+
+interface ProofPoint {
+	label: string
+	value: string
+}
+
+interface FaqItem {
+	question: string
+	answer: string
+}
+
+interface CopyBlock {
+	metaTitle: string
+	metaDescription: string
+	badge: string
+	heroTitle: string
+	heroSubtitle: string
+	primaryAction: string
+	secondaryAction: string
+	productKicker: string
+	productHeading: string
+	productText: string
+	productPoints: string[]
+	workflowHeading: string
+	workflowText: string
+	workflowSteps: WorkflowStep[]
+	offerKicker: string
+	offerHeading: string
+	offerText: string
+	offerName: string
+	offerPrice: string
+	offerNote: string
+	offerIncludes: string[]
+	checkoutAction: string
+	trustHeading: string
+	trustText: string
+	trustPoints: ProofPoint[]
+	limitsHeading: string
+	limitsText: string
+	limits: string[]
+	faqHeading: string
+	faqText: string
+	faqItems: FaqItem[]
+	finalHeading: string
+	finalText: string
+	finalAction: string
+}
+
+const OFFER_ID = 'socialglowz/lifetime_deal'
+
+const copyByLang: Record<Language, CopyBlock> = {
+	en: {
+		metaTitle: 'SocialGlowz Lifetime Deal | Founder Access',
+		metaDescription:
+			'SocialGlowz founder Lifetime Deal page with direct checkout, transparent activation, and product-first sales architecture.',
+		badge: 'Founder Lifetime Deal',
+		heroTitle: 'Turn social momentum into a reusable content system.',
+		heroSubtitle:
+			'SocialGlowz helps creators and solo operators organize social publishing, relationship follow-up, and repeatable launch work without rebuilding the same plan every week.',
+		primaryAction: 'Get Founder Access',
+		secondaryAction: 'See the offer',
+		productKicker: 'Product system',
+		productHeading: 'A social workflow surface built for repeated execution',
+		productText:
+			'The offer page is structured around the real product promise: capture content ideas, shape them into campaigns, and keep the next action visible.',
+		productPoints: [
+			'Campaign-ready content planning instead of scattered notes.',
+			'Relationship and follow-up context for creator-led growth.',
+			'Reusable launch structure for posts, assets, and outreach.',
+			'Account-backed access handled through the CMDglows suite entitlement layer.',
+		],
+		workflowHeading: 'From idea to visible follow-up',
+		workflowText:
+			'SocialGlowz is positioned as a working desk for social growth, not a passive content library.',
+		workflowSteps: [
+			{
+				step: '01',
+				title: 'Collect the signal',
+				description:
+					'Keep hooks, angles, replies, assets, and outreach notes in one operating view.',
+			},
+			{
+				step: '02',
+				title: 'Shape the campaign',
+				description:
+					'Turn raw ideas into sequences with status, owner context, and next actions.',
+			},
+			{
+				step: '03',
+				title: 'Follow through',
+				description:
+					'Track what was published, what needs reply, and what should be reused next.',
+			},
+		],
+		offerKicker: 'Direct checkout',
+		offerHeading: 'Founder access for the first SocialGlowz buyers',
+		offerText:
+			'This direct Lifetime Deal uses the same commerce bridge as the suite: Lemon Squeezy checkout, signed provider events, and server-side entitlement fulfillment.',
+		offerName: 'SocialGlowz Lifetime Deal',
+		offerPrice: 'Early-bird founder price',
+		offerNote:
+			'Final price and public terms can still be adjusted before the full launch. The checkout is wired to the existing internal offer.',
+		offerIncludes: [
+			'Lifetime Deal access for SocialGlowz under the published founder terms.',
+			'Direct payment through the configured Lemon Squeezy provider.',
+			'Webhook-based fulfillment into the suite entitlement ledger.',
+			'Support path for account verification, access issues, refunds, and replays.',
+		],
+		checkoutAction: 'Continue to checkout',
+		trustHeading: 'Built around the access model already in the repo',
+		trustText:
+			'The page does not invent a parallel sales system. It points at the existing SocialGlowz offer and the existing provider bridge.',
+		trustPoints: [
+			{ label: 'Offer ID', value: 'socialglowz/lifetime_deal' },
+			{ label: 'Product ID', value: 'socialglowz' },
+			{ label: 'Plan', value: 'lifetime_deal' },
+			{ label: 'Provider', value: 'Lemon Squeezy first' },
+		],
+		limitsHeading: 'Clear launch boundaries',
+		limitsText:
+			'The launch copy stays honest while the exact public pricing and legal language are being finalized.',
+		limits: [
+			'No fake scarcity, revenue numbers, or customer proof.',
+			'No promise of unsupported marketplace pricing parity beyond the terms you publish.',
+			'No client-side entitlement shortcut; access is confirmed by provider events and suite state.',
+			'Checkout requires live Lemon Squeezy configuration before it can complete in production.',
+		],
+		faqHeading: 'Founder FAQ',
+		faqText: 'Short answers for the direct SocialGlowz founder offer.',
+		faqItems: [
+			{
+				question: 'Is the checkout connected?',
+				answer:
+					'Yes. The button calls the commerce checkout route with the SocialGlowz Lifetime Deal offer and Lemon Squeezy as the requested provider.',
+			},
+			{
+				question: 'Do I need to create the Lemon Squeezy product first?',
+				answer:
+					'Yes. The site can create hosted checkouts once the store, API key, webhook secret, and SocialGlowz variant id are configured.',
+			},
+			{
+				question: 'How is access fulfilled?',
+				answer:
+					'Lemon Squeezy sends signed commerce events. The suite bridge turns supported paid events into product entitlements and handles refund/revoke states.',
+			},
+			{
+				question: 'Can this offer change before launch?',
+				answer:
+					'Yes. The page is ready for structure and checkout, while final price, limits, and public terms can still be edited.',
+			},
+		],
+		finalHeading: 'Open the founder window for SocialGlowz',
+		finalText:
+			'Use this page as the direct sales surface while you finalize price, legal terms, and Lemon Squeezy product configuration.',
+		finalAction: 'Get SocialGlowz Founder Access',
+	},
+	fr: {
+		metaTitle: 'SocialGlowz Lifetime Deal | Acces Founder',
+		metaDescription:
+			'Page Lifetime Deal SocialGlowz avec checkout direct, activation transparente et architecture de vente orientee produit.',
+		badge: 'Lifetime Deal founder',
+		heroTitle: 'Transforme ton elan social en systeme de contenu reutilisable.',
+		heroSubtitle:
+			'SocialGlowz aide les creatrices, solopreneurs et operateurs a organiser publication sociale, suivi relationnel et lancements repetables sans reconstruire le plan chaque semaine.',
+		primaryAction: 'Obtenir l acces founder',
+		secondaryAction: 'Voir l offre',
+		productKicker: 'Systeme produit',
+		productHeading: 'Une surface de travail social faite pour executer souvent',
+		productText:
+			'La page part de la promesse produit concrete: capturer les idees, les transformer en campagnes, et garder la prochaine action visible.',
+		productPoints: [
+			'Planification de contenu prete pour les campagnes, pas des notes dispersees.',
+			'Contexte relationnel et suivi pour une croissance portee par la creatrice.',
+			'Structure de lancement reusable pour posts, assets et outreach.',
+			'Acces compte gere par la couche d entitlements de la suite CMDglows.',
+		],
+		workflowHeading: 'De l idee au suivi visible',
+		workflowText:
+			'SocialGlowz est positionne comme un bureau de travail pour la croissance sociale, pas une bibliotheque passive.',
+		workflowSteps: [
+			{
+				step: '01',
+				title: 'Capturer le signal',
+				description:
+					'Regrouper hooks, angles, reponses, assets et notes de contact dans une meme vue operationnelle.',
+			},
+			{
+				step: '02',
+				title: 'Former la campagne',
+				description:
+					'Transformer les idees brutes en sequences avec statut, contexte et prochaine action.',
+			},
+			{
+				step: '03',
+				title: 'Assurer le suivi',
+				description:
+					'Voir ce qui a ete publie, ce qui demande une reponse, et ce qui peut etre reutilise ensuite.',
+			},
+		],
+		offerKicker: 'Checkout direct',
+		offerHeading: 'Acces founder pour les premiers acheteurs SocialGlowz',
+		offerText:
+			'Ce Lifetime Deal direct utilise le meme pont commerce que la suite: checkout Lemon Squeezy, evenements fournisseur signes, et fulfillment serveur des droits d acces.',
+		offerName: 'SocialGlowz Lifetime Deal',
+		offerPrice: 'Prix founder early-bird',
+		offerNote:
+			'Le prix final et les termes publics peuvent encore etre ajustes avant le lancement complet. Le checkout est branche sur l offre interne existante.',
+		offerIncludes: [
+			'Acces Lifetime Deal a SocialGlowz selon les termes founder publies.',
+			'Paiement direct via le provider Lemon Squeezy configure.',
+			'Fulfillment par webhook dans le ledger d entitlements de la suite.',
+			'Parcours support pour verification de compte, acces, remboursements et replays.',
+		],
+		checkoutAction: 'Continuer vers le checkout',
+		trustHeading: 'Base sur le modele d acces deja present dans le repo',
+		trustText:
+			'La page ne cree pas un systeme de vente parallele. Elle pointe vers l offre SocialGlowz et le bridge provider deja en place.',
+		trustPoints: [
+			{ label: 'Offer ID', value: 'socialglowz/lifetime_deal' },
+			{ label: 'Product ID', value: 'socialglowz' },
+			{ label: 'Plan', value: 'lifetime_deal' },
+			{ label: 'Provider', value: 'Lemon Squeezy d abord' },
+		],
+		limitsHeading: 'Limites claires pour le lancement',
+		limitsText:
+			'Le copy reste honnete pendant que le prix public exact et les mentions legales sont finalises.',
+		limits: [
+			'Pas de fausse rarete, de chiffres de revenus, ni de preuve client inventee.',
+			'Pas de promesse de parite marketplace non supportee hors des termes publies.',
+			'Pas de raccourci d acces cote client; l acces vient des evenements provider et de l etat suite.',
+			'Le checkout demande la configuration Lemon Squeezy live avant de finaliser un achat en production.',
+		],
+		faqHeading: 'FAQ founder',
+		faqText: 'Reponses courtes pour l offre SocialGlowz directe.',
+		faqItems: [
+			{
+				question: 'Le checkout est-il connecte?',
+				answer:
+					'Oui. Le bouton appelle la route commerce avec l offre SocialGlowz Lifetime Deal et Lemon Squeezy comme provider demande.',
+			},
+			{
+				question: 'Faut-il creer le produit Lemon Squeezy avant?',
+				answer:
+					'Oui. Le site peut creer des checkouts heberges des que le store, la cle API, le secret webhook et le variant SocialGlowz sont configures.',
+			},
+			{
+				question: 'Comment l acces est-il livre?',
+				answer:
+					'Lemon Squeezy envoie des evenements signes. Le bridge suite transforme les paiements supportes en entitlements produit et gere les remboursements/revocations.',
+			},
+			{
+				question: 'L offre peut-elle changer avant le lancement?',
+				answer:
+					'Oui. La structure et le checkout sont prets, tandis que le prix final, les limites et les termes publics peuvent encore etre ajustes.',
+			},
+		],
+		finalHeading: 'Ouvrir la fenetre founder SocialGlowz',
+		finalText:
+			'Utilise cette page comme surface de vente directe pendant que tu finalises prix, termes legaux et configuration Lemon Squeezy.',
+		finalAction: 'Obtenir SocialGlowz Founder Access',
+	},
+}
+
+const { lang = 'en' as Language } = Astro.props
+const copy = copyByLang[lang]
+const pagePath = lang === 'fr' ? '/fr/socialglowz-founder' : '/socialglowz-founder'
+
+function checkoutUrl() {
+	const successUrl = `/purchase/success?offerId=${encodeURIComponent(OFFER_ID)}`
+	const cancelUrl = `/purchase/cancel?offerId=${encodeURIComponent(OFFER_ID)}`
+	return `/api/commerce/checkout?offerId=${encodeURIComponent(OFFER_ID)}&provider=lemonsqueezy&source=direct&sourceRef=${encodeURIComponent(pagePath)}&successUrl=${encodeURIComponent(successUrl)}&cancelUrl=${encodeURIComponent(cancelUrl)}`
+}
+---
+
+<MainLayout
+	title={copy.metaTitle}
+	meta={{
+		title: copy.metaTitle,
+		description: copy.metaDescription,
+	}}
+	lang={lang}
+	structuredData={{
+		'@context': 'https://schema.org',
+		'@type': 'WebPage',
+		'@id': getLocalizedSiteUrl(lang, '/socialglowz-founder'),
+		url: getLocalizedSiteUrl(lang, '/socialglowz-founder'),
+		name: copy.metaTitle,
+		description: copy.metaDescription,
+		inLanguage: lang,
+	}}
+>
+	<div class="space-y-16 pb-16">
+		<section class="relative overflow-hidden rounded-2xl border border-content-border bg-content-bg-inverse text-white shadow-2xl dark:border-content-border-strong">
+			<div class="absolute inset-x-0 top-0 h-2 bg-gradient-rainbow-horizontal" />
+			<div class="absolute inset-0 bg-gradient-to-br from-magenta/30 via-content-bg to-cyan/20" />
+			<div class="relative mx-auto grid max-w-6xl gap-12 px-6 py-12 md:px-10 lg:grid-cols-2 lg:items-center">
+				<div class="max-w-2xl">
+					<p class="mb-5 inline-flex rounded-full border border-white/20 bg-content-bg-elevated/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
+						{copy.badge}
+					</p>
+					<h1 class="max-w-3xl text-4xl font-bold text-white sm:text-5xl md:text-6xl">
+						{copy.heroTitle}
+					</h1>
+					<p class="mt-6 max-w-2xl text-lg leading-relaxed text-content-text-quaternary">
+						{copy.heroSubtitle}
+					</p>
+					<div class="mt-8 flex flex-col gap-3 sm:flex-row">
+						<a
+							href={checkoutUrl()}
+							class="no-hover-animation inline-flex items-center justify-center rounded-xl bg-content-bg-elevated px-6 py-3 text-sm font-bold text-content-text-primary transition-colors hover:bg-content-bg-hover"
+						>
+							{copy.primaryAction}
+						</a>
+						<a
+							href="#offer"
+							class="no-hover-animation inline-flex items-center justify-center rounded-xl border border-white/25 bg-content-bg-elevated/10 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-content-bg-elevated/20"
+						>
+							{copy.secondaryAction}
+						</a>
+					</div>
+				</div>
+
+				<div class="relative">
+					<div class="mx-auto max-w-md rounded-2xl border border-white/15 bg-content-bg-elevated/10 p-4 shadow-2xl backdrop-blur">
+						<div class="rounded-xl bg-content-bg-elevated p-4 text-content-text-primary shadow-xl">
+							<div class="mb-4 flex items-center justify-between">
+								<div>
+									<p class="text-xs font-semibold uppercase tracking-wider text-magenta">SocialGlowz</p>
+									<p class="text-sm font-bold text-content-text-primary">Launch board</p>
+								</div>
+								<img src="/images/CommandGlows.png" alt="CMDglows suite mark" class="h-10 w-10 rounded-lg" loading="eager" />
+							</div>
+							<div class="grid gap-3">
+								<div class="rounded-xl border border-content-border bg-content-bg-subtle p-4">
+									<div class="mb-3 flex items-center justify-between gap-3">
+										<p class="text-sm font-bold text-content-text-primary">Founder campaign</p>
+										<span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Live</span>
+									</div>
+									<div class="grid gap-2 sm:grid-cols-3">
+										<div class="rounded-lg bg-content-bg-elevated p-3">
+											<p class="text-xs font-semibold uppercase tracking-wider text-content-text-tertiary">Hooks</p>
+											<p class="mt-1 text-2xl font-bold text-content-text-primary">18</p>
+										</div>
+										<div class="rounded-lg bg-content-bg-elevated p-3">
+											<p class="text-xs font-semibold uppercase tracking-wider text-content-text-tertiary">Assets</p>
+											<p class="mt-1 text-2xl font-bold text-content-text-primary">07</p>
+										</div>
+										<div class="rounded-lg bg-content-bg-elevated p-3">
+											<p class="text-xs font-semibold uppercase tracking-wider text-content-text-tertiary">Replies</p>
+											<p class="mt-1 text-2xl font-bold text-content-text-primary">12</p>
+										</div>
+									</div>
+								</div>
+								<div class="grid gap-3 sm:grid-cols-2">
+									<div class="rounded-xl bg-magenta/10 p-4">
+										<p class="text-xs font-bold uppercase tracking-wider text-magenta">Next post</p>
+										<p class="mt-2 text-sm font-semibold text-content-text-primary">Founder offer angle</p>
+									</div>
+									<div class="rounded-xl bg-cyan/10 p-4">
+										<p class="text-xs font-bold uppercase tracking-wider text-cyan">Follow-up</p>
+										<p class="mt-2 text-sm font-semibold text-content-text-primary">Warm replies queue</p>
+									</div>
+								</div>
+								<div class="rounded-xl bg-content-bg-inverse p-4 text-white">
+									<p class="text-xs font-semibold uppercase tracking-wider text-content-text-muted">Checkout route</p>
+									<p class="mt-2 break-words text-sm font-semibold">{OFFER_ID}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2 lg:items-start">
+			<div>
+				<p class="text-sm font-semibold uppercase tracking-wider text-magenta">{copy.productKicker}</p>
+				<h2 class="mt-3 text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.productHeading}</h2>
+				<p class="mt-4 text-lg text-content-text-secondary dark:text-content-text-muted">{copy.productText}</p>
+			</div>
+			<div class="grid gap-3">
+				{copy.productPoints.map((item) => (
+					<div class="rounded-xl border border-content-border bg-content-bg-elevated p-4 text-sm font-medium text-content-text-secondary dark:border-content-border-strong dark:bg-content-bg-elevated dark:text-content-text-quaternary">
+						{item}
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="mx-auto max-w-6xl rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong dark:bg-content-bg-elevated md:p-8">
+			<div class="max-w-3xl">
+				<h2 class="text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.workflowHeading}</h2>
+				<p class="mt-4 text-lg text-content-text-secondary dark:text-content-text-muted">{copy.workflowText}</p>
+			</div>
+			<div class="mt-8 grid gap-4 md:grid-cols-3">
+				{copy.workflowSteps.map((item) => (
+					<div class="rounded-xl border border-content-border bg-content-bg-subtle p-5 dark:border-content-border-strong dark:bg-content-bg-strong">
+						<p class="text-xs font-bold uppercase tracking-wider text-magenta">Step {item.step}</p>
+						<h3 class="mt-3 text-xl font-bold text-content-text-primary dark:text-content-text-over-dark">{item.title}</h3>
+						<p class="mt-3 text-sm text-content-text-secondary dark:text-content-text-muted">{item.description}</p>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section id="offer" class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-5">
+			<div class="lg:col-span-2">
+				<p class="text-sm font-semibold uppercase tracking-wider text-magenta">{copy.offerKicker}</p>
+				<h2 class="mt-3 text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.offerHeading}</h2>
+				<p class="mt-4 text-lg text-content-text-secondary dark:text-content-text-muted">{copy.offerText}</p>
+			</div>
+			<div class="overflow-hidden rounded-2xl border border-magenta/40 bg-content-bg-elevated shadow-2xl shadow-neutral-900/10 dark:bg-content-bg-elevated lg:col-span-3">
+				<div class="bg-gradient-rainbow-horizontal p-1">
+					<div class="rounded-xl bg-content-bg-elevated p-6 dark:bg-content-bg-inverse md:p-8">
+						<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+							<div>
+								<p class="text-sm font-semibold uppercase tracking-wider text-magenta">{copy.offerName}</p>
+								<h3 class="mt-3 text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.offerPrice}</h3>
+								<p class="mt-3 max-w-2xl text-sm text-content-text-secondary dark:text-content-text-muted">{copy.offerNote}</p>
+							</div>
+							<span class="rounded-full border border-content-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-content-text-secondary dark:border-content-border-strong dark:text-content-text-muted">
+								{OFFER_ID}
+							</span>
+						</div>
+						<div class="mt-6 grid gap-3 md:grid-cols-2">
+							{copy.offerIncludes.map((item) => (
+								<div class="rounded-xl bg-content-bg-subtle p-4 text-sm text-content-text-secondary dark:bg-content-bg-strong dark:text-content-text-quaternary">
+									{item}
+								</div>
+							))}
+						</div>
+						<a
+							href={checkoutUrl()}
+							class="no-hover-animation mt-6 inline-flex w-full items-center justify-center rounded-xl bg-content-bg-inverse px-6 py-4 text-sm font-bold text-white transition-colors hover:bg-content-bg-strong dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover"
+						>
+							{copy.checkoutAction}
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="mx-auto max-w-6xl rounded-2xl border border-content-border bg-content-bg-inverse p-6 text-white dark:border-content-border-strong md:p-8">
+			<div class="max-w-3xl">
+				<h2 class="text-3xl font-bold text-white">{copy.trustHeading}</h2>
+				<p class="mt-4 text-lg text-content-text-muted">{copy.trustText}</p>
+			</div>
+			<div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+				{copy.trustPoints.map((point) => (
+					<div class="rounded-xl border border-white/10 bg-content-bg-elevated/10 p-4">
+						<p class="text-xs font-semibold uppercase tracking-wider text-content-text-muted">{point.label}</p>
+						<p class="mt-2 text-sm font-bold text-white">{point.value}</p>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
+			<div>
+				<h2 class="text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.limitsHeading}</h2>
+				<p class="mt-4 text-lg text-content-text-secondary dark:text-content-text-muted">{copy.limitsText}</p>
+			</div>
+			<div class="grid gap-3">
+				{copy.limits.map((item) => (
+					<div class="rounded-xl border border-content-border bg-content-bg-elevated p-4 text-sm text-content-text-secondary dark:border-content-border-strong dark:bg-content-bg-elevated dark:text-content-text-quaternary">
+						{item}
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="mx-auto max-w-6xl rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong dark:bg-content-bg-elevated md:p-8">
+			<h2 class="text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.faqHeading}</h2>
+			<p class="mt-3 text-lg text-content-text-secondary dark:text-content-text-muted">{copy.faqText}</p>
+			<div class="mt-6 grid gap-3">
+				{copy.faqItems.map((item) => (
+					<div class="rounded-xl border border-content-border bg-content-bg-subtle p-5 dark:border-content-border-strong dark:bg-content-bg-strong">
+						<p class="text-sm font-bold text-content-text-primary dark:text-content-text-over-dark">{item.question}</p>
+						<p class="mt-2 text-sm text-content-text-secondary dark:text-content-text-muted">{item.answer}</p>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="mx-auto max-w-6xl rounded-2xl border border-magenta/30 bg-gradient-to-r from-magenta to-cyan p-8 text-white md:p-10">
+			<div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+				<div class="max-w-2xl">
+					<h2 class="text-3xl font-bold text-white">{copy.finalHeading}</h2>
+					<p class="mt-4 text-lg text-white/90">{copy.finalText}</p>
+				</div>
+				<a
+					href={checkoutUrl()}
+					class="no-hover-animation inline-flex items-center justify-center rounded-xl bg-content-bg-elevated px-6 py-3 text-sm font-bold text-content-text-primary transition-colors hover:bg-content-bg-hover"
+				>
+					{copy.finalAction}
+				</a>
+			</div>
+		</section>
+	</div>
+</MainLayout>

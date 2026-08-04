@@ -2,7 +2,7 @@
 artifact: documentation
 metadata_schema_version: "1.0"
 artifact_version: "1.0.1"
-project: winglowz
+project: commandglows
 created: "2026-05-17"
 updated: "2026-05-23"
 status: reviewed
@@ -63,7 +63,7 @@ Provide a compact mental model of the repository layout and runtime surfaces bef
 
 ## What This Repo Is
 
-WinGlows is an Astro server-rendered site with bilingual marketing pages, documentation content, product pages, a training sales path, a lightweight dashboard, and backend integrations for auth, billing, and email.
+CommandGlows is an Astro server-rendered site with bilingual marketing pages, documentation content, product pages, a training sales path, a lightweight dashboard, and backend integrations for auth, billing, and email.
 
 ## Top-Level Mental Model
 

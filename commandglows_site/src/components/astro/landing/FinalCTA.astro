@@ -1,0 +1,51 @@
+---
+/* Final CTA section — pure Astro with .reveal scroll animation */
+import { getLangFromUrl } from '@/utils/i18n'
+
+const lang = getLangFromUrl(Astro.url)
+const windowsMasteryUrl = lang === 'fr' ? '/fr/maitrise-windows' : '/windows-mastery'
+const productsUrl = lang === 'fr' ? '/fr/produits' : '/products'
+
+const ctaText = lang === 'fr'
+  ? {
+      title: "Commencez par la formation Windows",
+      sub: "Si votre friction quotidienne est bien votre frein principal, commencez par la formation CMDglows. Les outils pourront suivre ensuite.",
+      cta: "Voir la page de vente",
+      consult: "Parcourir l'écosystème",
+      note: "Formation Windows Mastery en premier, puis modules et outils complémentaires.",
+    }
+  : {
+      title: "Start with the Windows course",
+      sub: "If daily friction is your main blocker, start with the CMDglows training path first. The rest of the ecosystem can follow.",
+      cta: "See the sales page",
+      consult: "Browse ecosystem",
+      note: "Windows Mastery first, then companion tools and bundles.",
+    }
+---
+
+<section class="landing-section bg-content-bg-subtle px-4">
+  <div class="reveal max-w-4xl mx-auto text-center">
+    <h2 class="landing-section-title font-display text-4xl font-bold tracking-tight text-content-text-primary dark:text-content-text-over-dark sm:text-5xl lg:text-6xl">
+      {ctaText.title}
+    </h2>
+    <p class="landing-section-copy mx-auto max-w-2xl text-lg text-content-text-secondary dark:text-content-text-tertiary sm:text-xl">
+      {ctaText.sub}
+    </p>
+
+    <div class="landing-section-row flex flex-col items-center justify-center sm:flex-row">
+      <a href={windowsMasteryUrl} data-track="final-cta-products">
+        <button class="landing-primary-action landing-cta-inline shimmer-btn inline-flex h-14 items-center justify-center rounded-full px-8 text-base font-medium">
+          {ctaText.cta}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </a>
+      <a href={productsUrl} data-track="final-cta-ecosystem">
+        <button class="landing-secondary-action landing-cta-inline inline-flex h-14 items-center justify-center rounded-full border border-content-border bg-transparent px-8 text-base font-medium text-content-text-secondary hover:border-content-border-strong hover:bg-content-bg-hover hover:text-content-text-primary dark:border-content-border-strong dark:text-content-text-muted dark:hover:border-content-border-strong dark:hover:bg-content-bg-hover dark:hover:text-content-text-over-dark">
+          {ctaText.consult}
+        </button>
+      </a>
+    </div>
+
+    <p class="landing-section-form-privacy text-sm text-content-text-muted dark:text-content-text-muted">{ctaText.note}</p>
+  </div>
+</section>

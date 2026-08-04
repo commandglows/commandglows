@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="accessibility_service_description">WinGlowz uses this service to paste transcribed text directly into text fields in other apps. This is optional — you can always use clipboard paste instead.</string>
-</resources>

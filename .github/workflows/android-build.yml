@@ -1,37 +1,37 @@
-name: WinGlowz Android Checks and Manual APK
+name: CommandGlows Android Checks and Manual APK
 
 on:
   push:
     branches: [dev, main]
     paths:
-      - "winglowz_app/lib/**"
-      - "winglowz_app/test/**"
-      - "winglowz_app/android/**"
-      - "winglowz_app/assets/**"
-      - "winglowz_app/scripts/**"
-      - "winglowz_app/firebase.json"
-      - "winglowz_app/firestore.indexes.json"
-      - "winglowz_app/firestore.rules"
-      - "winglowz_app/pubspec.yaml"
-      - "winglowz_app/pubspec.lock"
-      - "winglowz_app/analysis_options.yaml"
-      - "winglowz_app/vercel.json"
+      - "commandglows_app/lib/**"
+      - "commandglows_app/test/**"
+      - "commandglows_app/android/**"
+      - "commandglows_app/assets/**"
+      - "commandglows_app/scripts/**"
+      - "commandglows_app/firebase.json"
+      - "commandglows_app/firestore.indexes.json"
+      - "commandglows_app/firestore.rules"
+      - "commandglows_app/pubspec.yaml"
+      - "commandglows_app/pubspec.lock"
+      - "commandglows_app/analysis_options.yaml"
+      - "commandglows_app/vercel.json"
       - ".github/workflows/android-build.yml"
   pull_request:
     branches: [dev, main]
     paths:
-      - "winglowz_app/lib/**"
-      - "winglowz_app/test/**"
-      - "winglowz_app/android/**"
-      - "winglowz_app/assets/**"
-      - "winglowz_app/scripts/**"
-      - "winglowz_app/firebase.json"
-      - "winglowz_app/firestore.indexes.json"
-      - "winglowz_app/firestore.rules"
-      - "winglowz_app/pubspec.yaml"
-      - "winglowz_app/pubspec.lock"
-      - "winglowz_app/analysis_options.yaml"
-      - "winglowz_app/vercel.json"
+      - "commandglows_app/lib/**"
+      - "commandglows_app/test/**"
+      - "commandglows_app/android/**"
+      - "commandglows_app/assets/**"
+      - "commandglows_app/scripts/**"
+      - "commandglows_app/firebase.json"
+      - "commandglows_app/firestore.indexes.json"
+      - "commandglows_app/firestore.rules"
+      - "commandglows_app/pubspec.yaml"
+      - "commandglows_app/pubspec.lock"
+      - "commandglows_app/analysis_options.yaml"
+      - "commandglows_app/vercel.json"
       - ".github/workflows/android-build.yml"
   workflow_dispatch:
 
@@ -120,23 +120,23 @@ jobs:
         with:
           filters: |
             apk:
-              - 'winglowz_app/lib/**'
-              - 'winglowz_app/test/**'
-              - 'winglowz_app/android/**'
-              - 'winglowz_app/assets/**'
-              - 'winglowz_app/scripts/**'
-              - 'winglowz_app/firebase.json'
-              - 'winglowz_app/firestore.indexes.json'
-              - 'winglowz_app/firestore.rules'
-              - 'winglowz_app/pubspec.yaml'
-              - 'winglowz_app/pubspec.lock'
-              - 'winglowz_app/analysis_options.yaml'
-              - 'winglowz_app/vercel.json'
+              - 'commandglows_app/lib/**'
+              - 'commandglows_app/test/**'
+              - 'commandglows_app/android/**'
+              - 'commandglows_app/assets/**'
+              - 'commandglows_app/scripts/**'
+              - 'commandglows_app/firebase.json'
+              - 'commandglows_app/firestore.indexes.json'
+              - 'commandglows_app/firestore.rules'
+              - 'commandglows_app/pubspec.yaml'
+              - 'commandglows_app/pubspec.lock'
+              - 'commandglows_app/analysis_options.yaml'
+              - 'commandglows_app/vercel.json'
               - '.github/workflows/android-build.yml'
             firestore:
-              - 'winglowz_app/firebase.json'
-              - 'winglowz_app/firestore.indexes.json'
-              - 'winglowz_app/firestore.rules'
+              - 'commandglows_app/firebase.json'
+              - 'commandglows_app/firestore.indexes.json'
+              - 'commandglows_app/firestore.rules'
               - '.github/workflows/android-build.yml'
 
   flutter_checks:
@@ -166,19 +166,19 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version-file: winglowz_app/pubspec.yaml
+          flutter-version-file: commandglows_app/pubspec.yaml
           cache: true
 
       - name: Resolve dependencies
-        working-directory: winglowz_app
+        working-directory: commandglows_app
         run: flutter pub get
 
       - name: Static analysis
-        working-directory: winglowz_app
+        working-directory: commandglows_app
         run: flutter analyze
 
       - name: Run tests
-        working-directory: winglowz_app
+        working-directory: commandglows_app
         run: flutter test
 
   firebase_auth_config:
@@ -263,15 +263,15 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version-file: winglowz_app/pubspec.yaml
+          flutter-version-file: commandglows_app/pubspec.yaml
           cache: true
 
       - name: Resolve dependencies
-        working-directory: winglowz_app
+        working-directory: commandglows_app
         run: flutter pub get
 
       - name: Build debug APK
-        working-directory: winglowz_app
+        working-directory: commandglows_app
         env:
           FIREBASE_PROJECT_ID: ${{ secrets[needs.environment.outputs.firebase_project_id_secret] }}
           FIREBASE_API_KEY: ${{ secrets[needs.environment.outputs.firebase_api_key_secret] }}
@@ -313,18 +313,18 @@ jobs:
             --dart-define=SUITE_IDENTITY_BRIDGE_URL="$SUITE_IDENTITY_BRIDGE_URL" \
             --dart-define=SENTRY_DSN="$SENTRY_DSN" \
             --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT" \
-            --dart-define=WINGLOWZ_APP_BUILD_SHA="${GITHUB_SHA}" \
-            --dart-define=WINGLOWZ_APP_BUILD_RUN_ID="${GITHUB_RUN_ID}" \
-            --dart-define=WINGLOWZ_APP_BUILD_REF="${GITHUB_REF_NAME}"
+            --dart-define=COMMANDGLOWS_APP_BUILD_SHA="${GITHUB_SHA}" \
+            --dart-define=COMMANDGLOWS_APP_BUILD_RUN_ID="${GITHUB_RUN_ID}" \
+            --dart-define=COMMANDGLOWS_APP_BUILD_REF="${GITHUB_REF_NAME}"
 
       - name: Verify debug APK exists
-        run: test -f winglowz_app/build/app/outputs/flutter-apk/app-debug.apk
+        run: test -f commandglows_app/build/app/outputs/flutter-apk/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
-          name: winglowz_app-debug-apk
-          path: winglowz_app/build/app/outputs/flutter-apk/app-debug.apk
+          name: commandglows_app-debug-apk
+          path: commandglows_app/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: ignore
           retention-days: 1
 
@@ -377,7 +377,7 @@ jobs:
           test -f "$GOOGLE_APPLICATION_CREDENTIALS"
 
       - name: Deploy Firestore rules and indexes
-        working-directory: winglowz_app
+        working-directory: commandglows_app
         env:
           FIREBASE_PROJECT_ID: ${{ secrets[needs.environment.outputs.firebase_project_id_secret] }}
         run: firebase deploy --only firestore --project "$FIREBASE_PROJECT_ID" --non-interactive
