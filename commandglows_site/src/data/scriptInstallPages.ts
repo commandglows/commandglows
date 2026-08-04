@@ -218,14 +218,14 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			copyLabel: 'Copy command',
 			copiedLabel: 'Copied',
 			rawScriptLabel: 'Open raw script',
-			installNote: 'Run without sudo. Termux selects local mode, root selects full mode, and other interactive shells ask. On native Windows without WSL, download the public archive through the same endpoint with curl.exe using ?format=powershell, then run powershell.exe -NoProfile -ExecutionPolicy Bypass. The script installs OpenSSH Client when needed and Windows may show a UAC confirmation. For automation, pipe into SHIPGLOWS_INSTALL_MODE=local sh or use sudo env SHIPGLOWS_INSTALL_MODE=full sh.',
+			installNote: 'Run the copied command without sudo. Termux selects local mode and uses pkg without sudo, root selects full mode, and other interactive shells ask. On Debian/Ubuntu local mode, a one-time sudo confirmation may be requested only when Linux system prerequisites are missing; no sudo is used when they are already present. A non-interactive local run with missing prerequisites stops before cloning and prints the exact install commands. On native Windows without WSL, download the public archive through the same endpoint with curl.exe using ?format=powershell, then run powershell.exe -NoProfile -ExecutionPolicy Bypass. The script installs OpenSSH Client when needed and Windows may show a UAC confirmation. For automation, pipe into SHIPGLOWS_INSTALL_MODE=local sh or use sudo env SHIPGLOWS_INSTALL_MODE=full sh.',
 			installVariants: [
 				{
 					id: 'unix-local',
 					platform: 'unix',
 					mode: 'local',
 					command: 'curl -fsSL https://www.commandglows.com/shipglows-script | SHIPGLOWS_INSTALL_MODE=local sh',
-					note: 'Unix local: installe les tunnels et les commandes de connexion pour l’utilisateur courant, sans sudo.',
+					note: 'Unix local: the copied command stays sudo-free; on Debian/Ubuntu, explicit sudo consent is requested only when required system packages are missing.',
 					available: true,
 				},
 				{
@@ -303,14 +303,14 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			copyLabel: 'Copier la commande',
 			copiedLabel: 'Copié',
 			rawScriptLabel: 'Ouvrir le script brut',
-			installNote: 'Lance la commande sans sudo. Termux choisit le mode local, root choisit le mode complet, et les autres shells interactifs demandent. Sur Windows natif sans WSL, télécharge l’archive publique via le même endpoint avec curl.exe et ?format=powershell, puis lance powershell.exe -NoProfile -ExecutionPolicy Bypass. Le script installe OpenSSH Client si nécessaire et Windows peut afficher une confirmation UAC. En automatisation, utilise SHIPGLOWS_INSTALL_MODE=local côté sh, ou sudo env SHIPGLOWS_INSTALL_MODE=full sh.',
+			installNote: 'Lance la commande copiée sans sudo. Termux choisit le mode local et utilise pkg sans sudo, root choisit le mode complet, et les autres shells interactifs demandent. En mode local sur Debian/Ubuntu, une confirmation sudo unique peut être demandée uniquement si des prérequis système Linux manquent ; aucun sudo n’est utilisé s’ils sont déjà présents. Une exécution locale non interactive avec des prérequis manquants s’arrête avant le clonage et affiche les commandes d’installation exactes. Sur Windows natif sans WSL, télécharge l’archive publique via le même endpoint avec curl.exe et ?format=powershell, puis lance powershell.exe -NoProfile -ExecutionPolicy Bypass. Le script installe OpenSSH Client si nécessaire et Windows peut afficher une confirmation UAC. En automatisation, utilise SHIPGLOWS_INSTALL_MODE=local côté sh, ou sudo env SHIPGLOWS_INSTALL_MODE=full sh.',
 			installVariants: [
 				{
 					id: 'unix-local',
 					platform: 'unix',
 					mode: 'local',
 					command: 'curl -fsSL https://www.commandglows.com/shipglows-script | SHIPGLOWS_INSTALL_MODE=local sh',
-					note: 'Unix local : installe les tunnels et les commandes de connexion pour l’utilisateur courant, sans sudo.',
+					note: 'Unix local : la commande copiée reste sans sudo ; sur Debian/Ubuntu, un consentement sudo explicite est demandé uniquement si des paquets système requis manquent.',
 					available: true,
 				},
 				{

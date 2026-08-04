@@ -75,8 +75,8 @@ describe('ShipGlows public installer', () => {
   test('guards the local sudo package path behind explicit terminal consent', () => {
     const installer = readProjectFile('src/generated/shipglows-installer.sh')
     const consentGuard = installer.indexOf('if ! confirm_local_dependency_install; then')
-    const sudoUpdate = installer.indexOf('sudo apt-get update -qq')
-    const sudoInstall = installer.indexOf('sudo apt-get install -y -qq git curl bash ca-certificates openssh-client autossh')
+    const sudoUpdate = installer.indexOf('run_or_explain "mise à jour apt avec sudo" sudo apt-get update -qq')
+    const sudoInstall = installer.indexOf('run_or_explain "installation des prérequis locaux avec sudo" sudo apt-get install -y -qq git curl bash ca-certificates openssh-client autossh')
 
     expect(installer).toContain('if ! tty_available; then')
     expect(consentGuard).toBeGreaterThan(-1)
