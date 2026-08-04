@@ -89,6 +89,7 @@
     --brand-red: #ff0033;
     --brand-magenta: #ff00c8;
     --brand-yellow: #ffe500;
+    --brand-violet: #7c3cff;
     --brand-green: #00ff44;
     --brand-cyan: #00c8ff;
 
@@ -103,6 +104,7 @@
     /* Gradients */
     --gradient-rainbow: linear-gradient(45deg, var(--brand-red), var(--brand-magenta), var(--brand-yellow), var(--brand-green), var(--brand-cyan), var(--brand-red));
     --gradient-rainbow-h: linear-gradient(90deg, var(--brand-red), var(--brand-magenta), var(--brand-yellow), var(--brand-green), var(--brand-cyan), var(--brand-red));
+    --gradient-logo: linear-gradient(100deg, var(--brand-yellow) 0%, var(--brand-red) 38%, var(--brand-magenta) 66%, var(--brand-violet) 100%);
 
     /* Font families */
     --font-family-logo: 'Audiowide', sans-serif;
@@ -638,14 +640,15 @@
     --text-logo-size-base: 3rem;
     --text-logo-size-sm: 2.25rem;
     --text-logo-size-xs: 1.75rem;
+    --text-logo-letter-spacing: -0.045em;
     --text-logo-transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     --text-logo-transition-fast: all 0.3s ease;
-    --text-logo-filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-    --text-logo-filter-hover: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-    --text-logo-filter-active: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
-    --text-logo-filter-before: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
-    --text-logo-filter-before-hover: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
-    --text-logo-filter-before-active: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+    --text-logo-filter: drop-shadow(0 0 0.22rem rgb(255 0 200 / 0.42));
+    --text-logo-filter-hover: drop-shadow(0 0 0.38rem rgb(255 0 200 / 0.58));
+    --text-logo-filter-active: drop-shadow(0 0 0.16rem rgb(124 60 255 / 0.45));
+    --text-logo-filter-before: drop-shadow(0 0 0.12rem rgb(255 229 0 / 0.45));
+    --text-logo-filter-before-hover: drop-shadow(0 0 0.2rem rgb(255 229 0 / 0.58));
+    --text-logo-filter-before-active: drop-shadow(0 0 0.1rem rgb(124 60 255 / 0.4));
     --text-logo-after-left: 1px;
     --text-logo-after-top: 1px;
     --text-logo-after-left-hover: 1.5px;
@@ -658,12 +661,12 @@
     --text-logo-glow-inset-xs: -4px -6px;
     --text-logo-glow-radius: 40% / 100%;
     --text-logo-glow-z: -2;
-    --text-logo-glow-shadow: 0 0 10px rgba(255, 0, 200, 0.3), 0 0 20px rgba(0, 200, 255, 0.2);
+    --text-logo-glow-shadow: 0 0 0.7rem rgb(255 0 200 / 0.24), 0 0 1.3rem rgb(124 60 255 / 0.16);
     --text-logo-glow-animation: logo-gradient 6s ease infinite;
     --text-logo-glow-animation-hover: logo-gradient 4s ease infinite;
-    --text-logo-shadow-rest: 0.5px 0.5px 0 white, 1px 1px 0 white, 1.5px 1.5px 0 rgba(255, 255, 255, 0.7), 0 2px 5px rgba(0, 0, 0, 0.2);
-    --text-logo-shadow-hover: 1px 1px 0 white, 1.5px 1.5px 0 white, 2px 2px 0 rgba(255, 255, 255, 0.7), 0 4px 8px rgba(0, 0, 0, 0.3);
-    --text-logo-shadow-active: 0.5px 0.5px 0 white, 0.75px 0.75px 0 white, 1px 1px 0 rgba(255, 255, 255, 0.7), 0 1px 3px rgba(0, 0, 0, 0.15);
+    --text-logo-shadow-rest: 0 0 0.18rem rgb(255 0 200 / 0.35);
+    --text-logo-shadow-hover: 0 0 0.3rem rgb(255 0 200 / 0.5);
+    --text-logo-shadow-active: 0 0 0.14rem rgb(124 60 255 / 0.4);
     --pulse-glow-shadow-rest: 0 0 4px currentColor;
     --pulse-glow-shadow-peak: 0 0 8px currentColor;
     --pulse-glow-animation: pulse-glow 2s ease-in-out infinite;
@@ -1940,7 +1943,12 @@
 
   .text-logo .text {
     position: relative;
-    color: white;
+    background: var(--gradient-logo);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: var(--text-logo-letter-spacing);
     transform-style: preserve-3d;
     transition: var(--text-logo-transition);
     will-change: transform;
@@ -1948,12 +1956,10 @@
   }
 
   .text-logo .text::before {
-    content: 'CommandGlows';
+    content: 'CMDglows';
     position: absolute;
     inset: 0;
-    background-image:
-      linear-gradient(45deg, var(--brand-red), var(--brand-magenta), var(--brand-yellow), var(--brand-green), var(--brand-cyan), var(--brand-red)),
-      radial-gradient(circle at top left, var(--brand-red), #ff3366, var(--brand-magenta), #ff33cc, var(--brand-yellow), #ffcc00, var(--brand-green), #00cc44, var(--brand-cyan), #0099ff, var(--brand-red));
+    background-image: var(--gradient-logo);
     background-size: 200% 200%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -1965,7 +1971,7 @@
   }
 
   .text-logo .text::after {
-    content: 'CommandGlows';
+    content: none;
     position: absolute;
     left: 0;
     top: 0;
@@ -1978,12 +1984,10 @@
   .text-logo .glow-effect {
     position: absolute;
     inset: var(--text-logo-glow-inset);
-    background:
-      linear-gradient(45deg, var(--brand-red), var(--brand-magenta), var(--brand-yellow), var(--brand-green), var(--brand-cyan), var(--brand-red)),
-      radial-gradient(circle at top left, var(--brand-red), #ff3366, var(--brand-magenta), #ff33cc, var(--brand-yellow), #ffcc00, var(--brand-green), #00cc44, var(--brand-cyan), #0099ff, var(--brand-red));
+    background: var(--gradient-logo);
     background-size: 200% 200%;
-    filter: blur(12px);
-    opacity: 0.3;
+    filter: blur(0.7rem);
+    opacity: 0.24;
     border-radius: var(--text-logo-glow-radius);
     animation: var(--text-logo-glow-animation);
     z-index: var(--text-logo-glow-z);
@@ -1997,8 +2001,8 @@
   }
 
   .text-logo:hover .glow-effect {
-    opacity: 0.45;
-    filter: blur(15px);
+    opacity: 0.36;
+    filter: blur(0.9rem);
     animation: var(--text-logo-glow-animation-hover);
   }
 

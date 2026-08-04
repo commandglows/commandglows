@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: "CommandGlows"
 created: "2026-08-03"
 created_at: "2026-08-03 23:09:59 UTC"
 updated: "2026-08-03"
-updated_at: "2026-08-04 15:27:00 UTC"
+updated_at: "2026-08-04 20:51:10 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5.6 Codex"
@@ -108,7 +108,7 @@ Establish one canonical identity matrix and mechanically enforced exception regi
 
 - No migration UX, legacy app support, review/install continuity, data import, or old entitlement compatibility.
 - No automatic purchase, store submission, DNS mutation, GitHub repository rename, OAuth registration, Firebase app creation, or production deployment without the corresponding operator-authorized external action.
-- No visual redesign; existing design tokens and components remain authoritative.
+- No broad interface redesign; the approved `CMDglows` logo evolution is the only visual redesign in scope and existing design tokens/components remain authoritative.
 - No rewrite of truthful historical evidence.
 - No renaming of applied migration filenames, commit hashes, dated URLs observed in evidence, stable `wfz-*` work-item IDs, or third-party identifiers whose mutation would break referential integrity.
 
@@ -123,6 +123,20 @@ Establish one canonical identity matrix and mechanically enforced exception regi
 - The user instruction `TOUT changer` means zero unintended legacy identity on active surfaces, not destructive rewriting of evidence or immutable identifiers.
 - The design-system authorities remain the Flutter theme/token layer and the Astro global CSS/Tailwind layer; brand asset changes must use those authorities and pass visual/token proof.
 - External mutations are executed only with authenticated authority and redacted evidence; secret values, signing keys, OAuth secrets, and provider tokens never enter the spec, logs, or repository.
+
+### CMDglows Visual Identity Addendum
+
+Operator decision `BRAND-CMD-001` supersedes the transitional `CMDglows` wordmark treatment while preserving the approved name split.
+
+- Before: a glossy, heavily outlined wordmark inherited from the former visual era.
+- After: a contemporary neon wordmark that keeps the yellow → pink → violet gradient and a visible glow, with cleaner geometry, less plastic relief, tighter spacing, and reliable small-size behavior.
+- Public wordmark: `CMDglows`, with `CMD` structured and `glows` more fluid.
+- Preserved invariants: `CommandGlows` remains the legal, domain, provider, package, bundle and technical identity; no URL, namespace, entitlement or callback changes.
+- Canonical palette and effects resolve through the existing site/app brand tokens; no second palette or ad-hoc component colors.
+- Required asset family: primary full-color wordmark on transparency, simplified small-size wordmark, and compact monogram for square/icon contexts.
+- Required variants: full color, monochrome light and monochrome dark. Each must remain legible without relying on glow alone.
+- Desired emotion: energetic, capable, luminous and premium. Avoid toy-like, gummy, chrome-heavy, cyberpunk-aggressive or generic developer-tool styling.
+- Accessibility/proof: transparent edges, light/dark contrast, 32 px and 16 px recognition checks, responsive header fit, favicon/app-icon crop safety and browser screenshots.
 
 ## Test Contract
 
@@ -197,6 +211,7 @@ Establish one canonical identity matrix and mechanically enforced exception regi
 - [x] Task 6 — Rename monorepo roots and update CI, scripts, Vercel roots, Dependabot, docs, and imports atomically.
 - [x] Task 7 — Update active governance, product/GTM/brand contracts, operator instructions, and historical exceptions.
 - [ ] Task 8 — Run full local proof and prepare redacted external-console actions for Firebase, OAuth, stores, GitHub, Vercel, DNS, email, commerce, and observability.
+- [x] Task 9 — Redesign and integrate the `CMDglows` visual identity asset family under `BRAND-CMD-001`, then collect token, small-size, light/dark and browser proof.
 
 Task details and proof obligations:
 
@@ -240,6 +255,8 @@ Task 3 is atomic: the current `com.winglowz_app.winglowz_app` Gradle namespace/a
 - [ ] AC 14: Android release signing is non-debug, `com.commandglows.app` is registered, the CI artifact installs and launches, IME selection/permissions work, and the zero-user continuity premise is revalidated.
 - [ ] AC 15: Governance active sources, open specs/tasks, operator docs, legal/support surfaces, and EN/FR content use CommandGlows; retained old names are classified facts or stable/immutable IDs.
 - [ ] AC 16: `https://commandglows.com` redirects permanently without a loop to `https://www.commandglows.com`, and live pages expose only the `www` origin in canonicals, hreflang, sitemap, structured data, callbacks, and public links.
+- [x] AC 17: The primary `CMDglows` wordmark preserves the approved gradient and glow while removing excessive plastic relief; transparent, monochrome, compact and small-size variants remain legible on light and dark surfaces.
+- [x] AC 18: Site navigation, hero, favicon/social surfaces and app/store icon contexts consume the approved asset family without stretching, clipping, duplicate visual authorities or raw untokenized brand colors.
 
 ## Test Strategy
 
@@ -312,6 +329,8 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 2026-08-04 15:05:18 UTC | 102-sg-start | GPT-5.6 Codex | Re-ran post-rename focused proof: site CSP/SEO 4/4, app identity/entitlement 13/13, Node/Bash config syntax, metadata lint 145/145, and diff checks passed. Full Flutter remains 285 passed / 22 pre-existing failures; hosted, device, store, signing, CDN replacement, and external provider proof remain open. | partial | Continue with verification and authorized external cutovers. |
 | 2026-08-04 15:10:12 UTC | 102-sg-start | GPT-5.6 Codex | Renamed the authenticated GitHub repository to `diane-defores/commandglows`, updated the local `origin`, renamed the Vercel project to `commandglows`, and changed its hosted root directory to `commandglows_site`; provider inspection confirmed the new values. | partial | Run final local proof and retain Firebase/store/signing/CDN/email/commerce/device gates as explicit external checklist items. |
 | 2026-08-04 15:27:00 UTC | 006-sg-design | GPT-5.6 Codex | Applied the operator-approved public wordmark `CMDglows` to visible site/app branding and regenerated the raster wordmark asset with verified RGBA transparency; legal, domain, package, provider, and technical identity remain `CommandGlows`. | partial | Run design drift and focused site/app checks; visual browser proof remains required for hosted surfaces. |
+| 2026-08-04 20:51:10 UTC | 006-sg-design | GPT-5.6 Codex | Formalized and implemented `BRAND-CMD-001`: modern neon wordmark, compact `CMD` monogram, tokenized yellow-red-magenta-violet gradient and controlled glow, plus refreshed web/Android/iOS/macOS/Windows icon assets. | complete | Preserve the approved asset family during provider/store publication. |
+| 2026-08-04 20:51:10 UTC | 108-sg-browser | GPT-5.6 Codex | Collected local Chromium proof at desktop light, desktop dark and 390 px mobile; the wordmark remains readable, unclipped and balanced in the responsive navigation. A 16/32/64/128 px icon sheet confirmed the monogram remains recognizable on light and dark backgrounds. The dev server emitted a pre-existing React invalid-hook warning unrelated to the logo. | partial | Visual objective passes locally; investigate the separate runtime warning before claiming whole-page browser health, and collect hosted proof only after an authorized deployment. |
 
 ## Current Chantier Flow
 
@@ -320,7 +339,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 100-sg-spec | complete | v1.2 defines complete active-surface coverage, canonical `www` identity, exception taxonomy, provider/store/signing/asset gates, and exhaustive proof. | Review readiness. |
 | 101-sg-ready | ready | v1.2 has complete mandatory sections, concrete task targets, scenario IDs/results, security rules, current official provider constraints, stop conditions, and no unresolved material question. | Begin bounded implementation. |
 | 102-sg-start | partial | Local app/site/root/governance batches are implemented. Site `astro check` reports no issues and 90/90 unit tests pass; focused identity tests pass 13/13; Flutter analyze passes, while the full Flutter suite reports 285 passed and 22 existing UI/behavior failures. External provider, Android artifact/device, store/signing, CDN replacement, and final legacy-proof gates remain. | Verify hosted/device/provider surfaces. |
-| 006-sg-design | partial | Public wordmark is `CMDglows` across the regenerated transparent raster assets and visible logo/brand labels; site logo/SEO tests pass, with four pre-existing email-token drift candidates unrelated to this change. | Collect hosted visual proof and keep technical identity on `CommandGlows`. |
+| 006-sg-design | complete | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. Local Chromium proves desktop light/dark and mobile fit; 16/32/64/128 px icon proof passes; design drift reports zero findings; site checks and Flutter analyze pass. A separate pre-existing React invalid-hook warning prevents a whole-page browser-health claim but does not affect the visual acceptance result. | Keep the approved visual family intact during hosted/store publication. |
 | 103-sg-verify | pending | Acceptance proof not yet run. | Verify after implementation. |
 | 104-sg-end | pending | No closure bookkeeping performed. | Close after verification. |
 | 005-sg-ship | pending | No commit, push, or deploy performed. | Ship only after explicit verified scope. |

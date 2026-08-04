@@ -173,7 +173,105 @@ as_install_user() {
     fi
 }
 
-install_bootstrap_deps() {
+local_missing_commands() {
+    missing_commands=""
+    for dependency in git curl bash ssh autossh; do
+        if ! has_cmd "$dependency"; then
+            missing_commands="${missing_commands}${missing_commands:+ }${dependency}"
+        fi
+    done
+    printf '%s' "$missing_commands"
+}
+
+print_debian_local_instructions() {
+    log "Installez exactement les prérequis système suivants:"
+    log "  sudo apt-get update -qq"
+    log "  sudo apt-get install -y -qq git curl bash ca-certificates openssh-client autossh"
+    log "puis relancez exactement la commande ShipGlows copiée, sans ajouter sudo à cette commande."
+}
+
+confirm_local_dependency_install() {
+    log "ShipGlows peut installer uniquement les prérequis système manquants via apt-get."
+    printf "Autoriser maintenant l'utilisation ponctuelle de sudo pour ces prérequis ? [y/N]: " >/dev/tty
+    if ! IFS= read -r answer </dev/tty; then
+        log "Impossible de lire la confirmation depuis le terminal."
+        return 1
+    fi
+    case "$(normalize_mode "$answer")" in
+        y|yes|o|oui) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+verify_local_dependencies() {
+    missing_commands="$(local_missing_commands)"
+    if [ -z "$missing_commands" ]; then
+        return 0
+    fi
+    log "Les dépendances locales restent indisponibles après l'installation: $missing_commands"
+    return 1
+}
+
+install_local_bootstrap_deps() {
+    missing_commands="$(local_missing_commands)"
+    if [ -z "$missing_commands" ]; then
+        return 0
+    fi
+
+    log "Dépendances locales manquantes: $missing_commands"
+
+    if [ "$IS_TERMUX" = true ]; then
+        if ! has_cmd pkg; then
+            log "Le gestionnaire pkg de Termux est introuvable."
+            log "Installez exactement les prérequis avec: pkg install -y git curl bash ca-certificates openssh autossh"
+            return 1
+        fi
+        log "Installation des prérequis locaux avec pkg, sans sudo..."
+        run_or_explain "installation des dépendances Termux" pkg install -y git curl bash ca-certificates openssh autossh
+        verify_local_dependencies
+        return
+    fi
+
+    if ! has_cmd apt-get; then
+        log "L'installation automatique des prérequis locaux est prise en charge sur Debian/Ubuntu uniquement."
+        log "Installez les commandes suivantes avec le gestionnaire de votre système: git curl bash ssh autossh"
+        log "Relancez ensuite exactement la commande ShipGlows copiée."
+        return 1
+    fi
+
+    if [ "$CURRENT_UID" -eq 0 ]; then
+        log "Installation directe des prérequis locaux Debian/Ubuntu..."
+        run_or_explain "mise à jour apt" apt-get update -qq
+        run_or_explain "installation des prérequis locaux" apt-get install -y -qq git curl bash ca-certificates openssh-client autossh
+        verify_local_dependencies
+        return
+    fi
+
+    if ! has_cmd sudo; then
+        log "sudo est requis pour installer les prérequis système manquants sur Debian/Ubuntu."
+        print_debian_local_instructions
+        return 1
+    fi
+
+    if ! tty_available; then
+        log "Aucun terminal interactif n'est disponible pour confirmer l'utilisation de sudo."
+        log "Aucun paquet n'a été installé et le dépôt ShipGlows n'a pas été cloné."
+        print_debian_local_instructions
+        return 1
+    fi
+
+    if ! confirm_local_dependency_install; then
+        log "Installation des prérequis refusée. Aucun appel sudo ni clonage n'a été effectué."
+        print_debian_local_instructions
+        return 1
+    fi
+
+    run_or_explain "mise à jour apt avec sudo" sudo apt-get update -qq
+    run_or_explain "installation des prérequis locaux avec sudo" sudo apt-get install -y -qq git curl bash ca-certificates openssh-client autossh
+    verify_local_dependencies
+}
+
+install_full_bootstrap_deps() {
     if has_cmd git && has_cmd curl && has_cmd bash; then
         return 0
     fi
@@ -192,6 +290,14 @@ install_bootstrap_deps() {
             log "Installez git, curl et bash pour votre système, puis relancez la commande."
         fi
         return 1
+    fi
+}
+
+install_bootstrap_deps() {
+    if [ "$INSTALL_MODE" = local ]; then
+        install_local_bootstrap_deps
+    else
+        install_full_bootstrap_deps
     fi
 }
 

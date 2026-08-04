@@ -13,7 +13,7 @@ export const getStaticPaths = () => {
 
 export const GET: APIRoute = async () => {
   try {
-    const sourcePath = path.resolve(process.cwd(), 'public/images/CommandGlows.png');
+    const sourcePath = path.resolve(process.cwd(), 'public/brand/cmdglows-monogram.png');
     const faviconBuffer = await sharp(sourcePath)
       .resize(32, 32)
       .png()
