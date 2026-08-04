@@ -2064,7 +2064,7 @@
   }
 
   .text-logo .glow-effect {
-    inset: clamp(-5px, -1vw - 3px, var(--text-logo-glow-inset-sm));
+    inset: var(--text-logo-glow-inset-sm);
   }
 }
 

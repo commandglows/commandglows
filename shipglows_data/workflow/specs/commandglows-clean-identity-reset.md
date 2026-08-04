@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.3.6"
+artifact_version: "1.3.7"
 project: "CommandGlows"
 created: "2026-08-03"
 created_at: "2026-08-03 23:09:59 UTC"
 updated: "2026-08-03"
-updated_at: "2026-08-04 22:27:00 UTC"
+updated_at: "2026-08-04 22:35:00 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5.6 Codex"
@@ -337,6 +337,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 2026-08-04 22:02:00 UTC | 006-sg-design | GPT-5.6 Codex | Operator reported an incompletely documented defect: dark mode still had a broad contour halo that visually consumed the letter spacing and counterforms. Reduced the shared glow-effect inset, blur, opacity, and shadow footprint so the glow hugs the glyph edges instead of forming a surrounding plaque; the same values remain shared by light and dark. | complete | Recheck the rendered navbar in both themes; preserve the explicit defect note in future visual reviews. |
 | 2026-08-04 22:15:00 UTC | 006-sg-design | GPT-5.6 Codex | Restored the historical `logo-gradient` motion on the actual clipped wordmark gradient, keeping the current typeface, dimensions, white face edge, palette, and tight glow unchanged. The animation uses the original 0% → 100% → 0% background-position loop and is disabled under reduced-motion preferences. | complete | Preserve the animated gradient as the single shared logo treatment across light and dark themes. |
 | 2026-08-04 22:27:00 UTC | 006-sg-design | GPT-5.6 Codex | Diagnosed why the operator still saw no motion on the home navbar: the wordmark had been mistakenly included in the broad reduced-motion selector added during the prior change. Removed only that selector inclusion so the explicitly requested historical gradient animation is always visible on the home logo; typography, dimensions, white core, palette, and glow remain untouched. | complete | Verify the visible movement on the published home navbar after cache refresh. |
+| 2026-08-04 22:35:00 UTC | 006-sg-design | GPT-5.6 Codex | Root-caused the persistent oversized dark contour in the CSS actually served by production: a later responsive `clamp(-5px, -1vw - 3px, …)` overrode the shared tight glow inset and expanded it to `-5px` on normal screens. Replaced the override with the canonical shared inset token, preserving the same compact glow in every responsive state and theme. | complete | Publish this source correction, then inspect the home navbar at desktop and mobile widths. |
 
 ## Current Chantier Flow
 
@@ -345,7 +346,7 @@ None for local implementation. The public display wordmark is now `CMDglows`; `C
 | 100-sg-spec | complete | v1.2 defines complete active-surface coverage, canonical `www` identity, exception taxonomy, provider/store/signing/asset gates, and exhaustive proof. | Review readiness. |
 | 101-sg-ready | ready | v1.2 has complete mandatory sections, concrete task targets, scenario IDs/results, security rules, current official provider constraints, stop conditions, and no unresolved material question. | Begin bounded implementation. |
 | 102-sg-start | partial | Local app/site/root/governance batches are implemented. Site `astro check` reports no issues and 90/90 unit tests pass; focused identity tests pass 13/13; Flutter analyze passes, while the full Flutter suite reports 285 passed and 22 existing UI/behavior failures. External provider, Android artifact/device, store/signing, CDN replacement, and final legacy-proof gates remain. | Verify hosted/device/provider surfaces. |
-| 006-sg-design | complete | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. Light and dark modes consume byte-equivalent raster exports and value-identical face/glow tokens; the separate contour halo remains tight and low-opacity. The original animated gradient runs directly on the visible home wordmark without changing type, size, white core, or palette; it is no longer accidentally disabled by the general reduced-motion navbar rule. The defect and prior under-reporting remain explicit. Site-owned themed pages retain `darkreader-lock`; Astro check passes with zero errors, 93/93 tests pass, and design drift reports zero findings. | Verify the visible movement on the published home navbar after cache refresh, then preserve this single treatment during publication. |
+| 006-sg-design | complete | `BRAND-CMD-001` is implemented across tokenized site wordmarks and web/native icon assets. The production source-root cause of the oversized dark contour is removed: the responsive rule now consumes the same `-1px` / `-2px` shared glow token as every other state, rather than expanding to `-5px`. The original animated gradient remains on the visible home wordmark without changing type, size, white core, or palette. Site-owned themed pages retain `darkreader-lock`; source checks remain green, while post-publish desktop/mobile visual proof is still required. | Publish this exact correction, then inspect the home navbar at desktop and mobile widths. |
 | 103-sg-verify | pending | Acceptance proof not yet run. | Verify after implementation. |
 | 104-sg-end | pending | No closure bookkeeping performed. | Close after verification. |
 | 005-sg-ship | pending | No commit, push, or deploy performed. | Ship only after explicit verified scope. |
