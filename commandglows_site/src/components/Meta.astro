@@ -81,6 +81,8 @@ const favicon = await getImage({
 
 <!-- Meta tags -->
 <meta charset="utf-8" />
+<!-- The site owns complete light/dark themes; prevent extensions from recoloring brand assets. -->
+<meta name="darkreader-lock" />
 <meta content={metaDescription} name="description" />
 <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
 <meta name="web_author" content={author} />

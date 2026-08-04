@@ -63,12 +63,16 @@ void main() {
     );
 
     expect(find.byType(ProductPageScaffold), findsOneWidget);
-    expect(find.byType(ProductSummaryStrip), findsOneWidget);
-    expect(find.text('Mode local'), findsOneWidget);
-    expect(find.text('Synchronisé'), findsNothing);
-    expect(find.byType(AppPageToolbar), findsOneWidget);
-    expect(find.byType(AppSearchField), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, 'Actualiser'), findsOneWidget);
+    _expectPageHero(
+      tester,
+      scope: 'Snippets',
+      statusKind: AppSyncStatusKind.idle,
+      expectedMetrics: const [
+        (label: '2', value: 'snippets'),
+        (label: '2', value: 'libellés'),
+      ],
+      recencyValue: 'dernier ajout',
+    );
     expect(
       tester.getTopLeft(find.widgetWithText(TextField, 'Déclencheur')).dy,
       tester
@@ -113,12 +117,16 @@ void main() {
     );
 
     expect(find.byType(ProductPageScaffold), findsOneWidget);
-    expect(find.byType(ProductSummaryStrip), findsOneWidget);
-    expect(find.text('Mode local'), findsOneWidget);
-    expect(find.text('Synchronisé'), findsNothing);
-    expect(find.byType(AppPageToolbar), findsOneWidget);
-    expect(find.byType(AppSearchField), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, 'Actualiser'), findsOneWidget);
+    _expectPageHero(
+      tester,
+      scope: 'Dictionnaire',
+      statusKind: AppSyncStatusKind.idle,
+      expectedMetrics: const [
+        (label: '2', value: 'termes'),
+        (label: '1', value: 'casse stricte'),
+      ],
+      recencyValue: 'dernier ajout',
+    );
     expect(
       tester.getTopLeft(find.widgetWithText(TextField, 'Terme').first).dy,
       tester
@@ -167,10 +175,16 @@ void main() {
     );
 
     expect(find.byType(ProductPageScaffold), findsOneWidget);
-    expect(find.byType(ProductSummaryStrip), findsOneWidget);
-    expect(find.text('Mode local'), findsOneWidget);
-    expect(find.byType(AppPageToolbar), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, 'En attente'), findsOneWidget);
+    _expectPageHero(
+      tester,
+      scope: 'Clipboard',
+      statusKind: AppSyncStatusKind.pending,
+      expectedMetrics: const [
+        (label: '2', value: 'items'),
+        (label: '0', value: 'épinglés'),
+      ],
+      recencyValue: 'dernier vu',
+    );
     expect(
       tester
           .getSize(
@@ -225,11 +239,16 @@ void main() {
       );
 
       expect(find.byType(ProductPageScaffold), findsOneWidget);
-      expect(find.byType(ProductSummaryStrip), findsOneWidget);
-      expect(find.text('Mode local'), findsOneWidget);
-      expect(find.text('Synchronisé'), findsNothing);
-      expect(find.byType(AppPageToolbar), findsOneWidget);
-      expect(find.widgetWithText(OutlinedButton, 'Actualiser'), findsOneWidget);
+      _expectPageHero(
+        tester,
+        scope: 'Voix',
+        statusKind: AppSyncStatusKind.idle,
+        expectedMetrics: const [
+          (label: '2', value: 'captures'),
+          (label: 'Overlay désactivé', value: 'Overlay à autoriser'),
+        ],
+        recencyValue: 'dernier ajout',
+      );
 
       await tester.enterText(
         find.byKey(const Key('app-search-field')),
@@ -240,6 +259,76 @@ void main() {
       expect(find.textContaining('Mémo Beta'), findsOneWidget);
       expect(find.textContaining('Compte rendu Alpha'), findsNothing);
     },
+  );
+}
+
+void _expectPageHero(
+  WidgetTester tester, {
+  required String scope,
+  required AppSyncStatusKind statusKind,
+  required List<({String label, String value})> expectedMetrics,
+  required String recencyValue,
+}) {
+  final heroFinder = find.byType(AppPageHeroCard);
+  expect(heroFinder, findsOneWidget);
+
+  final hero = tester.widget<AppPageHeroCard>(heroFinder);
+  expect(hero.title, isNotEmpty);
+  expect(hero.subtitle, isNotEmpty);
+  expect(hero.leadingIcon, isNotNull);
+  expect(hero.trailing, isNotNull);
+  expect(hero.metrics, hasLength(4));
+
+  final statusPill = hero.metrics.whereType<AppStatusPill>().single;
+  expect(statusPill.label, 'Statut');
+  expect(statusPill.status.kind, statusKind);
+
+  final metrics = hero.metrics.whereType<AppMetricPill>().toList();
+  expect(metrics, hasLength(3));
+  for (final expected in expectedMetrics) {
+    expect(
+      metrics.any(
+        (metric) =>
+            metric.label == expected.label && metric.value == expected.value,
+      ),
+      isTrue,
+      reason:
+          'Expected hero metric "${expected.label} · ${expected.value}" for $scope.',
+    );
+  }
+  expect(metrics.last.label, isNotEmpty);
+  expect(metrics.last.value, recencyValue);
+
+  final searchField = hero.searchField;
+  expect(searchField, isA<AppSearchField>());
+  final scopedSearch = searchField! as AppSearchField;
+  expect(scopedSearch.scopeLabel, scope);
+  expect(scopedSearch.enabled, isTrue);
+
+  final syncAction = hero.syncAction;
+  expect(syncAction, isA<AppSyncStatusAction>());
+  final statusAction = syncAction! as AppSyncStatusAction;
+  expect(statusAction.scopeLabel, scope);
+  expect(statusAction.status.kind, statusKind);
+  expect(statusAction.onPressed, isNotNull);
+
+  expect(
+    find.descendant(of: heroFinder, matching: find.byType(AppPageToolbar)),
+    findsOneWidget,
+  );
+  expect(
+    find.descendant(of: heroFinder, matching: find.byType(AppSearchField)),
+    findsOneWidget,
+  );
+  expect(
+    find.descendant(
+      of: heroFinder,
+      matching: find.widgetWithText(
+        OutlinedButton,
+        statusAction.status.statusLabel(),
+      ),
+    ),
+    findsOneWidget,
   );
 }
 

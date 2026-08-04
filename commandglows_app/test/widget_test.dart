@@ -749,14 +749,15 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Bienvenue dans CommandGlows'), findsOneWidget);
+    final welcomeHeading = find.textContaining('Bienvenue dans ');
+    expect(welcomeHeading, findsOneWidget);
     expect(find.text('Ouvrir le guide'), findsOneWidget);
     expect(find.textContaining('Ton compte est prêt.'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Commencer'));
     await _pumpNavigationFrame(tester);
 
-    expect(find.text('Bienvenue dans CommandGlows'), findsNothing);
+    expect(welcomeHeading, findsNothing);
   });
 
   testWidgets('settings can resume onboarding overlay', (tester) async {

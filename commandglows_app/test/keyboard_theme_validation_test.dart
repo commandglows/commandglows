@@ -6,16 +6,22 @@ import 'package:commandglows_app/features/keyboard/domain/keyboard_theme_validat
 
 void main() {
   test('ships the full v1 preset catalog', () {
-    expect(KeyboardThemePresetCatalog.presets, hasLength(9));
+    final presetIds = KeyboardThemePresetCatalog.presets.map(
+      (preset) => preset.id,
+    );
+
     expect(
-      KeyboardThemePresetCatalog.presets.map((preset) => preset.name),
-      containsAll([
-        'CommandGlows',
-        'Glass Mint',
-        'Midnight Aurora',
-        'Paper Ink',
-        'Pixel Candy',
-        'Minimal Contrast',
+      presetIds,
+      unorderedEquals([
+        KeyboardThemePresetCatalog.system,
+        KeyboardThemePresetCatalog.commandglows,
+        KeyboardThemePresetCatalog.neonTerminal,
+        KeyboardThemePresetCatalog.glassMint,
+        KeyboardThemePresetCatalog.sunsetGradient,
+        KeyboardThemePresetCatalog.midnightAurora,
+        KeyboardThemePresetCatalog.paperInk,
+        KeyboardThemePresetCatalog.pixelCandy,
+        KeyboardThemePresetCatalog.minimalContrast,
       ]),
     );
   });
@@ -138,7 +144,7 @@ void main() {
     expect(parsed.keyReliefDepth, 3);
     expect(parsed.keyRadius, 14);
     expect(parsed.keyHorizontalGap, 0);
-    expect(parsed.rowVerticalGap, 12);
+    expect(parsed.rowVerticalGap, config.rowVerticalGap);
     expect(parsed.shadowBlur, 9);
     expect(parsed.pressHighlightDurationMs, 850);
     expect(parsed.cornerTextOpacity, 0.5);

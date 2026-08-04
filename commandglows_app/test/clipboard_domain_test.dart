@@ -9,10 +9,23 @@ void main() {
       expect(normalized, 'hello \n\n world');
     });
 
-    test('builds stable sha256 hash', () {
+    test('builds the canonical UTF-8 sha256 digest', () {
       expect(
-        sha256Hex('commandglows_app'),
-        'fd1753d3ff71c04e9100d53eece3364ee21fabb55460acae8bbab64c1e5ebb80',
+        sha256Hex('abc'),
+        'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+      );
+    });
+
+    test('keeps persisted normalized clipboard hashes stable', () {
+      final persistedHash = sha256Hex(normalizeClipboardText('hello world'));
+
+      expect(
+        persistedHash,
+        'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9',
+      );
+      expect(
+        sha256Hex(normalizeClipboardText('  hello   world\t')),
+        persistedHash,
       );
     });
 
