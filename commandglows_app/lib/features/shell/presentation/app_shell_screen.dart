@@ -497,6 +497,9 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen>
           _onboardingDismissed = true;
         }
       });
+      if (resumeRequested) {
+        _clearConsumedResumeRequest();
+      }
 
       final activeStep = readiness.activeStep?.definition.id.name ?? 'none';
       AppDiagnostics.record(
@@ -512,6 +515,20 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen>
         _onboardingMessage = 'Impossible de charger l’onboarding: $error';
       });
     }
+  }
+
+  void _clearConsumedResumeRequest() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final router = GoRouter.maybeOf(context);
+      final uri = router?.routeInformationProvider.value.uri;
+      if (uri?.path == '/home' &&
+          uri?.queryParameters['onboarding'] == 'resume') {
+        router!.replace('/home');
+      }
+    });
   }
 
   int? _forcedOnboardingStepIndex(OnboardingReadiness readiness) {

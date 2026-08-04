@@ -147,6 +147,7 @@ Widget _appShellTestWidgetWithInitialOnboardingStep(String onboardingStep) {
 Widget _routedSettingsTestWidget({
   String initialLocation = '/settings',
   List<Object> overrides = const [],
+  void Function(GoRouter router)? onRouterCreated,
 }) {
   final router = GoRouter(
     initialLocation: initialLocation,
@@ -166,6 +167,7 @@ Widget _routedSettingsTestWidget({
       ),
     ],
   );
+  onRouterCreated?.call(router);
   addTearDown(router.dispose);
   return ProviderScope(
     overrides: overrides.cast(),
@@ -800,10 +802,14 @@ void main() {
     tester.view.physicalSize = const Size(900, 5000);
     tester.view.devicePixelRatio = 1.0;
     _installAndroidBridgeMocks();
+    late GoRouter router;
 
     try {
       await tester.pumpWidget(
-        _routedSettingsTestWidget(initialLocation: '/home'),
+        _routedSettingsTestWidget(
+          initialLocation: '/home',
+          onRouterCreated: (value) => router = value,
+        ),
       );
       await _pumpNavigationFrame(tester);
 
@@ -851,6 +857,7 @@ void main() {
       await tester.tap(resumeButton, warnIfMissed: false);
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
+      expect(router.routeInformationProvider.value.uri.toString(), '/home');
       expect(find.text('Configuration CMDglows'), findsOneWidget);
       expect(
         find.text('Choisis les usages que tu veux activer'),
