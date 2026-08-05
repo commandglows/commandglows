@@ -21,10 +21,11 @@ legacy_value() {
 }
 
 REPO_URL="$(legacy_value "${SHIPGLOWS_REPO_URL:-}" "${SHIPGLOWZ_REPO_URL:-}" "${SHIPFLOW_REPO_URL:-}")"
-REPO_URL="${REPO_URL:-https://github.com/dianedef/ShipGlows.git}"
+REPO_URL="${REPO_URL:-https://github.com/commandglows/shipglows.git}"
 BRANCH="$(legacy_value "${SHIPGLOWS_BRANCH:-}" "${SHIPGLOWZ_BRANCH:-}" "${SHIPFLOW_BRANCH:-}")"
 BRANCH="${BRANCH:-main}"
 REQUESTED_MODE="$(legacy_value "${SHIPGLOWS_INSTALL_MODE:-}" "${SHIPGLOWZ_INSTALL_MODE:-}" "${SHIPFLOW_INSTALL_MODE:-}")"
+REQUESTED_SURFACE="${SHIPGLOWS_INSTALL_SURFACE:-runtime}"
 PUBLIC_INSTALL_URL="${SHIPGLOWS_INSTALL_URL:-https://www.commandglows.com/shipglows-script}"
 CURRENT_UID="$(id -u)"
 CURRENT_USER="$(id -un 2>/dev/null || printf '%s' "${USER:-unknown}")"
@@ -44,6 +45,28 @@ has_cmd() {
 
 normalize_mode() {
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+resolve_install_surface() {
+    INSTALL_SURFACE="$(normalize_mode "$REQUESTED_SURFACE")"
+    case "$INSTALL_SURFACE" in
+        runtime|cli)
+            INSTALL_SURFACE=runtime
+            SPARSE_PATHS="cli local tui .claude"
+            ;;
+        corpus|skills|opencode|kilocode)
+            INSTALL_SURFACE=corpus
+            SPARSE_PATHS="cli local tui .claude .agents .opencode .kilo plugins skills templates tools shipglows_data"
+            ;;
+        codex|plugin|codex-plugin)
+            INSTALL_SURFACE=codex-plugin
+            SPARSE_PATHS=""
+            ;;
+        *)
+            log "Surface d'installation invalide: $REQUESTED_SURFACE. Utilisez runtime, corpus ou codex-plugin."
+            return 1
+            ;;
+    esac
 }
 
 tty_available() {
@@ -111,6 +134,14 @@ resolve_install_mode() {
 
 INSTALL_MODE=""
 resolve_install_mode || exit 1
+resolve_install_surface || exit 1
+
+if [ "$INSTALL_SURFACE" = codex-plugin ]; then
+    log "Surface sélectionnée: plugin Codex (aucun clone runtime ni corpus)."
+    log "Ajoutez la marketplace ShipGlows, puis installez le plugin :"
+    log "  codex plugin marketplace add commandglows/shipglows --ref main --sparse .agents/plugins --sparse plugins/shipglows"
+    exit 0
+fi
 
 if [ "$CURRENT_UID" -eq 0 ] && [ -n "${SUDO_USER:-}" ] && [ "${SUDO_USER:-}" != root ]; then
     INSTALL_USER="$SUDO_USER"
@@ -320,9 +351,27 @@ repository_download_error() {
     log "Aucun token ne doit être ajouté à l'URL ou collé dans le journal."
 }
 
+sparse_checkout_error() {
+    log "Le checkout sparse ShipGlows n'a pas pu être préparé pour la surface $INSTALL_SURFACE."
+    log "Mettez Git à jour ou relancez après avoir corrigé le checkout; aucun fallback vers un clone complet n'est appliqué."
+}
+
+configure_sparse_surface() {
+    run_or_explain "sélection sparse de la surface $INSTALL_SURFACE" as_install_user git -C "$SHIPGLOWS_DIR" sparse-checkout set --cone $SPARSE_PATHS
+}
+
+clone_sparse_surface() {
+    log "Téléchargement de ShipGlows (surface: $INSTALL_SURFACE)..."
+    mkdir -p "$(dirname "$SHIPGLOWS_DIR")"
+    run_or_explain "accès au dépôt public ShipGlows" as_install_user git clone --quiet --no-checkout --branch "$BRANCH" "$REPO_URL" "$SHIPGLOWS_DIR" || return 1
+    configure_sparse_surface || return 1
+    run_or_explain "activation de la branche $BRANCH" as_install_user git -C "$SHIPGLOWS_DIR" checkout "$BRANCH"
+}
+
 prepare_log
 log "Préparation de l'installation ShipGlows..."
 log "Mode d'installation: $INSTALL_MODE"
+log "Surface d'installation: $INSTALL_SURFACE"
 install_bootstrap_deps
 
 if [ -d "$SHIPGLOWS_DIR/.git" ]; then
@@ -334,15 +383,18 @@ if [ -d "$SHIPGLOWS_DIR/.git" ]; then
     }
     run_or_explain "sélection de la branche $BRANCH" as_install_user git -C "$SHIPGLOWS_DIR" checkout "$BRANCH"
     run_or_explain "mise à jour du dépôt ShipGlows" as_install_user git -C "$SHIPGLOWS_DIR" pull --ff-only origin "$BRANCH"
+    configure_sparse_surface || {
+        sparse_checkout_error
+        exit 1
+    }
 elif [ -e "$SHIPGLOWS_DIR" ]; then
     log "$SHIPGLOWS_DIR existe déjà mais ce n'est pas un dépôt git."
     log "Déplacez-le ou définissez SHIPGLOWS_DIR vers un autre chemin, puis relancez."
     exit 1
 else
-    log "Téléchargement de ShipGlows..."
-    mkdir -p "$(dirname "$SHIPGLOWS_DIR")"
-    run_or_explain "accès et téléchargement du dépôt public ShipGlows" as_install_user git clone --quiet --branch "$BRANCH" "$REPO_URL" "$SHIPGLOWS_DIR" || {
+    clone_sparse_surface || {
         repository_download_error
+        sparse_checkout_error
         exit 1
     }
 fi

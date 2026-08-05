@@ -23,7 +23,7 @@ function Resolve-CompatibleValue([string]$Canonical, [string]$LegacyShipGlowz, [
     return $Default
 }
 
-if (-not $RepoUrl) { $RepoUrl = Resolve-CompatibleValue $env:SHIPGLOWS_REPO_URL $env:SHIPGLOWZ_REPO_URL $env:SHIPFLOW_REPO_URL 'https://github.com/dianedef/ShipGlows.git' }
+if (-not $RepoUrl) { $RepoUrl = Resolve-CompatibleValue $env:SHIPGLOWS_REPO_URL $env:SHIPGLOWZ_REPO_URL $env:SHIPFLOW_REPO_URL 'https://github.com/commandglows/shipglows.git' }
 if (-not $Branch) { $Branch = Resolve-CompatibleValue $env:SHIPGLOWS_BRANCH $env:SHIPGLOWZ_BRANCH $env:SHIPFLOW_BRANCH 'main' }
 if (-not $ShipGlowsDir) { $ShipGlowsDir = Resolve-CompatibleValue $env:SHIPGLOWS_DIR $env:SHIPGLOWZ_DIR $env:SHIPFLOW_DIR (Join-Path $env:USERPROFILE 'shipglows') }
 

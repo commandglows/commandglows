@@ -101,7 +101,7 @@ Envie d'un setup pr\u00eat \u00e0 l'emploi ? Nos dotfiles incluent la config Ter
 
 **[github.com/dianedef/dotfiles](https://github.com/dianedef/dotfiles)** — `bash dotfiles/termux.sh` et c'est parti.
 
-Pour d\u00e9ployer vos projets sur un serveur, d\u00e9couvrez **[ShipGlows](https://github.com/dianedef/ShipGlows)** — gestion d'environnements de dev avec PM2, Caddy et HTTPS automatique.
+Pour d\u00e9ployer vos projets sur un serveur, d\u00e9couvrez **[ShipGlows](https://github.com/commandglows/shipglows)** — gestion d'environnements de dev avec PM2, Caddy et HTTPS automatique.
 
 ---
 

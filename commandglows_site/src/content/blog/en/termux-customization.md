@@ -283,7 +283,7 @@ We use this exact configuration daily. Our dotfiles repo includes:
 
 If you develop on a server (VPS, Codespace), ShipGlows automates everything: isolation with Flox, process management with PM2, HTTPS with Caddy, SSH tunnels and public URLs via DuckDNS.
 
-**[github.com/dianedef/ShipGlows](https://github.com/dianedef/ShipGlows)** \u2014 an interactive CLI to deploy and manage your dev environments.
+**[github.com/commandglows/shipglows](https://github.com/commandglows/shipglows)** \u2014 an interactive CLI to deploy and manage your dev environments.
 
 ---
 

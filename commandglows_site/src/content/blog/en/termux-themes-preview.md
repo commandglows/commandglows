@@ -101,7 +101,7 @@ Want a ready-to-go setup? Our dotfiles include optimized Termux config, Neovim, 
 
 **[github.com/dianedef/dotfiles](https://github.com/dianedef/dotfiles)** \u2014 `bash dotfiles/termux.sh` and you're set.
 
-For deploying projects on a server, check out **[ShipGlows](https://github.com/dianedef/ShipGlows)** \u2014 dev environment management with PM2, Caddy and automatic HTTPS.
+For deploying projects on a server, check out **[ShipGlows](https://github.com/commandglows/shipglows)** \u2014 dev environment management with PM2, Caddy and automatic HTTPS.
 
 ---
 
