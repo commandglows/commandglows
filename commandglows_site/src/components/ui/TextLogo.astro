@@ -8,7 +8,10 @@ const { class: className, style } = Astro.props
 ---
 
 <div class:list={['text-logo', className]} style={style}>
-  <span class="text">CMDglows</span>
+  <span class="text" aria-label="CMDglows">
+    <span class="text-logo-word text-logo-word-main" data-text="CMD">CMD</span>
+    <span class="text-logo-word text-logo-word-glow" data-text="glows">glows</span>
+  </span>
   <div class="glow-effect"></div>
 </div>
 

@@ -24,12 +24,12 @@ const validationMessages = {
 	>
 		<div class="relative flex flex-col rounded-xl border border-content-border bg-content-bg-elevated shadow-sm pointer-events-auto dark:border-content-border-strong dark:bg-content-bg-strong">
 			<div class="flex justify-between items-center py-3 px-4 border-b dark:border-content-border-strong">
-				<h3 class="font-bold text-content-text-secondary dark:text-content-text-over-dark">
+				<h3 class="font-bold text-content-text-secondary dark:text-content-text-secondary">
 					{t?.addFeature?.title ?? "Add Feature"}
 				</h3>
 				<button
 					type="button"
-					class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-content-text-secondary hover:bg-content-bg-hover disabled:opacity-50 disabled:pointer-events-none dark:text-content-text-over-dark dark:hover:bg-content-bg-strong dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-content-border-strong"
+				class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-content-text-secondary hover:bg-content-bg-hover disabled:opacity-50 disabled:pointer-events-none dark:text-content-text-secondary dark:hover:bg-content-bg-strong dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-content-border-strong"
 					data-hs-overlay="#addFeatureModal"
 				>
 					<span class="sr-only">Close</span>
@@ -64,7 +64,7 @@ const validationMessages = {
 						<div>
 							<label
 								for="project"
-								class="block text-sm font-medium mb-2 text-content-text-secondary dark:text-content-text-over-dark"
+								class="block text-sm font-medium mb-2 text-content-text-secondary dark:text-content-text-muted"
 							>
 								{t?.addFeature?.project ?? "Project"}
 							</label>
@@ -91,7 +91,7 @@ const validationMessages = {
 						<div>
 							<label
 								for="title"
-								class="block text-sm font-medium mb-2 text-content-text-secondary dark:text-content-text-over-dark"
+								class="block text-sm font-medium mb-2 text-content-text-secondary dark:text-content-text-muted"
 							>
 								{t?.addFeature?.featureTitle ?? "Feature Title"}
 							</label>
@@ -109,7 +109,7 @@ const validationMessages = {
 						<div>
 							<label
 								for="description"
-								class="block text-sm font-medium mb-2 text-content-text-secondary dark:text-content-text-over-dark"
+								class="block text-sm font-medium mb-2 text-content-text-secondary dark:text-content-text-muted"
 							>
 								{t?.addFeature?.description ?? "Description"}
 							</label>
@@ -132,7 +132,7 @@ const validationMessages = {
 				<div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-content-border-strong">
 					<button
 						type="button"
-						class="inline-flex items-center gap-x-2 rounded-lg border border-content-border bg-content-bg-elevated px-3 py-2 text-sm font-medium text-content-text-secondary shadow-sm hover:bg-content-bg-hover disabled:pointer-events-none disabled:opacity-50 dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-content-border-strong"
+						class="inline-flex items-center gap-x-2 rounded-lg border border-content-border bg-content-bg-elevated px-3 py-2 text-sm font-medium text-content-text-secondary shadow-sm hover:bg-content-bg-hover disabled:pointer-events-none disabled:opacity-50 dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-secondary dark:hover:bg-content-bg-hover dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-content-border-strong"
 						data-hs-overlay="#addFeatureModal"
 					>
 						{t?.addFeature?.cancel ?? "Cancel"}

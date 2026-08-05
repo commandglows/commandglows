@@ -4,7 +4,6 @@
     { "name": "Apps & Tools", "url": "/products" },
     { "name": "Courses", "url": "/en/formations/" },
     { "name": "Roadmap", "url": "/roadmap" },
-    { "name": "Services", "url": "/services" },
     { "name": "Blog", "url": "/blog" },
     { "name": "Contact", "url": "/contact" }
   ],
@@ -14,7 +13,6 @@
       "links": [
         { "name": "Courses", "url": "/en/formations/" },
         { "name": "Apps & Plugins", "url": "/products" },
-        { "name": "Services", "url": "/services" },
         { "name": "Roadmap", "url": "/roadmap" }
       ]
     },

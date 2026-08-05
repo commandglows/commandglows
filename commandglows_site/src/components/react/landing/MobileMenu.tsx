@@ -63,7 +63,6 @@ export function MobileMenu({
     { label: "Apps", href: "/products" },
     { label: "Courses", href: "/en/formations/" },
     { label: "Roadmap", href: "/roadmap" },
-    { label: "Services", href: "/services" },
     { label: "Blog", href: "/blog" },
   ]
 
