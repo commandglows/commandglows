@@ -2008,8 +2008,8 @@
     font-family: var(--font-logo-accent);
     font-size: 0.76em;
     display: inline-block;
-    margin-left: 0.06em;
-    transform: skew(-12deg) translate(0.08em, 0.12em);
+    margin-left: -0.02em;
+    transform: skew(-28deg) translate(0.01em, 0.03em);
     transform-origin: left bottom;
   }
 
