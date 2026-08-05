@@ -48,7 +48,7 @@ interface Props {
               </p>
             </div>
 
-            <div class="rounded-b-xl border-t border-content-border bg-content-bg-subtle/80 p-4 dark:border-content-border-strong dark:bg-content-bg-inverse/60 md:px-7">
+            <div class="rounded-b-xl border-t border-content-border bg-content-bg-subtle/80 p-4 dark:border-content-border-strong dark:bg-content-bg-strong md:px-7">
               <div class="flex items-center">
                 {testimonial.footerLink ? (
                   <a 
@@ -63,10 +63,10 @@ interface Props {
                         alt={testimonial.avatarAlt}
                       />
                       <div>
-                        <div class="font-medium text-content-text-secondary dark:text-content-text-muted">
+                        <div class="font-medium text-content-text-secondary dark:text-content-text-quaternary">
                           {testimonial.author}
                         </div>
-                        <div class="text-content-text-secondary hover:text-magenta transition-colors duration-200 dark:text-content-text-tertiary dark:hover:text-magenta">
+                        <div class="text-content-text-secondary hover:text-magenta transition-colors duration-200 dark:text-content-text-quaternary dark:hover:text-magenta">
                           {testimonial.role}
                         </div>
                       </div>
@@ -79,10 +79,10 @@ interface Props {
                       alt={testimonial.avatarAlt}
                     />
                     <div>
-                      <div class="font-medium text-content-text-secondary dark:text-content-text-muted">
+                      <div class="font-medium text-content-text-secondary dark:text-content-text-quaternary">
                         {testimonial.author}
                       </div>
-                      <p class="text-content-text-secondary dark:text-content-text-tertiary">
+                      <p class="text-content-text-secondary dark:text-content-text-quaternary">
                         {testimonial.role}
                       </p>
                     </div>

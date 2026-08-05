@@ -1,7 +1,7 @@
 {
   "navBarLinks": [
     { "name": "Windows Mastery", "url": "/windows-mastery" },
-    { "name": "Apps", "url": "/products" },
+    { "name": "Apps & Tools", "url": "/products" },
     { "name": "Courses", "url": "/en/formations/" },
     { "name": "Roadmap", "url": "/roadmap" },
     { "name": "Services", "url": "/services" },

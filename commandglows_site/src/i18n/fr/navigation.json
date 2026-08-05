@@ -1,7 +1,7 @@
 {
   "navBarLinks": [
     { "name": "Maîtrise Windows", "url": "/fr/maitrise-windows" },
-    { "name": "Apps", "url": "/fr/produits" },
+    { "name": "Apps & Outils", "url": "/fr/produits" },
     { "name": "Formations", "url": "/fr/formations/" },
     { "name": "Roadmap", "url": "/fr/roadmap" },
     { "name": "Services", "url": "/fr/services" },

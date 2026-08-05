@@ -336,7 +336,7 @@ const page =
 		},
 	}}
 >
-	<section class="relative overflow-hidden border-b border-content-border bg-gradient-to-b from-content-bg via-white to-content-bg-subtle dark:border-content-border-strong dark:from-black dark:via-black dark:to-content-bg">
+	<section class="relative overflow-hidden border-b border-content-border bg-gradient-to-b from-content-bg via-content-bg-subtle to-content-bg-subtle dark:border-content-border-strong dark:from-black dark:via-black dark:to-content-bg">
 		<div class="mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 sm:pt-16 lg:px-8 lg:pb-24 lg:pt-20">
 			<div class="max-w-4xl">
 				<p class="mb-5 inline-flex rounded-full border border-content-border-strong px-4 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-content-text-secondary dark:border-content-border-strong dark:text-content-text-muted">
@@ -483,10 +483,10 @@ const page =
 		</div>
 	</section>
 
-	<section class="border-y border-content-border bg-content-text-primary py-16 text-white dark:border-content-border-strong">
+	<section class="border-y border-content-border bg-content-bg-inverse py-16 text-content-text-over-dark dark:border-content-border-strong dark:bg-content-bg-strong">
 		<div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
 			<h2 class="text-3xl font-bold tracking-tight">{page.proofTitle}</h2>
-			<blockquote class="mt-8 rounded-3xl border border-white/10 bg-white/5 p-8 text-xl leading-relaxed text-content-text-over-dark">
+			<blockquote class="mt-8 rounded-3xl border border-content-text-over-dark/10 bg-content-text-over-dark/5 p-8 text-xl leading-relaxed text-content-text-over-dark">
 				“{page.testimonial}”
 			</blockquote>
 			<p class="mt-5 text-sm uppercase tracking-[0.16em] text-content-text-muted">{page.testimonialAuthor}</p>
@@ -512,7 +512,7 @@ const page =
 						</li>
 					))}
 				</ul>
-				<a href={checkoutUrl} class="mt-8 inline-flex items-center justify-center rounded-xl bg-gradient-rainbow px-6 py-3 font-bold text-white transition hover:opacity-90">
+				<a href={checkoutUrl} class="mt-8 inline-flex items-center justify-center rounded-xl bg-gradient-rainbow px-6 py-3 font-bold text-content-text-over-dark transition hover:opacity-90">
 					{page.primaryCta}
 				</a>
 				<p class="mt-4 text-sm text-content-text-muted dark:text-content-text-muted">{page.checkoutNote}</p>
@@ -547,7 +547,7 @@ const page =
 			{page.finalBody}
 		</p>
 		<div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-			<a href={courseHubUrl} class="inline-flex items-center justify-center rounded-xl bg-content-text-primary px-6 py-3 font-semibold text-white transition hover:bg-content-text-secondary dark:bg-white dark:text-content-text-primary dark:hover:bg-content-text-secondary">
+			<a href={courseHubUrl} class="inline-flex items-center justify-center rounded-xl bg-content-bg-inverse px-6 py-3 font-semibold text-content-text-over-dark transition hover:bg-content-text-secondary dark:bg-content-bg-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover">
 				{page.primaryCta}
 			</a>
 			<a href="#modules" class="inline-flex items-center justify-center rounded-xl border border-content-border px-6 py-3 font-semibold text-content-text-secondary transition hover:bg-content-bg-hover dark:border-content-border-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover">

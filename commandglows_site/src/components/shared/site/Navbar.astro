@@ -89,12 +89,9 @@ function getTranslatedPath(path: string, targetLang: string): string {
 const altLangUrl = getTranslatedPath(Astro.url.pathname, altLang)
 
 const signInLabel = lang === 'fr' ? 'Connexion' : 'Sign In'
-const ctaLabel = lang === 'fr' ? 'Parcours Windows' : 'Start with CMDglows'
+const ctaLabel = signInLabel
 const signInUrl = lang === 'fr' ? '/fr/signin' : '/signin'
-const ctaUrl =
-  lang === 'fr'
-    ? '/fr/signin?next=%2Fdashboard%2Fdocs%2Ffr%2Fformations%2Fmodule-2-windows%2F'
-    : '/signin?next=%2Fdashboard%2Fdocs%2Fen%2Fformations%2Fmodule-2-windows%2F'
+const ctaUrl = signInUrl
 const menuLabel = lang === 'fr' ? 'Ouvrir le menu' : 'Open menu'
 const closeMenuLabel = lang === 'fr' ? 'Fermer le menu' : 'Close menu'
 const darkModeLabel = lang === 'fr' ? 'Mode sombre' : 'Dark mode'
@@ -109,7 +106,7 @@ const navShellClass = forceDark
   : 'relative flex items-center justify-between rounded-full border border-navbar-border/60 bg-navbar-bg/80 px-4 py-3 shadow-sm backdrop-blur-md dark:border-navbar-border dark:bg-navbar-bg dark:shadow-none'
 
 const navLinkClass =
-  'no-hover-animation relative rounded-full px-3 py-2 text-sm font-medium transition-colors'
+  'no-hover-animation relative rounded-full px-2 py-1.5 text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 md:text-sm'
 const navLinkActiveClass = forceDark
   ? 'text-navbar-textPrimary'
   : 'text-navbar-textPrimary dark:text-navbar-textPrimary'
@@ -121,13 +118,9 @@ const langLinkClass = forceDark
   ? 'no-hover-animation rounded-full px-2.5 py-1.5 text-xs font-semibold text-navbar-textTertiary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary'
   : 'no-hover-animation rounded-full px-2.5 py-1.5 text-xs font-semibold text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textTertiary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary'
 
-const signInButtonClass = forceDark
-  ? 'rounded-full px-3 py-1.5 text-sm text-navbar-textSecondary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary'
-  : 'rounded-full px-3 py-1.5 text-sm font-medium text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary'
-
 const ctaButtonClass = forceDark
-  ? 'shimmer-btn rounded-full bg-navbar-cta-text px-4 py-1.5 text-sm font-medium text-navbar-cta-bg hover:bg-navbar-cta-bg-hover'
-  : 'shimmer-btn rounded-full bg-navbar-cta-bg px-4 py-1.5 text-sm font-medium text-navbar-cta-text hover:bg-navbar-cta-bg-hover'
+  ? 'shimmer-btn rounded-full bg-navbar-cta-text px-3 py-1.5 text-xs font-medium text-navbar-cta-bg md:text-sm hover:bg-navbar-cta-bg-hover'
+  : 'shimmer-btn rounded-full bg-navbar-cta-bg px-3 py-1.5 text-xs font-medium text-navbar-cta-text md:text-sm hover:bg-navbar-cta-bg-hover'
 ---
 
 <header
@@ -149,7 +142,7 @@ const ctaButtonClass = forceDark
       {mobileTagline}
     </p>
 
-    <div class="hidden items-center gap-1 md:flex">
+    <div class="hidden items-center gap-1 md:flex md:min-w-0 md:flex-1 md:overflow-x-auto md:justify-start">
       {
         navItems.map((item) => (
           <NavLink
@@ -163,12 +156,11 @@ const ctaButtonClass = forceDark
       }
     </div>
 
-    <div class="hidden items-center gap-1 md:flex">
+    <div class="hidden items-center gap-1 md:flex md:ml-auto">
       <a href={altLangUrl} class={langLinkClass}>
         {altLangLabel}
       </a>
       {showThemePicker && !forceDark && <ThemePicker />}
-      <a href={signInUrl} class={signInButtonClass}>{signInLabel}</a>
       <a href={ctaUrl} class={ctaButtonClass}>{ctaLabel}</a>
     </div>
 
@@ -261,13 +253,6 @@ const ctaButtonClass = forceDark
                 </div>
               )
             }
-              <a href={signInUrl} class="flex items-center">
-                <span
-                  class="block w-full rounded-lg px-2 py-3 text-center text-base font-semibold text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
-                >
-                {signInLabel}
-              </span>
-            </a>
           </div>
           <a href={ctaUrl}>
             <span
