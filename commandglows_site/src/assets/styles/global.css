@@ -110,7 +110,7 @@
     /* Font families */
     --font-family-logo: 'Audiowide', sans-serif;
     --font-family-display: 'Space Grotesk', sans-serif;
-    --font-family-heading: 'DM Sans', sans-serif;
+    --font-family-heading: 'Space Grotesk', sans-serif;
     --font-family-body: 'Manrope', sans-serif;
 
     /* Landing page semantic tokens */
@@ -496,7 +496,7 @@
     --bio-accent: #ff00c8;
     --bio-accent-glow: rgba(255, 0, 200, 0.3);
     --bio-font-logo: 'Audiowide', cursive;
-    --bio-font-body: 'DM Sans', sans-serif;
+    --bio-font-body: 'Manrope', sans-serif;
     --bio-font-ui: 'Manrope', sans-serif;
     --bio-body-padding-inline: 1rem;
     --bio-body-padding-block: 2rem;
@@ -2007,8 +2007,10 @@
   .text-logo .text-logo-word-glow {
     font-family: var(--font-logo-accent);
     font-size: 0.76em;
-    transform: skew(-10deg) translateY(0.08em);
-    transform-origin: left center;
+    display: inline-block;
+    margin-left: 0.06em;
+    transform: skew(-12deg) translate(0.08em, 0.12em);
+    transform-origin: left bottom;
   }
 
   .text-logo .text::after {
