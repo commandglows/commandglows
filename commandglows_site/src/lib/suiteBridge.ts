@@ -5,7 +5,7 @@ export const SUITE_PRODUCT_ALLOWLIST = [
   'contentglowz',
   'shipglows',
   'replayglowz',
-  'socialglowz',
+  'communityglows',
   'temu_shopping_lists',
 ] as const
 
@@ -15,7 +15,7 @@ export const CONTENTGLOWZ_PRODUCT_ID = 'contentglowz'
 export const SHIPGLOWS_PRODUCT_ID = 'shipglows'
 export const LEGACY_SHIPGLOWZ_PRODUCT_ID = 'shipglowz'
 export const REPLAYGLOWZ_PRODUCT_ID = 'replayglowz'
-export const SOCIALGLOWZ_PRODUCT_ID = 'socialglowz'
+export const COMMUNITYGLOWS_PRODUCT_ID = 'communityglows'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
 export const DEFAULT_FREE_PRODUCT_IDS = [
   'commandglows_app',
@@ -24,7 +24,7 @@ export const DEFAULT_FREE_PRODUCT_IDS = [
   CONTENTGLOWZ_PRODUCT_ID,
   SHIPGLOWS_PRODUCT_ID,
   REPLAYGLOWZ_PRODUCT_ID,
-  SOCIALGLOWZ_PRODUCT_ID,
+  COMMUNITYGLOWS_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
 ] as const
 export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_KEY_ID =
@@ -34,14 +34,14 @@ export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_ISSUER = 'https://commandglows.com'
 export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_AUDIENCE =
   'replayglowz-convex'
 export const REPLAYGLOWZ_PRODUCT_JWT_TTL_SECONDS = 10 * 60
-export const SOCIALGLOWZ_DEFAULT_PLAN = 'lifetime_deal' as const
-export const SOCIALGLOWZ_ALLOWED_PLANS = [
+export const COMMUNITYGLOWS_DEFAULT_PLAN = 'lifetime_deal' as const
+export const COMMUNITYGLOWS_ALLOWED_PLANS = [
   'free',
   'lifetime_deal',
   'founder_ltd',
   'ltd',
 ] as const
-export const SOCIALGLOWZ_ALLOWED_SOURCES = [
+export const COMMUNITYGLOWS_ALLOWED_SOURCES = [
   'product_default',
   'manual',
   'partner',
@@ -58,6 +58,8 @@ type BridgeEntitlement = {
   status: string
   plan?: string | null
   source?: string | null
+  trialStartedAt?: number | null
+  trialExpiresAt?: number | null
 }
 const ALLOWED_PRODUCT_SET = new Set<string>(SUITE_PRODUCT_ALLOWLIST)
 
@@ -110,8 +112,9 @@ type ReplayGlowzProductTokenConfig = {
   audience: string
 }
 
-export type SocialGlowzEntitlementReasonCode =
+export type CommunityGlowsEntitlementReasonCode =
   | 'active_entitlement'
+  | 'trial_expired'
   | 'account_not_found'
   | 'global_user_not_found'
   | 'code_not_found'
@@ -122,16 +125,20 @@ export type SocialGlowzEntitlementReasonCode =
   | 'plan_not_allowed'
   | 'source_not_allowed'
 
-export type SocialGlowzEntitlementSnapshot = {
+export type CommunityGlowsEntitlementSnapshot = {
   hasAccess: boolean
+  accessState: 'lifetime_active' | 'trial_active' | 'trial_expired' | 'inactive'
   planId: string | null
   source: string | null
   globalUserId: string | null
-  reasonCode: SocialGlowzEntitlementReasonCode
+  trialStartedAt: number | null
+  trialEndsAt: number | null
+  trialExpiresAt: number | null
+  reasonCode: CommunityGlowsEntitlementReasonCode
 }
 
-const SOCIALGLOWZ_SOURCE_SET = new Set<string>(SOCIALGLOWZ_ALLOWED_SOURCES)
-const SOCIALGLOWZ_PLAN_SET = new Set<string>(SOCIALGLOWZ_ALLOWED_PLANS)
+const COMMUNITYGLOWS_SOURCE_SET = new Set<string>(COMMUNITYGLOWS_ALLOWED_SOURCES)
+const COMMUNITYGLOWS_PLAN_SET = new Set<string>(COMMUNITYGLOWS_ALLOWED_PLANS)
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -436,6 +443,21 @@ export function isActiveAccessStatus(status: string): boolean {
   return ACTIVE_ENTITLEMENT_STATUSES.has(status)
 }
 
+function isActiveSuiteEntitlement(entry: BridgeEntitlement, now = Date.now()) {
+  if (entry.status === 'active') {
+    return true
+  }
+
+  if (entry.status !== 'trialing') {
+    return false
+  }
+
+  return (
+    typeof entry.trialExpiresAt === 'number' &&
+    entry.trialExpiresAt > now
+  )
+}
+
 export function hasActiveEntitlement(
   entitlements: BridgeEntitlement[],
   productId: string
@@ -453,7 +475,7 @@ function selectPreferredActiveEntitlement(
 ): BridgeEntitlement | undefined {
   const activeEntitlements = entitlements.filter(
     (entry) =>
-      entry.productId === productId && isActiveAccessStatus(entry.status)
+      entry.productId === productId && isActiveSuiteEntitlement(entry)
   )
   return (
     activeEntitlements.find((entry) => entry.plan !== 'free') ??
@@ -461,50 +483,96 @@ function selectPreferredActiveEntitlement(
   )
 }
 
-export function isAllowedSocialGlowzPlan(planId: string): boolean {
-  return SOCIALGLOWZ_PLAN_SET.has(planId)
+export function isAllowedCommunityGlowsPlan(planId: string): boolean {
+  return COMMUNITYGLOWS_PLAN_SET.has(planId)
 }
 
-export function isAllowedSocialGlowzSource(source: string): boolean {
-  return SOCIALGLOWZ_SOURCE_SET.has(source)
+export function isAllowedCommunityGlowsSource(source: string): boolean {
+  return COMMUNITYGLOWS_SOURCE_SET.has(source)
 }
 
-export function resolveSocialGlowzEntitlementSnapshot({
+export function resolveCommunityGlowsEntitlementSnapshot({
   globalUserId,
   entitlements,
+  now = Date.now(),
 }: {
   globalUserId: string | null
   entitlements: BridgeEntitlement[]
-}): SocialGlowzEntitlementSnapshot {
-  const socialEntitlement = selectPreferredActiveEntitlement(
-    entitlements,
-    SOCIALGLOWZ_PRODUCT_ID
+  now?: number
+}): CommunityGlowsEntitlementSnapshot {
+  const activeSocialEntitlements = entitlements.filter(
+    (entry) =>
+      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+      isActiveSuiteEntitlement(entry, now)
   )
+  const paidEntitlement = activeSocialEntitlements.find(
+      (entry) => entry.status === 'active' && entry.source !== 'product_default'
+    )
+  const activeTrial = activeSocialEntitlements.find(
+    (entry) => entry.status === 'trialing'
+  )
+  const expiredTrial = entitlements.find(
+    (entry) =>
+      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+      entry.status === 'trialing' &&
+      typeof entry.trialExpiresAt === 'number' &&
+      entry.trialExpiresAt <= now
+  )
+  const defaultActiveEntitlement = activeSocialEntitlements.find(
+    (entry) => entry.status === 'active'
+  )
+  const socialEntitlement = paidEntitlement ?? activeTrial ?? defaultActiveEntitlement
   if (!globalUserId) {
     return {
       hasAccess: false,
+      accessState: 'inactive',
       planId: null,
       source: null,
       globalUserId: null,
+      trialStartedAt: null,
+      trialEndsAt: null,
+      trialExpiresAt: null,
       reasonCode: 'account_not_found',
     }
   }
 
   if (!socialEntitlement) {
+    if (expiredTrial) {
+      return {
+        hasAccess: false,
+        accessState: 'trial_expired',
+        planId: expiredTrial.plan ?? COMMUNITYGLOWS_DEFAULT_PLAN,
+        source: expiredTrial.source ?? null,
+        globalUserId,
+        trialStartedAt: expiredTrial.trialStartedAt ?? null,
+        trialEndsAt: expiredTrial.trialExpiresAt ?? null,
+        trialExpiresAt: expiredTrial.trialExpiresAt ?? null,
+        reasonCode: 'trial_expired',
+      }
+    }
     return {
       hasAccess: false,
+      accessState: 'inactive',
       planId: null,
       source: null,
       globalUserId,
+      trialStartedAt: null,
+      trialEndsAt: null,
+      trialExpiresAt: null,
       reasonCode: 'global_user_not_found',
     }
   }
 
+  const isTrial = socialEntitlement.status === 'trialing'
   return {
     hasAccess: true,
-    planId: socialEntitlement.plan ?? SOCIALGLOWZ_DEFAULT_PLAN,
+    accessState: isTrial ? 'trial_active' : 'lifetime_active',
+    planId: socialEntitlement.plan ?? COMMUNITYGLOWS_DEFAULT_PLAN,
     source: socialEntitlement.source ?? null,
     globalUserId,
+    trialStartedAt: isTrial ? (socialEntitlement.trialStartedAt ?? null) : null,
+    trialEndsAt: isTrial ? (socialEntitlement.trialExpiresAt ?? null) : null,
+    trialExpiresAt: isTrial ? (socialEntitlement.trialExpiresAt ?? null) : null,
     reasonCode: 'active_entitlement',
   }
 }
@@ -658,12 +726,12 @@ export function getSuiteEntitlementVerifySecret(
   return cleanSecret(env.SUITE_ENTITLEMENT_VERIFY_SECRET)
 }
 
-export function getSocialGlowzBridgeSecret(
+export function getCommunityGlowsBridgeSecret(
   env: Record<string, string | undefined>
 ): string | null {
   return (
-    cleanSecret(env.SOCIALGLOWZ_SUITE_BRIDGE_SECRET) ??
-    cleanSecret(env.SUITE_SOCIALGLOWZ_BRIDGE_SECRET)
+    cleanSecret(env.COMMUNITYGLOWS_SUITE_BRIDGE_SECRET) ??
+    cleanSecret(env.SUITE_COMMUNITYGLOWS_BRIDGE_SECRET)
   )
 }
 

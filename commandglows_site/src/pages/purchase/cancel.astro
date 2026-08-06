@@ -3,11 +3,11 @@ import MainLayout from '@/layouts/MainLayout.astro'
 
 const offerId = Astro.url.searchParams.get('offerId')
 const isCommandGlowsAppOffer = offerId?.startsWith('commandglows_app/') ?? false
-const isSocialGlowzOffer = offerId === 'socialglowz/lifetime_deal'
+const isCommunityGlowsOffer = offerId === 'communityglows/lifetime_deal'
 const returnUrl = isCommandGlowsAppOffer
 	? '/commandglows-founder'
-	: isSocialGlowzOffer
-		? '/socialglowz-founder'
+	: isCommunityGlowsOffer
+		? '/communityglows-founder'
 		: '/products'
 ---
 

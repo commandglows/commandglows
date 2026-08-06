@@ -6,20 +6,24 @@ import type { MutationCtx } from './_generated/server'
 import {
   DEFAULT_FREE_ENTITLEMENT_POLICIES,
   REPLAYGLOWZ_PRODUCT_ID,
-  SOCIALGLOWZ_PRODUCT_ID,
+  COMMUNITYGLOWS_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
   COMMANDGLOWS_APP_PRODUCT_ID,
+  COMMANDGLOWS_TRIAL_MAX_CYCLES,
+  COMMANDGLOWS_TRIAL_SOURCE,
+  COMMANDGLOWS_TRIAL_PLAN,
   ensureDefaultFreeEntitlement,
   ensureMissingDefaultFreeEntitlements,
-  isActiveAccessStatus,
+  COMMANDGLOWS_TRIAL_DURATION_MS,
+  isActiveSuiteEntitlement,
   isAllowedSuiteProduct,
   selectPreferredActiveProductEntitlement,
 } from './defaultFreeEntitlements'
 
-const SOCIALGLOWZ_PROVIDER = 'socialglowz_convex'
-const SOCIALGLOWZ_BRIDGE_SOURCE = 'socialglowz_bridge_api'
-const SOCIALGLOWZ_PLAN_ALLOWLIST = new Set(['free', 'lifetime_deal', 'founder_ltd', 'ltd'])
-const SOCIALGLOWZ_SOURCE_ALLOWLIST = new Set([
+const COMMUNITYGLOWS_PROVIDER = 'communityglows_convex'
+const COMMUNITYGLOWS_BRIDGE_SOURCE = 'communityglows_bridge_api'
+const COMMUNITYGLOWS_PLAN_ALLOWLIST = new Set(['free', 'lifetime_deal', 'founder_ltd', 'ltd'])
+const COMMUNITYGLOWS_SOURCE_ALLOWLIST = new Set([
   'product_default',
   'manual',
   'partner',
@@ -27,13 +31,18 @@ const SOCIALGLOWZ_SOURCE_ALLOWLIST = new Set([
   'direct',
   'legacy',
 ])
-const SOCIALGLOWZ_ACCESS_EVENT_SOURCE = 'socialglowz_admin'
-const SOCIALGLOWZ_REVOKE_EVENT_SOURCE = 'socialglowz_revoke'
-const SOCIALGLOWZ_COMMERCE_EVENT_SOURCE = 'socialglowz_commerce'
-const SOCIALGLOWZ_COMMERCE_GRANT_SOURCE = 'socialglowz_commerce'
-const SOCIALGLOWZ_COMMERCE_EVENT_SOURCE_PREFIX = 'socialglowz:commerce'
+const COMMUNITYGLOWS_ACCESS_EVENT_SOURCE = 'communityglows_admin'
+const COMMUNITYGLOWS_REVOKE_EVENT_SOURCE = 'communityglows_revoke'
+const COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE = 'communityglows_commerce'
+const COMMUNITYGLOWS_COMMERCE_GRANT_SOURCE = 'communityglows_commerce'
+const COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE_PREFIX = 'communityglows:commerce'
+const COMMUNITYGLOWS_TRIAL_SOURCE = 'product_trial'
+const COMMUNITYGLOWS_TRIAL_PLAN = 'free'
+const COMMUNITYGLOWS_TRIAL_DURATION_MS = 30 * 24 * 60 * 60 * 1000
+const COMMUNITYGLOWS_TRIAL_IDEMPOTENCY_PREFIX = 'communityglows_product_trial'
 const SUITE_COMMERCE_EVENT_SOURCE = 'suite_commerce'
 const SUITE_COMMERCE_EVENT_SOURCE_PREFIX = 'suite:commerce'
+const COMMANDGLOWS_TRIAL_IDEMPOTENCY_PREFIX = 'commandglows_app_trial'
 const COMMANDGLOWS_APP_PLAN_ALLOWLIST = new Set([
   'free',
   'focus',
@@ -51,7 +60,7 @@ const COMMANDGLOWS_APP_OFFER_PLAN_BY_ID = new Map([
 const TEMU_SHOPPING_LISTS_PROVIDER = 'temu_shopping_lists_convex'
 const TEMU_SHOPPING_LISTS_BRIDGE_SOURCE = 'temu_shopping_lists_bridge_api'
 
-type SocialGlowzOperationResult = {
+type CommunityGlowsOperationResult = {
   status: 'ok' | 'already_active' | 'already_revoked'
   hasAccess: boolean
   globalUserId: string | null
@@ -62,11 +71,162 @@ type SocialGlowzOperationResult = {
   alreadyGranted?: boolean
 }
 
-const SOCIALGLOWZ_COMMERCE_STATUS_PRIORITY: Record<string, number> = {
+const COMMUNITYGLOWS_COMMERCE_STATUS_PRIORITY: Record<string, number> = {
   revoked: 40,
   granted: 30,
   pending_review: 20,
   ignored: 5,
+}
+
+type SuiteEntitlementLike = {
+  productId: string
+  status: string
+  source?: string | null
+  sourceRef?: string
+  plan?: string
+  trialStartedAt?: number | null
+  trialExpiresAt?: number | null
+  expiresAt?: number | null
+  trialAttempt?: number
+  updatedAt?: number
+  grantedAt?: number
+}
+
+function isTrialEntitlementActive(entry: { status: string; trialExpiresAt?: number | null }) {
+  return entry.status === 'trialing'
+    ? typeof entry.trialExpiresAt === 'number' && entry.trialExpiresAt > Date.now()
+    : false
+}
+
+function isActiveSuiteEntitlementWithExpiration(entry: SuiteEntitlementLike) {
+  return isActiveSuiteEntitlement(
+    {
+      ...entry,
+      productId: entry.productId,
+      expiresAt:
+        typeof entry.expiresAt === 'number'
+          ? entry.expiresAt
+          : entry.trialExpiresAt,
+    },
+    Date.now()
+  )
+}
+
+function nowMs() {
+  return Date.now()
+}
+
+function buildCommandGlowsTrialIdempotencyKey(globalUserPublicId: string, attempt: number) {
+  return `${COMMANDGLOWS_TRIAL_IDEMPOTENCY_PREFIX}:${globalUserPublicId}:${attempt}`
+}
+
+function countCommandGlowsTrials(entitlements: SuiteEntitlementLike[]) {
+  return entitlements.filter(
+    (entry) =>
+      entry.productId === COMMANDGLOWS_APP_PRODUCT_ID &&
+      entry.source === COMMANDGLOWS_TRIAL_SOURCE
+  ).length
+}
+
+function hasActiveCommandGlowsPaidEntitlement(
+  entitlements: SuiteEntitlementLike[],
+  now = nowMs()
+) {
+  return entitlements.some(
+    (entry) =>
+      entry.productId === COMMANDGLOWS_APP_PRODUCT_ID &&
+      isActiveSuiteEntitlementWithExpiration(entry) &&
+      entry.status === 'active'
+  )
+}
+
+async function maybeStartCommandGlowsTrialEntitlement(
+  ctx: MutationCtx,
+  args: {
+    globalUserDocId: Id<'globalUsers'>
+    globalUserPublicId: string
+    sourceRef: string
+    environment: string
+    now: number
+    forceRestart: boolean
+    entitlements: SuiteEntitlementLike[]
+  }
+) {
+  if (hasActiveCommandGlowsPaidEntitlement(args.entitlements, args.now)) {
+    return false
+  }
+
+  const activeTrial = args.entitlements.find(
+    (entry) =>
+      entry.productId === COMMANDGLOWS_APP_PRODUCT_ID &&
+      isTrialEntitlementActive(entry)
+  )
+  if (activeTrial) {
+    return true
+  }
+
+  const trialCount = countCommandGlowsTrials(args.entitlements)
+  const maxAttemptsReached = trialCount >= COMMANDGLOWS_TRIAL_MAX_CYCLES
+  if (maxAttemptsReached && !args.forceRestart) {
+    return false
+  }
+
+  if (!args.forceRestart && trialCount > 0) {
+    return false
+  }
+
+  if (maxAttemptsReached && args.forceRestart) {
+    return false
+  }
+
+  const nextTrialAttempt = trialCount + 1
+  const expiry = args.now + COMMANDGLOWS_TRIAL_DURATION_MS
+  const trialIdempotencyKey = buildCommandGlowsTrialIdempotencyKey(
+    args.globalUserPublicId,
+    nextTrialAttempt
+  )
+
+  const existing = await ctx.db
+    .query('productEntitlements')
+    .withIndex('by_idempotencyKey', (q) =>
+      q.eq('idempotencyKey', trialIdempotencyKey)
+    )
+    .first()
+
+  if (existing) {
+    await ctx.db.patch(existing._id, {
+      status: 'trialing',
+      source: COMMANDGLOWS_TRIAL_SOURCE,
+      sourceRef: args.sourceRef,
+      plan: COMMANDGLOWS_TRIAL_PLAN,
+      environment: args.environment,
+      trialStartedAt: args.now,
+      trialExpiresAt: expiry,
+      trialAttempt: nextTrialAttempt,
+      grantedAt: existing.grantedAt ?? args.now,
+      updatedAt: args.now,
+    })
+    return true
+  }
+
+  await ctx.db.insert('productEntitlements', {
+    globalUserId: args.globalUserDocId,
+    productId: COMMANDGLOWS_APP_PRODUCT_ID,
+    plan: COMMANDGLOWS_TRIAL_PLAN,
+    status: 'trialing',
+    source: COMMANDGLOWS_TRIAL_SOURCE,
+    sourceRef: args.sourceRef,
+    environment: args.environment,
+    idempotencyKey: trialIdempotencyKey,
+    trialStartedAt: args.now,
+    trialExpiresAt: expiry,
+    trialAttempt: nextTrialAttempt,
+    grantedAt: args.now,
+    createdAt: args.now,
+    updatedAt: args.now,
+  })
+
+  return true
 }
 
 function normalizeBridgeEnvironment(value: unknown): string {
@@ -114,7 +274,7 @@ function buildCommerceEventReason(eventType: string, detail?: string) {
   return 'commerce_pending_review'
 }
 
-function buildSocialGlowzCommerceSourceRef(args: {
+function buildCommunityGlowsCommerceSourceRef(args: {
   sourceRef?: string
   providerOrderId: string
   providerSourceRef?: string
@@ -122,9 +282,9 @@ function buildSocialGlowzCommerceSourceRef(args: {
   return args.sourceRef || args.providerSourceRef || args.providerOrderId
 }
 
-function buildSocialGlowzCommerceEventIdempotency(eventType: string, eventKey: string) {
+function buildCommunityGlowsCommerceEventIdempotency(eventType: string, eventKey: string) {
   const normalizedType = eventType === 'revoked' ? 'revoked' : eventType
-  return `${SOCIALGLOWZ_COMMERCE_EVENT_SOURCE_PREFIX}:${normalizedType}:${eventKey}`
+  return `${COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE_PREFIX}:${normalizedType}:${eventKey}`
 }
 
 function normalizeCommerceEnvironment(rawEnvironment: string | undefined): string {
@@ -165,7 +325,7 @@ function resolveCommerceIdentityBySourceRef(
     const sourceEvents = await ctx.db
       .query('productAccessEvents')
       .withIndex('by_sourceRef', (q) =>
-        q.eq('source', SOCIALGLOWZ_COMMERCE_EVENT_SOURCE).eq('sourceRef', sourceRef)
+        q.eq('source', COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE).eq('sourceRef', sourceRef)
       )
       .collect()
 
@@ -190,7 +350,7 @@ async function getClerkIdentityAccountIdForGlobalUser(
   return clerkAccount?.providerAccountId ?? null
 }
 
-async function upsertSocialGlowzCommerceEntitlement(
+async function upsertCommunityGlowsCommerceEntitlement(
   ctx: MutationCtx,
   args: {
     globalUserDocId: Id<'globalUsers'>
@@ -201,7 +361,7 @@ async function upsertSocialGlowzCommerceEntitlement(
     idempotencyKey: string
   }
 ) {
-  if (!isAllowedSocialGlowzPlan(args.plan)) {
+  if (!isAllowedCommunityGlowsPlan(args.plan)) {
     throw new Error('plan_not_allowed')
   }
 
@@ -224,7 +384,7 @@ async function upsertSocialGlowzCommerceEntitlement(
   } else {
     await ctx.db.insert('productEntitlements', {
       globalUserId: args.globalUserDocId,
-      productId: SOCIALGLOWZ_PRODUCT_ID,
+      productId: COMMUNITYGLOWS_PRODUCT_ID,
       plan: args.plan,
       status: 'active',
       source: args.source,
@@ -244,12 +404,12 @@ async function upsertSocialGlowzCommerceEntitlement(
     args.idempotencyKey
   )
   await upsertCommerceAccessEvent(ctx, {
-    source: SOCIALGLOWZ_COMMERCE_EVENT_SOURCE,
-    eventType: 'socialglowz_access.granted',
+    source: COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE,
+    eventType: 'communityglows_access.granted',
     sourceRef: args.sourceRef,
     idempotencyKey: accessEventIdempotencyKey,
     environment: args.environment,
-    productId: SOCIALGLOWZ_PRODUCT_ID,
+    productId: COMMUNITYGLOWS_PRODUCT_ID,
     globalUserDocId: args.globalUserDocId,
     status: 'granted',
     providerEventId: args.idempotencyKey,
@@ -260,7 +420,7 @@ async function upsertSocialGlowzCommerceEntitlement(
     .withIndex('by_globalUserId', (q) => q.eq('globalUserId', args.globalUserDocId))
     .collect()
 
-  return resolveSocialGlowzAccess({
+  return resolveCommunityGlowsAccess({
     globalUserId: await (async () => {
       const globalUser = await ctx.db.get(args.globalUserDocId)
       if (!globalUser) {
@@ -293,7 +453,7 @@ async function buildCommerceAccessSnapshot(
   }
 
   return {
-    ...resolveSocialGlowzAccess({
+    ...resolveCommunityGlowsAccess({
       globalUserId: globalUser.globalUserId,
       entitlements: rawEntitlements.map((entry) => ({
         productId: entry.productId,
@@ -305,7 +465,7 @@ async function buildCommerceAccessSnapshot(
   }
 }
 
-async function upsertSocialGlowzCommerceAccessEvent(
+async function upsertCommunityGlowsCommerceAccessEvent(
   ctx: MutationCtx,
   params: {
     globalUserDocId?: Id<'globalUsers'>
@@ -321,12 +481,12 @@ async function upsertSocialGlowzCommerceAccessEvent(
   }
 ) {
   return upsertCommerceAccessEvent(ctx, {
-    source: SOCIALGLOWZ_COMMERCE_EVENT_SOURCE,
+    source: COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE,
     eventType: params.eventType,
     sourceRef: params.sourceRef ?? params.idempotencyKey,
     idempotencyKey: params.idempotencyKey,
     environment: params.environment,
-    productId: SOCIALGLOWZ_PRODUCT_ID,
+    productId: COMMUNITYGLOWS_PRODUCT_ID,
     status: params.status,
     providerEventId: params.providerEventId ?? params.idempotencyKey,
     providerCustomerId: params.providerCustomerId,
@@ -343,9 +503,9 @@ function buildCommerceEventIdempotencyKey(
   providerOrderId: string
 ) {
   if (eventId) {
-    return `${SOCIALGLOWZ_COMMERCE_EVENT_SOURCE_PREFIX}:${provider}:${eventType}:${eventId}`
+    return `${COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE_PREFIX}:${provider}:${eventType}:${eventId}`
   }
-  return `${SOCIALGLOWZ_COMMERCE_EVENT_SOURCE_PREFIX}:${provider}:${eventType}:${providerOrderId}`
+  return `${COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE_PREFIX}:${provider}:${eventType}:${providerOrderId}`
 }
 
 function isSupportedCommerceStatus(status: string): status is 'paid' | 'refunded' | 'revoked' | 'pending_review' {
@@ -361,8 +521,8 @@ function isHigherPriorityStatus(
   incoming: string,
   existing: string
 ) {
-  const incomingPriority = SOCIALGLOWZ_COMMERCE_STATUS_PRIORITY[incoming] ?? 0
-  const existingPriority = SOCIALGLOWZ_COMMERCE_STATUS_PRIORITY[existing] ?? 0
+  const incomingPriority = COMMUNITYGLOWS_COMMERCE_STATUS_PRIORITY[incoming] ?? 0
+  const existingPriority = COMMUNITYGLOWS_COMMERCE_STATUS_PRIORITY[existing] ?? 0
   return incomingPriority >= existingPriority
 }
 
@@ -428,7 +588,7 @@ function normalizeActivationCode(code: string) {
   return code.trim().toUpperCase().replace(/\s+/g, '-')
 }
 
-async function findSocialGlowzGlobalUserByGlobalUserId(
+async function findCommunityGlowsGlobalUserByGlobalUserId(
   ctx: MutationCtx,
   globalUserId: string
 ) {
@@ -438,7 +598,7 @@ async function findSocialGlowzGlobalUserByGlobalUserId(
     .first()
 }
 
-async function findSocialGlowzIdentityByProvider(
+async function findCommunityGlowsIdentityByProvider(
   ctx: MutationCtx,
   provider: string,
   providerAccountId: string
@@ -451,7 +611,7 @@ async function findSocialGlowzIdentityByProvider(
     .first()
 }
 
-async function upsertSocialGlowzProviderIdentity(
+async function upsertCommunityGlowsProviderIdentity(
   ctx: MutationCtx,
   args: {
     provider: string
@@ -466,7 +626,7 @@ async function upsertSocialGlowzProviderIdentity(
   if (!args.providerAccountId) return
 
   const now = Date.now()
-  const identity = await findSocialGlowzIdentityByProvider(
+  const identity = await findCommunityGlowsIdentityByProvider(
     ctx,
     args.provider,
     args.providerAccountId
@@ -491,7 +651,7 @@ async function upsertSocialGlowzProviderIdentity(
     provider: args.provider,
     providerAccountId: args.providerAccountId,
     email: args.email,
-    source: args.source ?? SOCIALGLOWZ_COMMERCE_EVENT_SOURCE,
+    source: args.source ?? COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE,
     sourceRef: args.sourceRef,
     environment: args.environment,
     createdAt: now,
@@ -499,7 +659,7 @@ async function upsertSocialGlowzProviderIdentity(
   })
 }
 
-async function resolveVerifiedSocialGlowzGlobalUser(
+async function resolveVerifiedCommunityGlowsGlobalUser(
   ctx: MutationCtx,
   args: {
     globalUserId?: string
@@ -511,7 +671,7 @@ async function resolveVerifiedSocialGlowzGlobalUser(
   }
 ): Promise<{ globalUserDocId: Id<'globalUsers'> } | null> {
   if (args.globalUserId) {
-    const globalUserDoc = await findSocialGlowzGlobalUserByGlobalUserId(
+    const globalUserDoc = await findCommunityGlowsGlobalUserByGlobalUserId(
       ctx,
       args.globalUserId
     )
@@ -520,7 +680,7 @@ async function resolveVerifiedSocialGlowzGlobalUser(
     }
 
     if (args.provider && args.providerAccountId) {
-      await upsertSocialGlowzProviderIdentity(ctx, {
+      await upsertCommunityGlowsProviderIdentity(ctx, {
         ...(args as {
           provider: string
           providerAccountId: string
@@ -530,7 +690,7 @@ async function resolveVerifiedSocialGlowzGlobalUser(
           email?: string
         }),
         globalUserDocId: globalUserDoc._id,
-        source: `${SOCIALGLOWZ_COMMERCE_EVENT_SOURCE}:${args.provider}`,
+        source: `${COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE}:${args.provider}`,
       })
     }
 
@@ -538,7 +698,7 @@ async function resolveVerifiedSocialGlowzGlobalUser(
   }
 
   if (args.provider && args.providerAccountId) {
-    const identity = await findSocialGlowzIdentityByProvider(
+    const identity = await findCommunityGlowsIdentityByProvider(
       ctx,
       args.provider,
       args.providerAccountId
@@ -629,29 +789,29 @@ function sanitizeCommerceMetadata(
   return safe
 }
 
-function isAllowedSocialGlowzPlan(planId: string) {
-  return SOCIALGLOWZ_PLAN_ALLOWLIST.has(planId)
+function isAllowedCommunityGlowsPlan(planId: string) {
+  return COMMUNITYGLOWS_PLAN_ALLOWLIST.has(planId)
 }
 
-function isAllowedSocialGlowzSource(source: string) {
-  return SOCIALGLOWZ_SOURCE_ALLOWLIST.has(source)
+function isAllowedCommunityGlowsSource(source: string) {
+  return COMMUNITYGLOWS_SOURCE_ALLOWLIST.has(source)
 }
 
-function isSupportedSocialGlowzCommerceOffer(
+function isSupportedCommunityGlowsCommerceOffer(
   offerId: string,
   productId: string,
   plan: string
 ) {
   return (
-    offerId === 'socialglowz/lifetime_deal' &&
-    productId === SOCIALGLOWZ_PRODUCT_ID &&
-    isAllowedSocialGlowzPlan(plan)
+    offerId === 'communityglows/lifetime_deal' &&
+    productId === COMMUNITYGLOWS_PRODUCT_ID &&
+    isAllowedCommunityGlowsPlan(plan)
   )
 }
 
 function isAllowedSuiteCommercePlan(productId: string, planId: string) {
-  if (productId === SOCIALGLOWZ_PRODUCT_ID) {
-    return isAllowedSocialGlowzPlan(planId)
+  if (productId === COMMUNITYGLOWS_PRODUCT_ID) {
+    return isAllowedCommunityGlowsPlan(planId)
   }
   if (productId === COMMANDGLOWS_APP_PRODUCT_ID) {
     return COMMANDGLOWS_APP_PLAN_ALLOWLIST.has(planId)
@@ -664,7 +824,7 @@ function isSupportedSuiteCommerceOffer(
   productId: string,
   plan: string
 ) {
-  if (isSupportedSocialGlowzCommerceOffer(offerId, productId, plan)) {
+  if (isSupportedCommunityGlowsCommerceOffer(offerId, productId, plan)) {
     return true
   }
   if (productId !== COMMANDGLOWS_APP_PRODUCT_ID) {
@@ -687,7 +847,7 @@ function buildSuiteCommerceIdempotencyKey(eventType: string, eventKey: string) {
 
 function normalizeCommerceMetadataSource(value: string | undefined) {
   const normalized = value?.trim().toLowerCase() ?? 'direct'
-  return isAllowedSocialGlowzSource(normalized) ? normalized : 'direct'
+  return isAllowedCommunityGlowsSource(normalized) ? normalized : 'direct'
 }
 
 async function upsertSuiteCommerceEntitlement(
@@ -754,7 +914,7 @@ async function resolveVerifiedCommerceGlobalUser(
     sourceRef?: string
   }
 ): Promise<{ globalUserDocId: Id<'globalUsers'> } | null> {
-  return resolveVerifiedSocialGlowzGlobalUser(ctx, args)
+  return resolveVerifiedCommunityGlowsGlobalUser(ctx, args)
 }
 
 async function buildSuiteCommerceAccessSnapshot(
@@ -778,6 +938,7 @@ async function buildSuiteCommerceAccessSnapshot(
       status: entry.status,
       plan: entry.plan,
       source: entry.source,
+      expiresAt: entry.trialExpiresAt,
     })),
     productId
   )
@@ -824,7 +985,7 @@ async function upsertSuiteCommerceAccessEvent(
   })
 }
 
-async function getOrCreateSocialGlowzIdentity(
+async function getOrCreateCommunityGlowsIdentity(
   ctx: MutationCtx,
   args: {
     provider?: string
@@ -836,8 +997,8 @@ async function getOrCreateSocialGlowzIdentity(
   }
 ) {
   const now = Date.now()
-  const provider = args.provider ?? SOCIALGLOWZ_PROVIDER
-  const source = args.source ?? SOCIALGLOWZ_BRIDGE_SOURCE
+  const provider = args.provider ?? COMMUNITYGLOWS_PROVIDER
+  const source = args.source ?? COMMUNITYGLOWS_BRIDGE_SOURCE
   let identity = await ctx.db
     .query('identityAccounts')
     .withIndex('by_providerAccount', (q) =>
@@ -914,7 +1075,7 @@ async function getOrCreateSocialGlowzIdentity(
   return { identity, globalUserDocId: globalUser._id, globalUser }
 }
 
-async function upsertSocialGlowzAccessEvent(
+async function upsertCommunityGlowsAccessEvent(
   ctx: MutationCtx,
   params: {
     source: string
@@ -943,25 +1104,25 @@ async function upsertSocialGlowzAccessEvent(
     sourceRef: params.sourceRef,
     idempotencyKey: params.eventIdempotencyKey,
     environment: params.environment,
-    productId: SOCIALGLOWZ_PRODUCT_ID,
+    productId: COMMUNITYGLOWS_PRODUCT_ID,
     ...(params.globalUserDocId ? { globalUserId: params.globalUserDocId } : {}),
     status: params.status,
     createdAt: Date.now(),
   })
 }
 
-function buildSocialGlowzIdempotencyKey(...parts: Array<string>): string {
-  return `socialglowz:${parts.join(':')}`
+function buildCommunityGlowsIdempotencyKey(...parts: Array<string>): string {
+  return `communityglows:${parts.join(':')}`
 }
 
-async function revokeSocialGlowzEntitlementsByProviderId(ctx: MutationCtx, args: {
+async function revokeCommunityGlowsEntitlementsByProviderId(ctx: MutationCtx, args: {
   providerAccountId: string
   status: string
   sourceRef?: string
   environment: string
   reason?: string
 }) {
-  const { globalUserDocId, globalUser } = await getOrCreateSocialGlowzIdentity(ctx, {
+  const { globalUserDocId, globalUser } = await getOrCreateCommunityGlowsIdentity(ctx, {
     providerAccountId: args.providerAccountId,
     sourceRef: args.sourceRef,
     environment: args.environment,
@@ -974,13 +1135,13 @@ async function revokeSocialGlowzEntitlementsByProviderId(ctx: MutationCtx, args:
 
   const activeEntitlement = entitlements.find(
     (entry) =>
-      entry.productId === SOCIALGLOWZ_PRODUCT_ID &&
-      isActiveAccessStatus(entry.status)
+      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+      isActiveSuiteEntitlementWithExpiration(entry)
   )
 
   if (!activeEntitlement) {
     return {
-      ...resolveSocialGlowzAccess({
+      ...resolveCommunityGlowsAccess({
         globalUserId: globalUser.globalUserId,
         entitlements,
       }),
@@ -996,11 +1157,11 @@ async function revokeSocialGlowzEntitlementsByProviderId(ctx: MutationCtx, args:
     source: activeEntitlement.source,
   })
 
-  await upsertSocialGlowzAccessEvent(ctx, {
-    source: SOCIALGLOWZ_REVOKE_EVENT_SOURCE,
-    eventType: 'socialglowz_access.revoked',
+  await upsertCommunityGlowsAccessEvent(ctx, {
+    source: COMMUNITYGLOWS_REVOKE_EVENT_SOURCE,
+    eventType: 'communityglows_access.revoked',
     sourceRef: args.sourceRef,
-    eventIdempotencyKey: buildSocialGlowzIdempotencyKey(
+    eventIdempotencyKey: buildCommunityGlowsIdempotencyKey(
       'revoke',
       globalUser.globalUserId,
       activeEntitlement._id
@@ -1016,7 +1177,7 @@ async function revokeSocialGlowzEntitlementsByProviderId(ctx: MutationCtx, args:
     .collect()
 
   return {
-    ...resolveSocialGlowzAccess({
+    ...resolveCommunityGlowsAccess({
       globalUserId: globalUser.globalUserId,
       entitlements: nowEntitlements,
     }),
@@ -1025,29 +1186,29 @@ async function revokeSocialGlowzEntitlementsByProviderId(ctx: MutationCtx, args:
   }
 }
 
-async function runManualGrantSocialGlowzAccess(ctx: MutationCtx, args: {
+async function runManualGrantCommunityGlowsAccess(ctx: MutationCtx, args: {
   providerAccountId: string
   plan: string
   source: string
   sourceRef?: string
   environment: string
 }) {
-  if (!isAllowedSocialGlowzPlan(args.plan)) {
+  if (!isAllowedCommunityGlowsPlan(args.plan)) {
     throw new Error('plan_not_allowed')
   }
 
-  if (!isAllowedSocialGlowzSource(args.source)) {
+  if (!isAllowedCommunityGlowsSource(args.source)) {
     throw new Error('source_not_allowed')
   }
 
-  const { globalUserDocId, globalUser } = await getOrCreateSocialGlowzIdentity(ctx, {
+  const { globalUserDocId, globalUser } = await getOrCreateCommunityGlowsIdentity(ctx, {
     providerAccountId: args.providerAccountId,
     sourceRef: args.sourceRef,
     environment: args.environment,
   })
 
   const now = Date.now()
-  const idempotencyKey = buildSocialGlowzIdempotencyKey(
+  const idempotencyKey = buildCommunityGlowsIdempotencyKey(
     'manual',
     globalUser.globalUserId,
     args.plan,
@@ -1076,7 +1237,7 @@ async function runManualGrantSocialGlowzAccess(ctx: MutationCtx, args: {
       .collect()
 
     return {
-      ...resolveSocialGlowzAccess({
+      ...resolveCommunityGlowsAccess({
         globalUserId: globalUser.globalUserId,
         entitlements: rawEntitlements,
       }),
@@ -1087,7 +1248,7 @@ async function runManualGrantSocialGlowzAccess(ctx: MutationCtx, args: {
 
   await ctx.db.insert('productEntitlements', {
     globalUserId: globalUserDocId,
-    productId: SOCIALGLOWZ_PRODUCT_ID,
+    productId: COMMUNITYGLOWS_PRODUCT_ID,
     plan: args.plan,
     status: 'active',
     source: args.source,
@@ -1099,11 +1260,11 @@ async function runManualGrantSocialGlowzAccess(ctx: MutationCtx, args: {
     updatedAt: now,
   })
 
-  await upsertSocialGlowzAccessEvent(ctx, {
+  await upsertCommunityGlowsAccessEvent(ctx, {
     source: args.source,
-    eventType: 'socialglowz_access.granted',
+    eventType: 'communityglows_access.granted',
     sourceRef: args.sourceRef,
-    eventIdempotencyKey: buildSocialGlowzIdempotencyKey(
+    eventIdempotencyKey: buildCommunityGlowsIdempotencyKey(
       'manual_grant',
       globalUser.globalUserId,
       args.plan
@@ -1119,7 +1280,7 @@ async function runManualGrantSocialGlowzAccess(ctx: MutationCtx, args: {
     .collect()
 
   return {
-    ...resolveSocialGlowzAccess({
+    ...resolveCommunityGlowsAccess({
       globalUserId: globalUser.globalUserId,
       entitlements: rawEntitlements,
     }),
@@ -1128,32 +1289,143 @@ async function runManualGrantSocialGlowzAccess(ctx: MutationCtx, args: {
   }
 }
 
-function resolveSocialGlowzAccess(args: {
+function resolveCommunityGlowsAccess(args: {
   globalUserId: string
-  entitlements: { productId: string; status: string; plan: string; source: string }[]
+  entitlements: {
+    productId: string
+    status: string
+    plan: string
+    source: string
+    trialStartedAt?: number
+    trialExpiresAt?: number
+  }[]
+  now?: number
 }) {
-  const entitlement = selectPreferredActiveProductEntitlement(
-    args.entitlements,
-    SOCIALGLOWZ_PRODUCT_ID
+  const now = args.now ?? Date.now()
+  const activeEntitlements = args.entitlements.filter(
+    (entry) =>
+      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+      isActiveSuiteEntitlement(
+        { ...entry, expiresAt: entry.trialExpiresAt },
+        now
+      )
   )
+  const paidEntitlement = activeEntitlements.find(
+      (entry) => entry.status === 'active' && entry.source !== 'product_default'
+    )
+  const activeTrial = activeEntitlements.find((entry) => entry.status === 'trialing')
+  const expiredTrial = args.entitlements.find(
+    (entry) =>
+      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+      entry.status === 'trialing' &&
+      typeof entry.trialExpiresAt === 'number' &&
+      entry.trialExpiresAt <= now
+  )
+  const defaultActiveEntitlement = activeEntitlements.find(
+    (entry) => entry.status === 'active'
+  )
+  const entitlement = paidEntitlement ?? activeTrial ?? defaultActiveEntitlement
 
   if (!entitlement) {
+    if (expiredTrial) {
+      return {
+        hasAccess: false,
+        accessState: 'trial_expired' as const,
+        globalUserId: args.globalUserId,
+        planId: expiredTrial.plan,
+        source: expiredTrial.source,
+        trialStartedAt: expiredTrial.trialStartedAt ?? null,
+        trialEndsAt: expiredTrial.trialExpiresAt ?? null,
+        trialExpiresAt: expiredTrial.trialExpiresAt ?? null,
+        reasonCode: 'trial_expired' as const,
+      }
+    }
     return {
       hasAccess: false,
+      accessState: 'inactive' as const,
       globalUserId: args.globalUserId,
       planId: null,
       source: null,
+      trialStartedAt: null,
+      trialEndsAt: null,
+      trialExpiresAt: null,
       reasonCode: 'missing_product_entitlement' as const,
     }
   }
 
+  const isTrial = entitlement.status === 'trialing'
   return {
     hasAccess: true,
+    accessState: isTrial ? ('trial_active' as const) : ('lifetime_active' as const),
     globalUserId: args.globalUserId,
     planId: entitlement.plan,
     source: entitlement.source,
+    trialStartedAt: isTrial ? (entitlement.trialStartedAt ?? null) : null,
+    trialEndsAt: isTrial ? (entitlement.trialExpiresAt ?? null) : null,
+    trialExpiresAt: isTrial ? (entitlement.trialExpiresAt ?? null) : null,
     reasonCode: 'active_entitlement' as const,
   }
+}
+
+async function ensureCommunityGlowsTrialEntitlement(
+  ctx: MutationCtx,
+  args: {
+    globalUserDocId: Id<'globalUsers'>
+    globalUserPublicId: string
+    sourceRef: string
+    environment: string
+    now: number
+    entitlements: SuiteEntitlementLike[]
+  }
+) {
+  const hasPaidAccess = args.entitlements.some(
+    (entry) =>
+      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+      entry.status === 'active' &&
+      entry.source !== 'product_default' &&
+      entry.source !== COMMUNITYGLOWS_TRIAL_SOURCE
+  )
+  if (hasPaidAccess) return false
+
+  const idempotencyKey = `${COMMUNITYGLOWS_TRIAL_IDEMPOTENCY_PREFIX}:${args.globalUserPublicId}`
+  const existing = await ctx.db
+    .query('productEntitlements')
+    .withIndex('by_idempotencyKey', (q) =>
+      q.eq('idempotencyKey', idempotencyKey)
+    )
+    .first()
+  if (existing) return false
+
+  const trialExpiresAt = args.now + COMMUNITYGLOWS_TRIAL_DURATION_MS
+  await ctx.db.insert('productEntitlements', {
+    globalUserId: args.globalUserDocId,
+    productId: COMMUNITYGLOWS_PRODUCT_ID,
+    plan: COMMUNITYGLOWS_TRIAL_PLAN,
+    status: 'trialing',
+    source: COMMUNITYGLOWS_TRIAL_SOURCE,
+    sourceRef: args.sourceRef,
+    environment: args.environment,
+    idempotencyKey,
+    trialStartedAt: args.now,
+    trialExpiresAt,
+    trialAttempt: 1,
+    grantedAt: args.now,
+    createdAt: args.now,
+    updatedAt: args.now,
+  })
+
+  await ctx.db.insert('productAccessEvents', {
+    source: COMMUNITYGLOWS_TRIAL_SOURCE,
+    eventType: 'communityglows_trial.started',
+    sourceRef: args.sourceRef,
+    idempotencyKey,
+    environment: args.environment,
+    productId: COMMUNITYGLOWS_PRODUCT_ID,
+    globalUserId: args.globalUserDocId,
+    status: 'granted',
+    createdAt: args.now,
+  })
+  return true
 }
 
 function resolveTemuShoppingListsAccess(args: {
@@ -1315,13 +1587,43 @@ export const upsertFirebaseIdentity = mutation({
         .collect()
     }
 
+    await maybeStartCommandGlowsTrialEntitlement(ctx, {
+      globalUserDocId: identity.globalUserId,
+      globalUserPublicId: globalUser.globalUserId,
+      sourceRef: args.sourceRef ?? args.firebaseUid,
+      environment,
+      now,
+      forceRestart: false,
+      entitlements: rawEntitlements.map((entry) => ({
+        productId: entry.productId,
+        status: entry.status,
+        plan: entry.plan,
+        source: entry.source,
+        sourceRef: entry.sourceRef,
+        trialStartedAt: entry.trialStartedAt,
+        trialExpiresAt: entry.trialExpiresAt,
+        trialAttempt: entry.trialAttempt,
+      })),
+    })
+
+    rawEntitlements = await ctx.db
+      .query('productEntitlements')
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', identity.globalUserId)
+      )
+      .collect()
+
     const entitlements = rawEntitlements
       .filter((entry) => isAllowedSuiteProduct(entry.productId))
-      .filter((entry) => isActiveAccessStatus(entry.status))
+      .filter((entry) => isActiveSuiteEntitlementWithExpiration(entry))
       .map((entry) => ({
         productId: entry.productId,
         status: entry.status,
         plan: entry.plan,
+        source: entry.source,
+        sourceRef: entry.sourceRef,
+        trialStartedAt: entry.trialStartedAt,
+        trialExpiresAt: entry.trialExpiresAt,
       }))
 
     const replayGlowzProductUserId =
@@ -1392,11 +1694,15 @@ export const getEntitlementSnapshotByGlobalUser = query({
 
     const entitlements = rawEntitlements
       .filter((entry) => isAllowedSuiteProduct(entry.productId))
-      .filter((entry) => isActiveAccessStatus(entry.status))
+      .filter((entry) => isActiveSuiteEntitlementWithExpiration(entry))
       .map((entry) => ({
         productId: entry.productId,
         status: entry.status,
         plan: entry.plan,
+        source: entry.source,
+        sourceRef: entry.sourceRef,
+        trialStartedAt: entry.trialStartedAt,
+        trialExpiresAt: entry.trialExpiresAt,
       }))
 
     return {
@@ -1404,6 +1710,72 @@ export const getEntitlementSnapshotByGlobalUser = query({
       globalUserId: globalUser.globalUserId,
       firebaseUids,
       entitlements,
+    }
+  },
+})
+
+export const restartCommandGlowsTrialByGlobalUserId = mutation({
+  args: {
+    globalUserId: v.string(),
+    bridgeSecret: v.string(),
+    sourceRef: v.optional(v.string()),
+    forceRestart: v.optional(v.boolean()),
+    environment: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+
+    const globalUser = await ctx.db
+      .query('globalUsers')
+      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', args.globalUserId))
+      .first()
+
+    if (!globalUser) {
+      throw new Error('global_user_not_found')
+    }
+
+    const now = Date.now()
+    const environment = args.environment ?? 'production'
+    const rawEntitlements = await ctx.db
+      .query('productEntitlements')
+      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
+      .collect()
+    const trialCount = countCommandGlowsTrials(
+      rawEntitlements.map((entry) => ({
+        productId: entry.productId,
+        status: entry.status,
+        source: entry.source,
+        trialAttempt: entry.trialAttempt,
+        trialStartedAt: entry.trialStartedAt,
+        trialExpiresAt: entry.trialExpiresAt,
+      }))
+    )
+
+    const didStartTrial = await maybeStartCommandGlowsTrialEntitlement(ctx, {
+      globalUserDocId: globalUser._id,
+      globalUserPublicId: globalUser.globalUserId,
+      sourceRef: args.sourceRef ?? globalUser.globalUserId,
+      environment,
+      now,
+      forceRestart: args.forceRestart ?? true,
+      entitlements: rawEntitlements.map((entry) => ({
+        productId: entry.productId,
+        status: entry.status,
+        plan: entry.plan,
+        source: entry.source,
+        sourceRef: entry.sourceRef,
+        trialStartedAt: entry.trialStartedAt,
+        trialExpiresAt: entry.trialExpiresAt,
+        trialAttempt: entry.trialAttempt,
+      })),
+    })
+
+    return {
+      status: didStartTrial ? 'trial_started' : 'trial_not_started',
+      globalUserId: globalUser.globalUserId,
+      activeTrialCount: trialCount,
+      nextTrialCount: didStartTrial ? trialCount + 1 : trialCount,
+      canRetry: (didStartTrial ? trialCount + 1 : trialCount) < COMMANDGLOWS_TRIAL_MAX_CYCLES,
     }
   },
 })
@@ -1603,7 +1975,7 @@ export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
   },
 })
 
-export const ensureSocialGlowzEntitlementSnapshotByProviderAccount = mutation({
+export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount = mutation({
   args: {
     providerAccountId: v.string(),
     email: v.optional(v.string()),
@@ -1620,7 +1992,7 @@ export const ensureSocialGlowzEntitlementSnapshotByProviderAccount = mutation({
       throw new Error('provider_account_id_required')
     }
 
-    const { globalUser, globalUserDocId } = await getOrCreateSocialGlowzIdentity(
+    const { globalUser, globalUserDocId } = await getOrCreateCommunityGlowsIdentity(
       ctx,
       {
         providerAccountId,
@@ -1635,18 +2007,20 @@ export const ensureSocialGlowzEntitlementSnapshotByProviderAccount = mutation({
       .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUserDocId))
       .collect()
 
-    const didEnsureDefaultFreeEntitlement =
-      await ensureMissingDefaultFreeEntitlements(ctx, {
-        rawEntitlements,
-        productIds: [SOCIALGLOWZ_PRODUCT_ID],
+    const now = Date.now()
+    const didEnsureTrialEntitlement = await ensureCommunityGlowsTrialEntitlement(
+      ctx,
+      {
+        entitlements: rawEntitlements,
         globalUserDocId,
         globalUserPublicId: globalUser.globalUserId,
         sourceRef: args.sourceRef ?? providerAccountId,
         environment,
-        now: Date.now(),
-      })
+        now,
+      }
+    )
 
-    if (didEnsureDefaultFreeEntitlement) {
+    if (didEnsureTrialEntitlement) {
       rawEntitlements = await ctx.db
         .query('productEntitlements')
         .withIndex('by_globalUserId', (q) =>
@@ -1655,9 +2029,10 @@ export const ensureSocialGlowzEntitlementSnapshotByProviderAccount = mutation({
         .collect()
     }
 
-    return resolveSocialGlowzAccess({
+    return resolveCommunityGlowsAccess({
       globalUserId: globalUser.globalUserId,
       entitlements: rawEntitlements,
+      now,
     })
   },
 })
@@ -1679,7 +2054,7 @@ export const ensureTemuShoppingListsEntitlementSnapshotByProviderAccount = mutat
       throw new Error('provider_account_id_required')
     }
 
-    const { globalUser, globalUserDocId } = await getOrCreateSocialGlowzIdentity(
+    const { globalUser, globalUserDocId } = await getOrCreateCommunityGlowsIdentity(
       ctx,
       {
         provider: TEMU_SHOPPING_LISTS_PROVIDER,
@@ -1723,7 +2098,7 @@ export const ensureTemuShoppingListsEntitlementSnapshotByProviderAccount = mutat
   },
 })
 
-export const upsertSocialGlowzActivationCode = mutation({
+export const upsertCommunityGlowsActivationCode = mutation({
   args: {
     bridgeSecret: v.string(),
     code: v.string(),
@@ -1742,18 +2117,18 @@ export const upsertSocialGlowzActivationCode = mutation({
     }
 
     const plan = args.plan ?? 'lifetime_deal'
-    if (!isAllowedSocialGlowzPlan(plan)) {
+    if (!isAllowedCommunityGlowsPlan(plan)) {
       throw new Error('plan_not_allowed')
     }
 
     const source = args.source ?? 'manual'
-    if (!isAllowedSocialGlowzSource(source)) {
+    if (!isAllowedCommunityGlowsSource(source)) {
       throw new Error('source_not_allowed')
     }
 
     const now = Date.now()
     const environment = args.environment ?? 'production'
-    const idempotencyKey = `socialglowz_code:${codeNormalized}`
+    const idempotencyKey = `communityglows_code:${codeNormalized}`
     const existing = await ctx.db
       .query('productActivationCodes')
       .withIndex('by_codeNormalized', (q) => q.eq('codeNormalized', codeNormalized))
@@ -1765,7 +2140,7 @@ export const upsertSocialGlowzActivationCode = mutation({
 
     const payload = withoutUndefined({
       codeNormalized,
-      productId: SOCIALGLOWZ_PRODUCT_ID,
+      productId: COMMUNITYGLOWS_PRODUCT_ID,
       plan,
       source,
       status: args.status ?? 'available',
@@ -1789,7 +2164,7 @@ export const upsertSocialGlowzActivationCode = mutation({
   },
 })
 
-export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
+export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
   args: {
     providerAccountId: v.string(),
     email: v.optional(v.string()),
@@ -1812,7 +2187,7 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
     }
 
     const environment = args.environment ?? 'production'
-    const { globalUser, globalUserDocId } = await getOrCreateSocialGlowzIdentity(
+    const { globalUser, globalUserDocId } = await getOrCreateCommunityGlowsIdentity(
       ctx,
       {
         providerAccountId,
@@ -1829,13 +2204,13 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
     if (!codeDoc) {
       throw new Error('code_not_found')
     }
-    if (codeDoc.productId !== SOCIALGLOWZ_PRODUCT_ID) {
+    if (codeDoc.productId !== COMMUNITYGLOWS_PRODUCT_ID) {
       throw new Error('product_not_allowed')
     }
-    if (!isAllowedSocialGlowzPlan(codeDoc.plan)) {
+    if (!isAllowedCommunityGlowsPlan(codeDoc.plan)) {
       throw new Error('plan_not_allowed')
     }
-    if (!isAllowedSocialGlowzSource(codeDoc.source)) {
+    if (!isAllowedCommunityGlowsSource(codeDoc.source)) {
       throw new Error('source_not_allowed')
     }
     if (codeDoc.status === 'disabled') {
@@ -1849,7 +2224,7 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
       throw new Error('code_already_used')
     }
 
-    const entitlementIdempotencyKey = `socialglowz_redeem:${globalUser.globalUserId}:${codeNormalized}`
+    const entitlementIdempotencyKey = `communityglows_redeem:${globalUser.globalUserId}:${codeNormalized}`
     const existingEntitlement = await ctx.db
       .query('productEntitlements')
       .withIndex('by_idempotencyKey', (q) =>
@@ -1861,7 +2236,7 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
     if (!existingEntitlement) {
       entitlementId = await ctx.db.insert('productEntitlements', {
         globalUserId: globalUserDocId,
-        productId: SOCIALGLOWZ_PRODUCT_ID,
+        productId: COMMUNITYGLOWS_PRODUCT_ID,
         plan: codeDoc.plan,
         status: 'active',
         source: codeDoc.source,
@@ -1874,7 +2249,7 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
       })
     } else {
       await ctx.db.patch(existingEntitlement._id, {
-        productId: SOCIALGLOWZ_PRODUCT_ID,
+        productId: COMMUNITYGLOWS_PRODUCT_ID,
         plan: codeDoc.plan,
         status: 'active',
         source: codeDoc.source,
@@ -1895,7 +2270,7 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
       })
     }
 
-    const accessEventIdempotencyKey = `socialglowz_redeem_event:${globalUser.globalUserId}:${codeNormalized}`
+    const accessEventIdempotencyKey = `communityglows_redeem_event:${globalUser.globalUserId}:${codeNormalized}`
     const existingEvent = await ctx.db
       .query('productAccessEvents')
       .withIndex('by_idempotencyKey', (q) =>
@@ -1910,7 +2285,7 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
         sourceRef: args.sourceRef ?? codeDoc.sourceRef ?? codeDoc.codeNormalized,
         idempotencyKey: accessEventIdempotencyKey,
         environment,
-        productId: SOCIALGLOWZ_PRODUCT_ID,
+        productId: COMMUNITYGLOWS_PRODUCT_ID,
         globalUserId: globalUserDocId,
         status: 'granted',
         createdAt: now,
@@ -1923,7 +2298,7 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
       .collect()
 
     return {
-      ...resolveSocialGlowzAccess({
+      ...resolveCommunityGlowsAccess({
         globalUserId: globalUser.globalUserId,
         entitlements: rawEntitlements,
       }),
@@ -1933,7 +2308,7 @@ export const redeemSocialGlowzActivationCodeByProviderAccount = mutation({
   },
 })
 
-export const disableSocialGlowzActivationCode = mutation({
+export const disableCommunityGlowsActivationCode = mutation({
   args: {
     code: v.string(),
     bridgeSecret: v.string(),
@@ -1967,7 +2342,7 @@ export const disableSocialGlowzActivationCode = mutation({
       }
     }
 
-    if (existing.productId !== SOCIALGLOWZ_PRODUCT_ID) {
+    if (existing.productId !== COMMUNITYGLOWS_PRODUCT_ID) {
       throw new Error('product_not_allowed')
     }
 
@@ -1977,11 +2352,11 @@ export const disableSocialGlowzActivationCode = mutation({
       sourceRef: args.sourceRef ?? existing.sourceRef,
     })
 
-    await upsertSocialGlowzAccessEvent(ctx, {
-      source: SOCIALGLOWZ_ACCESS_EVENT_SOURCE,
+    await upsertCommunityGlowsAccessEvent(ctx, {
+      source: COMMUNITYGLOWS_ACCESS_EVENT_SOURCE,
       eventType: 'activation_code.disabled',
       sourceRef: args.sourceRef ?? existing.sourceRef,
-      eventIdempotencyKey: buildSocialGlowzIdempotencyKey(
+      eventIdempotencyKey: buildCommunityGlowsIdempotencyKey(
         'disable_code',
         codeNormalized
       ),
@@ -1998,7 +2373,7 @@ export const disableSocialGlowzActivationCode = mutation({
   },
 })
 
-export const manualGrantSocialGlowzAccess = mutation({
+export const manualGrantCommunityGlowsAccess = mutation({
   args: {
     providerAccountId: v.string(),
     plan: v.string(),
@@ -2014,7 +2389,7 @@ export const manualGrantSocialGlowzAccess = mutation({
       throw new Error('provider_account_id_required')
     }
 
-    return runManualGrantSocialGlowzAccess(ctx, {
+    return runManualGrantCommunityGlowsAccess(ctx, {
       providerAccountId,
       plan: args.plan,
       source: args.source ?? 'manual',
@@ -2024,7 +2399,7 @@ export const manualGrantSocialGlowzAccess = mutation({
   },
 })
 
-export const revokeSocialGlowzAccessByProviderAccount = mutation({
+export const revokeCommunityGlowsAccessByProviderAccount = mutation({
   args: {
     providerAccountId: v.string(),
     reason: v.optional(v.string()),
@@ -2041,7 +2416,7 @@ export const revokeSocialGlowzAccessByProviderAccount = mutation({
 
     const environment = args.environment ?? 'production'
 
-    const result = await revokeSocialGlowzEntitlementsByProviderId(ctx, {
+    const result = await revokeCommunityGlowsEntitlementsByProviderId(ctx, {
       providerAccountId,
       status: 'revoked',
       sourceRef: args.sourceRef,
@@ -2056,7 +2431,7 @@ export const revokeSocialGlowzAccessByProviderAccount = mutation({
   },
 })
 
-export const refundSocialGlowzAccessByProviderAccount = mutation({
+export const refundCommunityGlowsAccessByProviderAccount = mutation({
   args: {
     providerAccountId: v.string(),
     reason: v.optional(v.string()),
@@ -2073,7 +2448,7 @@ export const refundSocialGlowzAccessByProviderAccount = mutation({
 
     const environment = args.environment ?? 'production'
 
-    const result = await revokeSocialGlowzEntitlementsByProviderId(ctx, {
+    const result = await revokeCommunityGlowsEntitlementsByProviderId(ctx, {
       providerAccountId,
       status: 'refunded',
       sourceRef: args.sourceRef,
@@ -2309,7 +2684,7 @@ export const processCommerceEvent = mutation({
     const activeEntitlement = rawEntitlements.find(
       (entry) =>
         entry.productId === args.productId &&
-        isActiveAccessStatus(entry.status)
+        isActiveSuiteEntitlementWithExpiration(entry)
     )
 
     if (activeEntitlement) {
@@ -2354,7 +2729,7 @@ export const processCommerceEvent = mutation({
   },
 })
 
-export const processSocialGlowzCommerceEvent = mutation({
+export const processCommunityGlowsCommerceEvent = mutation({
   args: {
     provider: v.string(),
     offerId: v.string(),
@@ -2386,7 +2761,7 @@ export const processSocialGlowzCommerceEvent = mutation({
     const incomingEnvironment = normalizeCommerceEnvironment(args.environment)
     const runtimeEnvironment = resolveRuntimeBridgeEnvironment()
 
-    const sourceRef = buildSocialGlowzCommerceSourceRef({
+    const sourceRef = buildCommunityGlowsCommerceSourceRef({
       sourceRef: args.sourceRef,
       providerOrderId: args.providerOrderId,
       providerSourceRef: args.providerSourceRef,
@@ -2394,12 +2769,12 @@ export const processSocialGlowzCommerceEvent = mutation({
 
     const metadataSource = normalizeCommerceMetadataSource(args.metadata?.source)
     if (!isAllowedCommerceEnvironment(incomingEnvironment, runtimeEnvironment)) {
-      await upsertSocialGlowzCommerceAccessEvent(ctx, {
+      await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: runtimeEnvironment,
         sourceRef,
         idempotencyKey: args.idempotencyKey,
         status: 'pending_review',
-        eventType: 'socialglowz_commerce.environment_mismatch',
+        eventType: 'communityglows_commerce.environment_mismatch',
         customerEmail: args.customerEmail,
         providerCustomerId: args.providerCustomerId,
         providerEventId: args.providerEventId,
@@ -2413,13 +2788,13 @@ export const processSocialGlowzCommerceEvent = mutation({
       }
     }
 
-    if (!isSupportedSocialGlowzCommerceOffer(args.offerId, args.productId, args.plan)) {
-      await upsertSocialGlowzCommerceAccessEvent(ctx, {
+    if (!isSupportedCommunityGlowsCommerceOffer(args.offerId, args.productId, args.plan)) {
+      await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: incomingEnvironment,
         sourceRef,
         idempotencyKey: args.idempotencyKey,
         status: 'pending_review',
-        eventType: 'socialglowz_commerce.unsupported_offer',
+        eventType: 'communityglows_commerce.unsupported_offer',
         customerEmail: args.customerEmail,
         providerCustomerId: args.providerCustomerId,
         providerEventId: args.providerEventId,
@@ -2434,12 +2809,12 @@ export const processSocialGlowzCommerceEvent = mutation({
     }
 
     if (args.status === 'ignored') {
-      await upsertSocialGlowzCommerceAccessEvent(ctx, {
+      await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: incomingEnvironment,
         sourceRef,
         idempotencyKey: args.idempotencyKey,
         status: 'ignored',
-        eventType: 'socialglowz_commerce.ignored',
+        eventType: 'communityglows_commerce.ignored',
         customerEmail: args.customerEmail,
         providerCustomerId: args.providerCustomerId,
         providerEventId: args.providerEventId,
@@ -2466,7 +2841,7 @@ export const processSocialGlowzCommerceEvent = mutation({
       }
     }
 
-    const resolvedByProvided = await resolveVerifiedSocialGlowzGlobalUser(ctx, {
+    const resolvedByProvided = await resolveVerifiedCommunityGlowsGlobalUser(ctx, {
       globalUserId: args.globalUserId,
       provider: args.provider,
       providerAccountId: args.providerCustomerId,
@@ -2480,12 +2855,12 @@ export const processSocialGlowzCommerceEvent = mutation({
 
     if (args.eventType === 'paid') {
       if (!globalUserDocId) {
-        await upsertSocialGlowzCommerceAccessEvent(ctx, {
+        await upsertCommunityGlowsCommerceAccessEvent(ctx, {
           environment: incomingEnvironment,
           sourceRef,
           idempotencyKey: args.idempotencyKey,
           status: 'pending_review',
-          eventType: 'socialglowz_commerce.pending_review',
+          eventType: 'communityglows_commerce.pending_review',
           customerEmail: args.customerEmail,
           providerCustomerId: args.providerCustomerId,
           providerEventId: args.providerEventId,
@@ -2499,29 +2874,29 @@ export const processSocialGlowzCommerceEvent = mutation({
         }
       }
 
-      await upsertSocialGlowzCommerceEntitlement(ctx, {
+      await upsertCommunityGlowsCommerceEntitlement(ctx, {
         globalUserDocId,
         plan: args.plan,
         source: metadataSource,
         sourceRef,
         environment: incomingEnvironment,
-        idempotencyKey: buildSocialGlowzIdempotencyKey(
+        idempotencyKey: buildCommunityGlowsIdempotencyKey(
           'commerce',
           args.providerOrderId,
           metadataSource
         ),
       })
 
-      const accessEventId = buildSocialGlowzIdempotencyKey(
+      const accessEventId = buildCommunityGlowsIdempotencyKey(
         'commerce_access',
         args.providerOrderId
       )
-      await upsertSocialGlowzCommerceAccessEvent(ctx, {
+      await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: incomingEnvironment,
         sourceRef,
         idempotencyKey: accessEventId,
         status: 'granted',
-        eventType: 'socialglowz_access.granted',
+        eventType: 'communityglows_access.granted',
         customerEmail: args.customerEmail,
         providerCustomerId: args.providerCustomerId,
         providerEventId: args.providerEventId,
@@ -2539,12 +2914,12 @@ export const processSocialGlowzCommerceEvent = mutation({
     }
 
     if (!globalUserDocId) {
-      await upsertSocialGlowzCommerceAccessEvent(ctx, {
+      await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: incomingEnvironment,
         sourceRef,
         idempotencyKey: args.idempotencyKey,
         status: 'pending_review',
-        eventType: 'socialglowz_commerce.pending_review',
+        eventType: 'communityglows_commerce.pending_review',
         customerEmail: args.customerEmail,
         providerCustomerId: args.providerCustomerId,
         providerEventId: args.providerEventId,
@@ -2566,14 +2941,14 @@ export const processSocialGlowzCommerceEvent = mutation({
 
     const activeEntitlement = rawEntitlements.find(
       (entry) =>
-        entry.productId === SOCIALGLOWZ_PRODUCT_ID &&
-        isActiveAccessStatus(entry.status)
+        entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+        isActiveSuiteEntitlementWithExpiration(entry)
     )
 
     if (activeEntitlement) {
       await ctx.db.patch(activeEntitlement._id, {
         status: 'revoked',
-        source: activeEntitlement.source ?? SOCIALGLOWZ_COMMERCE_GRANT_SOURCE,
+        source: activeEntitlement.source ?? COMMUNITYGLOWS_COMMERCE_GRANT_SOURCE,
         sourceRef,
         environment: incomingEnvironment,
         updatedAt: now,
@@ -2581,15 +2956,15 @@ export const processSocialGlowzCommerceEvent = mutation({
     }
 
     const snapshot = await buildCommerceAccessSnapshot(ctx, globalUserDocId)
-    await upsertSocialGlowzCommerceAccessEvent(ctx, {
+    await upsertCommunityGlowsCommerceAccessEvent(ctx, {
       environment: incomingEnvironment,
       sourceRef,
       idempotencyKey: args.idempotencyKey,
       status: 'revoked',
       eventType:
         args.eventType === 'revoked'
-          ? 'socialglowz_access.revoked'
-          : 'socialglowz_access.refunded',
+          ? 'communityglows_access.revoked'
+          : 'communityglows_access.refunded',
       customerEmail: args.customerEmail,
       providerCustomerId: args.providerCustomerId,
       providerEventId: args.providerEventId,

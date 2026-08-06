@@ -101,7 +101,7 @@ commandglows_site/
 - `/api/commerce/webhooks/lemon-squeezy` — Lemon Squeezy webhook for normalized LTD commerce events
 - `/api/bridge/firebase` — Firebase ID token bridge to suite identity snapshot
 - `/api/bridge/sync` — internal entitlement mirror sync by `globalUserId` + shared secret
-- `/api/bridge/socialglowz` — SocialGlowz server-to-server entitlement snapshot and activation-code redemption bridge
+- `/api/bridge/communityglows` — CommunityGlows server-to-server entitlement snapshot and activation-code redemption bridge
 
 ## Environment Variables
 
@@ -137,18 +137,18 @@ The bridge also writes a server-owned Firestore mirror at `suiteAccess/{firebase
 
 `POST /api/bridge/entitlement` verifies ReplayGlowz Clerk sessions server-side. A recognized Clerk account without active ReplayGlowz access receives a persisted `replayglowz/free` default entitlement for that product only; this does not unlock other CommandGlows suite products.
 
-`POST /api/bridge/socialglowz` accepts:
+`POST /api/bridge/communityglows` accepts:
 
-- header `x-socialglowz-suite-secret` with a dedicated shared secret;
+- header `x-communityglows-suite-secret` with a dedicated shared secret;
 - JSON body with `operation` (`snapshot`, `redeem_code`, or `commerce`), plus
   operation-specific fields:
   - `snapshot` and `redeem_code` require `providerAccountId`,
   - `commerce` requires provider/offer/product/plan/event and identity context (`provider`, `offerId`, `productId`, `plan`, `eventType`, `environment`, `providerEventId`, `providerOrderId`, `idempotencyKey`, `status`).
 
-The route calls suite Convex bridge mutations for `socialglowz` entitlement snapshot, activation-code redemption, and commerce fulfillment without merging identities by email alone.
+The route calls suite Convex bridge mutations for `communityglows` entitlement snapshot, activation-code redemption, and commerce fulfillment without merging identities by email alone.
 
-- `SOCIALGLOWZ_SUITE_BRIDGE_SECRET` (preferred dedicated secret)
-- `SUITE_SOCIALGLOWZ_BRIDGE_SECRET` (legacy/alternate key accepted as fallback)
+- `COMMUNITYGLOWS_SUITE_BRIDGE_SECRET` (preferred dedicated secret)
+- `SUITE_COMMUNITYGLOWS_BRIDGE_SECRET` (legacy/alternate key accepted as fallback)
 
 ### Clerk
 
@@ -170,8 +170,8 @@ The route calls suite Convex bridge mutations for `socialglowz` entitlement snap
 - `LEMONSQUEEZY_API_KEY`
 - `LEMONSQUEEZY_API_URL` (default: `https://api.lemonsqueezy.com`)
 - `LEMONSQUEEZY_STORE_ID`
-- `LEMONSQUEEZY_SOCIALGLOWZ_PRODUCT_ID`
-- `LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID`
+- `LEMONSQUEEZY_COMMUNITYGLOWS_PRODUCT_ID`
+- `LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID`
 - `LEMONSQUEEZY_COMMANDGLOWS_APP_PRODUCT_ID`
 - `LEMONSQUEEZY_COMMANDGLOWS_APP_STARTER_FOUNDER_VARIANT_ID`
 - `LEMONSQUEEZY_COMMANDGLOWS_APP_PRO_FOUNDER_VARIANT_ID`

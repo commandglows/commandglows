@@ -37,6 +37,10 @@ type BridgeSnapshot = {
     productId: string;
     status: string;
     plan?: string | null;
+    source?: string | null;
+    sourceRef?: string | null;
+    trialStartedAt?: number | null;
+    trialExpiresAt?: number | null;
   }>;
   replayGlowzProductUserId: string | null;
   replayGlowzProductUserIdSource: ReplayGlowzProductUserIdSource | null;
@@ -48,6 +52,18 @@ function isNonEmptyString(value: unknown): value is string {
 
 function parseNullableString(value: unknown): string | null {
   return isNonEmptyString(value) ? value.trim() : null;
+}
+
+function parseEpochMs(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  const text = parseNullableString(value);
+  if (!text) {
+    return null;
+  }
+  const parsed = Number.parseInt(text, 10);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function parseReplayGlowzJwtSource(
@@ -87,6 +103,10 @@ function parseBridgeEntitlements(value: unknown): {
   productId: string;
   status: string;
   plan?: string | null;
+  source?: string | null;
+  sourceRef?: string | null;
+  trialStartedAt?: number | null;
+  trialExpiresAt?: number | null;
 }[] {
   if (!Array.isArray(value)) {
     return [];
@@ -99,11 +119,26 @@ function parseBridgeEntitlements(value: unknown): {
         productId?: unknown;
         status?: unknown;
         plan?: unknown;
+        source?: unknown;
+        sourceRef?: unknown;
+        trialStartedAt?: unknown;
+        trialExpiresAt?: unknown;
       };
+      const trialStartedAt =
+        parseEpochMs(raw.trialStartedAt)
+      const trialExpiresAt =
+        parseEpochMs(raw.trialExpiresAt)
+
       return {
         productId: parseNullableString(raw.productId) ?? "",
         status: parseNullableString(raw.status) ?? "",
         plan: parseNullableString(raw.plan),
+        source: parseNullableString(raw.source),
+        sourceRef: parseNullableString(raw.sourceRef),
+        trialStartedAt:
+          trialStartedAt,
+        trialExpiresAt:
+          trialExpiresAt,
       };
     })
     .filter((entry) => entry.productId && entry.status);

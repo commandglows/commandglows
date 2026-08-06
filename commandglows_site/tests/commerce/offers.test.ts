@@ -2,10 +2,10 @@ import {
   getCommerceOffer,
   getOfferProviderConfig,
   getOfferProviderCandidates,
-  isAllowedSocialGlowzOffer,
+  isAllowedCommunityGlowsOffer,
   normalizeCommerceProviderOrder,
-  SOCIALGLOWZ_LTD_OFFER_ID,
-  SOCIALGLOWZ_LETTER,
+  COMMUNITYGLOWS_LTD_OFFER_ID,
+  COMMUNITYGLOWS_LETTER,
   COMMANDGLOWS_APP_COMMAND_LTD_OFFER_ID,
   COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID,
   COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID,
@@ -23,28 +23,28 @@ function withEnv(vars: Record<string, string | undefined>, test: () => void) {
 }
 
 describe('commerce offer configuration', () => {
-  test('returns socialglowz offer config and allowlist', () => {
-    const offer = getCommerceOffer(SOCIALGLOWZ_LTD_OFFER_ID)
+  test('returns communityglows offer config and allowlist', () => {
+    const offer = getCommerceOffer(COMMUNITYGLOWS_LTD_OFFER_ID)
     expect(offer).toMatchObject({
-      id: SOCIALGLOWZ_LTD_OFFER_ID,
-      productId: 'socialglowz',
+      id: COMMUNITYGLOWS_LTD_OFFER_ID,
+      productId: 'communityglows',
       plan: 'lifetime_deal',
     })
 
-    expect(isAllowedSocialGlowzOffer(SOCIALGLOWZ_LTD_OFFER_ID, 'socialglowz', 'lifetime_deal')).toBe(
+    expect(isAllowedCommunityGlowsOffer(COMMUNITYGLOWS_LTD_OFFER_ID, 'communityglows', 'lifetime_deal')).toBe(
       true
     )
-    expect(isAllowedSocialGlowzOffer(SOCIALGLOWZ_LTD_OFFER_ID, 'socialglowz', 'monthly')).toBe(
+    expect(isAllowedCommunityGlowsOffer(COMMUNITYGLOWS_LTD_OFFER_ID, 'communityglows', 'monthly')).toBe(
       false
     )
   })
 
   test('normalizes provider order to configured providers', () => {
-    const candidates = normalizeCommerceProviderOrder(SOCIALGLOWZ_LTD_OFFER_ID)
+    const candidates = normalizeCommerceProviderOrder(COMMUNITYGLOWS_LTD_OFFER_ID)
     expect(candidates.includes('lemonsqueezy')).toBe(true)
     expect(candidates.includes('polar')).toBe(true)
 
-    const allowed = getOfferProviderCandidates(SOCIALGLOWZ_LTD_OFFER_ID)
+    const allowed = getOfferProviderCandidates(COMMUNITYGLOWS_LTD_OFFER_ID)
     expect(allowed).toEqual(candidates)
   })
 
@@ -76,14 +76,14 @@ describe('commerce offer configuration', () => {
       {
         LEMONSQUEEZY_API_KEY: 'api-key-123',
         LEMONSQUEEZY_STORE_ID: 'store-456',
-        LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID: 'variant-789',
+        LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID: 'variant-789',
         LEMONSQUEEZY_COMMANDGLOWS_APP_PRODUCT_ID: 'commandglows-product',
         LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID: 'commandglows-power-variant',
         POLAR_COMMANDGLOWS_PRODUCT_ID: 'polar-commandglows',
       },
       () => {
         const lemonConfig = getOfferProviderConfig(
-          SOCIALGLOWZ_LTD_OFFER_ID,
+          COMMUNITYGLOWS_LTD_OFFER_ID,
           'lemonsqueezy'
         )
         expect(lemonConfig).toEqual({
@@ -94,7 +94,7 @@ describe('commerce offer configuration', () => {
         })
 
         const polarConfig = getOfferProviderConfig(
-          SOCIALGLOWZ_LTD_OFFER_ID,
+          COMMUNITYGLOWS_LTD_OFFER_ID,
           'polar'
         )
         expect(polarConfig).toEqual({
@@ -118,12 +118,12 @@ describe('commerce offer configuration', () => {
 
   test('returns no provider config without required env', () => {
     withEnv({}, () => {
-      expect(getOfferProviderConfig(SOCIALGLOWZ_LTD_OFFER_ID, 'lemonsqueezy')).toBeNull()
-      expect(getOfferProviderConfig(SOCIALGLOWZ_LTD_OFFER_ID, 'polar')).toBeNull()
+      expect(getOfferProviderConfig(COMMUNITYGLOWS_LTD_OFFER_ID, 'lemonsqueezy')).toBeNull()
+      expect(getOfferProviderConfig(COMMUNITYGLOWS_LTD_OFFER_ID, 'polar')).toBeNull()
     })
   })
 
   test('keeps legacy aliases accessible for source/plan metadata', () => {
-    expect(SOCIALGLOWZ_LETTER).toBe(SOCIALGLOWZ_LTD_OFFER_ID)
+    expect(COMMUNITYGLOWS_LETTER).toBe(COMMUNITYGLOWS_LTD_OFFER_ID)
   })
 })

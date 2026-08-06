@@ -3,22 +3,22 @@ import { ConvexHttpClient } from 'convex/browser'
 import { getServerEnv } from '@/lib/serverEnv'
 import {
   getConvexBridgeSecret,
-  getSocialGlowzBridgeSecret,
+  getCommunityGlowsBridgeSecret,
 } from '@/lib/suiteBridge'
 
 export const prerender = false
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
-const SOCIAL_BRIDGE_SECRET_HEADER = 'x-socialglowz-suite-secret'
+const COMMUNITY_BRIDGE_SECRET_HEADER = 'x-communityglows-suite-secret'
 
-type SocialGlowzSnapshotRequest = {
+type CommunityGlowsSnapshotRequest = {
   operation: 'snapshot'
   providerAccountId: string
   email?: string
   sourceRef?: string
 }
 
-type SocialGlowzRedeemRequest = {
+type CommunityGlowsRedeemRequest = {
   operation: 'redeem_code'
   providerAccountId: string
   code: string
@@ -26,7 +26,7 @@ type SocialGlowzRedeemRequest = {
   sourceRef?: string
 }
 
-type SocialGlowzManualGrantRequest = {
+type CommunityGlowsManualGrantRequest = {
   operation: 'manual_grant'
   providerAccountId: string
   plan: string
@@ -35,7 +35,7 @@ type SocialGlowzManualGrantRequest = {
   sourceRef?: string
 }
 
-type SocialGlowzRevokeRequest = {
+type CommunityGlowsRevokeRequest = {
   operation: 'revoke'
   providerAccountId: string
   reason?: string
@@ -43,7 +43,7 @@ type SocialGlowzRevokeRequest = {
   sourceRef?: string
 }
 
-type SocialGlowzRefundRequest = {
+type CommunityGlowsRefundRequest = {
   operation: 'refund'
   providerAccountId: string
   reason?: string
@@ -51,7 +51,7 @@ type SocialGlowzRefundRequest = {
   sourceRef?: string
 }
 
-type SocialGlowzUpsertCodeRequest = {
+type CommunityGlowsUpsertCodeRequest = {
   operation: 'upsert_code'
   code: string
   plan: string
@@ -60,13 +60,13 @@ type SocialGlowzUpsertCodeRequest = {
   sourceRef?: string
 }
 
-type SocialGlowzDisableCodeRequest = {
+type CommunityGlowsDisableCodeRequest = {
   operation: 'disable_code'
   code: string
   sourceRef?: string
 }
 
-type SocialGlowzCommerceRequest = {
+type CommunityGlowsCommerceRequest = {
   operation: 'commerce'
   provider: string
   offerId: string
@@ -87,15 +87,15 @@ type SocialGlowzCommerceRequest = {
   metadata?: Record<string, string>
 }
 
-type SocialGlowzBridgeRequest =
-  | SocialGlowzSnapshotRequest
-  | SocialGlowzRedeemRequest
-  | SocialGlowzManualGrantRequest
-  | SocialGlowzRevokeRequest
-  | SocialGlowzRefundRequest
-  | SocialGlowzUpsertCodeRequest
-  | SocialGlowzDisableCodeRequest
-  | SocialGlowzCommerceRequest
+type CommunityGlowsBridgeRequest =
+  | CommunityGlowsSnapshotRequest
+  | CommunityGlowsRedeemRequest
+  | CommunityGlowsManualGrantRequest
+  | CommunityGlowsRevokeRequest
+  | CommunityGlowsRefundRequest
+  | CommunityGlowsUpsertCodeRequest
+  | CommunityGlowsDisableCodeRequest
+  | CommunityGlowsCommerceRequest
 
 function jsonResponse(payload: Record<string, unknown>, status: number) {
   return new Response(JSON.stringify(payload), { status, headers: JSON_HEADERS })
@@ -107,9 +107,9 @@ function asNonEmptyString(value: unknown): string | null {
   return trimmed ? trimmed : null
 }
 
-function parseSocialGlowzRequest(
+function parseCommunityGlowsRequest(
   body: unknown
-): SocialGlowzBridgeRequest | null {
+): CommunityGlowsBridgeRequest | null {
   if (!body || typeof body !== 'object') {
     return null
   }
@@ -343,21 +343,22 @@ function mapBridgeError(error: unknown): string {
 
 export const POST: APIRoute = async ({ request }) => {
   const env = getServerEnv()
-  const endpointSecret = getSocialGlowzBridgeSecret(env)
+  const endpointSecret = getCommunityGlowsBridgeSecret(env)
   const convexBridgeSecret = getConvexBridgeSecret(env)
   const convexUrl = env.PUBLIC_CONVEX_URL
 
   if (!endpointSecret || !convexBridgeSecret) {
     return jsonResponse(
-      { status: 'unavailable', error: 'socialglowz_bridge_not_configured' },
+      { status: 'unavailable', error: 'communityglows_bridge_not_configured' },
       503
     )
   }
 
-  const incomingSecret = request.headers.get(SOCIAL_BRIDGE_SECRET_HEADER)
+  const incomingSecret =
+    request.headers.get(COMMUNITY_BRIDGE_SECRET_HEADER)
   if (!incomingSecret || incomingSecret !== endpointSecret) {
     return jsonResponse(
-      { status: 'unauthorized', error: 'invalid_socialglowz_bridge_secret' },
+      { status: 'unauthorized', error: 'invalid_communityglows_bridge_secret' },
       401
     )
   }
@@ -376,7 +377,7 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ status: 'bad_request', error: 'invalid_json' }, 400)
   }
 
-  const parsed = parseSocialGlowzRequest(body)
+  const parsed = parseCommunityGlowsRequest(body)
   if (!parsed) {
     return jsonResponse({ status: 'bad_request', error: 'invalid_payload' }, 400)
   }
@@ -387,7 +388,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     if (parsed.operation === 'snapshot') {
       const snapshot = await convex.mutation(
-        'bridge:ensureSocialGlowzEntitlementSnapshotByProviderAccount' as never,
+        'bridge:ensureCommunityGlowsEntitlementSnapshotByProviderAccount' as never,
         {
           providerAccountId: parsed.providerAccountId,
           email: parsed.email,
@@ -401,7 +402,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (parsed.operation === 'manual_grant') {
       const result = await convex.mutation(
-        'bridge:manualGrantSocialGlowzAccess' as never,
+        'bridge:manualGrantCommunityGlowsAccess' as never,
         {
           providerAccountId: parsed.providerAccountId,
           plan: parsed.plan,
@@ -416,7 +417,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (parsed.operation === 'revoke') {
       const result = await convex.mutation(
-        'bridge:revokeSocialGlowzAccessByProviderAccount' as never,
+        'bridge:revokeCommunityGlowsAccessByProviderAccount' as never,
         {
           providerAccountId: parsed.providerAccountId,
           reason: parsed.reason,
@@ -430,7 +431,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (parsed.operation === 'refund') {
       const result = await convex.mutation(
-        'bridge:refundSocialGlowzAccessByProviderAccount' as never,
+        'bridge:refundCommunityGlowsAccessByProviderAccount' as never,
         {
           providerAccountId: parsed.providerAccountId,
           reason: parsed.reason,
@@ -444,7 +445,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (parsed.operation === 'commerce') {
       const result = await convex.mutation(
-        'bridge:processSocialGlowzCommerceEvent' as never,
+        'bridge:processCommunityGlowsCommerceEvent' as never,
         {
           provider: parsed.provider,
           offerId: parsed.offerId,
@@ -471,7 +472,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (parsed.operation === 'disable_code') {
       const result = await convex.mutation(
-        'bridge:disableSocialGlowzActivationCode' as never,
+        'bridge:disableCommunityGlowsActivationCode' as never,
         {
           code: parsed.code,
           sourceRef: parsed.sourceRef,
@@ -483,7 +484,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     if (parsed.operation === 'upsert_code') {
-      const result = await convex.mutation('bridge:upsertSocialGlowzActivationCode' as never, {
+      const result = await convex.mutation('bridge:upsertCommunityGlowsActivationCode' as never, {
         code: parsed.code,
         plan: parsed.plan,
         source: parsed.source,
@@ -496,7 +497,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const redemption = await convex.mutation(
-      'bridge:redeemSocialGlowzActivationCodeByProviderAccount' as never,
+      'bridge:redeemCommunityGlowsActivationCodeByProviderAccount' as never,
       {
         providerAccountId: parsed.providerAccountId,
         email: parsed.email,

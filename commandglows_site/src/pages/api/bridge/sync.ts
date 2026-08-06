@@ -84,7 +84,15 @@ export const POST: APIRoute = async ({ request }) => {
 
     const firebaseUids = (snapshot as { firebaseUids: string[] }).firebaseUids;
     const entitlements = (snapshot as {
-      entitlements: { productId: string; status: string; plan?: string | null }[];
+      entitlements: {
+        productId: string;
+        status: string;
+        plan?: string | null;
+        source?: string | null;
+        sourceRef?: string | null;
+        trialStartedAt?: number | null;
+        trialExpiresAt?: number | null;
+      }[];
     }).entitlements;
 
     for (const firebaseUid of firebaseUids) {

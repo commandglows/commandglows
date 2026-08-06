@@ -26,12 +26,6 @@ enum ProductEntitlementStatus {
   pendingReview,
 }
 
-extension ProductEntitlementStatusAccess on ProductEntitlementStatus {
-  bool get grantsAccess =>
-      this == ProductEntitlementStatus.active ||
-      this == ProductEntitlementStatus.trialing;
-}
-
 class ProductEntitlement {
   const ProductEntitlement({
     required this.productId,
@@ -40,6 +34,8 @@ class ProductEntitlement {
     this.source,
     this.sourceRef,
     this.environment,
+    this.trialStartedAt,
+    this.trialExpiresAt,
     this.updatedAt,
   });
 
@@ -49,7 +45,21 @@ class ProductEntitlement {
   final String? source;
   final String? sourceRef;
   final String? environment;
+  final DateTime? trialStartedAt;
+  final DateTime? trialExpiresAt;
   final DateTime? updatedAt;
 
-  bool get grantsAccess => status.grantsAccess;
+  bool get grantsAccess {
+    if (status == ProductEntitlementStatus.active) {
+      return true;
+    }
+    if (status == ProductEntitlementStatus.trialing) {
+      final expiresAt = trialExpiresAt;
+      if (expiresAt == null) {
+        return false;
+      }
+      return expiresAt.isAfter(DateTime.now().toUtc());
+    }
+    return false;
+  }
 }

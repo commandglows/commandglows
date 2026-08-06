@@ -7,21 +7,21 @@ import {
   getBearerTokenFromAuthorizationHeader,
   getReplayGlowzProductJwtAudience,
   getReplayGlowzProductJwtIssuer,
-  getSocialGlowzBridgeSecret,
+  getCommunityGlowsBridgeSecret,
   getTemuShoppingListsBridgeSecret,
   getSuiteEntitlementVerifySecret,
   getReplayGlowzProductTokenJwks,
   hasActiveEntitlement,
   isActiveAccessStatus,
-  isAllowedSocialGlowzPlan,
-  isAllowedSocialGlowzSource,
+  isAllowedCommunityGlowsPlan,
+  isAllowedCommunityGlowsSource,
   isAllowedSuiteProduct,
   normalizeSuiteProductId,
   isTrustedFirebaseIdTokenClaims,
   parseSyncRequestBody,
   maskProviderAccountId,
   resolveReplayGlowzEntitlementSnapshot,
-  resolveSocialGlowzEntitlementSnapshot,
+  resolveCommunityGlowsEntitlementSnapshot,
 } from '@/lib/suiteBridge'
 import { createPublicKey, generateKeyPairSync } from 'node:crypto'
 
@@ -112,7 +112,7 @@ describe('suiteBridge helpers', () => {
     expect(isAllowedSuiteProduct('shipglowz')).toBe(true)
     expect(normalizeSuiteProductId('shipglowz')).toBe('shipglows')
     expect(isAllowedSuiteProduct('replayglowz')).toBe(true)
-    expect(isAllowedSuiteProduct('socialglowz')).toBe(true)
+    expect(isAllowedSuiteProduct('communityglows')).toBe(true)
     expect(isAllowedSuiteProduct('temu_shopping_lists')).toBe(true)
     expect(isAllowedSuiteProduct('commandglows_android')).toBe(false)
     expect(isAllowedSuiteProduct('old_youtube_product')).toBe(false)
@@ -127,7 +127,7 @@ describe('suiteBridge helpers', () => {
       'contentglowz',
       'shipglows',
       'replayglowz',
-      'socialglowz',
+      'communityglows',
       'temu_shopping_lists',
     ])
   })
@@ -264,20 +264,20 @@ describe('suiteBridge helpers', () => {
     ).toBeNull()
   })
 
-  test('resolves socialglowz bridge secret from dedicated env keys', () => {
+  test('resolves communityglows bridge secret from dedicated env keys', () => {
     expect(
-      getSocialGlowzBridgeSecret({
-        SOCIALGLOWZ_SUITE_BRIDGE_SECRET: 'social-bridge-secret',
+      getCommunityGlowsBridgeSecret({
+        COMMUNITYGLOWS_SUITE_BRIDGE_SECRET: 'social-bridge-secret',
       })
     ).toBe('social-bridge-secret')
     expect(
-      getSocialGlowzBridgeSecret({
-        SUITE_SOCIALGLOWZ_BRIDGE_SECRET: 'suite-social-secret',
+      getCommunityGlowsBridgeSecret({
+        SUITE_COMMUNITYGLOWS_BRIDGE_SECRET: 'suite-social-secret',
       })
     ).toBe('suite-social-secret')
     expect(
-      getSocialGlowzBridgeSecret({
-        SOCIALGLOWZ_SUITE_BRIDGE_SECRET: '  ',
+      getCommunityGlowsBridgeSecret({
+        COMMUNITYGLOWS_SUITE_BRIDGE_SECRET: '  ',
       })
     ).toBeNull()
   })
@@ -300,25 +300,25 @@ describe('suiteBridge helpers', () => {
     ).toBeNull()
   })
 
-  test('allows only allowlisted socialglowz plan/source values', () => {
-    expect(isAllowedSocialGlowzPlan('free')).toBe(true)
-    expect(isAllowedSocialGlowzPlan('lifetime_deal')).toBe(true)
-    expect(isAllowedSocialGlowzPlan('founder_ltd')).toBe(true)
-    expect(isAllowedSocialGlowzPlan('monthly')).toBe(false)
+  test('allows only allowlisted communityglows plan/source values', () => {
+    expect(isAllowedCommunityGlowsPlan('free')).toBe(true)
+    expect(isAllowedCommunityGlowsPlan('lifetime_deal')).toBe(true)
+    expect(isAllowedCommunityGlowsPlan('founder_ltd')).toBe(true)
+    expect(isAllowedCommunityGlowsPlan('monthly')).toBe(false)
 
-    expect(isAllowedSocialGlowzSource('product_default')).toBe(true)
-    expect(isAllowedSocialGlowzSource('manual')).toBe(true)
-    expect(isAllowedSocialGlowzSource('direct')).toBe(true)
-    expect(isAllowedSocialGlowzSource('stripe')).toBe(false)
+    expect(isAllowedCommunityGlowsSource('product_default')).toBe(true)
+    expect(isAllowedCommunityGlowsSource('manual')).toBe(true)
+    expect(isAllowedCommunityGlowsSource('direct')).toBe(true)
+    expect(isAllowedCommunityGlowsSource('stripe')).toBe(false)
   })
 
-  test('resolves socialglowz snapshot from canonical entitlement', () => {
+  test('resolves communityglows snapshot from canonical entitlement', () => {
     expect(
-      resolveSocialGlowzEntitlementSnapshot({
+      resolveCommunityGlowsEntitlementSnapshot({
         globalUserId: 'gu_123',
         entitlements: [
           {
-            productId: 'socialglowz',
+            productId: 'communityglows',
             status: 'active',
             plan: 'lifetime_deal',
             source: 'manual',
@@ -327,20 +327,24 @@ describe('suiteBridge helpers', () => {
       })
     ).toEqual({
       hasAccess: true,
+      accessState: 'lifetime_active',
       planId: 'lifetime_deal',
       source: 'manual',
       globalUserId: 'gu_123',
+      trialStartedAt: null,
+      trialEndsAt: null,
+      trialExpiresAt: null,
       reasonCode: 'active_entitlement',
     })
   })
 
-  test('resolves socialglowz free access and prefers paid metadata', () => {
+  test('resolves communityglows free access and prefers paid metadata', () => {
     expect(
-      resolveSocialGlowzEntitlementSnapshot({
+      resolveCommunityGlowsEntitlementSnapshot({
         globalUserId: 'gu_123',
         entitlements: [
           {
-            productId: 'socialglowz',
+            productId: 'communityglows',
             status: 'active',
             plan: 'free',
             source: 'product_default',
@@ -349,24 +353,28 @@ describe('suiteBridge helpers', () => {
       })
     ).toEqual({
       hasAccess: true,
+      accessState: 'lifetime_active',
       planId: 'free',
       source: 'product_default',
       globalUserId: 'gu_123',
+      trialStartedAt: null,
+      trialEndsAt: null,
+      trialExpiresAt: null,
       reasonCode: 'active_entitlement',
     })
 
     expect(
-      resolveSocialGlowzEntitlementSnapshot({
+      resolveCommunityGlowsEntitlementSnapshot({
         globalUserId: 'gu_123',
         entitlements: [
           {
-            productId: 'socialglowz',
+            productId: 'communityglows',
             status: 'active',
             plan: 'free',
             source: 'product_default',
           },
           {
-            productId: 'socialglowz',
+            productId: 'communityglows',
             status: 'active',
             plan: 'lifetime_deal',
             source: 'manual',
@@ -375,10 +383,99 @@ describe('suiteBridge helpers', () => {
       })
     ).toEqual({
       hasAccess: true,
+      accessState: 'lifetime_active',
       planId: 'lifetime_deal',
       source: 'manual',
       globalUserId: 'gu_123',
+      trialStartedAt: null,
+      trialEndsAt: null,
+      trialExpiresAt: null,
       reasonCode: 'active_entitlement',
+    })
+  })
+
+  test('returns compatible trial fields and prefers a trial over default free access', () => {
+    const trialStartedAt = 1_800_000_000_000
+    const trialExpiresAt = trialStartedAt + 30 * 24 * 60 * 60 * 1000
+
+    expect(
+      resolveCommunityGlowsEntitlementSnapshot({
+        globalUserId: 'gu_trial',
+        now: trialStartedAt,
+        entitlements: [
+          {
+            productId: 'communityglows',
+            status: 'active',
+            plan: 'free',
+            source: 'product_default',
+          },
+          {
+            productId: 'communityglows',
+            status: 'trialing',
+            plan: 'free',
+            source: 'product_trial',
+            trialStartedAt,
+            trialExpiresAt,
+          },
+        ],
+      })
+    ).toEqual({
+      hasAccess: true,
+      accessState: 'trial_active',
+      planId: 'free',
+      source: 'product_trial',
+      globalUserId: 'gu_trial',
+      trialStartedAt,
+      trialEndsAt: trialExpiresAt,
+      trialExpiresAt,
+      reasonCode: 'active_entitlement',
+    })
+  })
+
+  test('returns an expired trial and lets paid access take precedence', () => {
+    const trialStartedAt = 1_700_000_000_000
+    const trialExpiresAt = trialStartedAt + 30 * 24 * 60 * 60 * 1000
+    const expired = {
+      productId: 'communityglows',
+      status: 'trialing',
+      plan: 'free',
+      source: 'product_trial',
+      trialStartedAt,
+      trialExpiresAt,
+    }
+
+    expect(
+      resolveCommunityGlowsEntitlementSnapshot({
+        globalUserId: 'gu_trial',
+        now: trialExpiresAt,
+        entitlements: [expired],
+      })
+    ).toMatchObject({
+      hasAccess: false,
+      accessState: 'trial_expired',
+      trialEndsAt: trialExpiresAt,
+      reasonCode: 'trial_expired',
+    })
+
+    expect(
+      resolveCommunityGlowsEntitlementSnapshot({
+        globalUserId: 'gu_trial',
+        now: trialExpiresAt,
+        entitlements: [
+          expired,
+          {
+            productId: 'communityglows',
+            status: 'active',
+            plan: 'lifetime_deal',
+            source: 'direct',
+          },
+        ],
+      })
+    ).toMatchObject({
+      hasAccess: true,
+      accessState: 'lifetime_active',
+      planId: 'lifetime_deal',
+      trialEndsAt: null,
     })
   })
 

@@ -253,6 +253,12 @@ class SuiteIdentityBridgeClient {
               _parseNonEmptyString(normalized['sourceRef']) ??
               _parseNonEmptyString(normalized['source_ref']),
           environment: _parseNonEmptyString(normalized['environment']),
+          trialStartedAt: _parseDateTime(
+            normalized['trialStartedAt'] ?? normalized['trial_started_at'],
+          ),
+          trialExpiresAt: _parseDateTime(
+            normalized['trialExpiresAt'] ?? normalized['trial_expires_at'],
+          ),
           updatedAt: _parseDateTime(
             _parseNonEmptyString(normalized['updatedAt']) ??
                 _parseNonEmptyString(normalized['updated_at']),
@@ -285,8 +291,14 @@ class SuiteIdentityBridgeClient {
     }
   }
 
-  DateTime? _parseDateTime(String? value) {
+  DateTime? _parseDateTime(Object? value) {
     if (value == null) {
+      return null;
+    }
+    if (value is num) {
+      return DateTime.fromMillisecondsSinceEpoch(value.toInt(), isUtc: true);
+    }
+    if (value is! String) {
       return null;
     }
     return DateTime.tryParse(value)?.toUtc();

@@ -34,6 +34,9 @@ export default defineSchema({
     environment: v.string(),
     idempotencyKey: v.string(),
     grantedAt: v.optional(v.number()),
+    trialStartedAt: v.optional(v.number()),
+    trialExpiresAt: v.optional(v.number()),
+    trialAttempt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_globalUserId", ["globalUserId"])

@@ -42,7 +42,7 @@ describe('lemonsqueezy adapter', () => {
       getLemonSqueezyCheckoutConfig({
         LEMONSQUEEZY_API_KEY: 'api-key',
         LEMONSQUEEZY_STORE_ID: 'store-id',
-        LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID: 'variant-id',
+        LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID: 'variant-id',
         LEMONSQUEEZY_API_URL: 'https://api.lemonsqueezy.test',
       })
     ).toEqual({
@@ -74,16 +74,16 @@ describe('lemonsqueezy adapter', () => {
   test('fails checkout if config is missing', async () => {
     const result = await createLemonSqueezyCheckout(
       {
-        offerId: 'socialglowz/lifetime_deal',
+        offerId: 'communityglows/lifetime_deal',
         successUrl: 'https://example.com/success',
         cancelUrl: 'https://example.com/cancel',
         metadata: {
-          offer_id: 'socialglowz/lifetime_deal',
-          product_id: 'socialglowz',
+          offer_id: 'communityglows/lifetime_deal',
+          product_id: 'communityglows',
           plan: 'lifetime_deal',
         },
       },
-      'socialglowz/lifetime_deal',
+      'communityglows/lifetime_deal',
       {}
     )
 
@@ -107,21 +107,21 @@ describe('lemonsqueezy adapter', () => {
       {
         LEMONSQUEEZY_API_KEY: 'api-key',
         LEMONSQUEEZY_STORE_ID: 'store-id',
-        LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID: 'variant-id',
+        LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID: 'variant-id',
       },
       () =>
         createLemonSqueezyCheckout(
           {
-            offerId: 'socialglowz/lifetime_deal',
-            successUrl: 'https://socialglowz.com/purchase/success',
-            cancelUrl: 'https://socialglowz.com/purchase/cancel',
-            metadata: { offer_id: 'socialglowz/lifetime_deal' },
+            offerId: 'communityglows/lifetime_deal',
+            successUrl: 'https://communityglows.com/purchase/success',
+            cancelUrl: 'https://communityglows.com/purchase/cancel',
+            metadata: { offer_id: 'communityglows/lifetime_deal' },
           },
-          'socialglowz/lifetime_deal',
+          'communityglows/lifetime_deal',
           {
             LEMONSQUEEZY_API_KEY: 'api-key',
             LEMONSQUEEZY_STORE_ID: 'store-id',
-            LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID: 'variant-id',
+            LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID: 'variant-id',
           }
         )
     )
@@ -138,7 +138,7 @@ describe('lemonsqueezy adapter', () => {
       'https://api.lemonsqueezy.com/v1/checkouts',
       expect.objectContaining({
         method: 'POST',
-        body: expect.stringContaining('"product_options":{"redirect_url":"https://socialglowz.com/purchase/success"}'),
+        body: expect.stringContaining('"product_options":{"redirect_url":"https://communityglows.com/purchase/success"}'),
       })
     )
     expect((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[1]?.body).not.toContain('success_url')
@@ -201,8 +201,8 @@ describe('lemonsqueezy adapter', () => {
       event_id: 'evt_123',
       meta: {
         custom_data: {
-          offer_id: 'socialglowz/lifetime_deal',
-          product_id: 'socialglowz',
+          offer_id: 'communityglows/lifetime_deal',
+          product_id: 'communityglows',
           plan: 'lifetime_deal',
           source: 'direct',
           source_ref: 'src_1',
@@ -229,8 +229,8 @@ describe('lemonsqueezy adapter', () => {
     expect(parsed.normalizedEvent).toMatchObject({
       provider: 'lemonsqueezy',
       eventType: 'paid',
-      offerId: 'socialglowz/lifetime_deal',
-      productId: 'socialglowz',
+      offerId: 'communityglows/lifetime_deal',
+      productId: 'communityglows',
       plan: 'lifetime_deal',
       environment: 'sandbox',
       providerOrderId: 'ord_123',
@@ -254,7 +254,7 @@ describe('lemonsqueezy adapter', () => {
     expect(parsed.reason).toBe('invalid_signature')
   })
 
-  test('marks signed webhooks without SocialGlowz custom data as pending review', async () => {
+  test('marks signed webhooks without CommunityGlows custom data as pending review', async () => {
     const rawBody = JSON.stringify({
       data: {
         id: 'ord_other',
@@ -305,8 +305,8 @@ describe('lemonsqueezy adapter', () => {
       event_name: 'order_refunded',
       meta: {
         custom_data: {
-          offer_id: 'socialglowz/lifetime_deal',
-          product_id: 'socialglowz',
+          offer_id: 'communityglows/lifetime_deal',
+          product_id: 'communityglows',
           plan: 'lifetime_deal',
           source: 'direct',
           source_ref: 'src_refunded',
@@ -397,8 +397,8 @@ describe('lemonsqueezy adapter', () => {
       event_name: 'order_created',
       meta: {
         custom_data: {
-          offer_id: 'socialglowz/lifetime_deal',
-          product_id: 'socialglowz',
+          offer_id: 'communityglows/lifetime_deal',
+          product_id: 'communityglows',
           plan: 'lifetime_deal',
         },
       },

@@ -9,15 +9,15 @@ import type {
 
 import { getServerEnv } from "../serverEnv"
 
-const SOCIALGLOWZ_OFFER_ID = "socialglowz/lifetime_deal"
-const SOCIALGLOWZ_PRODUCT_ID = "socialglowz"
-const SOCIALGLOWZ_PLAN = "lifetime_deal"
+const COMMUNITYGLOWS_OFFER_ID = "communityglows/lifetime_deal"
+const COMMUNITYGLOWS_PRODUCT_ID = "communityglows"
+const COMMUNITYGLOWS_PLAN = "lifetime_deal"
 const COMMANDGLOWS_APP_PRODUCT_ID = "commandglows_app"
 const COMMANDGLOWS_APP_FOCUS_OFFER_ID = "commandglows_app/focus"
 const COMMANDGLOWS_APP_POWER_OFFER_ID = "commandglows_app/power"
 const COMMANDGLOWS_APP_CONTROL_OFFER_ID = "commandglows_app/control"
 const COMMANDGLOWS_APP_COMMAND_OFFER_ID = "commandglows_app/command"
-const SOCIALGLOWZ_SOURCES = [
+const COMMUNITYGLOWS_SOURCES = [
   "direct",
   "partner",
   "appsumo",
@@ -33,15 +33,15 @@ const COMMANDGLOWS_APP_SOURCES = [
 ] as const
 
 const OFFER_BY_ID: Record<CommerceOfferId, CommerceOffer> = {
-  [SOCIALGLOWZ_OFFER_ID]: {
-    id: SOCIALGLOWZ_OFFER_ID,
-    productId: SOCIALGLOWZ_PRODUCT_ID,
-    plan: SOCIALGLOWZ_PLAN,
-    sources: SOCIALGLOWZ_SOURCES,
+  [COMMUNITYGLOWS_OFFER_ID]: {
+    id: COMMUNITYGLOWS_OFFER_ID,
+    productId: COMMUNITYGLOWS_PRODUCT_ID,
+    plan: COMMUNITYGLOWS_PLAN,
+    sources: COMMUNITYGLOWS_SOURCES,
     providers: ["lemonsqueezy", "polar"],
     successPath: "/purchase/success",
     cancelPath: "/purchase/cancel",
-    description: "SocialGlowz Lifetime Deal, direct checkout",
+    description: "CommunityGlows Lifetime Deal, direct checkout",
   },
   [COMMANDGLOWS_APP_FOCUS_OFFER_ID]: {
     id: COMMANDGLOWS_APP_FOCUS_OFFER_ID,
@@ -85,8 +85,8 @@ const OFFER_BY_ID: Record<CommerceOfferId, CommerceOffer> = {
   },
 } as const
 
-export const SOCIALGLOWZ_LETTER = SOCIALGLOWZ_OFFER_ID
-export const SOCIALGLOWZ_LTD_OFFER_ID = SOCIALGLOWZ_OFFER_ID
+export const COMMUNITYGLOWS_LETTER = COMMUNITYGLOWS_OFFER_ID
+export const COMMUNITYGLOWS_LTD_OFFER_ID = COMMUNITYGLOWS_OFFER_ID
 export const COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID = COMMANDGLOWS_APP_FOCUS_OFFER_ID
 export const COMMANDGLOWS_APP_POWER_LTD_OFFER_ID = COMMANDGLOWS_APP_POWER_OFFER_ID
 export const COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID = COMMANDGLOWS_APP_CONTROL_OFFER_ID
@@ -100,21 +100,21 @@ export function getCommerceOffer(offerId: string): CommerceOffer | null {
   return OFFER_BY_ID[offerId as CommerceOfferId] ?? null
 }
 
-export function isAllowedSocialGlowzOffer(
+export function isAllowedCommunityGlowsOffer(
   offerId: string,
   productId: string,
   plan: string
 ): boolean {
   return (
-    offerId === SOCIALGLOWZ_OFFER_ID &&
-    productId === SOCIALGLOWZ_PRODUCT_ID &&
-    plan === SOCIALGLOWZ_PLAN
+    offerId === COMMUNITYGLOWS_OFFER_ID &&
+    productId === COMMUNITYGLOWS_PRODUCT_ID &&
+    plan === COMMUNITYGLOWS_PLAN
   )
 }
 
 function getLemonSqueezyVariantEnvKey(offerId: string): string | null {
-  if (offerId === SOCIALGLOWZ_OFFER_ID) {
-    return "LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID"
+  if (offerId === COMMUNITYGLOWS_OFFER_ID) {
+    return "LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID"
   }
   if (offerId === COMMANDGLOWS_APP_FOCUS_OFFER_ID) {
     return "LEMONSQUEEZY_COMMANDGLOWS_APP_FOCUS_VARIANT_ID"
@@ -132,8 +132,8 @@ function getLemonSqueezyVariantEnvKey(offerId: string): string | null {
 }
 
 function getLemonSqueezyProductEnvKey(offerId: string): string | null {
-  if (offerId === SOCIALGLOWZ_OFFER_ID) {
-    return "LEMONSQUEEZY_SOCIALGLOWZ_PRODUCT_ID"
+  if (offerId === COMMUNITYGLOWS_OFFER_ID) {
+    return "LEMONSQUEEZY_COMMUNITYGLOWS_PRODUCT_ID"
   }
   if (
     offerId === COMMANDGLOWS_APP_FOCUS_OFFER_ID ||
@@ -248,10 +248,10 @@ export function normalizeCommerceProviderOrder(
   return ordered.filter((candidate) => allowed.includes(candidate))
 }
 
-export function getSocialGlowzCommerceOfferId(): CommerceOfferId {
-  return SOCIALGLOWZ_OFFER_ID
+export function getCommunityGlowsCommerceOfferId(): CommerceOfferId {
+  return COMMUNITYGLOWS_OFFER_ID
 }
 
-export function getSocialGlowzDefaultPlan(): string {
-  return SOCIALGLOWZ_PLAN
+export function getCommunityGlowsDefaultPlan(): string {
+  return COMMUNITYGLOWS_PLAN
 }

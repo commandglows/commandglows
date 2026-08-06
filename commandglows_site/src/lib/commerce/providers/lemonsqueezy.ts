@@ -303,7 +303,7 @@ function coerceCheckoutUrl(payload: unknown): string | null {
 
 export function getLemonSqueezyCheckoutConfig(
   env: LemonSqueezyEnv,
-  offerId = "socialglowz/lifetime_deal"
+  offerId = "communityglows/lifetime_deal"
 ): LemonSqueezyCheckoutConfig | null {
   const apiKey = toNonEmptyString(env.LEMONSQUEEZY_API_KEY)
   const storeId = toNonEmptyString(env.LEMONSQUEEZY_STORE_ID)
@@ -327,8 +327,8 @@ function resolveLemonSqueezyVariantId(
   env: LemonSqueezyEnv,
   offerId: string
 ): string | undefined {
-  if (offerId === "socialglowz/lifetime_deal") {
-    return env.LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID
+  if (offerId === "communityglows/lifetime_deal") {
+    return env.LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID
   }
   if (offerId === "commandglows_app/focus") {
     return env.LEMONSQUEEZY_COMMANDGLOWS_APP_FOCUS_VARIANT_ID

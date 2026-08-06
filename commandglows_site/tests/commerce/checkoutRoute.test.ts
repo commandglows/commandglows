@@ -7,7 +7,7 @@ const ORIGINAL_ENV = { ...process.env }
 function resetCommerceEnv() {
   delete process.env.LEMONSQUEEZY_API_KEY
   delete process.env.LEMONSQUEEZY_STORE_ID
-  delete process.env.LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID
+  delete process.env.LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID
   delete process.env.LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID
   delete process.env.LEMONSQUEEZY_API_URL
   delete process.env.POLAR_COMMANDGLOWS_PRODUCT_ID
@@ -26,7 +26,7 @@ afterEach(() => {
 })
 
 describe('commerce checkout route', () => {
-  test('rejects missing offerId instead of falling back to SocialGlowz', async () => {
+  test('rejects missing offerId instead of falling back to CommunityGlows', async () => {
     resetCommerceEnv()
 
     const response = await GET({
@@ -44,7 +44,7 @@ describe('commerce checkout route', () => {
 
     const response = await GET({
       request: checkoutRequest(
-        'https://commandglows.test/api/commerce/checkout?offerId=socialglowz/lifetime_deal&successUrl=https://socialglowz.test/purchase/success&cancelUrl=https://socialglowz.test/purchase/cancel'
+        'https://commandglows.test/api/commerce/checkout?offerId=communityglows/lifetime_deal&successUrl=https://communityglows.test/purchase/success&cancelUrl=https://communityglows.test/purchase/cancel'
       ),
     })
 
@@ -76,7 +76,7 @@ describe('commerce checkout route', () => {
     resetCommerceEnv()
     process.env.LEMONSQUEEZY_API_KEY = 'api-key'
     process.env.LEMONSQUEEZY_STORE_ID = 'store-id'
-    process.env.LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID = 'variant-id'
+    process.env.LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID = 'variant-id'
 
     const fetchSpy = vi.fn().mockResolvedValue(
       new Response(
@@ -93,7 +93,7 @@ describe('commerce checkout route', () => {
 
     const response = await GET({
       request: checkoutRequest(
-        'https://commandglows.test/api/commerce/checkout?offerId=socialglowz/lifetime_deal&source=direct&successUrl=https://socialglowz.test/purchase/success&cancelUrl=https://socialglowz.test/purchase/cancel'
+        'https://commandglows.test/api/commerce/checkout?offerId=communityglows/lifetime_deal&source=direct&successUrl=https://communityglows.test/purchase/success&cancelUrl=https://communityglows.test/purchase/cancel'
       ),
     })
 
@@ -104,9 +104,9 @@ describe('commerce checkout route', () => {
 
     const body = String(fetchSpy.mock.calls[0]?.[1]?.body)
     expect(body).toContain(
-      '"product_options":{"redirect_url":"https://socialglowz.test/purchase/success"}'
+      '"product_options":{"redirect_url":"https://communityglows.test/purchase/success"}'
     )
-    expect(body).toContain('"offer_id":"socialglowz/lifetime_deal"')
+    expect(body).toContain('"offer_id":"communityglows/lifetime_deal"')
     expect(body).not.toContain('api-key')
   })
 
