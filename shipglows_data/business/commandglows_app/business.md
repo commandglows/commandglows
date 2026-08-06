@@ -1,10 +1,10 @@
 ---
 artifact: business_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "CommandGlows"
 created: "2026-03-18"
-updated: "2026-06-10"
+updated: "2026-08-06"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "business"
@@ -21,7 +21,7 @@ evidence:
   - "docs/API.md"
   - "README.md"
   - "shipglows_data/workflow/audits/2026-06-10-commandglows-platform-parity.md"
-business_model: "Freemium voice productivity app with bring-your-own-key advanced features"
+business_model: "14-day trial-then-paid voice productivity app with bring-your-own-key advanced features and bounded founder plans"
 market: "Cross-platform dictation, transcript cleanup, snippets, dictionary, and clipboard productivity tools"
 target_audience: "Professionals and power users who produce text from speech across Android, iOS, desktop, and web"
 value_proposition: "Capture speech quickly from the Android keyboard, overlay or platform quick-action surface, use local language packs where available, clean text when needed, and reuse it across apps with sync paths designed to avoid unbounded server cost"
@@ -61,11 +61,15 @@ CommandGlows cible une application Flutter multi-plateforme avec contrats backen
 | Overlay / quick actions par plateforme | target-reviewed | `shipglows_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md`, `shipglows_data/workflow/specs/macos-linux-desktop-overlay-hotkeys-parity.md` |
 | Packs vocaux locaux téléchargeables | target-reviewed | `shipglows_data/workflow/specs/keyboard-action-bar-voice-recording.md` |
 | Expo/Convex/Clerk comme implémentation cible | out-of-scope | explicitement exclu de la cible finale |
-| Quotas gratuits / premium / billing | out-of-scope | non inclus dans le scope migration |
+| Quotas gratuits / premium / billing | target-reviewed | contrat d'entitlement et paiement enregistré dans `shipglows_data/technical/payment-activation-entitlements.md` |
 
 ## Modèle commercial
 
-Le modèle reste freemium BYO pour la migration. Les plans payants restent hors scope tant que quota, entitlement et billing ne sont pas spécifiés et implémentés.
+Le modèle commercial target-reviewed est `trial_then_paid`: essai initial de
+14 jours, deux relances maximum de 14 jours, puis achat obligatoire pour
+l'accès premium. Les clés BYO restent locales et ne constituent pas un
+entitlement. La garantie commerciale de 30 jours est une fenêtre de
+remboursement, pas une expiration automatique de l'accès.
 
 ### Offre target-reviewed (post-migration attendue)
 

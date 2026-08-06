@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.2.1"
+artifact_version: "0.3.0"
 project: "CommandGlows"
 created: "2026-06-18"
-updated: "2026-07-17"
+updated: "2026-08-06"
 status: draft
 source_skill: "001-sf-build"
 scope: "payment-activation-entitlements"
@@ -36,6 +36,32 @@ next_step: "/103-sf-verify payment activation after hosted Lemon Squeezy test-mo
 ---
 
 # Payment Activation And Entitlements
+
+## Commercial Entitlement Decision (2026-08-06)
+
+CommandGlows App uses a `trial_then_paid` access policy rather than permanent
+freemium access:
+
+- initial trial: 14 days;
+- maximum reactivations: 2 additional periods of 14 days;
+- maximum trial allowance: 42 days total;
+- after the allowance is exhausted, the user must purchase an allowed plan;
+- the 30-day commercial promise is a satisfaction/refund window, not an
+  automatic entitlement expiry;
+- a verified refund, revoke, or fraud decision makes access non-granting and
+  does not reset the trial counter.
+
+The policy is server-owned. A new email address must not recreate eligibility
+when the global identity or recognized installation has already consumed the
+allowance. IP data may contribute to abuse scoring and rate limiting, but must
+not be the sole identity key because shared and changing IPs can represent
+legitimate users. Device/install identifiers must be privacy-preserving,
+revocable, and stored as hashes or signed installation keys rather than raw
+hardware identifiers.
+
+This policy is the reusable suite decision for products explicitly classified
+as `trial_then_paid`; it is not an instruction to convert every current suite
+product without a product-specific pricing and cost review.
 
 ## Purpose
 

@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "CommandGlows"
 created: "2026-04-26"
-updated: "2026-06-10"
+updated: "2026-08-06"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "product"
@@ -29,7 +29,7 @@ desired_outcomes:
   - "Use a native Android keyboard entrypoint for typing, dictation, clipboard actions, snippets entry points, and play/pause media"
   - "Use overlay or quick-action capture through the platform host available on Android, desktop, iOS, or web"
 non_goals:
-  - "Not a billing-enabled premium product in migration scope"
+  - "Not a permanent freemium product; the commercial path is a server-owned 14-day trial followed by paid unlock"
   - "Not a promise of identical OS-level overlay mechanics on every platform"
   - "Not a system keyboard/IME product outside Android"
   - "Not a JS/TS application codebase in final target repository"
@@ -46,6 +46,18 @@ next_step: "$sf-docs update"
 ## Cadre de référence
 
 Ce document décrit la cible `target-reviewed` actuelle: Flutter partagé, contrats backend-agnostiques, Firebase comme premier adaptateur distant, et parité fonctionnelle quasi complète par défaut entre Android, iOS, Windows, macOS, Linux et web. Android reste la première surface native avancée pour l'IME; les éléments Expo/Convex/Clerk/Supabase sont conservés uniquement comme contexte de migration quand ils existent encore dans le repo.
+
+## Cadre commercial et entitlement
+
+CommandGlows App suit une politique `trial_then_paid`: 14 jours d'essai
+initial, puis au maximum deux relances de 14 jours, soit 42 jours cumulés.
+Après cette allowance, l'accès premium nécessite un achat. La garantie
+satisfait ou remboursé de 30 jours est une règle commerciale distincte et ne
+doit pas être transformée en expiration technique automatique de l'accès.
+
+L'éligibilité est calculée côté serveur à partir de l'identité globale et
+d'une installation reconnue. L'IP est un signal anti-abus secondaire et un
+outil de limitation de fréquence, jamais une clé d'identité unique.
 
 ## Problème utilisateur
 

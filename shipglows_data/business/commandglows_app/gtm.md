@@ -62,7 +62,7 @@ Utilisateurs orientés productivité, en priorité :
 ## Promesses à éviter
 
 - "Synchronisation sécurisée par compte" tant que Supabase Auth/RLS n'a pas été validé end-to-end sur un vrai environnement.
-- "Freemium avec quotas" tant que les droits et le billing n'existent pas.
+- "Accès gratuit permanent" tant que la politique `trial_then_paid` et le billing n'ont pas été implémentés.
 - "Premium illimité" sans infrastructure de quota.
 - "Données vocales jamais stockées" sans audit complet du flux audio, des caches natifs et des fournisseurs externes.
 - "Prêt entreprise" sans auth, politiques de rétention et garanties sécurité.
