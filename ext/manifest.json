@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "CMDglows",
+  "description": "Capture, transform and insert text where you write.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "scripting", "storage", "contextMenus"],
+  "background": {
+    "service_worker": "src/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "Open CMDglows"
+  },
+  "commands": {
+    "open-commandglows": {
+      "suggested_key": { "default": "Ctrl+Alt+Space" },
+      "description": "Open CMDglows in the active field"
+    }
+  }
+}

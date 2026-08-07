@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: "CommandGlows"
 created: "2026-04-26"
-updated: "2026-08-06"
+updated: "2026-08-07"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "product"
@@ -45,7 +45,7 @@ next_step: "$sf-docs update"
 
 ## Cadre de référence
 
-Ce document décrit la cible `target-reviewed` actuelle: Flutter partagé, contrats backend-agnostiques, Firebase comme premier adaptateur distant, et parité fonctionnelle quasi complète par défaut entre Android, iOS, Windows, macOS, Linux et web. Android reste la première surface native avancée pour l'IME; les éléments Expo/Convex/Clerk/Supabase sont conservés uniquement comme contexte de migration quand ils existent encore dans le repo.
+Ce document décrit la cible `target-reviewed` actuelle: Flutter partagé pour les apps natives, contrats backend-agnostiques, Firebase comme premier adaptateur distant, extension Chrome dédiée, et parité fonctionnelle quasi complète par défaut entre Android, navigateur, Windows, iOS, macOS, Linux et web. Android reste la première surface native avancée pour l'IME. L'extension Chrome devient la prochaine surface de distribution prioritaire: elle doit fonctionner sans installation desktop, reprendre chaque workflow techniquement sûr, et coexister sans double déclenchement ni double insertion avec l'app Windows. Les éléments Expo/Convex/Clerk/Supabase sont conservés uniquement comme contexte de migration quand ils existent encore dans le repo.
 
 ## Cadre commercial et entitlement
 
@@ -100,9 +100,19 @@ Les utilisateurs produisent souvent du texte dans des contextes où taper est le
 
 1. Sur Android, l'utilisateur active les permissions overlay/accessibilité dans Settings.
 2. Sur desktop, l'utilisateur déclenche CommandGlows via l'hôte natif disponible: raccourci, fenêtre flottante, clipboard et livraison best-effort quand l'OS l'autorise.
-3. Sur iOS et web, le même concept doit être adapté par un chantier dédié: app principale, partage, raccourcis, clipboard ou expérience navigateur selon les limites de la plateforme.
-4. Le résultat reste récupérable: livraison directe quand possible, fallback clipboard ou retour explicite sinon.
-5. Les plateformes ne doivent pas afficher de contrôle trompeur: chaque surface montre uniquement les capacités réellement disponibles ou documentées comme dégradées.
+3. Dans Chrome, le même concept devient une palette, un popup ou un panneau latéral lié à l'onglet actif: sélection, dictée, actions, snippets et insertion explicite, avec fallback clipboard.
+4. Sur iOS et le web sans extension, le même concept doit être adapté par un chantier dédié: app principale, partage, raccourcis, clipboard ou expérience navigateur selon les limites de la plateforme.
+5. Le résultat reste récupérable: livraison directe quand possible, fallback clipboard ou retour explicite sinon.
+6. Les plateformes ne doivent pas afficher de contrôle trompeur: chaque surface montre uniquement les capacités réellement disponibles ou documentées comme dégradées.
+
+### Coexistence extension Chrome + app Windows
+
+1. L'extension fonctionne seule et ne dépend jamais de l'installation de l'app Windows.
+2. Dans un onglet Chrome compatible, l'extension possède les déclencheurs et insertions navigateur; l'app Windows reste propriétaire des actions système et des applications hors navigateur.
+3. L'utilisateur apprend un raccourci CommandGlows préféré. Extension seule, Chrome l'enregistre; app Windows seule, Windows l'enregistre; avec les deux installés, Windows reste l'unique propriétaire du raccourci global et délègue l'action à l'extension quand un onglet Chrome compatible est actif.
+4. Une action utilisateur produit un seul identifiant de requête et un seul propriétaire d'insertion. Le handoff Windows vers Chrome transfère la propriété; il ne duplique jamais le traitement.
+5. Si l'extension ne peut pas agir sur une page protégée ou un éditeur incompatible, elle explique la limite et conserve le résultat via clipboard; l'app Windows peut reprendre uniquement après un refus ou timeout explicite du handoff.
+6. La liaison native de coexistence est requise uniquement lorsque les deux surfaces sont installées. Elle ne devient jamais une condition de fonctionnement de l'extension standalone.
 
 ### Clavier Android CommandGlows
 
@@ -113,7 +123,8 @@ Les utilisateurs produisent souvent du texte dans des contextes où taper est le
 
 ## Surface target-reviewed
 
-- Flutter app avec focus d'exécution Android en premier.
+- Flutter app native avec Android comme surface avancée actuelle, puis extension Chrome comme prochaine priorité de distribution avant l'élargissement des hôtes desktop.
+- Extension Chrome Manifest V3 autonome sous `ext/`, centrée sur la capture, la transformation et l'insertion de texte dans le navigateur.
 - Contrats backend-agnostiques pour auth, settings, transcriptions, clipboard, snippets et dictionnaire.
 - Firebase Auth + Firestore comme premier adaptateur distant.
 - Écran Voice: capture locale (si supportée), capture avancée Whisper, sauvegarde, édition, copie.
@@ -123,6 +134,7 @@ Les utilisateurs produisent souvent du texte dans des contextes où taper est le
 - Settings: clés BYO locales, permissions, langue, session auth.
 - Clavier Android natif via `InputMethodService` et bridge Flutter/Kotlin.
 - Overlay / quick actions comme concept produit cross-platform, avec Android via bridge Flutter/Kotlin, Windows/macOS/Linux via hôtes desktop natifs, et iOS/web à spécifier par chantiers d'adaptation.
+- Parité extension visée pour auth, sync, dictée, historique, snippets, dictionnaire, actions texte et livraison dans le champ actif; clipboard continu, IME, contrôles système et automatisations desktop restent adaptés ou indisponibles selon les contraintes navigateur.
 
 ## Legacy-current (pré-migration, non cible)
 
@@ -145,6 +157,8 @@ Mitigations obligatoires:
 6. États erreurs récupérables pour permissions, API IA et sync distante.
 7. Overlay / quick actions conditionnés par permissions et limites de chaque plateforme, avec fallback clipboard ou récupération explicite.
 8. Clavier Android conditionné par activation utilisateur, private mode pour champs sensibles et sync clipboard opt-in.
+9. Extension limitée aux permissions minimales, à l'accès déclenché par l'utilisateur et aux contenus nécessaires à l'action visible; aucune surveillance générale de navigation, de champs ou de clipboard.
+10. Champs password, OTP et assimilés exclus de la capture, des snippets enrichis, de la transformation et de la synchronisation côté extension.
 
 ## Non-goals actuels
 
@@ -152,4 +166,6 @@ Mitigations obligatoires:
 - Pas de promesse d'overlay système identique sur toutes les plateformes; chaque OS doit avoir un hôte natif, une adaptation meilleure ou une limite documentée.
 - Pas de clavier système CommandGlows hors Android dans cette phase.
 - Pas de promesse de chiffrement bout-en-bout.
-- Pas de code applicatif JS/TS dans le repo final.
+- Pas de code applicatif JS/TS dans `commandglows_app/`, qui reste Flutter/Dart
+  avec hôtes natifs. L'extension Chrome autonome sous `ext/` utilise une stack
+  navigateur séparée et ne réintroduit pas l'ancien runtime Expo/React Native.

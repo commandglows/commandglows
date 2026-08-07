@@ -1,10 +1,10 @@
 ---
 artifact: decision_log
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.1.0"
 project: "CommandGlows"
 created: "2026-04-26"
-updated: "2026-05-19"
+updated: "2026-08-07"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "product_and_platform"
@@ -21,10 +21,62 @@ evidence:
   - "../docs/MIGRATION_FLUTTER.md"
 supersedes:
   - "2026-04-26 long-term platform direction"
-next_step: "/sf-ready shipglows_data/workflow/specs/unified-suite-authentication.md"
+next_step: "Review readiness for chrome-extension-platform-parity-and-windows-coexistence."
 ---
 
 # Decisions — CommandGlows
+
+## 2026-08-07 — Chrome extension becomes the next distribution priority (reviewed)
+
+### Decision
+
+CommandGlows will start its next platform tranche with a standalone Chrome
+extension. The extension targets maximum technically safe parity with Android
+and Windows outcomes, rather than a reduced companion or a launcher for the
+desktop app. It must work for users who do not install CommandGlows on Windows.
+
+The extension's single browser purpose is to capture, transform, reuse and
+insert text where the user writes. Auth, synchronized snippets, dictionary,
+history, dictation, text actions and recoverable delivery are parity targets.
+Android IME behavior, continuous system clipboard capture, system media keys
+and desktop-wide automation are adapted or unavailable where browser security
+and store policy require it.
+
+Chrome is the first extension target and discovery channel. Additional
+Chromium browsers and Firefox are follow-up compatibility decisions after the
+Chrome contract is proven.
+
+### Coexistence contract
+
+1. Users learn one preferred CommandGlows shortcut.
+2. With only the extension installed, Chrome registers it. With only the
+   desktop app installed, Windows registers it. With both installed, Windows is
+   the single global registrar and delegates browser-context requests to the
+   extension when a compatible Chrome tab is active.
+3. The extension owns browser-tab selection and insertion after accepting a
+   delegated request; Windows owns system-wide and non-browser actions.
+4. Every trigger has one request owner and one insertion owner. Delegation
+   transfers ownership and never causes both surfaces to execute the action.
+5. Restricted pages and unsupported editors fail recoverably to preview/copy.
+   Windows may resume only after an explicit extension rejection or bounded
+   handoff timeout.
+6. Native coordination is required for dual-install coexistence, but never for
+   extension-only operation.
+
+### Consequences
+
+- The extension source root is `ext/`.
+- Browser parity is a dedicated extension contract, not proof supplied by the
+  existing Flutter web build.
+- Host permissions must be minimal and preferably user-triggered.
+- Page content, selected text, voice and generated text are sensitive user
+  data and require explicit disclosure, safe handling and no background
+  surveillance.
+- The Windows registrar must not reserve the shortcut and also expect Chrome to
+  receive it independently; dual-install mode requires an explicit handoff.
+- The extension/Windows arbitration contract must be tested with extension
+  only, Windows only, both installed, shortcut collision, restricted page and
+  failed insertion scenarios.
 
 ## 2026-05-30 — Cross-platform parity becomes the product default (draft)
 
@@ -42,7 +94,9 @@ Platform split:
 2. Windows becomes the next target for parity through a desktop overlay host:
    global hotkeys, always-on-top Flutter window, clipboard, focus, and
    best-effort text delivery.
-3. Next platform order is macOS, Linux, iOS, then web.
+3. The 2026-08-07 decision supersedes the next-surface order: Chrome extension
+   is next, followed by the remaining native parity work according to current
+   product priority and proof readiness.
 4. Platform-adapted experiences are acceptable only when they produce a better
    user result. If the result is equivalent, keep the shared mental model and do
    not perturb the user.

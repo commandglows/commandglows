@@ -7,6 +7,10 @@
 
 ## Active
 
+🔴 [CommandGlows] task: Renommer et configurer les variables d’environnement du bridge CommunityGlows dans les environnements locaux, Convex et hébergés (`SOCIALGLOWZ_*` vers `COMMUNITYGLOWS_*`) | status: todo | area: communityglows-bridge-config | id: communityglows-bridge-env-rename | impact: critical | effort: low | unblocks: communityglows-public-trial | risk: bridge-outage-or-wrong-secret | acceptance: `.env.example`, secrets de déploiement et configuration Convex utilisent uniquement les noms CommunityGlows; URL `/api/bridge/communityglows`; secret partagé vérifié sans ancien header
+🔴 [CommandGlows] task: Déployer le bridge CommunityGlows renommé et exécuter le smoke test hébergé du snapshot d’entitlement | status: todo | area: communityglows-bridge-deployment | id: communityglows-bridge-hosted-smoke | impact: critical | effort: medium | unblocks: communityglows-public-trial | risk: production-access-regression | depends_on: communityglows-bridge-env-rename | acceptance: premier snapshot crée un essai de 30 jours; second appel reste idempotent; expiration et priorité d’une entitlement Lifetime sont vérifiées; aucun payload incomplet n’accorde l’accès
+🟡 [CommandGlows] task: Auditer les anciennes entitlements `socialglowz` et migrer les comptes existants vers `communityglows` avant le déploiement renommé | status: todo | area: communityglows-entitlement-migration | id: communityglows-entitlement-migration-audit | impact: high | effort: medium | unblocks: communityglows-public-trial | risk: legacy-access-loss | acceptance: nombre d’entitlements legacy établi; migration idempotente exécutée si nécessaire ou preuve documentée qu’il n’y a aucune donnée à migrer; aucune compatibilité runtime réintroduite
+
 ## Reconciled Site Backlog
 
 The following records were consolidated from the former nested site tracker during the canonical ShipGlows governance migration.

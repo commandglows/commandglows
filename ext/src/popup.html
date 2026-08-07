@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CMDglows</title>
+  </head>
+  <body>
+    <main>
+      <h1>CMDglows</h1>
+      <p>Use the preferred shortcut or open CMDglows in the active field.</p>
+      <button id="open" type="button">Open in active field</button>
+      <p id="status" role="status" aria-live="polite"></p>
+      <hr>
+      <h2>Snippets</h2>
+      <form id="snippet-form">
+        <label>Trigger <input id="trigger" required></label>
+        <label>Content <textarea id="content" required></textarea></label>
+        <button type="submit">Save snippet</button>
+      </form>
+      <ul id="snippets"></ul>
+      <h2>Dictionary</h2>
+      <form id="dictionary-form">
+        <label>Replace <input id="dictionary-source" required></label>
+        <label>With <input id="dictionary-replacement" required></label>
+        <button type="submit">Save dictionary entry</button>
+      </form>
+      <ul id="dictionary"></ul>
+      <h2>Custom actions</h2>
+      <form id="action-form">
+        <label>Label <input id="action-label" required></label>
+        <label>Kind
+          <select id="action-kind">
+            <option value="insert_text">Insert text</option>
+            <option value="transform">Transform</option>
+          </select>
+        </label>
+        <label>Value <input id="action-value" required></label>
+        <button type="submit">Save custom action</button>
+      </form>
+      <p>Transform values: <code>clean-whitespace</code> or <code>sentence-case</code>.</p>
+      <ul id="actions"></ul>
+      <h2>Recent insertions</h2>
+      <ul id="history"></ul>
+      <h2>Local backup</h2>
+      <button id="export-backup" type="button">Export backup</button>
+      <label>Restore backup <input id="restore-backup" type="file" accept="application/json"></label>
+      <p id="sync-status"></p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
