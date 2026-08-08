@@ -191,7 +191,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			kicker: 'Local or server agent workflow setup',
 			title: 'Install the right ShipGlows layer for this machine.',
 			description:
-				'The bootstrap detects Termux and root automatically, or asks whether you want the local tunnel setup or the complete Ubuntu server layer. Native Windows downloads the public repository and supports both the local tunnel and a full Astro/Python/Flutter DevServer without WSL.',
+				'The bootstrap detects Termux and root automatically, or asks whether you want the local tunnel setup or the complete Ubuntu server layer. Native Windows downloads the public repository and supports both the local tunnel and a full Astro/Python/Flutter DevServer without WSL. Full Windows setup prepares Git, GitHub CLI, Node LTS, pnpm and uv; Flutter Web remains an optional larger download.',
 			command: 'curl -fsSL https://www.commandglows.com/shipglows-script | sh',
 			rawScriptUrl: '/shipglows-script',
 			githubUrl: 'https://github.com/commandglows/shipglows',
@@ -249,7 +249,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 					platform: 'windows',
 					mode: 'full',
 					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer",
-					note: 'Windows: choose Local DevServer at the prompt to clone and run projects without WSL or an automatic tunnel.',
+					note: 'Windows: choose Local DevServer at the prompt to clone and run projects without WSL or an automatic tunnel. It prepares Git, GitHub CLI, Node LTS, pnpm and uv, then asks before downloading Flutter Web.',
 					available: true,
 				},
 				{
@@ -276,7 +276,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			kicker: 'Setup local ou serveur pour workflows agents',
 			title: 'Installe la bonne couche ShipGlows pour cette machine.',
 			description:
-				'Le bootstrap détecte automatiquement Termux et root, ou demande si tu veux la configuration locale des tunnels ou la couche serveur Ubuntu complète. Sur Windows, il télécharge le dépôt public sans Git et installe OpenSSH si nécessaire.',
+				'Le bootstrap détecte automatiquement Termux et root, ou demande si tu veux la configuration locale des tunnels ou la couche serveur Ubuntu complète. Sur Windows, il télécharge le dépôt public sans Git et propose un DevServer Astro/Python/Flutter sans WSL. Le mode complet prépare Git, GitHub CLI, Node LTS, pnpm et uv ; Flutter Web reste un téléchargement optionnel plus lourd.',
 			command: 'curl -fsSL https://www.commandglows.com/shipglows-script | sh',
 			rawScriptUrl: '/shipglows-script',
 			githubUrl: 'https://github.com/commandglows/shipglows',
@@ -334,7 +334,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 					platform: 'windows',
 					mode: 'full',
 					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer",
-					note: 'Windows : choisissez DevServer local à l’invite pour cloner et lancer des projets sans WSL ni tunnel automatique.',
+					note: 'Windows : choisissez DevServer local à l’invite pour cloner et lancer des projets sans WSL ni tunnel automatique. Il prépare Git, GitHub CLI, Node LTS, pnpm et uv, puis demande avant de télécharger Flutter Web.',
 					available: true,
 				},
 				{

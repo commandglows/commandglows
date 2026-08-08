@@ -164,6 +164,9 @@ describe('ShipGlows public installer', () => {
     expect(shipglowsSection).toContain("-File $installer")
     expect(shipglowsSection).toContain('recommended local DevServer')
     expect(shipglowsSection).toContain('DevServer local recommandé')
+    expect(shipglowsSection).toContain('Node LTS, pnpm and uv')
+    expect(shipglowsSection).toContain('Node LTS, pnpm et uv')
+    expect(shipglowsSection).toContain('before downloading Flutter Web')
   })
 
   test('publishes platform and mode selectors for the installer page', () => {
