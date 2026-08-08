@@ -1,41 +1,43 @@
-# ShipGlows native Windows bootstrap.
-# This is the PowerShell counterpart to install-shipglows.sh. It intentionally
-# installs only the local tunnel layer; the complete server installer remains
-# Linux/Ubuntu-only.
+# ShipGlows native Windows bootstrap. Local installs the SSH tunnel; full
+# installs the native Windows DevServer without WSL or an automatic tunnel.
 
 [CmdletBinding()]
 param(
-    [string]$RepoUrl,
+    [string]$RepoUrl = $(if ($env:SHIPGLOWS_REPO_URL) { $env:SHIPGLOWS_REPO_URL } else { '' }),
     [Alias('Version', 'Tag', 'Ref')]
-    [string]$Branch,
-    [string]$ShipGlowsDir,
+    [string]$Branch = $(if ($env:SHIPGLOWS_BRANCH) { $env:SHIPGLOWS_BRANCH } else { '' }),
+    [string]$ShipglowsDir = $(if ($env:SHIPGLOWS_DIR) { $env:SHIPGLOWS_DIR } else { Join-Path $env:USERPROFILE 'shipglows' }),
+    [ValidateSet('local','full')]
+    [string]$InstallMode = $(if ($env:SHIPGLOWS_INSTALL_MODE) { $env:SHIPGLOWS_INSTALL_MODE } else { 'local' }),
     [switch]$DownloadOnly
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-# Deprecated compatibility adapter. Canonical SHIPGLOWS_* values always win.
-function Resolve-CompatibleValue([string]$Canonical, [string]$LegacyShipGlowz, [string]$LegacyShipFlow, [string]$Default) {
+function Resolve-CompatibleValue([string]$Canonical, [string]$LegacyShipglowz, [string]$LegacyShipflow, [string]$Name) {
     if ($Canonical) { return $Canonical }
-    if ($LegacyShipGlowz) { Write-Warning 'Deprecated SHIPGLOWZ_* variable detected; migrate to SHIPGLOWS_*.'; return $LegacyShipGlowz }
-    if ($LegacyShipFlow) { Write-Warning 'Deprecated SHIPFLOW_* variable detected; migrate to SHIPGLOWS_*.'; return $LegacyShipFlow }
-    return $Default
+    if ($LegacyShipglowz) { Write-Warn "Deprecated SHIPGLOWZ_$Name detected; migrate to SHIPGLOWS_*."; return $LegacyShipglowz }
+    if ($LegacyShipflow) { Write-Warn "Deprecated SHIPFLOW_$Name detected; migrate to SHIPGLOWS_*."; return $LegacyShipflow }
+    return ''
 }
-
-if (-not $RepoUrl) { $RepoUrl = Resolve-CompatibleValue $env:SHIPGLOWS_REPO_URL $env:SHIPGLOWZ_REPO_URL $env:SHIPFLOW_REPO_URL 'https://github.com/commandglows/shipglows.git' }
-if (-not $Branch) { $Branch = Resolve-CompatibleValue $env:SHIPGLOWS_BRANCH $env:SHIPGLOWZ_BRANCH $env:SHIPFLOW_BRANCH 'main' }
-if (-not $ShipGlowsDir) { $ShipGlowsDir = Resolve-CompatibleValue $env:SHIPGLOWS_DIR $env:SHIPGLOWZ_DIR $env:SHIPFLOW_DIR (Join-Path $env:USERPROFILE 'shipglows') }
 
 function Write-Info([string]$Message) { Write-Host "[ShipGlows] $Message" -ForegroundColor Cyan }
 function Write-Warn([string]$Message) { Write-Host "[ShipGlows] $Message" -ForegroundColor Yellow }
 function Fail([string]$Message) { Write-Error "[ShipGlows] $Message"; exit 1 }
+
+$RepoUrl = Resolve-CompatibleValue $RepoUrl $env:SHIPGLOWZ_REPO_URL $env:SHIPFLOW_REPO_URL 'REPO_URL'
+if (-not $RepoUrl) { $RepoUrl = 'https://github.com/commandglows/shipglows.git' }
+$Branch = Resolve-CompatibleValue $Branch $env:SHIPGLOWZ_BRANCH $env:SHIPFLOW_BRANCH 'BRANCH'
+if (-not $Branch) { $Branch = 'main' }
+$InstallMode = Resolve-CompatibleValue $InstallMode $env:SHIPGLOWZ_INSTALL_MODE $env:SHIPFLOW_INSTALL_MODE 'INSTALL_MODE'
+if (-not $InstallMode) { $InstallMode = 'local' }
 function Remove-PathIfPresent([string]$Path) {
     if (Test-Path -LiteralPath $Path) {
         Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction SilentlyContinue
     }
 }
-function Extract-ShipGlowsLocalInstaller([string]$ArchivePath, [string]$DestinationPath) {
+function Extract-ShipglowsWindowsFiles([string]$ArchivePath, [string]$DestinationPath, [bool]$FullMode) {
     $windowsTarPath = Join-Path $env:WINDIR 'System32\tar.exe'
     if (Test-Path -LiteralPath $windowsTarPath) {
         $tarPath = $windowsTarPath
@@ -51,19 +53,27 @@ function Extract-ShipGlowsLocalInstaller([string]$ArchivePath, [string]$Destinat
     if ($LASTEXITCODE -ne 0) {
         Fail 'Could not inspect the ShipGlows archive with tar.exe.'
     }
-    $installerEntries = @(
-        $archiveEntries | Where-Object { $_ -match '^[^/]+/local/install_local\.ps1$' }
-    )
-    if ($installerEntries.Count -ne 1) {
-        Fail 'The ShipGlows archive must contain exactly one local/install_local.ps1.'
+    $entries = @()
+    if (-not $FullMode) {
+        $installerEntries = @(
+            $archiveEntries | Where-Object { $_ -match '^[^/]+/local/install_local\.ps1$' }
+        )
+        if ($installerEntries.Count -ne 1) {
+            Fail 'The ShipGlows archive must contain exactly one local/install_local.ps1.'
+        }
+        $entries += $installerEntries[0]
+    }
+    if ($FullMode) {
+        $entries += @($archiveEntries | Where-Object { $_ -match '^[^/]+/cli/windows/(ShipGlows\.DevServer\.psm1|shipglows-devserver\.ps1|install-devserver\.ps1)$' })
+        if ($entries.Count -ne 3) { Fail 'The ShipGlows archive is missing native Windows DevServer files.' }
     }
 
-    & $tarPath -xf $ArchivePath -C $DestinationPath $installerEntries[0]
+    & $tarPath -xf $ArchivePath -C $DestinationPath $entries
     if ($LASTEXITCODE -ne 0) {
-        Fail 'Could not extract local/install_local.ps1 with tar.exe.'
+        Fail 'Could not extract the Windows installation files with tar.exe.'
     }
 
-    return $installerEntries[0]
+    return $entries
 }
 function Resolve-GitHubSource([string]$RepositoryUrl, [string]$Ref) {
     $archiveBase = $RepositoryUrl.TrimEnd('/') -replace '\.git$', ''
@@ -117,11 +127,12 @@ if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
 }
 
 $source = Resolve-GitHubSource -RepositoryUrl $RepoUrl -Ref $Branch
-$tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglows-local-" + [guid]::NewGuid().ToString('N'))
+$tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("shipglows-windows-" + [guid]::NewGuid().ToString('N'))
 $archivePath = Join-Path $tempRoot 'shipglows.zip'
 $extractRoot = Join-Path $tempRoot 'extract'
-$localDirectory = Join-Path $ShipGlowsDir 'local'
+$localDirectory = Join-Path $ShipglowsDir 'local'
 $localInstaller = Join-Path $localDirectory 'install_local.ps1'
+$windowsDirectory = Join-Path $ShipglowsDir 'cli\windows'
 New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $extractRoot -Force | Out-Null
 
@@ -130,41 +141,66 @@ try {
     & curl.exe -fsSL $source.ArchiveUrl -o $archivePath
     if ($LASTEXITCODE -ne 0) { Fail 'ShipGlows download failed.' }
 
-    $installerEntry = Extract-ShipGlowsLocalInstaller -ArchivePath $archivePath -DestinationPath $extractRoot
-    $installerCandidates = @(
-        Get-ChildItem -LiteralPath $extractRoot -Recurse -Force -File -Filter 'install_local.ps1' |
-            Where-Object { $_.Directory.Name -eq 'local' }
-    )
-    if ($installerCandidates.Count -ne 1) {
-        Fail 'The ShipGlows archive must contain exactly one local/install_local.ps1.'
+    [void](Extract-ShipglowsWindowsFiles -ArchivePath $archivePath -DestinationPath $extractRoot -FullMode ($InstallMode -eq 'full'))
+    if ($InstallMode -eq 'local') {
+        $installerCandidates = @(
+            Get-ChildItem -LiteralPath $extractRoot -Recurse -Force -File -Filter 'install_local.ps1' |
+                Where-Object { $_.Directory.Name -eq 'local' }
+        )
+        if ($installerCandidates.Count -ne 1) {
+            Fail 'The ShipGlows archive must contain exactly one local/install_local.ps1.'
+        }
+        New-Item -ItemType Directory -Path $localDirectory -Force | Out-Null
+        Copy-Item -LiteralPath $installerCandidates[0].FullName -Destination $localInstaller -Force
+    } else {
+        $windowsCandidates = @(Get-ChildItem -LiteralPath $extractRoot -Recurse -Force -Directory -Filter 'windows') | Where-Object { Test-Path (Join-Path $_.FullName 'install-devserver.ps1') }
+        if ($windowsCandidates.Count -ne 1) { Fail 'Native Windows DevServer directory was not found in the archive.' }
+        New-Item -ItemType Directory -Path $windowsDirectory -Force | Out-Null
+        Get-ChildItem -LiteralPath $windowsCandidates[0].FullName -Force -File | Copy-Item -Destination $windowsDirectory -Force
     }
-
-    New-Item -ItemType Directory -Path $localDirectory -Force | Out-Null
-    Copy-Item -LiteralPath $installerCandidates[0].FullName -Destination $localInstaller -Force
 } finally {
     Remove-PathIfPresent $tempRoot
 }
 
-if (-not (Test-Path -LiteralPath $localInstaller)) {
-    Fail "Installed Windows local installer not found: $localInstaller"
+Write-Info "Source commit: $($source.Commit)"
+
+if ($InstallMode -eq 'local') {
+    if (-not (Test-Path -LiteralPath $localInstaller)) {
+        Fail "Installed Windows local installer not found: $localInstaller"
+    }
+    $localInstallerHash = (Get-FileHash -LiteralPath $localInstaller -Algorithm SHA256).Hash
+    Write-Info "Installed local installer: $localInstaller"
+    Write-Info "SHA256: $localInstallerHash"
+    Assert-PowerShellSyntax -Path $localInstaller
+    Write-Info 'PowerShell syntax validation passed.'
 }
 
-$localInstallerHash = (Get-FileHash -LiteralPath $localInstaller -Algorithm SHA256).Hash
-Write-Info "Installed local installer: $localInstaller"
-Write-Info "Source commit: $($source.Commit)"
-Write-Info "SHA256: $localInstallerHash"
-Assert-PowerShellSyntax -Path $localInstaller
-Write-Info 'PowerShell syntax validation passed.'
+if ($InstallMode -eq 'full') {
+    foreach ($required in @('ShipGlows.DevServer.psm1','shipglows-devserver.ps1','install-devserver.ps1')) {
+        Assert-PowerShellSyntax -Path (Join-Path $windowsDirectory $required)
+    }
+    Write-Info 'Native Windows DevServer files installed.'
+}
 
 if ($DownloadOnly) {
     Write-Info 'Download-only validation completed.'
     exit 0
 }
 
-Write-Info 'Lancement de la configuration locale Windows.'
-& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $localInstaller
-if ($LASTEXITCODE -ne 0) { Fail 'Native Windows configuration failed.' }
+if ($InstallMode -eq 'local') {
+    Write-Info 'Lancement de la configuration locale Windows.'
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $localInstaller
+    if ($LASTEXITCODE -ne 0) { Fail 'Native Windows configuration failed.' }
+} else {
+    Write-Info 'Installing the native Windows DevServer launcher.'
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $windowsDirectory 'install-devserver.ps1') -ShipglowsDir $ShipglowsDir
+    if ($LASTEXITCODE -ne 0) { Fail 'Native Windows DevServer installation failed.' }
+}
 
 Write-Host ''
 Write-Host 'ShipGlows native Windows installation completed.' -ForegroundColor Green
-Write-Host 'Utilise ensuite: tunnel -Port 3001' -ForegroundColor Green
+if ($InstallMode -eq 'local') {
+    Write-Host 'Utilise ensuite: tunnel -Port 3001' -ForegroundColor Green
+} else {
+    Write-Host 'Pour les projets locaux: shipglows-dev' -ForegroundColor Green
+}

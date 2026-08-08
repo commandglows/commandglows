@@ -191,7 +191,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			kicker: 'Local or server agent workflow setup',
 			title: 'Install the right ShipGlows layer for this machine.',
 			description:
-				'The bootstrap detects Termux and root automatically, or asks whether you want the local tunnel setup or the complete Ubuntu server layer. Native Windows downloads the public repository without Git and installs OpenSSH when needed.',
+				'The bootstrap detects Termux and root automatically, or asks whether you want the local tunnel setup or the complete Ubuntu server layer. Native Windows downloads the public repository and supports both the local tunnel and a full Astro/Python/Flutter DevServer without WSL.',
 			command: 'curl -fsSL https://www.commandglows.com/shipglows-script | sh',
 			rawScriptUrl: '/shipglows-script',
 			githubUrl: 'https://github.com/commandglows/shipglows',
@@ -209,7 +209,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			installedTitle: 'Installed',
 			installed: ['local mode: tunnel and remote-login commands', 'full mode: ShipGlows CLI, server tooling and wrappers', 'Claude/Codex skill symlinks when selected', 'local project tracking data'],
 			excludedTitle: 'Important boundary',
-			excluded: ['the Windows path may request UAC permission to add OpenSSH Client', 'full mode still requires root on a supported server', 'the bootstrap never asks for or stores a GitHub token'],
+				excluded: ['the Windows path may request UAC permission to add OpenSSH Client', 'Windows full is a local development runtime, not public hosting', 'the bootstrap never asks for or stores a GitHub token'],
 			linksTitle: 'Useful links',
 			links: [
 				{ label: 'ShipGlows public docs', href: 'https://github.com/commandglows/shipglows' },
@@ -248,9 +248,9 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 					id: 'windows-full',
 					platform: 'windows',
 					mode: 'full',
-					command: '',
-					note: 'Le mode full/remote doit être lancé sur un serveur Linux/Ubuntu. Windows natif prend en charge le mode local.',
-					available: false,
+					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer -InstallMode full",
+					note: 'Windows full: installe uniquement le DevServer natif, sans WSL ni tunnel automatique. Les outils Git, Node/npm ou pnpm, uv et Flutter restent nécessaires selon les dépôts.',
+					available: true,
 				},
 				{
 					id: 'termux-local',
@@ -333,9 +333,9 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 					id: 'windows-full',
 					platform: 'windows',
 					mode: 'full',
-					command: '',
-					note: 'Le mode full/remote doit être lancé sur un serveur Linux/Ubuntu. Windows natif prend en charge le mode local.',
-					available: false,
+					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer -InstallMode full",
+					note: 'Windows full : installe uniquement le DevServer natif, sans WSL ni tunnel automatique. Les outils Git, Node/npm ou pnpm, uv et Flutter restent nécessaires selon les dépôts.',
+					available: true,
 				},
 				{
 					id: 'termux-local',

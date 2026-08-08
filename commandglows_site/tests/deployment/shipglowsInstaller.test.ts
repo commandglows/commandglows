@@ -29,7 +29,9 @@ describe('ShipGlows public installer', () => {
     expect(route).toContain("format === 'powershell'")
     expect(route).toContain("import windowsInstaller from '../generated/shipglows-installer.ps1?raw'")
     expect(windowsInstaller).toContain('local/install_local.ps1')
-    expect(windowsInstaller).toContain('ShipGlowsDir')
+    expect(windowsInstaller).toContain("[ValidateSet('local','full')]")
+    expect(windowsInstaller).toContain('install-devserver.ps1')
+    expect(windowsInstaller).toContain('ShipglowsDir')
     expect(installer).toContain('https://github.com/commandglows/shipglows.git')
     expect(windowsInstaller).toContain('https://github.com/commandglows/shipglows.git')
     expect(windowsInstaller).toContain("Alias('Version', 'Tag', 'Ref')")
@@ -41,7 +43,7 @@ describe('ShipGlows public installer', () => {
     expect(windowsInstaller).toContain('must contain exactly one local/install_local.ps1')
     expect(windowsInstaller).toContain("Join-Path $env:WINDIR 'System32\\tar.exe'")
     expect(windowsInstaller).toContain('$tarPath -tf $ArchivePath')
-    expect(windowsInstaller).toContain('$tarPath -xf $ArchivePath -C $DestinationPath $installerEntries[0]')
+    expect(windowsInstaller).toContain('$tarPath -xf $ArchivePath -C $DestinationPath $entries')
     expect(windowsInstaller).toContain('[switch]$DownloadOnly')
     expect(windowsInstaller).toContain('commit/$encodedRef.patch')
     expect(windowsInstaller).not.toContain('api.github.com')
@@ -56,8 +58,8 @@ describe('ShipGlows public installer', () => {
     expect(installer).toContain('Deprecated SHIPGLOWZ_* variable detected')
     expect(installer).toContain('$INSTALL_HOME/shipglowz/.git')
     expect(installer).toContain('reusing it without moving or overwriting it')
-    expect(windowsInstaller).toContain('Resolve-CompatibleValue $env:SHIPGLOWS_REPO_URL $env:SHIPGLOWZ_REPO_URL $env:SHIPFLOW_REPO_URL')
-    expect(windowsInstaller).toContain('Canonical SHIPGLOWS_* values always win')
+    expect(windowsInstaller).toContain('Resolve-CompatibleValue')
+    expect(windowsInstaller).toContain('Deprecated SHIPGLOWZ_')
   })
 
   test('preflights every local dependency before touching the repository', () => {
@@ -157,6 +159,8 @@ describe('ShipGlows public installer', () => {
     expect(shipglowsSection).toContain('UAC')
     expect(shipglowsSection).toContain("platform: 'windows'")
     expect(shipglowsSection).toContain("mode: 'full'")
+    expect(shipglowsSection).toContain("-File $installer -InstallMode full")
+    expect(shipglowsSection).toContain('DevServer natif')
   })
 
   test('publishes platform and mode selectors for the installer page', () => {
