@@ -8,7 +8,7 @@ param(
     [string]$Branch = $(if ($env:SHIPGLOWS_BRANCH) { $env:SHIPGLOWS_BRANCH } else { '' }),
     [string]$ShipglowsDir = $(if ($env:SHIPGLOWS_DIR) { $env:SHIPGLOWS_DIR } else { Join-Path $env:USERPROFILE 'shipglows' }),
     [ValidateSet('local','full')]
-    [string]$InstallMode = $(if ($env:SHIPGLOWS_INSTALL_MODE) { $env:SHIPGLOWS_INSTALL_MODE } else { '' }),
+    [string]$InstallMode,
     [switch]$DownloadOnly
 )
 
@@ -50,6 +50,9 @@ if (-not $RepoUrl) { $RepoUrl = 'https://github.com/commandglows/shipglows.git' 
 $Branch = Resolve-CompatibleValue $Branch $env:SHIPGLOWZ_BRANCH $env:SHIPFLOW_BRANCH 'BRANCH'
 if (-not $Branch) { $Branch = 'main' }
 $InstallMode = Resolve-CompatibleValue $InstallMode $env:SHIPGLOWZ_INSTALL_MODE $env:SHIPFLOW_INSTALL_MODE 'INSTALL_MODE'
+if ($InstallMode -and $InstallMode -notin @('local', 'full')) {
+    Fail 'InstallMode must be local or full.'
+}
 if (-not $InstallMode) {
     if ($DownloadOnly -or [Console]::IsInputRedirected) {
         $InstallMode = 'local'
