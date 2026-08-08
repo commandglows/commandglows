@@ -8,7 +8,7 @@ param(
     [string]$Branch = $(if ($env:SHIPGLOWS_BRANCH) { $env:SHIPGLOWS_BRANCH } else { '' }),
     [string]$ShipglowsDir = $(if ($env:SHIPGLOWS_DIR) { $env:SHIPGLOWS_DIR } else { Join-Path $env:USERPROFILE 'shipglows' }),
     [ValidateSet('local','full')]
-    [string]$InstallMode = $(if ($env:SHIPGLOWS_INSTALL_MODE) { $env:SHIPGLOWS_INSTALL_MODE } else { 'local' }),
+    [string]$InstallMode = $(if ($env:SHIPGLOWS_INSTALL_MODE) { $env:SHIPGLOWS_INSTALL_MODE } else { '' }),
     [switch]$DownloadOnly
 )
 
@@ -25,13 +25,39 @@ function Resolve-CompatibleValue([string]$Canonical, [string]$LegacyShipglowz, [
 function Write-Info([string]$Message) { Write-Host "[ShipGlows] $Message" -ForegroundColor Cyan }
 function Write-Warn([string]$Message) { Write-Host "[ShipGlows] $Message" -ForegroundColor Yellow }
 function Fail([string]$Message) { Write-Error "[ShipGlows] $Message"; exit 1 }
+function Select-WindowsInstallMode {
+    Write-Host ''
+    Write-Host 'What would you like to install?' -ForegroundColor Cyan
+    Write-Host '  1) SSH tunnel only (local)'
+    Write-Host '     Connect this Windows PC to projects already running on another server.'
+    Write-Host '  2) Local DevServer (full, recommended)'
+    Write-Host '     Clone and run Astro, Python/FastAPI, and Flutter Web projects on this PC.'
+    Write-Host '  0) Cancel'
+    while ($true) {
+        $choice = Read-Host 'Choose 1 or 2 [2]'
+        switch ($choice.Trim()) {
+            '' { return 'full' }
+            '1' { return 'local' }
+            '2' { return 'full' }
+            '0' { Fail 'Installation cancelled.' }
+            default { Write-Warn 'Enter 1 for SSH tunnel, 2 for Local DevServer, or 0 to cancel.' }
+        }
+    }
+}
 
 $RepoUrl = Resolve-CompatibleValue $RepoUrl $env:SHIPGLOWZ_REPO_URL $env:SHIPFLOW_REPO_URL 'REPO_URL'
 if (-not $RepoUrl) { $RepoUrl = 'https://github.com/commandglows/shipglows.git' }
 $Branch = Resolve-CompatibleValue $Branch $env:SHIPGLOWZ_BRANCH $env:SHIPFLOW_BRANCH 'BRANCH'
 if (-not $Branch) { $Branch = 'main' }
 $InstallMode = Resolve-CompatibleValue $InstallMode $env:SHIPGLOWZ_INSTALL_MODE $env:SHIPFLOW_INSTALL_MODE 'INSTALL_MODE'
-if (-not $InstallMode) { $InstallMode = 'local' }
+if (-not $InstallMode) {
+    if ($DownloadOnly -or [Console]::IsInputRedirected) {
+        $InstallMode = 'local'
+        Write-Info 'No interactive Windows console was detected; using local mode. Pass -InstallMode full to automate the DevServer installation.'
+    } else {
+        $InstallMode = Select-WindowsInstallMode
+    }
+}
 function Remove-PathIfPresent([string]$Path) {
     if (Test-Path -LiteralPath $Path) {
         Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction SilentlyContinue

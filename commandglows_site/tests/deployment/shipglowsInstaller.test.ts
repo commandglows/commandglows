@@ -161,8 +161,9 @@ describe('ShipGlows public installer', () => {
     expect(shipglowsSection).toContain('UAC')
     expect(shipglowsSection).toContain("platform: 'windows'")
     expect(shipglowsSection).toContain("mode: 'full'")
-    expect(shipglowsSection).toContain("-File $installer -InstallMode full")
-    expect(shipglowsSection).toContain('DevServer natif')
+    expect(shipglowsSection).toContain("-File $installer")
+    expect(shipglowsSection).toContain('recommended local DevServer')
+    expect(shipglowsSection).toContain('DevServer local recommandé')
   })
 
   test('publishes platform and mode selectors for the installer page', () => {

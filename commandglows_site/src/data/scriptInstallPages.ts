@@ -218,7 +218,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			copyLabel: 'Copy command',
 			copiedLabel: 'Copied',
 			rawScriptLabel: 'Open raw script',
-			installNote: 'Run the copied command without sudo. Termux selects local mode and uses pkg without sudo, root selects full mode, and other interactive shells ask. On Debian/Ubuntu local mode, a one-time sudo confirmation may be requested only when Linux system prerequisites are missing; no sudo is used when they are already present. A non-interactive local run with missing prerequisites stops before cloning and prints the exact install commands. On native Windows without WSL, download the public archive through the same endpoint with curl.exe using ?format=powershell, then run powershell.exe -NoProfile -ExecutionPolicy Bypass. The script installs OpenSSH Client when needed and Windows may show a UAC confirmation. For automation, pipe into SHIPGLOWS_INSTALL_MODE=local sh or use sudo env SHIPGLOWS_INSTALL_MODE=full sh.',
+			installNote: 'Run the copied command without sudo. Termux selects local mode and uses pkg without sudo, root selects full mode, and other interactive shells ask. On Debian/Ubuntu local mode, a one-time sudo confirmation may be requested only when Linux system prerequisites are missing; no sudo is used when they are already present. A non-interactive local run with missing prerequisites stops before cloning and prints the exact install commands. On native Windows without WSL, the copied command asks whether you want SSH tunnels or the recommended local DevServer before downloading files. Windows may show a UAC confirmation. For automation, pass -InstallMode local or -InstallMode full to PowerShell.',
 			installVariants: [
 				{
 					id: 'unix-local',
@@ -241,15 +241,15 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 					platform: 'windows',
 					mode: 'local',
 					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer",
-					note: 'Windows local: télécharge l’archive publique sans Git et installe OpenSSH Client automatiquement si nécessaire. Une confirmation UAC peut apparaître.',
+					note: 'Windows: the installer asks whether you want SSH tunnels or the recommended local DevServer. A UAC confirmation may appear.',
 					available: true,
 				},
 				{
 					id: 'windows-full',
 					platform: 'windows',
 					mode: 'full',
-					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer -InstallMode full",
-					note: 'Windows full: installe uniquement le DevServer natif, sans WSL ni tunnel automatique. Les outils Git, Node/npm ou pnpm, uv et Flutter restent nécessaires selon les dépôts.',
+					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer",
+					note: 'Windows: choose Local DevServer at the prompt to clone and run projects without WSL or an automatic tunnel.',
 					available: true,
 				},
 				{
@@ -303,7 +303,7 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 			copyLabel: 'Copier la commande',
 			copiedLabel: 'Copié',
 			rawScriptLabel: 'Ouvrir le script brut',
-			installNote: 'Lance la commande copiée sans sudo. Termux choisit le mode local et utilise pkg sans sudo, root choisit le mode complet, et les autres shells interactifs demandent. En mode local sur Debian/Ubuntu, une confirmation sudo unique peut être demandée uniquement si des prérequis système Linux manquent ; aucun sudo n’est utilisé s’ils sont déjà présents. Une exécution locale non interactive avec des prérequis manquants s’arrête avant le clonage et affiche les commandes d’installation exactes. Sur Windows natif sans WSL, télécharge l’archive publique via le même endpoint avec curl.exe et ?format=powershell, puis lance powershell.exe -NoProfile -ExecutionPolicy Bypass. Le script installe OpenSSH Client si nécessaire et Windows peut afficher une confirmation UAC. En automatisation, utilise SHIPGLOWS_INSTALL_MODE=local côté sh, ou sudo env SHIPGLOWS_INSTALL_MODE=full sh.',
+			installNote: 'Lance la commande copiée sans sudo. Termux choisit le mode local et utilise pkg sans sudo, root choisit le mode complet, et les autres shells interactifs demandent. En mode local sur Debian/Ubuntu, une confirmation sudo unique peut être demandée uniquement si des prérequis système Linux manquent ; aucun sudo n’est utilisé s’ils sont déjà présents. Une exécution locale non interactive avec des prérequis manquants s’arrête avant le clonage et affiche les commandes d’installation exactes. Sur Windows natif sans WSL, la commande copiée demande si vous voulez les tunnels SSH ou le DevServer local recommandé avant de télécharger les fichiers. Windows peut afficher une confirmation UAC. En automatisation, passez -InstallMode local ou -InstallMode full à PowerShell.',
 			installVariants: [
 				{
 					id: 'unix-local',
@@ -326,15 +326,15 @@ const pages: Record<ScriptPageKey, Record<Language, ScriptInstallPageContent>> =
 					platform: 'windows',
 					mode: 'local',
 					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer",
-					note: 'Windows local : télécharge l’archive publique sans Git et installe OpenSSH Client automatiquement si nécessaire. Une confirmation UAC peut apparaître.',
+					note: 'Windows : l’installateur demande si vous voulez les tunnels SSH ou le DevServer local recommandé. Une confirmation UAC peut apparaître.',
 					available: true,
 				},
 				{
 					id: 'windows-full',
 					platform: 'windows',
 					mode: 'full',
-					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer -InstallMode full",
-					note: 'Windows full : installe uniquement le DevServer natif, sans WSL ni tunnel automatique. Les outils Git, Node/npm ou pnpm, uv et Flutter restent nécessaires selon les dépôts.',
+					command: "$installer = Join-Path $env:TEMP 'shipglows-install.ps1'\ncurl.exe -fsSL 'https://www.commandglows.com/shipglows-script?format=powershell' -o $installer\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer",
+					note: 'Windows : choisissez DevServer local à l’invite pour cloner et lancer des projets sans WSL ni tunnel automatique.',
 					available: true,
 				},
 				{
