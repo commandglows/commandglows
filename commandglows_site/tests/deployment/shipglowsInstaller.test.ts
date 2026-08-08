@@ -44,6 +44,8 @@ describe('ShipGlows public installer', () => {
     expect(windowsInstaller).toContain("Join-Path $env:WINDIR 'System32\\tar.exe'")
     expect(windowsInstaller).toContain('$tarPath -tf $ArchivePath')
     expect(windowsInstaller).toContain('$tarPath -xf $ArchivePath -C $DestinationPath $entries')
+    expect(windowsInstaller).toContain('$windowsCandidates = @(')
+    expect(windowsInstaller).not.toMatch(/\$windowsCandidates = @\([^)]*\) \| Where-Object/)
     expect(windowsInstaller).toContain('[switch]$DownloadOnly')
     expect(windowsInstaller).toContain('commit/$encodedRef.patch')
     expect(windowsInstaller).not.toContain('api.github.com')

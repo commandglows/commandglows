@@ -122,7 +122,7 @@ if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
     if ($LASTEXITCODE -eq 0 -and $wslProbeOutput -eq 'ok') {
         Write-Warn 'WSL est disponible. Pour le CLI complet, utilise le parcours WSL.'
     } else {
-        Write-Warn 'WSL is detected but unusable on this machine; using native Windows local mode.'
+        Write-Warn "WSL is detected but unusable on this machine; using native Windows $InstallMode mode."
     }
 }
 
@@ -137,7 +137,7 @@ New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $extractRoot -Force | Out-Null
 
 try {
-    Write-Info "Downloading ShipGlows local installer from commit $($source.Commit)..."
+    Write-Info "Downloading ShipGlows Windows files from commit $($source.Commit)..."
     & curl.exe -fsSL $source.ArchiveUrl -o $archivePath
     if ($LASTEXITCODE -ne 0) { Fail 'ShipGlows download failed.' }
 
@@ -153,7 +153,10 @@ try {
         New-Item -ItemType Directory -Path $localDirectory -Force | Out-Null
         Copy-Item -LiteralPath $installerCandidates[0].FullName -Destination $localInstaller -Force
     } else {
-        $windowsCandidates = @(Get-ChildItem -LiteralPath $extractRoot -Recurse -Force -Directory -Filter 'windows') | Where-Object { Test-Path (Join-Path $_.FullName 'install-devserver.ps1') }
+        $windowsCandidates = @(
+            Get-ChildItem -LiteralPath $extractRoot -Recurse -Force -Directory -Filter 'windows' |
+                Where-Object { Test-Path (Join-Path $_.FullName 'install-devserver.ps1') }
+        )
         if ($windowsCandidates.Count -ne 1) { Fail 'Native Windows DevServer directory was not found in the archive.' }
         New-Item -ItemType Directory -Path $windowsDirectory -Force | Out-Null
         Get-ChildItem -LiteralPath $windowsCandidates[0].FullName -Force -File | Copy-Item -Destination $windowsDirectory -Force
