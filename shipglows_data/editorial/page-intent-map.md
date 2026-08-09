@@ -1,10 +1,10 @@
 ---
 artifact: editorial_governance
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-05-23"
+updated: "2026-08-09"
 status: reviewed
 source_skill: sf-docs
 scope: page-intent-map
@@ -29,8 +29,7 @@ evidence:
   - src/pages/[...lang]/[windows_mastery].astro
   - src/pages/[...lang]/[products].astro
   - src/pages/[...lang]/termux.astro
-  - src/pages/[...lang]/dotfiles.astro
-  - src/pages/[...lang]/shipglows.astro
+  - src/utils/shipglowsRedirects.ts
 next_review: "2026-06-17"
 next_step: "/sf-docs update"
 ---
@@ -49,7 +48,8 @@ Define the job of major page families so copy and layout changes stay coherent a
 | `Windows Mastery` sales page | close the flagship offer | explain curriculum and fit | authenticated checkout or curriculum entry | high |
 | Product catalog | help comparison across companion products | route users back to flagship context when relevant | product detail or flagship CTA | medium |
 | Product detail pages | explain offer fit and availability | qualify or disqualify users | valid CTA only; no dead ends | medium |
-| Script utility pages | explain one-command installers and their scope | route to raw script, GitHub, and related setup docs | copy/install command or inspect script | medium |
+| Termux script utility pages | explain the CommandGlows-owned Termux installer and its scope | route to the raw script, GitHub, and related setup docs | copy/install command or inspect script | medium |
+| ShipGlows compatibility routes | preserve former ShipGlows, dotfiles and ShipGlowz URLs | transfer operators directly to the canonical ShipGlows domain | permanent redirect only | low |
 | Blog posts | educate and attract qualified discovery traffic | hand off to flagship or related docs | contextual internal links | low |
 | Docs and training pages | teach a concrete framework or lesson | reinforce paid value and progression | next lesson or relevant conversion boundary | medium |
 | Legal pages | communicate obligations and disclosures accurately | reduce support ambiguity | no marketing CTA required | high |

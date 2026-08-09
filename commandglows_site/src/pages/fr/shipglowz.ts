@@ -3,4 +3,4 @@ import { createShipGlowsRedirect } from '@/utils/shipglowsRedirects'
 
 export const prerender = false
 
-export const ALL: APIRoute = ({ url }) => createShipGlowsRedirect('/shipglowz-script', url)
+export const ALL: APIRoute = ({ url }) => createShipGlowsRedirect('/fr/shipglowz', url)

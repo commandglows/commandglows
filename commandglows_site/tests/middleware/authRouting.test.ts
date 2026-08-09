@@ -21,10 +21,11 @@ describe("auth routing middleware", () => {
     expect(shouldBypassClerkMiddleware("/signin")).toBe(false);
   });
 
-  test("bypasses only the exact canonical and legacy ShipGlows script paths", () => {
-    expect(shouldBypassClerkMiddleware("/shipglows-script")).toBe(true);
-    expect(shouldBypassClerkMiddleware("/shipglowz-script")).toBe(true);
+  test("does not special-case the retired ShipGlows installer routes", () => {
+    expect(shouldBypassClerkMiddleware("/shipglows-script")).toBe(false);
+    expect(shouldBypassClerkMiddleware("/shipglowz-script")).toBe(false);
     expect(shouldBypassClerkMiddleware("/shipglows-script/extra")).toBe(false);
     expect(shouldBypassClerkMiddleware("/shipglowz-script-evil")).toBe(false);
+    expect(shouldBypassClerkMiddleware("/termux-script")).toBe(true);
   });
 });

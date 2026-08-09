@@ -66,7 +66,16 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         const pathname = new URL(page).pathname
-        return !/^(?:\/(?:account|admin|dashboard|purchase|signin))(?:\/|$)/.test(pathname)
+        const excludedPaths = new Set([
+          '/shipglows',
+          '/fr/shipglows',
+          '/dotfiles',
+          '/fr/dotfiles',
+          '/shipglowz',
+          '/fr/shipglowz',
+        ])
+        return !excludedPaths.has(pathname)
+          && !/^(?:\/(?:account|admin|dashboard|purchase|signin))(?:\/|$)/.test(pathname)
       },
       i18n: {
         defaultLocale: "en",

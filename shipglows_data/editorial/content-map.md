@@ -1,10 +1,10 @@
 ---
 artifact: content_map
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-05-23"
+updated: "2026-08-09"
 status: reviewed
 source_skill: sf-docs
 scope: content-map
@@ -29,8 +29,7 @@ evidence:
   - src/content/products/
   - src/pages/[...lang]/
   - src/pages/[...lang]/termux.astro
-  - src/pages/[...lang]/dotfiles.astro
-  - src/pages/[...lang]/shipglows.astro
+  - src/utils/shipglowsRedirects.ts
 linked_artifacts:
   - shipglows_data/editorial/public-surface-map.md
   - shipglows_data/editorial/page-intent-map.md
@@ -60,7 +59,8 @@ Map public and semi-public content surfaces so publishing stays aligned with the
 | Training and docs | `src/content/docs/{en,fr}/` | gated or structured learning content | MD, MDX | offer contract and curriculum | offer or lesson scope changes |
 | Product pages | `src/content/products/{en,fr}/` | catalog and product narratives | Markdown | active offer reality | product positioning or status changes |
 | Landing and offer pages | `src/pages/[...lang]/` including `/windows-mastery` and `/products` | conversion surfaces | Astro pages | GTM and product contract | offer, CTA, or framing changes |
-| Script utility pages | `/termux`, `/dotfiles`, `/shipglows` and French equivalents | explain safe one-command installers and route to raw scripts | Astro pages | implemented bootstrap scripts and repositories | installer command, scope, or installed-tool boundary changes |
+| Script utility page | `/termux` and `/fr/termux` | explain the CommandGlows-owned Termux installer and route to its raw script | Astro pages | implemented Termux bootstrap and dotfiles repository | Termux installer command, scope, or installed-tool boundary changes |
+| ShipGlows compatibility routes | former ShipGlows, dotfiles and ShipGlowz page/script paths | preserve old links through exact permanent redirects | Astro endpoints | canonical pages and scripts on `https://shipglows.com` | canonical destination or compatibility contract changes |
 | Changelog | `CHANGELOG.md` | user-facing release and documentation updates | Markdown | release history | relevant user-visible change ships |
 | Newsletter | `src/pages/api/newsletter/` plus external copy assets | capture and nurture | API plus external copy | lifecycle messaging | signup or nurture flow changes |
 | AI-readable site summary | `public/llms.txt` | provide a concise, source-aligned site summary for AI retrieval | Markdown | business, branding, and public-surface contracts | flagship offer, key routes, or claim boundaries change |
@@ -90,5 +90,6 @@ Map public and semi-public content surfaces so publishing stays aligned with the
 | New publishable source note in `CONTENU/` | blog, docs, and semantic cluster placement |
 | Positioning change | GTM, blog intros, landing pages, product pages, newsletter copy |
 | Workflow or access change | docs, premium lessons, product pages, support copy, changelog |
-| Installer command or scope change | script utility pages, raw script endpoint, repository README, changelog |
+| Termux installer command or scope change | Termux utility pages, raw script endpoint, repository README, changelog |
+| ShipGlows or dotfiles installer change | canonical `shipglows.com` surfaces; CommandGlows changes only if the compatibility destination changes |
 | Bilingual content update | matching `en` and `fr` surfaces in the same release batch |

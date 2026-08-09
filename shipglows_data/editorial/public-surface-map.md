@@ -1,10 +1,10 @@
 ---
 artifact: editorial_governance
 metadata_schema_version: "1.0"
-artifact_version: "1.1.1"
+artifact_version: "1.1.2"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-07-17"
+updated: "2026-08-09"
 status: reviewed
 source_skill: sf-docs
 scope: public-surface-map
@@ -28,8 +28,7 @@ evidence:
   - src/pages/[...lang]/[products].astro
   - src/pages/[...lang]/[blog].astro
   - src/pages/[...lang]/termux.astro
-  - src/pages/[...lang]/dotfiles.astro
-  - src/pages/[...lang]/shipglows.astro
+  - src/utils/shipglowsRedirects.ts
   - src/pages/[...lang]/commandglows-founder.astro
   - src/pages/[...lang]/socialglowz-founder.astro
   - src/lib/commerce/offers.ts
@@ -69,7 +68,8 @@ Use this as the minimum canonical map for product sales copy and checkout author
 | Product catalog and detail pages | `/products`, `/fr/produits`, localized product routes | buyers comparing offers | high | status, CTA destination, availability |
 | CommandGlows founder offer | `/commandglows-founder`, `/fr/commandglows-founder` | high-intent app buyers | high | canonical direct-sale page for CommandGlows App founder tiers |
 | Shared-commerce SocialGlowz founder mirror | `/socialglowz-founder`, `/fr/socialglowz-founder` | buyers entering via suite commerce paths | high | supporting commerce surface only; do not treat as the canonical SocialGlowz marketing home when `socialglowz.com` has the live offer page |
-| Script utility pages | `/termux`, `/fr/termux`, `/dotfiles`, `/fr/dotfiles`, `/shipglows`, `/fr/shipglows` | operators who want one-command installers | medium | must match real bootstrap scope and raw script endpoints |
+| Termux script utility pages | `/termux`, `/fr/termux` | operators who want the Android one-command installer | medium | CommandGlows owns this page and raw endpoint |
+| ShipGlows compatibility boundary | former ShipGlows, dotfiles and ShipGlowz page/script paths | operators following old links or commands | low | exact `308` redirects only; canonical content and installers belong to `https://shipglows.com` |
 | Blog index and articles | localized blog routes | top-of-funnel discovery | medium | claim discipline and internal linking |
 | Docs and training hub | localized docs routes and dashboard docs | learners and paid users | high | access model, curriculum, and lesson framing |
 | Legal pages | privacy, terms, copyright, legal, disclaimer routes | users and regulators | high | policy accuracy matters |

@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-05-23"
+updated: "2026-08-09"
 status: reviewed
 source_skill: sf-docs
 scope: technical-context
@@ -33,8 +33,9 @@ evidence:
   - src/middleware
   - convex/schema.ts
   - src/pages/[...lang]/termux.astro
-  - src/pages/[...lang]/dotfiles.astro
-  - src/pages/[...lang]/shipglows.astro
+  - src/utils/shipglowsRedirects.ts
+  - src/pages/shipglows.ts
+  - src/pages/dotfiles.ts
 next_review: "2026-06-17"
 next_step: "pnpm build:check"
 ---
@@ -87,14 +88,15 @@ CommandGlows is an Astro server-rendered site with bilingual marketing pages, do
 - `src/pages/[...lang]/[blog_slug].astro`
 - `src/pages/[...lang]/[services].astro`
 - `src/pages/[...lang]/[roadmap].astro`
-- script utility landing pages: `/termux`, `/dotfiles`, `/shipglows` and French equivalents
+- Termux installer landing page: `/termux` and `/fr/termux`
+- exact compatibility redirects for the former ShipGlows and dotfiles pages; canonical ownership lives on `https://shipglows.com`
 - legal and utility pages under the same bilingual pattern
 
-### Raw installer endpoints
+### Installer endpoints and compatibility redirects
 
 - `src/pages/termux-script.ts`
-- `src/pages/dotfiles-script.ts`
-- `src/pages/shipglows-script.ts`
+- `src/pages/dotfiles-script.ts` and `src/pages/shipglows-script.ts` return direct `308` redirects to the canonical ShipGlows endpoints
+- `src/utils/shipglowsRedirects.ts` owns the fixed, exact, query-preserving redirect table, including historical ShipGlowz aliases
 
 ### Dashboard
 
