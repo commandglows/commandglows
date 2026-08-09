@@ -148,7 +148,7 @@ function Assert-PowerShellSyntax([string]$Path) {
 if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
     $wslProbeOutput = (& wsl.exe -e sh -lc 'printf ok' 2>$null | Out-String).Trim()
     if ($LASTEXITCODE -eq 0 -and $wslProbeOutput -eq 'ok') {
-        Write-Warn 'WSL est disponible. Pour le CLI complet, utilise le parcours WSL.'
+        Write-Warn 'WSL is available. Use the WSL installation path for the complete Linux CLI.'
     } else {
         Write-Warn "WSL is detected but unusable on this machine; using native Windows $InstallMode mode."
     }
@@ -219,7 +219,7 @@ if ($DownloadOnly) {
 }
 
 if ($InstallMode -eq 'local') {
-    Write-Info 'Lancement de la configuration locale Windows.'
+    Write-Info 'Starting native Windows local setup.'
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $localInstaller
     if ($LASTEXITCODE -ne 0) { Fail 'Native Windows configuration failed.' }
 } else {
@@ -231,7 +231,7 @@ if ($InstallMode -eq 'local') {
 Write-Host ''
 Write-Host 'ShipGlows native Windows installation completed.' -ForegroundColor Green
 if ($InstallMode -eq 'local') {
-    Write-Host 'Utilise ensuite: tunnel -Port 3001' -ForegroundColor Green
+    Write-Host 'Next: tunnel -Port 3001' -ForegroundColor Green
 } else {
-    Write-Host 'Pour les projets locaux: shipglows-dev' -ForegroundColor Green
+    Write-Host 'For local projects: s (or shipglows-dev)' -ForegroundColor Green
 }
