@@ -33,9 +33,9 @@ function Select-WindowsInstallMode {
     Write-Host '     Clone and run Astro, Python/FastAPI, and Flutter Web projects on this PC.'
     Write-Host '  0) Cancel'
     while ($true) {
-        $choice = Read-Host 'Choose 1 or 2 [2]'
+        $choice = Read-Host 'Choose 1 or 2'
         switch ($choice.Trim()) {
-            '' { return 'full' }
+            '' { Write-Warn 'A choice is required. Enter 1, 2, or 0.' }
             '1' { return 'local' }
             '2' { return 'full' }
             '0' { Fail 'Installation cancelled.' }
