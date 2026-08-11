@@ -1,12 +1,25 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 
-const TOKEN_VERSION = 1
-const TOKEN_TTL_SECONDS = 2 * 60 * 60
+const TOKEN_VERSION = 3
+const TOKEN_TTL_SECONDS = 10 * 60
+export const COMMERCE_CHECKOUT_AUDIENCE = 'suite-commerce-checkout'
 
 type CheckoutIdentityPayload = {
   v: number
   sub: string
+  productId: string
+  environment: string
+  aud: typeof COMMERCE_CHECKOUT_AUDIENCE
+  jti: string
   exp: number
+}
+
+export type VerifiedCommerceCheckoutIdentity = {
+  globalUserId: string
+  productId: string
+  environment: string
+  jti: string
+  expiresAt: number
 }
 
 function encode(value: string): string {
@@ -19,12 +32,19 @@ function signature(encodedPayload: string, secret: string): string {
 
 export function createCommerceCheckoutIdentityToken(
   globalUserId: string,
+  productId: string,
+  environment: string,
   secret: string,
-  nowSeconds = Math.floor(Date.now() / 1000)
+  nowSeconds = Math.floor(Date.now() / 1000),
+  jti = randomBytes(24).toString('base64url')
 ): string {
   const payload: CheckoutIdentityPayload = {
     v: TOKEN_VERSION,
     sub: globalUserId.trim(),
+    productId: productId.trim(),
+    environment: environment.trim(),
+    aud: COMMERCE_CHECKOUT_AUDIENCE,
+    jti,
     exp: nowSeconds + TOKEN_TTL_SECONDS,
   }
   const encodedPayload = encode(JSON.stringify(payload))
@@ -35,7 +55,7 @@ export function verifyCommerceCheckoutIdentityToken(
   token: string,
   secret: string,
   nowSeconds = Math.floor(Date.now() / 1000)
-): string | null {
+): VerifiedCommerceCheckoutIdentity | null {
   const [encodedPayload, providedSignature, extra] = token.split('.')
   if (!encodedPayload || !providedSignature || extra) return null
 
@@ -52,13 +72,32 @@ export function verifyCommerceCheckoutIdentityToken(
       payload.v !== TOKEN_VERSION ||
       typeof payload.sub !== 'string' ||
       !payload.sub.trim() ||
+      typeof payload.productId !== 'string' ||
+      !payload.productId.trim() ||
+      typeof payload.environment !== 'string' ||
+      !payload.environment.trim() ||
+      payload.aud !== COMMERCE_CHECKOUT_AUDIENCE ||
+      typeof payload.jti !== 'string' ||
+      payload.jti.length < 24 ||
       typeof payload.exp !== 'number' ||
       payload.exp < nowSeconds
     ) {
       return null
     }
-    return payload.sub.trim()
+    return {
+      globalUserId: payload.sub.trim(),
+      productId: payload.productId.trim(),
+      environment: payload.environment.trim(),
+      jti: payload.jti,
+      expiresAt: payload.exp,
+    }
   } catch {
     return null
   }
+}
+
+export function hashCommerceCheckoutJti(jti: string, secret: string): string {
+  return createHmac('sha256', secret)
+    .update(`suite-commerce-checkout:${jti}`)
+    .digest('hex')
 }

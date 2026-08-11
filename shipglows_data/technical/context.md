@@ -1,7 +1,7 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.4.0"
 project: commandglows
 created: "2026-05-17"
 updated: "2026-08-11"
@@ -32,6 +32,7 @@ evidence:
   - commandglows_site/src/pages/api/commerce/checkout.ts
   - commandglows_site/src/pages/api/commerce/webhooks/stripe.ts
   - commandglows_app/lib/features/auth/presentation/trial_access_screen.dart
+  - commandglows_app/lib/core/router/app_router.dart
 next_review: "2026-09-11"
 next_step: "Refresh after hosted Stripe proof or a major site/app boundary change."
 ---
@@ -61,7 +62,7 @@ CommandGlows is a governed monorepo containing an Astro server-rendered site
 for bilingual content, commerce and identity bridges, plus a Flutter
 Android-first app. Convex owns suite identity and entitlement state; Firebase
 is the app authentication bridge; Stripe Managed Payments is the implemented
-CommandGlows Merchant of Record adapter pending hosted proof.
+suite-wide Merchant of Record adapter pending hosted proof.
 
 ## Top-Level Mental Model
 
@@ -102,11 +103,9 @@ CommandGlows Merchant of Record adapter pending hosted proof.
 ### APIs
 
 - `src/pages/api/clerk/webhook.ts`
-- `src/pages/api/polar/checkout.ts`
-- `src/pages/api/polar/webhook.ts`
+- `src/pages/api/checkout/start.ts`
 - `src/pages/api/commerce/checkout.ts`
 - `src/pages/api/commerce/webhooks/stripe.ts`
-- `src/pages/api/commerce/webhooks/lemon-squeezy.ts` for CommunityGlows only
 - `src/pages/api/bridge/firebase.ts`
 - `src/pages/api/newsletter/subscribe.ts`
 - `src/pages/api/newsletter/unsubscribe.ts`
@@ -116,6 +115,9 @@ CommandGlows Merchant of Record adapter pending hosted proof.
 - `src/content/config.ts` stays the active content-schema contract.
 - Locale and route labels must stay aligned between `src/pages/[...lang]`, `src/i18n/*`, and routing utilities.
 - Public docs and premium docs live in the same content collection but do not share the same access behavior.
+- Flutter product routes require a remote authenticated session and an active server-issued CommandGlows trial or paid entitlement; local fallback is never an access grant.
+- Every registered suite product uses the same server-owned 30-day cycle, two-restart, then-paid policy; no identity sync or legacy `product_default` row grants access.
+- Stripe is the only active commerce provider; every offer requires an environment-backed Price ID and a signed product-bound suite identity handoff.
 
 ## Validation
 

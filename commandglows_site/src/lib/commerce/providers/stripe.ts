@@ -68,7 +68,7 @@ export async function createStripeManagedPaymentsCheckout(
 
   try {
     const stripe = client ?? stripeClient(env.STRIPE_SECRET_KEY, env.STRIPE_API_VERSION)
-    const session = await stripe.checkout.sessions.create({
+    const checkoutParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       managed_payments: { enabled: true },
       line_items: [{ price: config.priceId, quantity: 1 }],
@@ -78,7 +78,12 @@ export async function createStripeManagedPaymentsCheckout(
       metadata,
       payment_intent_data: { metadata },
       ...(promotionCodeId ? { discounts: [{ promotion_code: promotionCodeId }] } : {}),
-    })
+    }
+    const session = request.idempotencyHint
+      ? await stripe.checkout.sessions.create(checkoutParams, {
+          idempotencyKey: request.idempotencyHint,
+        })
+      : await stripe.checkout.sessions.create(checkoutParams)
 
     if (!session.url) {
       return { ok: false, code: 'provider_error', message: 'Stripe did not return a checkout URL' }

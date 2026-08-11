@@ -1,5 +1,6 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro'
+import CheckoutButton from '@/components/commerce/CheckoutButton.astro'
 import type { Language } from '@/types'
 import { getLocalizedSiteUrl } from '@/constants'
 
@@ -83,17 +84,17 @@ interface CopyBlock {
 
 const copyByLang: Record<Language, CopyBlock> = {
 	en: {
-		metaTitle: 'Winflow Founder Access | Early Bird Lifetime Deal',
+		metaTitle: 'CommandGlows Founder Access | Early Bird Lifetime Deal',
 		metaDescription:
-			'Become a Winflow founder and get lifetime access to the productivity app that helps you capture, transform, and reuse your words faster.',
-		heroTitle: 'Become a Winflow founder',
+			'Become a CommandGlows founder and get lifetime access to the productivity app that helps you capture, transform, and reuse your words faster.',
+		heroTitle: 'Become a CommandGlows founder',
 		heroSubtitle:
-			'Get lifetime access to the productivity app that helps you capture, transform, and reuse your words faster. Android is available first, with future released platforms included as Winflow grows.',
+			'Get lifetime access to the productivity app that helps you capture, transform, and reuse your words faster. Android is available first, with future released platforms included as CommandGlows grows.',
 		badge: 'Early Bird Lifetime Deal',
 		founderCodeLabel: 'FOUNDER',
 		founderCodeText: '50% off for the first 50 founders',
 		founderCodeMicrocopy:
-			'Use code FOUNDER at checkout. Early founders get the lowest direct price, first access to new releases, and the strongest voice in what Winflow becomes next.',
+			'Use code FOUNDER at checkout. Early founders get the lowest direct price, first access to new releases, and the strongest voice in what CommandGlows becomes next.',
 		founderPriceLabel: 'With FOUNDER',
 		regularPriceLabel: 'Public price',
 		stickyText: 'FOUNDER code active: 50% off for the first 50 purchases.',
@@ -101,7 +102,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		secondaryAction: 'Compare plans',
 		availabilityTitle: 'Start on Android. Keep your place for what comes next.',
 		availabilityText:
-			'Winflow starts where your words already happen: on your phone. Your founder license covers released platforms over time, without forcing you to buy again for every device you use.',
+			'CommandGlows starts where your words already happen: on your phone. Your founder license covers released platforms over time, without forcing you to buy again for every device you use.',
 		availabilityBullets: [
 			'Android is available first.',
 			'Windows, iOS, and Linux are planned with no promised release date.',
@@ -110,7 +111,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		],
 		productHeading: 'Turn scattered words into usable workflow',
 		productSubheading:
-			'Winflow is built for the moments when typing is too slow, copying is messy, and your best ideas are trapped between apps.',
+			'CommandGlows is built for the moments when typing is too slow, copying is messy, and your best ideas are trapped between apps.',
 		workflowHeading: 'A faster path from thought to action',
 		workflowText:
 			'Capture what matters, clean it up, and reuse it where the work actually happens.',
@@ -138,9 +139,9 @@ const copyByLang: Record<Language, CopyBlock> = {
 		activationText:
 			'Choose the amount of device flexibility you want. Your activations can be used across released platforms, so the plan follows your setup instead of locking you into one device type.',
 		activationBullets: [
-			'Use your activations on any released Winflow platform.',
+			'Use your activations on any released CommandGlows platform.',
 			'Switch devices within the activation rules of your plan.',
-			'Keep the founder deal while Winflow grows.',
+			'Keep the founder deal while CommandGlows grows.',
 			'Avoid paying separately for every future platform release.',
 		],
 		tiersHeading: 'Choose your founder tier',
@@ -152,7 +153,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				label: '1 activation',
 				focus: 'For one personal device',
 				included:
-					'Start with Winflow on one active device and keep access to future released platforms under your founder license.',
+					'Start with CommandGlows on one active device and keep access to future released platforms under your founder license.',
 				activation: '1 active device',
 				price: '$99',
 				founderPrice: '$49.50',
@@ -164,7 +165,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				label: '2 activations',
 				focus: 'For daily multi-device use',
 				included:
-					'Use Winflow across two active personal devices when your workflow moves between screens.',
+					'Use CommandGlows across two active personal devices when your workflow moves between screens.',
 				activation: '2 active devices',
 				price: '$179',
 				founderPrice: '$89.50',
@@ -176,7 +177,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				label: '5 activations',
 				focus: 'For a complete productivity setup',
 				included:
-					'Give your main devices room to work together as Winflow expands beyond Android.',
+					'Give your main devices room to work together as CommandGlows expands beyond Android.',
 				activation: '5 active devices',
 				price: '$349',
 				founderPrice: '$174.50',
@@ -198,7 +199,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		],
 		trustHeading: 'A clear founder deal',
 		trustText:
-			'The offer is intentionally simple: buy once, start with Android, and keep access as Winflow grows. The limits are clear so the product can stay sustainable.',
+			'The offer is intentionally simple: buy once, start with Android, and keep access as CommandGlows grows. The limits are clear so the product can stay sustainable.',
 		trustPoints: [
 			'Android is available now.',
 			'Future platforms are planned, but not promised by a fixed date.',
@@ -211,7 +212,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 			{
 				question: 'What do I get today?',
 				answer:
-					'You get founder access to Winflow with Android available first, under the activation limit of the plan you choose.',
+					'You get founder access to CommandGlows with Android available first, under the activation limit of the plan you choose.',
 			},
 			{
 				question: 'Are future platforms included?',
@@ -231,27 +232,27 @@ const copyByLang: Record<Language, CopyBlock> = {
 			{
 				question: 'Will the price stay the same?',
 				answer:
-					'No. Founder pricing is an early window and may increase as Winflow adds more depth and platform coverage.',
+					'No. Founder pricing is an early window and may increase as CommandGlows adds more depth and platform coverage.',
 			},
 		],
-		finalHeading: 'Become a Winflow founder',
+		finalHeading: 'Become a CommandGlows founder',
 		finalText:
-			'Lock in your founder tier while Winflow is still early, start on Android, and keep your place as the product expands.',
+			'Lock in your founder tier while CommandGlows is still early, start on Android, and keep your place as the product expands.',
 		finalAction: 'Become a founder',
 		finalActionUrl: '/contact',
 	},
 	fr: {
-		metaTitle: 'Winflow Founder Access | Early Bird Lifetime Deal',
+		metaTitle: 'CommandGlows Founder Access | Early Bird Lifetime Deal',
 		metaDescription:
-			'Devenez founder Winflow et obtenez un acces lifetime a l app de productivite qui aide a capturer, transformer et reutiliser vos mots plus vite.',
-		heroTitle: 'Become a Winflow founder',
+			'Devenez founder CommandGlows et obtenez un acces lifetime a l app de productivite qui aide a capturer, transformer et reutiliser vos mots plus vite.',
+		heroTitle: 'Devenez founder CommandGlows',
 		heroSubtitle:
-			"Obtenez un acces lifetime a l'app de productivite qui aide a capturer, transformer et reutiliser vos mots plus vite. Android est disponible en premier, et les futures plateformes sorties seront incluses quand Winflow grandira.",
+			"Obtenez un acces lifetime a l'app de productivite qui aide a capturer, transformer et reutiliser vos mots plus vite. Android est disponible en premier, et les futures plateformes sorties seront incluses quand CommandGlows grandira.",
 		badge: 'Early Bird Lifetime Deal',
 		founderCodeLabel: 'FOUNDER',
 		founderCodeText: '-50 % pour les 50 premiers founders',
 		founderCodeMicrocopy:
-			'Utilisez le code FOUNDER au checkout. Les premiers founders obtiennent le meilleur prix direct, les nouveautes en avant-premiere, et la voix la plus forte dans les priorites de Winflow.',
+			'Utilisez le code FOUNDER au checkout. Les premiers founders obtiennent le meilleur prix direct, les nouveautes en avant-premiere, et la voix la plus forte dans les priorites de CommandGlows.',
 		founderPriceLabel: 'Avec FOUNDER',
 		regularPriceLabel: 'Prix public',
 		stickyText: 'Code FOUNDER actif: -50 % pour les 50 premiers achats.',
@@ -259,7 +260,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		secondaryAction: 'Comparer les plans',
 		availabilityTitle: 'Commencez sur Android. Gardez votre place pour la suite.',
 		availabilityText:
-			"Winflow commence la ou vos mots existent deja: sur votre telephone. Votre licence founder couvre les plateformes sorties dans le temps, sans racheter une licence pour chaque appareil.",
+			"CommandGlows commence la ou vos mots existent deja: sur votre telephone. Votre licence founder couvre les plateformes sorties dans le temps, sans racheter une licence pour chaque appareil.",
 		availabilityBullets: [
 			'Android est disponible en premier.',
 			'Windows, iOS et Linux sont prevus sans promesse de date.',
@@ -268,7 +269,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		],
 		productHeading: 'Transformer des mots disperses en workflow utilisable',
 		productSubheading:
-			'Winflow est fait pour les moments ou taper est trop lent, copier-coller devient brouillon, et vos meilleures idees restent bloquees entre les apps.',
+			'CommandGlows est fait pour les moments ou taper est trop lent, copier-coller devient brouillon, et vos meilleures idees restent bloquees entre les apps.',
 		workflowHeading: "Un chemin plus rapide de l'idee a l'action",
 		workflowText:
 			'Capturez ce qui compte, nettoyez le texte, puis reutilisez-le la ou le travail se passe vraiment.',
@@ -296,9 +297,9 @@ const copyByLang: Record<Language, CopyBlock> = {
 		activationText:
 			'Choisissez le niveau de flexibilite dont vous avez besoin. Vos activations peuvent etre utilisees sur les plateformes sorties, donc le plan suit votre setup au lieu de vous enfermer dans un type d appareil.',
 		activationBullets: [
-			'Utilisez vos activations sur toute plateforme Winflow sortie.',
+			'Utilisez vos activations sur toute plateforme CommandGlows sortie.',
 			'Changez d appareil dans les regles d activation de votre plan.',
-			'Gardez le deal founder pendant que Winflow grandit.',
+			'Gardez le deal founder pendant que CommandGlows grandit.',
 			'Evitez de repayer separement chaque future plateforme.',
 		],
 		tiersHeading: 'Choisissez votre tier founder',
@@ -310,7 +311,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				label: '1 activation',
 				focus: 'Pour un appareil personnel',
 				included:
-					'Commencez avec Winflow sur un appareil actif et gardez acces aux futures plateformes sorties avec votre licence founder.',
+					'Commencez avec CommandGlows sur un appareil actif et gardez acces aux futures plateformes sorties avec votre licence founder.',
 				activation: '1 appareil actif',
 				price: '$99',
 				founderPrice: '$49.50',
@@ -322,7 +323,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				label: '2 activations',
 				focus: 'Pour un usage quotidien multi-device',
 				included:
-					'Utilisez Winflow sur deux appareils personnels actifs quand votre workflow passe d un ecran a l autre.',
+					'Utilisez CommandGlows sur deux appareils personnels actifs quand votre workflow passe d un ecran a l autre.',
 				activation: '2 appareils actifs',
 				price: '$179',
 				founderPrice: '$89.50',
@@ -334,7 +335,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 				label: '5 activations',
 				focus: 'Pour un setup productivite complet',
 				included:
-					'Laissez vos appareils principaux travailler ensemble pendant que Winflow s etend au-dela d Android.',
+					'Laissez vos appareils principaux travailler ensemble pendant que CommandGlows s etend au-dela d Android.',
 				activation: '5 appareils actifs',
 				price: '$349',
 				founderPrice: '$174.50',
@@ -356,7 +357,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		],
 		trustHeading: 'Un deal founder clair',
 		trustText:
-			"L'offre reste simple: achetez une fois, commencez sur Android, et gardez l'acces pendant que Winflow grandit. Les limites sont claires pour que le produit reste soutenable.",
+			"L'offre reste simple: achetez une fois, commencez sur Android, et gardez l'acces pendant que CommandGlows grandit. Les limites sont claires pour que le produit reste soutenable.",
 		trustPoints: [
 			'Android est disponible maintenant.',
 			'Les futures plateformes sont prevues, sans date promise.',
@@ -369,7 +370,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 			{
 				question: "Qu'est-ce que j'obtiens aujourd'hui?",
 				answer:
-					'Vous obtenez un acces founder a Winflow avec Android disponible en premier, selon la limite d activation du plan choisi.',
+					'Vous obtenez un acces founder a CommandGlows avec Android disponible en premier, selon la limite d activation du plan choisi.',
 			},
 			{
 				question: 'Les futures plateformes sont-elles incluses?',
@@ -392,9 +393,9 @@ const copyByLang: Record<Language, CopyBlock> = {
 					'Non. Le prix founder correspond a une fenetre early bird et peut augmenter avec la profondeur produit et les nouvelles plateformes.',
 			},
 		],
-		finalHeading: 'Become a Winflow founder',
+		finalHeading: 'Devenez founder CommandGlows',
 		finalText:
-			'Verrouillez votre tier founder pendant que Winflow est encore early, commencez sur Android, et gardez votre place pendant que le produit grandit.',
+			'Verrouillez votre tier founder pendant que CommandGlows est encore early, commencez sur Android, et gardez votre place pendant que le produit grandit.',
 		finalAction: 'Become a founder',
 		finalActionUrl: '/fr/contact',
 	},
@@ -405,19 +406,8 @@ const copy = copyByLang[lang]
 const pagePath = lang === 'fr' ? '/fr/commandglows-founder' : '/commandglows-founder'
 const defaultOfferId = 'commandglows_app/power'
 const founderCode = 'FOUNDER'
-const checkoutIdentityToken = Astro.url.searchParams.get('checkoutToken')?.trim()
-if (checkoutIdentityToken) {
-	Astro.response.headers.set('Referrer-Policy', 'no-referrer')
-	Astro.response.headers.set('Cache-Control', 'private, no-store')
-}
-
 function checkoutUrl(offerId: string) {
-	const successUrl = `/purchase/success?offerId=${encodeURIComponent(offerId)}`
-	const cancelUrl = `/purchase/cancel?offerId=${encodeURIComponent(offerId)}`
-	const identityQuery = checkoutIdentityToken
-		? `&identityToken=${encodeURIComponent(checkoutIdentityToken)}`
-		: ''
-	return `/api/commerce/checkout?offerId=${encodeURIComponent(offerId)}&provider=stripe&source=direct&sourceRef=${encodeURIComponent(pagePath)}&discountCode=${encodeURIComponent(founderCode)}&successUrl=${encodeURIComponent(successUrl)}&cancelUrl=${encodeURIComponent(cancelUrl)}${identityQuery}`
+	return `/api/checkout/start?offerId=${encodeURIComponent(offerId)}&source=direct&sourceRef=${encodeURIComponent(pagePath)}&discountCode=${encodeURIComponent(founderCode)}`
 }
 ---
 
@@ -465,12 +455,12 @@ function checkoutUrl(offerId: string) {
 						</p>
 					</div>
 					<div class="flex flex-wrap gap-4">
-						<a
-							href={checkoutUrl(defaultOfferId)}
+						<CheckoutButton
+							action={checkoutUrl(defaultOfferId)}
 							class="inline-flex items-center rounded-xl bg-magenta px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-magenta/90"
 						>
 							{copy.primaryAction}
-						</a>
+						</CheckoutButton>
 						<a
 							href="#architecture"
 							class="inline-flex items-center rounded-xl border border-content-border-strong bg-content-bg-elevated/80 px-6 py-3 text-sm font-semibold text-content-text-primary transition-colors hover:bg-content-bg-hover dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover"
@@ -588,12 +578,12 @@ function checkoutUrl(offerId: string) {
 						<p class="text-xs font-bold uppercase tracking-widest text-amber-300">{copy.founderCodeLabel}</p>
 						<p class="mt-1 text-lg font-semibold">{copy.founderCodeText}</p>
 					</div>
-					<a
-						href={checkoutUrl(defaultOfferId)}
+					<CheckoutButton
+						action={checkoutUrl(defaultOfferId)}
 						class="inline-flex items-center justify-center rounded-xl bg-amber-300 px-5 py-3 text-sm font-bold text-content-text-primary transition-colors hover:bg-amber-200"
 					>
 						{copy.primaryAction}
-					</a>
+					</CheckoutButton>
 				</div>
 			</div>
 			<div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -618,12 +608,13 @@ function checkoutUrl(offerId: string) {
 						<p class="mb-4 text-sm text-content-text-secondary dark:text-content-text-muted">{tier.included}</p>
 						<div class="mb-4 text-xs text-content-text-tertiary dark:text-content-text-muted">Activation: {tier.activation}</div>
 						<div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950 dark:border-amber-400/30 dark:bg-amber-950/30 dark:text-amber-100">{tier.state}</div>
-						<a
-							href={checkoutUrl(tier.offerId)}
-							class="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-content-bg-strong px-4 py-3 text-sm font-semibold text-content-text-over-dark transition-colors hover:bg-content-bg-hover dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover"
+						<CheckoutButton
+							action={checkoutUrl(tier.offerId)}
+							formClass="mt-5"
+							class="inline-flex w-full items-center justify-center rounded-xl bg-content-bg-strong px-4 py-3 text-sm font-semibold text-content-text-over-dark transition-colors hover:bg-content-bg-hover dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover"
 						>
 							{copy.primaryAction}
-						</a>
+						</CheckoutButton>
 					</div>
 				))}
 			</div>
@@ -660,12 +651,12 @@ function checkoutUrl(offerId: string) {
 					<h2 class="text-3xl font-bold">{copy.finalHeading}</h2>
 					<p class="mt-4 text-white/90">{copy.finalText}</p>
 				</div>
-				<a
-					href={checkoutUrl(defaultOfferId)}
+				<CheckoutButton
+					action={checkoutUrl(defaultOfferId)}
 					class="inline-flex items-center rounded-xl bg-content-bg-elevated px-6 py-3 font-semibold text-content-text-primary transition-colors hover:bg-content-bg-hover"
 				>
 					{copy.finalAction}
-				</a>
+				</CheckoutButton>
 			</div>
 		</section>
 	</div>
@@ -676,12 +667,12 @@ function checkoutUrl(offerId: string) {
 					<p class="text-xs font-bold uppercase tracking-widest text-amber-300">{copy.founderCodeLabel}</p>
 					<p class="text-sm font-semibold">{copy.stickyText}</p>
 				</div>
-				<a
-					href={checkoutUrl(defaultOfferId)}
+				<CheckoutButton
+					action={checkoutUrl(defaultOfferId)}
 					class="inline-flex items-center justify-center rounded-xl bg-amber-300 px-4 py-2 text-sm font-bold text-content-text-primary transition-colors hover:bg-amber-200"
 				>
 					{copy.primaryAction}
-				</a>
+				</CheckoutButton>
 			</div>
 		</div>
 	</div>

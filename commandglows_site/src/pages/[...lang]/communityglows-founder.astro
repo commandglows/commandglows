@@ -1,5 +1,6 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro'
+import CheckoutButton from '@/components/commerce/CheckoutButton.astro'
 import type { Language } from '@/types'
 import { getLocalizedSiteUrl } from '@/constants'
 
@@ -120,14 +121,14 @@ const copyByLang: Record<Language, CopyBlock> = {
 		offerKicker: 'Direct checkout',
 		offerHeading: 'Founder access for the first CommunityGlows buyers',
 		offerText:
-			'This direct Lifetime Deal uses the same commerce bridge as the suite: Lemon Squeezy checkout, signed provider events, and server-side entitlement fulfillment.',
+			'This direct Lifetime Deal uses the suite commerce bridge: authenticated Stripe Managed Payments checkout, signed provider events, and server-side entitlement fulfillment.',
 		offerName: 'CommunityGlows Lifetime Deal',
 		offerPrice: 'Early-bird founder price',
 		offerNote:
 			'Final price and public terms can still be adjusted before the full launch. The checkout is wired to the existing internal offer.',
 		offerIncludes: [
 			'Lifetime Deal access for CommunityGlows under the published founder terms.',
-			'Direct payment through the configured Lemon Squeezy provider.',
+			'Direct payment through the authenticated Stripe Managed Payments flow.',
 			'Webhook-based fulfillment into the suite entitlement ledger.',
 			'Support path for account verification, access issues, refunds, and replays.',
 		],
@@ -139,7 +140,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 			{ label: 'Offer ID', value: 'communityglows/lifetime_deal' },
 			{ label: 'Product ID', value: 'communityglows' },
 			{ label: 'Plan', value: 'lifetime_deal' },
-			{ label: 'Provider', value: 'Lemon Squeezy first' },
+			{ label: 'Provider', value: 'Stripe Managed Payments' },
 		],
 		limitsHeading: 'Clear launch boundaries',
 		limitsText:
@@ -148,7 +149,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 			'No fake scarcity, revenue numbers, or customer proof.',
 			'No promise of unsupported marketplace pricing parity beyond the terms you publish.',
 			'No client-side entitlement shortcut; access is confirmed by provider events and suite state.',
-			'Checkout requires live Lemon Squeezy configuration before it can complete in production.',
+			'Checkout requires live Stripe Managed Payments configuration before it can complete in production.',
 		],
 		faqHeading: 'Founder FAQ',
 		faqText: 'Short answers for the direct CommunityGlows founder offer.',
@@ -156,17 +157,17 @@ const copyByLang: Record<Language, CopyBlock> = {
 			{
 				question: 'Is the checkout connected?',
 				answer:
-					'Yes. The button calls the commerce checkout route with the CommunityGlows Lifetime Deal offer and Lemon Squeezy as the requested provider.',
+					'Yes. The button starts the authenticated suite purchase flow and then opens Stripe Managed Payments for the CommunityGlows Lifetime Deal offer.',
 			},
 			{
-				question: 'Do I need to create the Lemon Squeezy product first?',
+				question: 'Do I need to create the Stripe Price first?',
 				answer:
-					'Yes. The site can create hosted checkouts once the store, API key, webhook secret, and CommunityGlows variant id are configured.',
+					'Yes. The site can create hosted checkouts once Stripe, the webhook secret, and the CommunityGlows Price ID are configured.',
 			},
 			{
 				question: 'How is access fulfilled?',
 				answer:
-					'Lemon Squeezy sends signed commerce events. The suite bridge turns supported paid events into product entitlements and handles refund/revoke states.',
+					'Stripe sends signed commerce events. The suite bridge turns supported paid events into product entitlements and handles refund/revoke states.',
 			},
 			{
 				question: 'Can this offer change before launch?',
@@ -176,7 +177,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		],
 		finalHeading: 'Open the founder window for CommunityGlows',
 		finalText:
-			'Use this page as the direct sales surface while you finalize price, legal terms, and Lemon Squeezy product configuration.',
+			'Use this page as the direct sales surface while you finalize price, legal terms, and Stripe Price configuration.',
 		finalAction: 'Get CommunityGlows Founder Access',
 	},
 	fr: {
@@ -225,14 +226,14 @@ const copyByLang: Record<Language, CopyBlock> = {
 		offerKicker: 'Checkout direct',
 		offerHeading: 'Acces founder pour les premiers acheteurs CommunityGlows',
 		offerText:
-			'Ce Lifetime Deal direct utilise le meme pont commerce que la suite: checkout Lemon Squeezy, evenements fournisseur signes, et fulfillment serveur des droits d acces.',
+			'Ce Lifetime Deal direct utilise le pont commerce de la suite : checkout Stripe Managed Payments authentifie, evenements fournisseur signes et attribution serveur des droits d acces.',
 		offerName: 'CommunityGlows Lifetime Deal',
 		offerPrice: 'Prix founder early-bird',
 		offerNote:
 			'Le prix final et les termes publics peuvent encore etre ajustes avant le lancement complet. Le checkout est branche sur l offre interne existante.',
 		offerIncludes: [
 			'Acces Lifetime Deal a CommunityGlows selon les termes founder publies.',
-			'Paiement direct via le provider Lemon Squeezy configure.',
+			'Paiement direct via le parcours authentifie Stripe Managed Payments.',
 			'Fulfillment par webhook dans le ledger d entitlements de la suite.',
 			'Parcours support pour verification de compte, acces, remboursements et replays.',
 		],
@@ -244,7 +245,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 			{ label: 'Offer ID', value: 'communityglows/lifetime_deal' },
 			{ label: 'Product ID', value: 'communityglows' },
 			{ label: 'Plan', value: 'lifetime_deal' },
-			{ label: 'Provider', value: 'Lemon Squeezy d abord' },
+			{ label: 'Provider', value: 'Stripe Managed Payments' },
 		],
 		limitsHeading: 'Limites claires pour le lancement',
 		limitsText:
@@ -253,7 +254,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 			'Pas de fausse rarete, de chiffres de revenus, ni de preuve client inventee.',
 			'Pas de promesse de parite marketplace non supportee hors des termes publies.',
 			'Pas de raccourci d acces cote client; l acces vient des evenements provider et de l etat suite.',
-			'Le checkout demande la configuration Lemon Squeezy live avant de finaliser un achat en production.',
+			'Le checkout demande la configuration Stripe Managed Payments live avant de finaliser un achat en production.',
 		],
 		faqHeading: 'FAQ founder',
 		faqText: 'Reponses courtes pour l offre CommunityGlows directe.',
@@ -261,17 +262,17 @@ const copyByLang: Record<Language, CopyBlock> = {
 			{
 				question: 'Le checkout est-il connecte?',
 				answer:
-					'Oui. Le bouton appelle la route commerce avec l offre CommunityGlows Lifetime Deal et Lemon Squeezy comme provider demande.',
+					'Oui. Le bouton ouvre le parcours d achat authentifie, puis le checkout Stripe Managed Payments de l offre CommunityGlows Lifetime Deal.',
 			},
 			{
-				question: 'Faut-il creer le produit Lemon Squeezy avant?',
+				question: 'Faut-il creer le Price Stripe avant?',
 				answer:
-					'Oui. Le site peut creer des checkouts heberges des que le store, la cle API, le secret webhook et le variant CommunityGlows sont configures.',
+					'Oui. Le site peut creer des checkouts heberges des que Stripe, le secret webhook et le Price ID CommunityGlows sont configures.',
 			},
 			{
 				question: 'Comment l acces est-il livre?',
 				answer:
-					'Lemon Squeezy envoie des evenements signes. Le bridge suite transforme les paiements supportes en entitlements produit et gere les remboursements/revocations.',
+					'Stripe envoie des evenements signes. Le bridge suite transforme les paiements supportes en entitlements produit et gere les remboursements/revocations.',
 			},
 			{
 				question: 'L offre peut-elle changer avant le lancement?',
@@ -281,7 +282,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		],
 		finalHeading: 'Ouvrir la fenetre founder CommunityGlows',
 		finalText:
-			'Utilise cette page comme surface de vente directe pendant que tu finalises prix, termes legaux et configuration Lemon Squeezy.',
+			'Utilise cette page comme surface de vente directe pendant que tu finalises prix, termes legaux et configuration du Price Stripe.',
 		finalAction: 'Obtenir CommunityGlows Founder Access',
 	},
 }
@@ -293,7 +294,7 @@ const pagePath = lang === 'fr' ? '/fr/communityglows-founder' : '/communityglows
 function checkoutUrl() {
 	const successUrl = `/purchase/success?offerId=${encodeURIComponent(OFFER_ID)}`
 	const cancelUrl = `/purchase/cancel?offerId=${encodeURIComponent(OFFER_ID)}`
-	return `/api/commerce/checkout?offerId=${encodeURIComponent(OFFER_ID)}&provider=lemonsqueezy&source=direct&sourceRef=${encodeURIComponent(pagePath)}&successUrl=${encodeURIComponent(successUrl)}&cancelUrl=${encodeURIComponent(cancelUrl)}`
+	return `/api/checkout/start?offerId=${encodeURIComponent(OFFER_ID)}&source=direct&sourceRef=${encodeURIComponent(pagePath)}&successUrl=${encodeURIComponent(successUrl)}&cancelUrl=${encodeURIComponent(cancelUrl)}`
 }
 ---
 
@@ -330,12 +331,12 @@ function checkoutUrl() {
 						{copy.heroSubtitle}
 					</p>
 					<div class="mt-8 flex flex-col gap-3 sm:flex-row">
-						<a
-							href={checkoutUrl()}
+						<CheckoutButton
+							action={checkoutUrl()}
 							class="no-hover-animation inline-flex items-center justify-center rounded-xl bg-content-bg-elevated px-6 py-3 text-sm font-bold text-content-text-primary transition-colors hover:bg-content-bg-hover"
 						>
 							{copy.primaryAction}
-						</a>
+						</CheckoutButton>
 						<a
 							href="#offer"
 							class="no-hover-animation inline-flex items-center justify-center rounded-xl border border-white/25 bg-content-bg-elevated/10 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-content-bg-elevated/20"
@@ -454,12 +455,13 @@ function checkoutUrl() {
 								</div>
 							))}
 						</div>
-						<a
-							href={checkoutUrl()}
-							class="no-hover-animation mt-6 inline-flex w-full items-center justify-center rounded-xl bg-content-bg-inverse px-6 py-4 text-sm font-bold text-white transition-colors hover:bg-content-bg-strong dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover"
+						<CheckoutButton
+							action={checkoutUrl()}
+							formClass="mt-6"
+							class="no-hover-animation inline-flex w-full items-center justify-center rounded-xl bg-content-bg-inverse px-6 py-4 text-sm font-bold text-white transition-colors hover:bg-content-bg-strong dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover"
 						>
 							{copy.checkoutAction}
-						</a>
+						</CheckoutButton>
 					</div>
 				</div>
 			</div>
@@ -513,12 +515,12 @@ function checkoutUrl() {
 					<h2 class="text-3xl font-bold text-white">{copy.finalHeading}</h2>
 					<p class="mt-4 text-lg text-white/90">{copy.finalText}</p>
 				</div>
-				<a
-					href={checkoutUrl()}
+				<CheckoutButton
+					action={checkoutUrl()}
 					class="no-hover-animation inline-flex items-center justify-center rounded-xl bg-content-bg-elevated px-6 py-3 text-sm font-bold text-content-text-primary transition-colors hover:bg-content-bg-hover"
 				>
 					{copy.finalAction}
-				</a>
+				</CheckoutButton>
 			</div>
 		</section>
 	</div>

@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: commandglows
 created: "2026-04-25"
-updated: "2026-05-17"
+updated: "2026-08-11"
 status: reviewed
 source_skill: sf-docs
 scope: file
@@ -18,7 +18,7 @@ linked_systems:
   - "Vercel"
   - "Clerk"
   - "Convex"
-  - "Polar"
+  - "Stripe Managed Payments"
   - "Resend"
 depends_on:
   - "shipglows_data/technical/guidelines.md"
@@ -28,7 +28,8 @@ evidence:
   - "package.json"
   - "astro.config.mjs"
   - "src/middleware/index.ts"
-  - "src/pages/api/polar/checkout.ts"
+  - "src/pages/api/checkout/start.ts"
+  - "src/pages/api/commerce/checkout.ts"
   - "convex/http.ts"
 next_step: "pnpm build:check"
 ---
@@ -36,7 +37,7 @@ next_step: "pnpm build:check"
 
 ## Repository Execution Contract
 
-This repository is an Astro 6 server application with bilingual routing, Clerk auth, Convex state, Polar checkout, and Resend newsletter flows.
+This repository is an Astro 6 server application with bilingual routing, Clerk auth, Convex state, Stripe Managed Payments checkout, and Resend newsletter flows.
 
 Use this file as the short operating contract before changing code or docs.
 
@@ -46,7 +47,7 @@ Use this file as the short operating contract before changing code or docs.
 - Deployment adapter: Vercel (`@astrojs/vercel`)
 - Auth: Clerk middleware + webhook forwarding
 - Backend/state: Convex (`users`, `apiKeys`, `features`)
-- Billing: Polar checkout route + Convex webhook processing
+- Billing: Stripe-only shared checkout + Convex webhook fulfillment
 - Email: Resend subscribe/unsubscribe API routes
 - Content: Astro content collections (`docs`, `products`, `blog`, `services`)
 
@@ -56,13 +57,13 @@ Use this file as the short operating contract before changing code or docs.
 2. `shipglows_data/technical/architecture.md`
 3. `src/middleware/index.ts`
 4. `src/middleware/i18n.ts`
-5. `src/pages/api/polar/checkout.ts`
+5. `src/pages/api/checkout/start.ts` and `src/pages/api/commerce/checkout.ts`
 6. `convex/http.ts`
 
 ## High-Risk Change Areas
 
 - Locale and route normalization: `src/middleware/i18n.ts`, `src/i18n/config.ts`, `src/utils/routing.ts`
-- Checkout and entitlements: `src/pages/api/polar/checkout.ts`, `src/pages/api/polar/webhook.ts`, `convex/http.ts`, `convex/polar.ts`, `src/utils/courseGating.ts`
+- Checkout and entitlements: `src/pages/api/checkout/start.ts`, `src/pages/api/commerce/checkout.ts`, `src/pages/api/commerce/webhooks/stripe.ts`, `convex/bridge.ts`, `src/utils/courseGating.ts`
 - Auth identity sync: `src/pages/api/clerk/webhook.ts`, `convex/http.ts`, `convex/users.ts`
 - Newsletter side effects: `src/pages/api/newsletter/subscribe.ts`, `src/pages/api/newsletter/unsubscribe.ts`
 - Content schema contracts: `src/content/config.ts`
@@ -71,7 +72,7 @@ Use this file as the short operating contract before changing code or docs.
 
 - English routes are unprefixed and French routes are under `/fr`.
 - `PUBLIC_CONVEX_URL` must not be placeholder for Convex-backed logic.
-- Polar flows require `POLAR_ACCESS_TOKEN` and `POLAR_COMMANDGLOWS_PRODUCT_ID` (or fallback `POLAR_PRODUCT_ID`).
+- Stripe checkout requires `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUITE_COMMERCE_CHECKOUT_SECRET`, and the offer-specific `STRIPE_*_PRICE_ID`.
 - Newsletter routes require `RESEND_API_KEY` and a valid audience id.
 
 ## Safe Change Pattern

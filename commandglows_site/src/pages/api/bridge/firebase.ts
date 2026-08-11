@@ -65,6 +65,9 @@ type BridgeSnapshot = {
     sourceRef?: string | null;
     trialStartedAt?: number | null;
     trialExpiresAt?: number | null;
+    trialAttempt?: number | null;
+    trialRestartsRemaining?: number | null;
+    trialRestartEligible?: boolean;
   }>;
   replayGlowzProductUserId: string | null;
   replayGlowzProductUserIdSource: ReplayGlowzProductUserIdSource | null;
@@ -131,6 +134,9 @@ function parseBridgeEntitlements(value: unknown): {
   sourceRef?: string | null;
   trialStartedAt?: number | null;
   trialExpiresAt?: number | null;
+  trialAttempt?: number | null;
+  trialRestartsRemaining?: number | null;
+  trialRestartEligible?: boolean;
 }[] {
   if (!Array.isArray(value)) {
     return [];
@@ -147,6 +153,9 @@ function parseBridgeEntitlements(value: unknown): {
         sourceRef?: unknown;
         trialStartedAt?: unknown;
         trialExpiresAt?: unknown;
+        trialAttempt?: unknown;
+        trialRestartsRemaining?: unknown;
+        trialRestartEligible?: unknown;
       };
       const trialStartedAt =
         parseEpochMs(raw.trialStartedAt)
@@ -163,6 +172,9 @@ function parseBridgeEntitlements(value: unknown): {
           trialStartedAt,
         trialExpiresAt:
           trialExpiresAt,
+        trialAttempt: parseEpochMs(raw.trialAttempt),
+        trialRestartsRemaining: parseEpochMs(raw.trialRestartsRemaining),
+        trialRestartEligible: raw.trialRestartEligible === true,
       };
     })
     .filter((entry) => entry.productId && entry.status);
@@ -405,6 +417,8 @@ export const POST: APIRoute = async ({ request }) => {
     const checkoutIdentityToken = env.SUITE_COMMERCE_CHECKOUT_SECRET
       ? createCommerceCheckoutIdentityToken(
           snapshot.globalUserId,
+          "commandglows_app",
+          resolveBridgeEnvironment(env.NODE_ENV),
           env.SUITE_COMMERCE_CHECKOUT_SECRET
         )
       : null;

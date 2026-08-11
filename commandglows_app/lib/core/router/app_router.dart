@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../features/auth/application/auth_session_provider.dart';
+import '../../features/auth/application/suite_identity_provider.dart';
+import '../../features/auth/domain/product_entitlement.dart';
+import '../../features/auth/domain/suite_identity.dart';
 import '../../features/auth/presentation/auth_gate_screen.dart';
 import '../../features/keyboard/presentation/keyboard_navigation_diagnostics_screen.dart';
 import '../../features/keyboard/presentation/keyboard_theme_studio_screen.dart';
@@ -16,22 +19,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     authStateNotifier.value = next;
   });
   ref.onDispose(authStateNotifier.dispose);
+  final suiteIdentityNotifier = ValueNotifier(ref.read(suiteIdentityProvider));
+  ref.listen(suiteIdentityProvider, (_, next) {
+    suiteIdentityNotifier.value = next;
+  });
+  ref.onDispose(suiteIdentityNotifier.dispose);
 
   return GoRouter(
     observers: [SentryNavigatorObserver(enableAutoTransactions: false)],
-    refreshListenable: authStateNotifier,
+    refreshListenable: Listenable.merge([
+      authStateNotifier,
+      suiteIdentityNotifier,
+    ]),
     redirect: (context, state) {
       final path = state.uri.path;
       final authPath = path == '/' || path.isEmpty;
       final authState = authStateNotifier.value;
-      if (!authPath && authState.isLoading) {
-        return null;
-      }
-      final hasAccess = authState.maybeWhen(
-        data: (session) => session.isSignedIn || session.isLocalFallback,
+      final hasRemoteSession = authState.maybeWhen(
+        data: (session) => session.isSignedIn && !session.isLocalFallback,
         orElse: () => false,
       );
-      if (!authPath && !hasAccess) {
+      final hasEntitlement = suiteIdentityNotifier.value.maybeWhen(
+        data: (identity) =>
+            identity.statusFor(ProductId.commandglowsApp) ==
+            SuiteAccountStatus.accessActive,
+        orElse: () => false,
+      );
+      if (!authPath && (!hasRemoteSession || !hasEntitlement)) {
         return '/';
       }
       return null;

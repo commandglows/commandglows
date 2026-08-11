@@ -1,7 +1,7 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.3.0"
 project: commandglows
 created: "2026-05-17"
 updated: "2026-08-11"
@@ -27,10 +27,9 @@ evidence:
   - src/middleware/index.ts
   - src/middleware/i18n.ts
   - src/utils/routing.ts
-  - src/pages/api/polar/checkout.ts
+  - src/pages/api/checkout/start.ts
   - src/pages/api/newsletter/subscribe.ts
   - convex/http.ts
-  - convex/polar.ts
   - convex/users.ts
   - commandglows_site/src/pages/api/commerce/checkout.ts
   - commandglows_site/src/pages/api/commerce/webhooks/stripe.ts
@@ -57,7 +56,7 @@ Capture the request, routing, and integration flow so behavior changes in middle
 - `commandglows_site/src/middleware/index.ts`
 - `commandglows_site/src/middleware/i18n.ts`
 - `commandglows_site/src/utils/routing.ts`
-- `commandglows_site/src/pages/api/polar/checkout.ts`
+- `commandglows_site/src/pages/api/checkout/start.ts`
 - `commandglows_site/convex/http.ts`
 
 ## Request And Middleware Layer
@@ -82,11 +81,15 @@ Capture the request, routing, and integration flow so behavior changes in middle
 
 ## Checkout And Billing Flow
 
-- `commandglows_app` obtains a short-lived checkout identity handoff from the authenticated Firebase bridge and opens the Founder page with that opaque token.
-- `src/pages/[...lang]/commandglows-founder.astro` forwards the handoff to the shared checkout route without exposing it to Stripe metadata.
+- `commandglows_app` obtains a short-lived checkout identity handoff from the authenticated Firebase bridge and sends it only in a POST body to the shared checkout route.
+- `src/pages/[...lang]/commandglows-founder.astro` contains no checkout identity token; its offer buttons POST through the authenticated server start route.
+- `src/pages/api/checkout/start.ts`
+  - authenticates Clerk-backed public and Formation purchase surfaces;
+  - resolves the canonical suite identity and issues a product/environment-bound handoff.
 - `src/pages/api/commerce/checkout.ts`
-  - verifies the handoff and derives the canonical global user id;
-  - resolves one of the four allowlisted CommandGlows offers;
+  - verifies the handoff, atomically claims its keyed `jti` hash in Convex, and derives the canonical global user id;
+  - reuses the same Stripe idempotency key and Checkout Session on safe retries;
+  - resolves an allowlisted suite offer and its environment-backed Stripe Price ID;
   - creates a Stripe Checkout Session with Managed Payments explicitly enabled;
   - never treats the success redirect as payment proof.
 - `src/pages/api/commerce/webhooks/stripe.ts`
@@ -97,21 +100,6 @@ Capture the request, routing, and integration flow so behavior changes in middle
   - grants paid access only for a verified, resolvable global user;
   - rejects replay through the provider event idempotency key;
   - makes refund and revoke transitions non-granting.
-
-- `src/pages/api/polar/checkout.ts`
-  - validates lesson and locale input
-  - redirects unauthenticated users to localized sign-in
-  - validates Polar and Convex environment state
-  - queries Convex user state
-  - creates Polar checkout and redirects to hosted checkout URL
-
-- `src/pages/api/polar/webhook.ts`
-  - proxies raw webhook payload and signature headers to Convex HTTP webhook endpoint
-
-- `convex/http.ts`
-  - exposes `POST /polar/events`
-  - verifies webhook secret state and signatures
-  - routes supported event types to internal mutations
 
 ## Auth Lifecycle
 
@@ -127,7 +115,8 @@ Capture the request, routing, and integration flow so behavior changes in middle
 - Route translation logic in `src/utils/routing.ts`, `src/i18n/config.ts`, and `src/middleware/i18n.ts` must stay aligned.
 - Checkout flow depends on both Astro route behavior and Convex entitlement handling.
 - Webhook verification remains a security boundary and must not be bypassed.
-- CommandGlows checkout identity must come from a valid bridge-signed handoff, never a raw query parameter.
+- Every suite checkout identity must come from a valid product-bound bridge-signed handoff, never a raw query parameter.
+- Stripe is the only active provider; non-Stripe events never grant access.
 
 ## Validation
 

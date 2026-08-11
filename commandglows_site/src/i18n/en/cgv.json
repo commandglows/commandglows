@@ -25,7 +25,7 @@
     "ordering": {
       "title": "4. Ordering Process",
       "items": [
-        "Orders are placed through our secure checkout powered by Polar.sh.",
+        "Orders are placed through our secure Stripe Managed Payments checkout.",
         "A confirmation email is sent upon successful payment.",
         "Access to digital products is granted immediately after payment confirmation."
       ]
@@ -33,7 +33,7 @@
     "payment": {
       "title": "5. Payment",
       "items": [
-        "Payments are processed securely by Polar.sh. Accepted methods include credit/debit cards and other methods supported by the payment processor.",
+        "Payments are processed securely through Stripe Managed Payments. Accepted methods include credit/debit cards and other methods supported by the payment processor.",
         "For subscriptions, recurring payments are charged automatically at the start of each billing cycle.",
         "You may cancel your subscription at any time; cancellation takes effect at the end of the current billing period."
       ]

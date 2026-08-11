@@ -1,7 +1,7 @@
 ---
 artifact: business_context
 metadata_schema_version: "1.0"
-artifact_version: "1.5.0"
+artifact_version: "1.7.0"
 project: "CommandGlows"
 created: "2026-03-18"
 updated: "2026-08-11"
@@ -22,7 +22,8 @@ evidence:
   - "shipglows_data/technical/payment-activation-entitlements.md"
   - "shipglows_data/workflow/audits/2026-06-10-commandglows-platform-parity.md"
   - "Operator decision 2026-08-11: Stripe Managed Payments is the target Merchant of Record for CommandGlows."
-business_model: "14-day trial-then-paid voice productivity app with bring-your-own-key advanced features and bounded founder plans"
+  - "Operator decision later on 2026-08-11: every suite product uses 30-day cycles, two maximum restarts, no permanent freemium, and one shared entitlement authority."
+business_model: "30-day trial-then-paid voice productivity app with two maximum restarts, bring-your-own-key advanced features, and bounded founder plans"
 market: "Cross-platform dictation, transcript cleanup, snippets, dictionary, and clipboard productivity tools"
 target_audience: "Professionals and power users who produce text from speech across Android, iOS, desktop, and web"
 value_proposition: "Capture speech quickly from the Android keyboard, overlay or platform quick-action surface, use local language packs where available, clean text when needed, and reuse it across apps with sync paths designed to avoid unbounded server cost"
@@ -40,8 +41,9 @@ CommandGlows uses Stripe Managed Payments as its target Merchant of Record for
 direct digital-product sales. Ordinary Stripe Payments does not satisfy this
 decision. Convex remains the source of truth for product access, and the current
 Stripe checkout, signed webhook, and HMAC-signed app identity handoff are
-implemented and locally verified. Lemon Squeezy remains active only for
-CommunityGlows; hosted Stripe and Convex lifecycle proof is still required.
+implemented and locally verified. Stripe is the only active suite payment
+provider, including CommunityGlows and Formation; hosted Stripe and Convex
+lifecycle proof is still required.
 
 ## Statut de preuve
 
@@ -76,14 +78,17 @@ CommandGlows cible une application Flutter multi-plateforme avec contrats backen
 ## Modèle commercial
 
 Le modèle commercial target-reviewed est `trial_then_paid`: essai initial de
-14 jours, deux relances maximum de 14 jours, puis achat obligatoire pour
+30 jours, deux relances maximum de 30 jours, puis achat obligatoire pour
 l'accès premium. Les clés BYO restent locales et ne constituent pas un
 entitlement. La garantie commerciale de 30 jours est une fenêtre de
 remboursement, pas une expiration automatique de l'accès.
 
+Aucun chemin de compatibilité legacy n'est prévu pour l'accès produit: la
+source d'autorité unique reste le ledger serveur de la suite.
+
 Le socle technique local applique désormais l'expiration d'essai par identité
 globale et installation aléatoire pseudonymisée côté serveur, et ne délivre
-plus de grant gratuit permanent pour `commandglows_app`. Une fenêtre réseau
+plus de grant gratuit permanent pour aucun produit de la suite. Une fenêtre réseau
 temporaire limite les créations d'essai sans conserver l'IP brute. Le parcours
 client de relance/achat est présent localement; la preuve hébergée du paiement
 et la rétention automatisée des signaux de risque restent à finaliser.

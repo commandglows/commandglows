@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.7.0"
+artifact_version: "1.3.0"
 project: "CommandGlows"
 created: "2026-06-18"
 updated: "2026-08-11"
@@ -19,116 +19,84 @@ linked_systems:
   - "commandglows_site/convex/bridge.ts"
   - "commandglows_site/convex/schema.ts"
   - "commandglows_app/lib/features/auth"
-  - "shipglows_data/technical/platforms/lemonsqueezy.md"
   - "shipglows_data/technical/platforms/stripe-managed-payments.md"
 depends_on:
-  - artifact: "shipglows_data/technical/platforms/lemonsqueezy.md"
-    artifact_version: "0.5.0"
-    required_status: "draft"
   - artifact: "shipglows_data/technical/platforms/stripe-managed-payments.md"
-    artifact_version: "0.3.0"
+    artifact_version: "1.0.0"
     required_status: "draft"
-  - artifact: "shipglows_data/workflow/specs/commandglows-trial-then-paid-entitlements.md"
-    artifact_version: "0.5.0"
-    required_status: "draft"
+  - artifact: "/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
+    artifact_version: "1.0.0"
+    required_status: "ready"
 supersedes: []
 evidence:
   - "CommandGlows App founder offers use internal offer ids commandglows_app/focus, commandglows_app/power, commandglows_app/control, and commandglows_app/command."
-  - "Lemon Squeezy checkout and signed webhooks remain active for CommunityGlows only."
+  - "Historical state before the unified decision: Lemon Squeezy checkout and signed webhooks were active for CommunityGlows only."
   - "Convex owns durable productEntitlements and productAccessEvents."
   - "Implementation review 2026-08-11: CommandGlows trial rows are now written by `bridge:upsertFirebaseIdentity`, carry server timestamps and attempts, and are parsed fail-closed by Flutter."
-  - "Commercial provider decision of 2026-08-11: CommandGlows targets Stripe Managed Payments as Merchant of Record; Lemon Squeezy remains eligible only for CommunityGlows."
+  - "Historical provider decision of 2026-08-11: CommandGlows targeted Stripe Managed Payments; CommunityGlows Lemon Squeezy usage was retained as migration history and is now superseded."
   - "Local provider implementation 2026-08-11: Stripe Checkout explicitly enables Managed Payments and signed paid/refund/dispute events normalize into bridge:processCommerceEvent."
+  - "Entitlement cleanup 2026-08-11: Flutter product routes require a remote session plus a current server entitlement; local fallback is non-granting."
+  - "Entitlement cleanup 2026-08-11: CommunityGlows was removed from suite default-free policies and Lemon Squeezy rejects CommandGlows offers and events."
+  - "Operator decision later on 2026-08-11 supersedes the product exceptions: all suite products use 30-day cycles, two maximum restarts, no permanent freemium, and Stripe Managed Payments only."
+  - "Local entitlement completion on 2026-08-11: one product-scoped 30-day/three-cycle policy is reachable for all eight registered products; free writers/backfills and granting fallbacks were removed."
+  - "Local commerce batch B on 2026-08-11: all active offers are Stripe-only; CommunityGlows and Formation use environment-backed Price-ID placeholders; active Lemon Squeezy/Polar runtime paths were removed; every checkout requires a signed product/environment handoff; Convex makes non-Stripe events pending-review and non-granting."
 next_review: "2026-09-11"
 next_step: "Complete hosted Stripe/Convex lifecycle proof, retention/telemetry, stronger integrity, and real-device anti-abuse proof before a production access claim."
 ---
 
 # Payment Activation And Entitlements
 
-## Commercial Entitlement Decision (2026-08-06)
+## Active Suite Decision (2026-08-11)
 
-CommandGlows App uses a `trial_then_paid` access policy rather than permanent
-freemium access:
+This document derives from the sole active cross-product authority:
+`/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md`.
 
-- initial trial: 14 days;
-- maximum reactivations: 2 additional periods of 14 days;
-- maximum trial allowance: 42 days total;
-- after the allowance is exhausted, the user must purchase an allowed plan;
-- the 30-day commercial promise is a satisfaction/refund window, not an
-  automatic entitlement expiry;
-- a verified refund, revoke, or fraud decision makes access non-granting and
-  does not reset the trial counter.
+Every current and future suite product uses exactly three maximum 30-day trial
+cycles: the initial cycle plus two user-triggered restarts. Purchase is
+mandatory after exhaustion. Permanent freemium, `product_default`,
+authentication-based access, and product-specific trial exceptions are not
+allowed. Stripe Managed Payments is the only active direct-payment provider.
 
-The policy is server-owned. A new email address must not recreate eligibility
-when the global identity or recognized installation has already consumed the
-allowance. IP data may contribute to abuse scoring and rate limiting, but must
-not be the sole identity key because shared and changing IPs can represent
-legitimate users. Device/install identifiers must be privacy-preserving,
-revocable, and stored as hashes or signed installation keys rather than raw
-hardware identifiers.
+The previous CommandGlows 14-day/42-day contract, CommunityGlows single-cycle
+contract, Lemon Squeezy CommunityGlows adapter decision, and Polar routes are
+superseded history. Historical rows/events may remain audit evidence but are
+non-granting.
 
-This policy is the reusable suite decision for products explicitly classified
-as `trial_then_paid`; it is not an instruction to convert every current suite
-product without a product-specific pricing and cost review.
+## Implementation Status (2026-08-11)
 
-## Merchant Of Record Decision (2026-08-11)
+The entitlement and Stripe-only runtime are locally migrated; hosted provider
+proof remains incomplete:
 
-CommandGlows uses the locally implemented Stripe Managed Payments adapter, not
-ordinary Stripe Payments, as its target Merchant of Record. Convex remains the
-runtime entitlement source of truth and Stripe remains a verified
-commerce-event source.
+- CommandGlows enforces 30-day server-owned attempts, two maximum restarts,
+  installation continuity and fail-closed route gating.
+- CommunityGlows exposes the same three-cycle server contract and authenticated
+  restart operation; its product-client recovery UX remains in the later
+  CommunityGlows client batch.
+- All eight registered products can reach the common trial policy through the
+  generic authenticated bridge mutation; product-specific adapters remain thin. All legacy
+  `product_default` rows and permanent active `free` plans are non-granting,
+  and identity synchronization creates no free access or backfill.
+- Lemon Squeezy and Polar runtime providers, offer mappings, webhook routes,
+  environment keys, active tests and the Polar SDK dependency are removed.
+- Every current sellable offer has a named environment-backed Stripe Price-ID
+  placeholder; real values and price amounts remain intentionally unconfigured.
 
-The Lemon Squeezy checkout/webhook implementation is retained for CommunityGlows
-and as legacy migration evidence; it is not an allowed CommandGlows provider. Because there
-are no users or paid orders to preserve, migration requires no customer or
-subscription transfer. Lemon Squeezy identifiers, signatures and event names
-were not reused; the Stripe-specific adapter owns its own provider contract.
-
-## CommandGlows Implementation Status (2026-08-11)
-
-The first server-authoritative slice is implemented locally for
-`commandglows_app`:
-
-- `commandglows_app` no longer receives an automatic permanent-free grant;
-- identity synchronization starts the first 14-day trial once, records
-  `trialStartedAt`, `trialExpiresAt`, and `trialAttempt`, and exposes them in
-  the suite snapshot;
-- an expired `trialing` row is non-granting in the Convex and Flutter access
-  resolvers; an absent expiry is also non-granting;
-- the bridge can create at most three total periods (the initial trial plus
-  two restarts), exposes an authenticated customer restart request through the
-  Firebase bridge, and retains a server-to-server support operation;
-- a current paid CommandGlows entitlement prevents a new trial from being
-  created.
-
-This is not yet the complete commercial release contract. Trial creation is
-keyed to the suite global identity and a random app-installation identifier.
-The app stores that identifier securely; the API persists only a keyed hash.
-The same recognized installation cannot start a trial for another identity.
-The API also maintains a keyed, 24-hour network risk window and temporarily
-denies the fourth trial grant in that window; raw IP values are not persisted.
-The Flutter gate now shows an expired trial, allows an eligible restart, and
-links to the official purchase page.
-
-Scheduled cleanup/retention automation for expired risk windows, stronger
-platform integrity, and hosted Stripe checkout/payment/refund/revoke proof are
-still required before calling the whole access lifecycle production-ready.
-
-The local `convex-test` matrix now covers trial creation/idempotency, the two
-allowed reactivations and exhaustion, installation reuse across identities,
-identity continuity across installations, paid-entitlement precedence and the
-network velocity threshold. It passes as part of the 131-test site suite, but
-`convex-test` is a JavaScript mock and does not replace hosted Convex or provider
-proof.
+No users or paid orders exist to preserve, so the planned migration is a clean
+reset without grandfathering or provider/customer transfer. If real hosted
+records are discovered, implementation stops for a migration amendment.
 
 ## Purpose
 
-This document is the reusable contract for paid access activation in the CommandGlows suite. It explains how a payment becomes product access, what Stripe Managed Payments owns, what Convex owns, and what still needs a separate device-activation ledger. Lemon Squeezy sections now apply only to the separate active CommunityGlows offer.
+This document is the technical usage contract for suite payment activation and
+access. Convex owns durable identity/trial/entitlement decisions; Stripe Managed
+Payments supplies verified commerce events; product clients consume signed,
+fail-closed decisions.
 
 ## Owned Files
 
 - `commandglows_site/src/lib/commerce/**`
 - `commandglows_site/src/pages/api/commerce/**`
+- `commandglows_site/src/pages/api/checkout/start.ts`
 - `commandglows_site/src/pages/api/bridge/firebase.ts`
 - `commandglows_site/src/pages/api/bridge/commandglows-trial/**`
 - `commandglows_site/convex/bridge.ts`
@@ -140,7 +108,16 @@ This document is the reusable contract for paid access activation in the Command
 - Identity, trial snapshot and signed checkout handoff: `POST /api/bridge/firebase`
 - Trial restart: `POST /api/bridge/commandglows-trial/restart`
 - Shared offer checkout: `POST /api/commerce/checkout`
-- Provider events: `POST /api/commerce/webhooks/stripe` and `POST /api/commerce/webhooks/lemon-squeezy`
+- Clerk-backed public and Formation start: `POST /api/checkout/start`
+- Provider events: `POST /api/commerce/webhooks/stripe`
+
+Checkout handoffs include a cryptographically random, ten-minute `jti`. The
+opaque token is accepted only in a POST body, never in page/query URLs. Convex
+stores only a keyed `jti` hash in `commerceCheckoutHandoffs`, atomically claims
+it, and returns one stable Stripe idempotency key. A safe retry resolves the
+same Checkout Session; a changed product/offer/environment context is rejected.
+The additive table is migration-compatible and requires no destructive data
+migration or startup backfill.
 
 ## Vocabulary
 
@@ -162,14 +139,15 @@ Payment activation and device activation are related but not the same system.
 | Power | `commandglows_app/power` | `commandglows_app` | `power` | 2 active devices |
 | Control | `commandglows_app/control` | `commandglows_app` | `control` | 5 active devices |
 | Command | `commandglows_app/command` | `commandglows_app` | `command` | 10 active devices |
+| CommunityGlows Lifetime Deal | `communityglows/lifetime_deal` | `communityglows` | `lifetime_deal` | product access |
+| CommandGlows Formation | `commandglows_formation/full_course` | `commandglows_formation` | `formation` | premium formation access |
 
 The Lifetime Deal grants access to present and future released CommandGlows platforms under the selected plan. The plan limit is the active-device count, not a per-platform SKU.
 
 ## Source Of Truth
 
-Stripe Managed Payments is never the runtime authorization store. It is a
-payment event source. The same boundary applies to the CommunityGlows Lemon
-Squeezy adapter.
+Stripe Managed Payments is never the runtime authorization store. It is the
+only allowed direct-payment event source.
 
 Convex is the durable suite entitlement store:
 
@@ -197,9 +175,11 @@ Current application of this rule:
 
 ## Checkout Flow
 
-1. The sales page links to `/api/commerce/checkout` with an explicit `offerId`.
+1. The product client supplies a product-bound handoff, or a Clerk-backed sales
+   surface enters through `/api/checkout/start`; both resolve an explicit `offerId`.
 2. The route rejects a missing or unknown `offerId`.
-3. For a CommandGlows offer, the route creates a Stripe Checkout Session with Managed Payments explicitly enabled.
+3. For every suite offer, the route requires a valid signed identity handoff
+   and creates a Stripe Checkout Session with Managed Payments explicitly enabled.
 4. The checkout metadata includes:
    - `offer_id`
    - `offer_name`
@@ -209,7 +189,8 @@ Current application of this rule:
    - `source_ref`
    - `provider=stripe`
    - `managed_payments=true`
-   - optional `global_user_id` or identity metadata when available
+   - `environment`
+   - required `global_user_id` derived from the signed handoff
 5. When a launch coupon applies, the route may attach an allowlisted Stripe promotion code or discount.
 
 Checkout success pages are not payment proof. They are UX only.
@@ -241,12 +222,12 @@ Do not create a separate checkout endpoint per domain unless a product requires 
 
 Automatic entitlement requires a resolvable suite identity. A provider event with only an email is not enough to merge accounts or grant access blindly.
 
-Supported resolution paths:
+Supported resolution path for automatic grants:
 
 - `global_user_id` derived from the short-lived HMAC-signed handoff issued by
   the authenticated Firebase bridge. Raw client-supplied IDs are not trusted.
-- Provider account already mapped in `identityAccounts`.
-- Existing safe `sourceRef` correlation from prior access events.
+- Provider-account or source correlation may support negative transitions and
+  manual review, but it never replaces the signed checkout identity for a new purchase.
 
 If identity cannot be resolved, the event goes to `pending_review`; support must reconcile it manually.
 
@@ -284,8 +265,11 @@ Never paste raw webhook payloads, API keys, signatures, cookies, raw activation 
 Local proof:
 
 - Commerce offer registry tests cover all founder offers.
-- Lemon Squeezy tests remain required for the active CommunityGlows adapter and as historical parser regression coverage.
-- Stripe tests must reject missing/unknown offers and prove Managed Payments is explicitly enabled with correct metadata.
+- Non-Stripe Convex tests prove that legacy provider names are recorded only as
+  non-granting `pending_review`; no legacy provider adapter or route remains.
+- Stripe tests must reject missing/unknown offers, missing/invalid identity
+  handoffs, missing Price IDs, and prove Managed Payments is explicitly enabled
+  with correct metadata for every migrated product.
 - Stripe webhook tests must prove exact-body signature verification, paid/refund/revoke normalization, replay idempotency and forwarding of all four CommandGlows plans to `bridge:processCommerceEvent`.
 
 Hosted provider proof:

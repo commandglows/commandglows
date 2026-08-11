@@ -1,13 +1,10 @@
 import { v } from "convex/values";
 import { internalMutation, query } from "./_generated/server";
 import {
-  DEFAULT_FREE_PRODUCT_IDS,
-  ensureMissingDefaultFreeEntitlements,
-} from "./defaultFreeEntitlements";
+  COMMANDGLOWS_FORMATION_PRODUCT_ID,
+  isActiveSuiteEntitlement,
+} from "./productEntitlementPolicies";
 
-const FORMATION_PRODUCT_ID = "commandglows_formation";
-const LEGACY_FORMATION_PRODUCT_ID = "commandglows-training";
-const FREE_PLAN_ID = "free";
 const PREMIUM_FORMATION_PLANS = new Set([
   "formation",
   "lifetime_deal",
@@ -20,19 +17,20 @@ function grantsPremiumFormationAccess(entitlement: {
   productId: string;
   status: string;
   plan: string;
+  source?: string;
+  trialExpiresAt?: number;
 }) {
   if (
-    entitlement.productId !== FORMATION_PRODUCT_ID &&
-    entitlement.productId !== LEGACY_FORMATION_PRODUCT_ID
+    entitlement.productId !== COMMANDGLOWS_FORMATION_PRODUCT_ID
   ) {
     return false;
   }
 
-  if (entitlement.status !== "active" && entitlement.status !== "trialing") {
+  if (!isActiveSuiteEntitlement(entitlement)) {
     return false;
   }
 
-  return entitlement.plan !== FREE_PLAN_ID && PREMIUM_FORMATION_PLANS.has(entitlement.plan);
+  return entitlement.plan === "trial" || PREMIUM_FORMATION_PLANS.has(entitlement.plan);
 }
 
 function createGlobalUserId() {
@@ -126,26 +124,6 @@ export const upsertFromClerk = internalMutation({
       }));
     }
 
-    const globalUser = await ctx.db.get(globalUserDocId);
-    if (!globalUser) {
-      throw new Error("global_user_not_found");
-    }
-
-    const rawEntitlements = await ctx.db
-      .query("productEntitlements")
-      .withIndex("by_globalUserId", (q) => q.eq("globalUserId", globalUserDocId))
-      .collect();
-
-    await ensureMissingDefaultFreeEntitlements(ctx, {
-      rawEntitlements,
-      productIds: DEFAULT_FREE_PRODUCT_IDS,
-      globalUserDocId,
-      globalUserPublicId: globalUser.globalUserId,
-      sourceRef: args.sourceRef ?? args.clerkId,
-      environment,
-      now,
-    });
-
     return userDocId;
   },
 });
@@ -204,19 +182,9 @@ export const getFormationAccessByClerkId = query({
       }
     }
 
-    const subscriptionStatus = user.subscriptionStatus;
-    const hasActiveLegacySubscription =
-      subscriptionStatus === "active" || subscriptionStatus === "trialing";
-    const hasLegacyEntitlement = Boolean(
-      user.courseEntitlements?.includes(LEGACY_FORMATION_PRODUCT_ID) ||
-      user.courseEntitlements?.includes(FORMATION_PRODUCT_ID)
-    );
-    const hasLegacyAccess = hasLegacyEntitlement ||
-      (Boolean(user.subscriptionTier) && hasActiveLegacySubscription);
-
     return {
-      hasAccess: hasLegacyAccess,
-      source: hasLegacyAccess ? "legacy" : "none",
+      hasAccess: false,
+      source: "none",
       user,
     };
   },

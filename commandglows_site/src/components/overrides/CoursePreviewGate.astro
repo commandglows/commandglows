@@ -1,5 +1,6 @@
 ---
 import { extractCoursePreview, getCourseCheckoutPath, getPrivateCoursePath } from '@/utils/courseGating'
+import CheckoutButton from '@/components/commerce/CheckoutButton.astro'
 
 interface Props {
 	entry: {
@@ -112,12 +113,17 @@ const labels =
 			</h3>
 			<p class="mb-6 max-w-2xl text-content-text-secondary dark:text-content-text-muted">{labels.unlockText}</p>
 			<div class="flex flex-wrap gap-3">
-				<a
-					href={hasAccess ? privateUrl : unlockUrl}
+				{hasAccess ? <a
+					href={privateUrl}
 					class="inline-flex items-center justify-center rounded-xl bg-content-bg-primary px-6 py-3 font-bold text-white transition hover:bg-content-bg-hover dark:bg-content-text-inverse dark:text-content-bg-inverse dark:hover:bg-content-text-secondary"
 				>
-					{hasAccess ? labels.openPrivateCta : labels.unlockCta}
-				</a>
+					{labels.openPrivateCta}
+				</a> : <CheckoutButton
+					action={unlockUrl}
+					class="inline-flex items-center justify-center rounded-xl bg-content-bg-primary px-6 py-3 font-bold text-white transition hover:bg-content-bg-hover dark:bg-content-text-inverse dark:text-content-bg-inverse dark:hover:bg-content-text-secondary"
+				>
+					{labels.unlockCta}
+				</CheckoutButton>}
 				<a
 					href={formationHubUrl}
 					class="inline-flex items-center justify-center rounded-xl border border-content-border bg-content-bg-elevated px-6 py-3 font-semibold text-content-text-primary transition hover:border-content-border-strong hover:bg-content-bg-hover dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:hover:border-content-border-strong dark:hover:bg-content-bg-hover"

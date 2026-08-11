@@ -66,7 +66,7 @@ const CLERK_PROTECTED_PATH_PREFIXES = [
   '/api/bridge',
   '/api/clerk',
   '/api/features',
-  '/api/polar',
+  '/api/checkout',
 ];
 
 function shouldUseClerkMiddleware(pathname: string): boolean {

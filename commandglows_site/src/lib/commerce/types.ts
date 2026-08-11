@@ -1,4 +1,4 @@
-export type CommerceProviderId = "stripe" | "lemonsqueezy" | "polar" | "custom"
+export type CommerceProviderId = "stripe"
 
 export type CommerceOfferId = `${string}/${string}`
 
@@ -15,11 +15,7 @@ export type CommerceOffer = {
 
 export type CommerceEnvironment = "production" | "sandbox" | "development"
 
-export type CommerceProviderName =
-  | "stripe"
-  | "lemonsqueezy"
-  | "polar"
-  | "custom"
+export type CommerceProviderName = "stripe"
 
 export type CommerceCheckoutErrorContext =
   | "offer"
@@ -46,6 +42,7 @@ export type CommerceCheckoutCustomData = {
   global_user_id?: string
   provider_account_id?: string
   provider?: string
+  environment?: string
   identity_token?: string
 }
 
@@ -176,17 +173,6 @@ export type CommerceFulfillmentResponse =
 export type CommerceProviderConfig = {
   provider: CommerceProviderId
   priceId?: string
-  productId?: string
-  variantId?: string
-  storeId?: string
-}
-
-export type LemonSqueezyWebhookContext = {
-  rawBody: string
-  signature: string
-  eventName?: string
-  eventId?: string
-  webhookSecret?: string
 }
 
 export type CommerceWebhookContext = {

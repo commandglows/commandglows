@@ -1,7 +1,7 @@
 ---
 artifact: editorial_governance
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: commandglows
 created: "2026-05-17"
 updated: "2026-08-11"
@@ -48,7 +48,7 @@ Use this as the minimum canonical map for product sales copy and checkout author
 
 | Product | Canonical marketing site | Canonical sales page | Checkout authority | Post-purchase authority | Notes |
 | --- | --- | --- | --- | --- | --- |
-| CommunityGlows | `communityglows.com` | `communityglows.com/lifetime-deal` | shared suite commerce route using `offerId=communityglows/lifetime_deal`, eligible for Lemon Squeezy | shared suite success and cancel routes plus suite entitlements | Keep CommunityGlows sales copy on the CommunityGlows domain even if checkout infrastructure is shared |
+| CommunityGlows | `communityglows.com` | `communityglows.com/lifetime-deal` | authenticated suite purchase start using `offerId=communityglows/lifetime_deal`, Stripe Managed Payments only | shared suite success and cancel routes plus suite entitlements | Keep CommunityGlows sales copy on the CommunityGlows domain even if checkout infrastructure is shared |
 | CommandGlows App | `www.commandglows.com` | `www.commandglows.com/commandglows-founder` | shared suite commerce route using `offerId=commandglows_app/*`, eligible for Stripe Managed Payments only | shared suite success and cancel routes plus suite entitlements | CommandGlows is both product site and commerce host for the current shared checkout layer |
 
 ## Canonical Sales Rules

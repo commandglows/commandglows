@@ -10,23 +10,20 @@ vi.mock('convex/browser', () => ({
   }),
 }))
 
-describe('communityglows bridge commerce forwarding', () => {
+describe('communityglows suite bridge', () => {
   beforeEach(() => {
     mockMutation.mockReset()
+    delete process.env.SUITE_COMMERCE_CHECKOUT_SECRET
+    process.env.SUITE_TRIAL_SIGNAL_SECRET = 'trial-signal-secret'
   })
 
-  test('forwards normalized commerce operation to convex commerce processor', async () => {
+  test('rejects retired product-local commerce forwarding', async () => {
     const { POST } = await import('@/pages/api/bridge/communityglows')
 
     process.env.COMMUNITYGLOWS_SUITE_BRIDGE_SECRET = 'social-secret'
     process.env.SUITE_BRIDGE_CONVEX_SECRET = 'convex-secret'
+    process.env.SUITE_COMMERCE_CHECKOUT_SECRET = 'checkout-secret'
     process.env.PUBLIC_CONVEX_URL = 'https://convex.example.com'
-
-    mockMutation.mockResolvedValueOnce({
-      ok: true,
-      status: 'granted',
-      alreadyProcessed: false,
-    })
 
     const request = new Request('https://communityglows.com/api/bridge/communityglows', {
       method: 'POST',
@@ -35,7 +32,7 @@ describe('communityglows bridge commerce forwarding', () => {
       },
       body: JSON.stringify({
         operation: 'commerce',
-        provider: 'lemonsqueezy',
+        provider: 'stripe',
         offerId: 'communityglows/lifetime_deal',
         productId: 'communityglows',
         plan: 'lifetime_deal',
@@ -53,24 +50,8 @@ describe('communityglows bridge commerce forwarding', () => {
     })
 
     const response = await POST({ request })
-    expect(response.status).toBe(200)
-
-    const payload = await response.json()
-    expect(payload).toEqual({
-      status: 'ok',
-      result: { ok: true, status: 'granted', alreadyProcessed: false },
-    })
-
-    expect(mockMutation).toHaveBeenCalledWith(
-      'bridge:processCommunityGlowsCommerceEvent',
-      expect.objectContaining({
-        provider: 'lemonsqueezy',
-        offerId: 'communityglows/lifetime_deal',
-        eventType: 'paid',
-        environment: 'production',
-        providerOrderId: 'ord_456',
-      })
-    )
+    expect(response.status).toBe(400)
+    expect(mockMutation).not.toHaveBeenCalled()
   })
 
   test('accepts the CommunityGlows secret header for snapshot requests', async () => {
@@ -78,12 +59,13 @@ describe('communityglows bridge commerce forwarding', () => {
 
     process.env.COMMUNITYGLOWS_SUITE_BRIDGE_SECRET = 'community-secret'
     process.env.SUITE_BRIDGE_CONVEX_SECRET = 'convex-secret'
+    process.env.SUITE_COMMERCE_CHECKOUT_SECRET = 'checkout-secret'
     process.env.PUBLIC_CONVEX_URL = 'https://convex.example.com'
 
     mockMutation.mockResolvedValueOnce({
       hasAccess: true,
       accessState: 'trial_active',
-      planId: 'free',
+      planId: 'trial',
       source: 'product_trial',
       globalUserId: 'gu_community',
       trialStartedAt: 1000,
@@ -100,6 +82,43 @@ describe('communityglows bridge commerce forwarding', () => {
       body: JSON.stringify({
         operation: 'snapshot',
         providerAccountId: 'community_user_123',
+        installationHash: 'client_hash_snapshot',
+      }),
+    })
+
+    const response = await POST({ request })
+    expect(response.status).toBe(200)
+    const payload = await response.json()
+    expect(payload.checkoutIdentityToken).toEqual(expect.any(String))
+    expect(mockMutation).toHaveBeenCalledWith(
+      'bridge:ensureCommunityGlowsEntitlementSnapshotByProviderAccount',
+      expect.objectContaining({ providerAccountId: 'community_user_123' })
+    )
+  })
+
+  test('forwards authenticated CommunityGlows trial restarts with anti-abuse signals', async () => {
+    const { POST } = await import('@/pages/api/bridge/communityglows')
+
+    process.env.COMMUNITYGLOWS_SUITE_BRIDGE_SECRET = 'community-secret'
+    process.env.SUITE_BRIDGE_CONVEX_SECRET = 'convex-secret'
+    process.env.PUBLIC_CONVEX_URL = 'https://convex.example.com'
+    mockMutation.mockResolvedValueOnce({
+      hasAccess: true,
+      accessState: 'trial_active',
+      trialAttempt: 2,
+      trialRestartsRemaining: 1,
+    })
+
+    const request = new Request('https://communityglows.com/api/bridge/communityglows', {
+      method: 'POST',
+      headers: {
+        'x-communityglows-suite-secret': 'community-secret',
+      },
+      body: JSON.stringify({
+        operation: 'restart_trial',
+        providerAccountId: 'community_user_123',
+        installationHash: 'installation_hash',
+        networkHash: 'network_hash',
       }),
     })
 
@@ -107,7 +126,38 @@ describe('communityglows bridge commerce forwarding', () => {
     expect(response.status).toBe(200)
     expect(mockMutation).toHaveBeenCalledWith(
       'bridge:ensureCommunityGlowsEntitlementSnapshotByProviderAccount',
-      expect.objectContaining({ providerAccountId: 'community_user_123' })
+      expect.objectContaining({
+        providerAccountId: 'community_user_123',
+        installationHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        networkHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        trialAction: 'restart',
+      })
     )
+    const forwarded = mockMutation.mock.calls[0]?.[1]
+    expect(forwarded.installationHash).not.toBe('installation_hash')
+    expect(forwarded.networkHash).not.toBe('network_hash')
+  })
+
+  test('fails closed when server-side signal pseudonymization is unavailable', async () => {
+    const { POST } = await import('@/pages/api/bridge/communityglows')
+    process.env.COMMUNITYGLOWS_SUITE_BRIDGE_SECRET = 'community-secret'
+    process.env.SUITE_BRIDGE_CONVEX_SECRET = 'convex-secret'
+    process.env.PUBLIC_CONVEX_URL = 'https://convex.example.com'
+    delete process.env.SUITE_TRIAL_SIGNAL_SECRET
+
+    const response = await POST({ request: new Request(
+      'https://communityglows.com/api/bridge/communityglows',
+      {
+        method: 'POST',
+        headers: { 'x-communityglows-suite-secret': 'community-secret' },
+        body: JSON.stringify({
+          operation: 'snapshot',
+          providerAccountId: 'community_user_123',
+          installationHash: 'client_hash',
+        }),
+      }
+    ) })
+    expect(response.status).toBe(503)
+    expect(mockMutation).not.toHaveBeenCalled()
   })
 })

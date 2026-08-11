@@ -1,30 +1,26 @@
 import { mutation, query } from './_generated/server'
-import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx } from './_generated/server'
 import {
-  DEFAULT_FREE_ENTITLEMENT_POLICIES,
   REPLAYGLOWZ_PRODUCT_ID,
   COMMUNITYGLOWS_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
   COMMANDGLOWS_APP_PRODUCT_ID,
-  COMMANDGLOWS_TRIAL_MAX_CYCLES,
-  COMMANDGLOWS_TRIAL_SOURCE,
-  COMMANDGLOWS_TRIAL_PLAN,
-  ensureDefaultFreeEntitlement,
-  ensureMissingDefaultFreeEntitlements,
-  COMMANDGLOWS_TRIAL_DURATION_MS,
+  normalizeSuiteProductId,
+  SUITE_TRIAL_MAX_CYCLES,
+  SUITE_TRIAL_SOURCE,
+  SUITE_TRIAL_PLAN,
+  getSuiteProductTrialPolicy,
   isActiveSuiteEntitlement,
   isAllowedSuiteProduct,
   selectPreferredActiveProductEntitlement,
-} from './defaultFreeEntitlements'
+} from './productEntitlementPolicies'
 
 const COMMUNITYGLOWS_PROVIDER = 'communityglows_convex'
 const COMMUNITYGLOWS_BRIDGE_SOURCE = 'communityglows_bridge_api'
-const COMMUNITYGLOWS_PLAN_ALLOWLIST = new Set(['free', 'lifetime_deal', 'founder_ltd', 'ltd'])
+const COMMUNITYGLOWS_PLAN_ALLOWLIST = new Set(['lifetime_deal', 'founder_ltd', 'ltd'])
 const COMMUNITYGLOWS_SOURCE_ALLOWLIST = new Set([
-  'product_default',
   'manual',
   'partner',
   'appsumo',
@@ -36,28 +32,26 @@ const COMMUNITYGLOWS_REVOKE_EVENT_SOURCE = 'communityglows_revoke'
 const COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE = 'communityglows_commerce'
 const COMMUNITYGLOWS_COMMERCE_GRANT_SOURCE = 'communityglows_commerce'
 const COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE_PREFIX = 'communityglows:commerce'
-const COMMUNITYGLOWS_TRIAL_SOURCE = 'product_trial'
-const COMMUNITYGLOWS_TRIAL_PLAN = 'free'
-const COMMUNITYGLOWS_TRIAL_DURATION_MS = 30 * 24 * 60 * 60 * 1000
-const COMMUNITYGLOWS_TRIAL_IDEMPOTENCY_PREFIX = 'communityglows_product_trial'
 const SUITE_COMMERCE_EVENT_SOURCE = 'suite_commerce'
 const SUITE_COMMERCE_EVENT_SOURCE_PREFIX = 'suite:commerce'
-const COMMANDGLOWS_TRIAL_IDEMPOTENCY_PREFIX = 'commandglows_app_trial'
-const COMMANDGLOWS_TRIAL_NETWORK_WINDOW_MS = 24 * 60 * 60 * 1000
-const COMMANDGLOWS_TRIAL_NETWORK_MAX_GRANTS = 3
+const SUITE_TRIAL_NETWORK_WINDOW_MS = 24 * 60 * 60 * 1000
+const SUITE_TRIAL_NETWORK_MAX_GRANTS = 3
 const COMMANDGLOWS_APP_PLAN_ALLOWLIST = new Set([
-  'free',
   'focus',
   'power',
   'control',
   'command',
   'lifetime_deal',
 ])
+const COMMANDGLOWS_FORMATION_PLAN_ALLOWLIST = new Set(['formation'])
 const COMMANDGLOWS_APP_OFFER_PLAN_BY_ID = new Map([
   ['commandglows_app/focus', 'focus'],
   ['commandglows_app/power', 'power'],
   ['commandglows_app/control', 'control'],
   ['commandglows_app/command', 'command'],
+])
+const COMMANDGLOWS_FORMATION_OFFER_PLAN_BY_ID = new Map([
+  ['commandglows_formation/full_course', 'formation'],
 ])
 const TEMU_SHOPPING_LISTS_PROVIDER = 'temu_shopping_lists_convex'
 const TEMU_SHOPPING_LISTS_BRIDGE_SOURCE = 'temu_shopping_lists_bridge_api'
@@ -94,13 +88,19 @@ type SuiteEntitlementLike = {
   grantedAt?: number
 }
 
-function isTrialEntitlementActive(entry: { status: string; trialExpiresAt?: number | null }) {
+function isTrialEntitlementActive(
+  entry: { status: string; trialExpiresAt?: number | null },
+  now = Date.now()
+) {
   return entry.status === 'trialing'
-    ? typeof entry.trialExpiresAt === 'number' && entry.trialExpiresAt > Date.now()
+    ? typeof entry.trialExpiresAt === 'number' && entry.trialExpiresAt > now
     : false
 }
 
-function isActiveSuiteEntitlementWithExpiration(entry: SuiteEntitlementLike) {
+function isActiveSuiteEntitlementWithExpiration(
+  entry: SuiteEntitlementLike,
+  now = Date.now()
+) {
   return isActiveSuiteEntitlement(
     {
       ...entry,
@@ -110,7 +110,7 @@ function isActiveSuiteEntitlementWithExpiration(entry: SuiteEntitlementLike) {
           ? entry.expiresAt
           : entry.trialExpiresAt,
     },
-    Date.now()
+    now
   )
 }
 
@@ -118,33 +118,89 @@ function nowMs() {
   return Date.now()
 }
 
-function buildCommandGlowsTrialIdempotencyKey(globalUserPublicId: string, attempt: number) {
-  return `${COMMANDGLOWS_TRIAL_IDEMPOTENCY_PREFIX}:${globalUserPublicId}:${attempt}`
+function buildProductTrialIdempotencyKey(
+  productId: string,
+  globalUserPublicId: string,
+  attempt: number
+) {
+  return `${productId}_trial:${globalUserPublicId}:${attempt}`
 }
 
-function countCommandGlowsTrials(entitlements: SuiteEntitlementLike[]) {
+function productTrials(
+  entitlements: SuiteEntitlementLike[],
+  productId: string
+) {
   return entitlements.filter(
     (entry) =>
-      entry.productId === COMMANDGLOWS_APP_PRODUCT_ID &&
-      entry.source === COMMANDGLOWS_TRIAL_SOURCE
-  ).length
+      entry.productId === productId && entry.source === SUITE_TRIAL_SOURCE
+  )
 }
 
-function hasActiveCommandGlowsPaidEntitlement(
+function countProductTrials(
   entitlements: SuiteEntitlementLike[],
+  productId: string
+) {
+  return productTrials(entitlements, productId).length
+}
+
+function hasActivePaidEntitlement(
+  entitlements: SuiteEntitlementLike[],
+  productId: string,
   now = nowMs()
 ) {
   return entitlements.some(
     (entry) =>
-      entry.productId === COMMANDGLOWS_APP_PRODUCT_ID &&
-      isActiveSuiteEntitlementWithExpiration(entry) &&
+      entry.productId === productId &&
+      isActiveSuiteEntitlementWithExpiration(entry, now) &&
       entry.status === 'active'
   )
 }
 
-async function maybeStartCommandGlowsTrialEntitlement(
+function buildProductTrialDecision(
+  entitlements: SuiteEntitlementLike[],
+  productId: string,
+  now: number,
+  trialEligible: boolean
+) {
+  const trials = productTrials(entitlements, productId).sort((left, right) =>
+    (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0)
+  )
+  const latestTrial = trials[0]
+  const activeTrial = trials.find((entry) => isTrialEntitlementActive(entry, now))
+  const paidActive = hasActivePaidEntitlement(entitlements, productId, now)
+  const trialRestartsRemaining = Math.max(
+    0,
+    SUITE_TRIAL_MAX_CYCLES - Math.max(1, trials.length)
+  )
+  const trialRestartEligible =
+    trialEligible &&
+    !paidActive &&
+    !activeTrial &&
+    trials.length > 0 &&
+    trialRestartsRemaining > 0
+
+  const accessState = paidActive
+    ? ('paid_active' as const)
+    : activeTrial
+      ? ('trial_active' as const)
+      : latestTrial && trialRestartsRemaining === 0
+        ? ('trial_exhausted' as const)
+        : latestTrial
+          ? ('trial_expired' as const)
+          : ('inactive' as const)
+
+  return {
+    accessState,
+    trialAttempt: latestTrial?.trialAttempt ?? (trials.length || null),
+    trialRestartsRemaining,
+    trialRestartEligible,
+  }
+}
+
+async function maybeStartProductTrialEntitlement(
   ctx: MutationCtx,
   args: {
+    productId: string
     globalUserDocId: Id<'globalUsers'>
     globalUserPublicId: string
     sourceRef: string
@@ -156,25 +212,28 @@ async function maybeStartCommandGlowsTrialEntitlement(
     entitlements: SuiteEntitlementLike[]
   }
 ) {
+  const policy = getSuiteProductTrialPolicy(args.productId)
+  if (!policy) return false
+
   if (!args.trialEligible) {
     return false
   }
 
-  if (hasActiveCommandGlowsPaidEntitlement(args.entitlements, args.now)) {
+  if (hasActivePaidEntitlement(args.entitlements, args.productId, args.now)) {
     return false
   }
 
   const activeTrial = args.entitlements.find(
     (entry) =>
-      entry.productId === COMMANDGLOWS_APP_PRODUCT_ID &&
-      isTrialEntitlementActive(entry)
+      entry.productId === args.productId &&
+      isTrialEntitlementActive(entry, args.now)
   )
   if (activeTrial) {
     return true
   }
 
-  const trialCount = countCommandGlowsTrials(args.entitlements)
-  const maxAttemptsReached = trialCount >= COMMANDGLOWS_TRIAL_MAX_CYCLES
+  const trialCount = countProductTrials(args.entitlements, args.productId)
+  const maxAttemptsReached = trialCount >= policy.maxTrialCycles
   if (maxAttemptsReached) {
     return false
   }
@@ -184,23 +243,24 @@ async function maybeStartCommandGlowsTrialEntitlement(
   }
 
   if (args.networkHash) {
+    const networkHash = args.networkHash
     const windowStartedAt =
-      Math.floor(args.now / COMMANDGLOWS_TRIAL_NETWORK_WINDOW_MS) *
-      COMMANDGLOWS_TRIAL_NETWORK_WINDOW_MS
+      Math.floor(args.now / SUITE_TRIAL_NETWORK_WINDOW_MS) *
+      SUITE_TRIAL_NETWORK_WINDOW_MS
     const existingRiskWindow = await ctx.db
       .query('productTrialRiskWindows')
       .withIndex('by_productEnvironmentNetworkWindow', (q) =>
         q
-          .eq('productId', COMMANDGLOWS_APP_PRODUCT_ID)
+          .eq('productId', args.productId)
           .eq('environment', args.environment)
-          .eq('networkHash', args.networkHash)
+          .eq('networkHash', networkHash)
           .eq('windowStartedAt', windowStartedAt)
       )
       .first()
 
     if (
       existingRiskWindow &&
-      existingRiskWindow.grantCount >= COMMANDGLOWS_TRIAL_NETWORK_MAX_GRANTS
+      existingRiskWindow.grantCount >= SUITE_TRIAL_NETWORK_MAX_GRANTS
     ) {
       return false
     }
@@ -212,20 +272,21 @@ async function maybeStartCommandGlowsTrialEntitlement(
       })
     } else {
       await ctx.db.insert('productTrialRiskWindows', {
-        productId: COMMANDGLOWS_APP_PRODUCT_ID,
+        productId: args.productId,
         environment: args.environment,
         networkHash: args.networkHash,
         windowStartedAt,
         grantCount: 1,
-        expiresAt: windowStartedAt + COMMANDGLOWS_TRIAL_NETWORK_WINDOW_MS,
+        expiresAt: windowStartedAt + SUITE_TRIAL_NETWORK_WINDOW_MS,
         updatedAt: args.now,
       })
     }
   }
 
   const nextTrialAttempt = trialCount + 1
-  const expiry = args.now + COMMANDGLOWS_TRIAL_DURATION_MS
-  const trialIdempotencyKey = buildCommandGlowsTrialIdempotencyKey(
+  const expiry = args.now + policy.trialDurationMs
+  const trialIdempotencyKey = buildProductTrialIdempotencyKey(
+    args.productId,
     args.globalUserPublicId,
     nextTrialAttempt
   )
@@ -238,27 +299,15 @@ async function maybeStartCommandGlowsTrialEntitlement(
     .first()
 
   if (existing) {
-    await ctx.db.patch(existing._id, {
-      status: 'trialing',
-      source: COMMANDGLOWS_TRIAL_SOURCE,
-      sourceRef: args.sourceRef,
-      plan: COMMANDGLOWS_TRIAL_PLAN,
-      environment: args.environment,
-      trialStartedAt: args.now,
-      trialExpiresAt: expiry,
-      trialAttempt: nextTrialAttempt,
-      grantedAt: existing.grantedAt ?? args.now,
-      updatedAt: args.now,
-    })
-    return true
+    return isTrialEntitlementActive(existing, args.now)
   }
 
   await ctx.db.insert('productEntitlements', {
     globalUserId: args.globalUserDocId,
-    productId: COMMANDGLOWS_APP_PRODUCT_ID,
-    plan: COMMANDGLOWS_TRIAL_PLAN,
+    productId: args.productId,
+    plan: SUITE_TRIAL_PLAN,
     status: 'trialing',
-    source: COMMANDGLOWS_TRIAL_SOURCE,
+    source: SUITE_TRIAL_SOURCE,
     sourceRef: args.sourceRef,
     environment: args.environment,
     idempotencyKey: trialIdempotencyKey,
@@ -270,12 +319,26 @@ async function maybeStartCommandGlowsTrialEntitlement(
     updatedAt: args.now,
   })
 
+  await ctx.db.insert('productAccessEvents', {
+    source: SUITE_TRIAL_SOURCE,
+    eventType:
+      nextTrialAttempt === 1 ? 'product_trial.started' : 'product_trial.restarted',
+    sourceRef: args.sourceRef,
+    idempotencyKey: trialIdempotencyKey,
+    environment: args.environment,
+    productId: args.productId,
+    globalUserId: args.globalUserDocId,
+    status: 'granted',
+    createdAt: args.now,
+  })
+
   return true
 }
 
-async function registerCommandGlowsTrialInstallation(
+async function registerProductTrialInstallation(
   ctx: MutationCtx,
   args: {
+    productId: string
     globalUserDocId: Id<'globalUsers'>
     installationHash?: string
     environment: string
@@ -290,7 +353,7 @@ async function registerCommandGlowsTrialInstallation(
     .query('productTrialInstallations')
     .withIndex('by_productEnvironmentInstallation', (q) =>
       q
-        .eq('productId', COMMANDGLOWS_APP_PRODUCT_ID)
+        .eq('productId', args.productId)
         .eq('environment', args.environment)
         .eq('installationHash', args.installationHash!)
     )
@@ -305,7 +368,7 @@ async function registerCommandGlowsTrialInstallation(
   }
 
   const installationId = await ctx.db.insert('productTrialInstallations', {
-    productId: COMMANDGLOWS_APP_PRODUCT_ID,
+    productId: args.productId,
     environment: args.environment,
     installationHash: args.installationHash,
     globalUserId: args.globalUserDocId,
@@ -315,7 +378,7 @@ async function registerCommandGlowsTrialInstallation(
   return { eligible: true, installationId }
 }
 
-async function markCommandGlowsTrialInstallationConsumed(
+async function markProductTrialInstallationConsumed(
   ctx: MutationCtx,
   installationId: Id<'productTrialInstallations'> | null,
   now: number
@@ -637,7 +700,7 @@ function withoutUndefined<T extends Record<string, unknown>>(value: T): T {
 
 function resolveReplayGlowzAccess(args: {
   globalUserId: string | null
-  entitlements: { productId: string; status: string }[]
+  entitlements: SuiteEntitlementLike[]
   accountExists: boolean
 }) {
   if (!args.globalUserId) {
@@ -651,10 +714,9 @@ function resolveReplayGlowzAccess(args: {
     }
   }
 
-  const canonical = args.entitlements.find(
-    (entry) =>
-      entry.productId === REPLAYGLOWZ_PRODUCT_ID &&
-      isActiveAccessStatus(entry.status)
+  const canonical = selectPreferredActiveProductEntitlement(
+    args.entitlements,
+    REPLAYGLOWZ_PRODUCT_ID
   )
   if (canonical) {
     return {
@@ -666,10 +728,10 @@ function resolveReplayGlowzAccess(args: {
   }
 
   return {
-    hasAccess: true,
+    hasAccess: false,
     globalUserId: args.globalUserId,
-    matchedProductId: REPLAYGLOWZ_PRODUCT_ID,
-    reasonCode: 'default_free_entitlement',
+    matchedProductId: null,
+    reasonCode: 'missing_product_entitlement',
   }
 }
 
@@ -682,6 +744,146 @@ function requireBridgeSecret(providedSecret: string) {
     throw new Error('bridge_secret_mismatch')
   }
 }
+
+export const getCheckoutIdentityByClerkAccount = query({
+  args: {
+    clerkId: v.string(),
+    bridgeSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+    const identity = await ctx.db
+      .query('identityAccounts')
+      .withIndex('by_providerAccount', (q) =>
+        q.eq('provider', 'clerk').eq('providerAccountId', args.clerkId)
+      )
+      .first()
+    if (!identity) return null
+    const globalUser = await ctx.db.get(identity.globalUserId)
+    return globalUser ? { globalUserId: globalUser.globalUserId } : null
+  },
+})
+
+function assertCheckoutHandoffContext(
+  existing: {
+    globalUserId: string
+    productId: string
+    offerId: string
+    environment: string
+  },
+  incoming: {
+    globalUserId: string
+    productId: string
+    offerId: string
+    environment: string
+  }
+) {
+  if (
+    existing.globalUserId !== incoming.globalUserId ||
+    existing.productId !== incoming.productId ||
+    existing.offerId !== incoming.offerId ||
+    existing.environment !== incoming.environment
+  ) {
+    throw new Error('checkout_handoff_context_mismatch')
+  }
+}
+
+export const claimCommerceCheckoutHandoff = mutation({
+  args: {
+    jtiHash: v.string(),
+    globalUserId: v.string(),
+    productId: v.string(),
+    offerId: v.string(),
+    environment: v.string(),
+    expiresAt: v.number(),
+    bridgeSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+    const now = Date.now()
+    const existing = await ctx.db
+      .query('commerceCheckoutHandoffs')
+      .withIndex('by_jtiHash', (q) => q.eq('jtiHash', args.jtiHash))
+      .unique()
+    if (existing) {
+      assertCheckoutHandoffContext(existing, args)
+      if (existing.expiresAt <= now) {
+        throw new Error('checkout_handoff_expired')
+      }
+      return {
+        status: existing.status,
+        idempotencyKey: existing.idempotencyKey,
+        checkoutUrl: existing.checkoutUrl ?? null,
+        providerOrderId: existing.providerOrderId ?? null,
+      }
+    }
+    if (args.expiresAt <= now) {
+      throw new Error('checkout_handoff_expired')
+    }
+
+    const idempotencyKey = `suite-checkout:${args.jtiHash}`
+    await ctx.db.insert('commerceCheckoutHandoffs', {
+      jtiHash: args.jtiHash,
+      globalUserId: args.globalUserId,
+      productId: args.productId,
+      offerId: args.offerId,
+      environment: args.environment,
+      status: 'claimed',
+      idempotencyKey,
+      expiresAt: args.expiresAt,
+      createdAt: now,
+      updatedAt: now,
+    })
+    return {
+      status: 'claimed',
+      idempotencyKey,
+      checkoutUrl: null,
+      providerOrderId: null,
+    }
+  },
+})
+
+export const completeCommerceCheckoutHandoff = mutation({
+  args: {
+    jtiHash: v.string(),
+    globalUserId: v.string(),
+    productId: v.string(),
+    offerId: v.string(),
+    environment: v.string(),
+    checkoutUrl: v.string(),
+    providerOrderId: v.string(),
+    bridgeSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+    const existing = await ctx.db
+      .query('commerceCheckoutHandoffs')
+      .withIndex('by_jtiHash', (q) => q.eq('jtiHash', args.jtiHash))
+      .unique()
+    if (!existing) {
+      throw new Error('checkout_handoff_not_claimed')
+    }
+    assertCheckoutHandoffContext(existing, args)
+    if (existing.status === 'completed') {
+      return {
+        status: 'completed' as const,
+        checkoutUrl: existing.checkoutUrl,
+        providerOrderId: existing.providerOrderId,
+      }
+    }
+    await ctx.db.patch(existing._id, {
+      status: 'completed',
+      checkoutUrl: args.checkoutUrl,
+      providerOrderId: args.providerOrderId,
+      updatedAt: Date.now(),
+    })
+    return {
+      status: 'completed' as const,
+      checkoutUrl: args.checkoutUrl,
+      providerOrderId: args.providerOrderId,
+    }
+  },
+})
 
 function normalizeActivationCode(code: string) {
   return code.trim().toUpperCase().replace(/\s+/g, '-')
@@ -915,6 +1117,9 @@ function isAllowedSuiteCommercePlan(productId: string, planId: string) {
   if (productId === COMMANDGLOWS_APP_PRODUCT_ID) {
     return COMMANDGLOWS_APP_PLAN_ALLOWLIST.has(planId)
   }
+  if (productId === 'commandglows_formation') {
+    return COMMANDGLOWS_FORMATION_PLAN_ALLOWLIST.has(planId)
+  }
   return false
 }
 
@@ -926,10 +1131,13 @@ function isSupportedSuiteCommerceOffer(
   if (isSupportedCommunityGlowsCommerceOffer(offerId, productId, plan)) {
     return true
   }
-  if (productId !== COMMANDGLOWS_APP_PRODUCT_ID) {
-    return false
+  if (productId === COMMANDGLOWS_APP_PRODUCT_ID) {
+    return COMMANDGLOWS_APP_OFFER_PLAN_BY_ID.get(offerId) === plan
   }
-  return COMMANDGLOWS_APP_OFFER_PLAN_BY_ID.get(offerId) === plan
+  if (productId === 'commandglows_formation') {
+    return COMMANDGLOWS_FORMATION_OFFER_PLAN_BY_ID.get(offerId) === plan
+  }
+  return false
 }
 
 function buildSuiteCommerceSourceRef(args: {
@@ -1397,8 +1605,10 @@ function resolveCommunityGlowsAccess(args: {
     source: string
     trialStartedAt?: number
     trialExpiresAt?: number
+    trialAttempt?: number
   }[]
   now?: number
+  trialEligible?: boolean
 }) {
   const now = args.now ?? Date.now()
   const activeEntitlements = args.entitlements.filter(
@@ -1413,30 +1623,43 @@ function resolveCommunityGlowsAccess(args: {
       (entry) => entry.status === 'active' && entry.source !== 'product_default'
     )
   const activeTrial = activeEntitlements.find((entry) => entry.status === 'trialing')
-  const expiredTrial = args.entitlements.find(
-    (entry) =>
-      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
-      entry.status === 'trialing' &&
-      typeof entry.trialExpiresAt === 'number' &&
-      entry.trialExpiresAt <= now
+  const trials = productTrials(args.entitlements, COMMUNITYGLOWS_PRODUCT_ID)
+    .sort((left, right) =>
+      (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0)
+    )
+  const latestTrial = trials[0]
+  const trialRestartsRemaining = Math.max(
+    0,
+    SUITE_TRIAL_MAX_CYCLES - Math.max(1, trials.length)
   )
-  const defaultActiveEntitlement = activeEntitlements.find(
-    (entry) => entry.status === 'active'
-  )
-  const entitlement = paidEntitlement ?? activeTrial ?? defaultActiveEntitlement
+  const trialRestartEligible =
+    args.trialEligible === true &&
+    !paidEntitlement &&
+    !activeTrial &&
+    trials.length > 0 &&
+    trialRestartsRemaining > 0
+  const entitlement = paidEntitlement ?? activeTrial
 
   if (!entitlement) {
-    if (expiredTrial) {
+    if (latestTrial) {
+      const exhausted = trialRestartsRemaining === 0
       return {
         hasAccess: false,
-        accessState: 'trial_expired' as const,
+        accessState: exhausted
+          ? ('trial_exhausted' as const)
+          : ('trial_expired' as const),
         globalUserId: args.globalUserId,
-        planId: expiredTrial.plan,
-        source: expiredTrial.source,
-        trialStartedAt: expiredTrial.trialStartedAt ?? null,
-        trialEndsAt: expiredTrial.trialExpiresAt ?? null,
-        trialExpiresAt: expiredTrial.trialExpiresAt ?? null,
-        reasonCode: 'trial_expired' as const,
+        planId: latestTrial.plan,
+        source: latestTrial.source,
+        trialStartedAt: latestTrial.trialStartedAt ?? null,
+        trialEndsAt: latestTrial.trialExpiresAt ?? null,
+        trialExpiresAt: latestTrial.trialExpiresAt ?? null,
+        trialAttempt: latestTrial.trialAttempt ?? trials.length,
+        trialRestartsRemaining,
+        trialRestartEligible,
+        reasonCode: exhausted
+          ? ('trial_exhausted' as const)
+          : ('trial_expired' as const),
       }
     }
     return {
@@ -1448,6 +1671,9 @@ function resolveCommunityGlowsAccess(args: {
       trialStartedAt: null,
       trialEndsAt: null,
       trialExpiresAt: null,
+      trialAttempt: null,
+      trialRestartsRemaining: SUITE_TRIAL_MAX_CYCLES - 1,
+      trialRestartEligible: false,
       reasonCode: 'missing_product_entitlement' as const,
     }
   }
@@ -1462,78 +1688,30 @@ function resolveCommunityGlowsAccess(args: {
     trialStartedAt: isTrial ? (entitlement.trialStartedAt ?? null) : null,
     trialEndsAt: isTrial ? (entitlement.trialExpiresAt ?? null) : null,
     trialExpiresAt: isTrial ? (entitlement.trialExpiresAt ?? null) : null,
+    trialAttempt: isTrial ? (entitlement.trialAttempt ?? trials.length) : null,
+    trialRestartsRemaining,
+    trialRestartEligible: false,
     reasonCode: 'active_entitlement' as const,
   }
 }
 
-async function ensureCommunityGlowsTrialEntitlement(
-  ctx: MutationCtx,
-  args: {
-    globalUserDocId: Id<'globalUsers'>
-    globalUserPublicId: string
-    sourceRef: string
-    environment: string
-    now: number
-    entitlements: SuiteEntitlementLike[]
-  }
-) {
-  const hasPaidAccess = args.entitlements.some(
-    (entry) =>
-      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
-      entry.status === 'active' &&
-      entry.source !== 'product_default' &&
-      entry.source !== COMMUNITYGLOWS_TRIAL_SOURCE
-  )
-  if (hasPaidAccess) return false
-
-  const idempotencyKey = `${COMMUNITYGLOWS_TRIAL_IDEMPOTENCY_PREFIX}:${args.globalUserPublicId}`
-  const existing = await ctx.db
-    .query('productEntitlements')
-    .withIndex('by_idempotencyKey', (q) =>
-      q.eq('idempotencyKey', idempotencyKey)
-    )
-    .first()
-  if (existing) return false
-
-  const trialExpiresAt = args.now + COMMUNITYGLOWS_TRIAL_DURATION_MS
-  await ctx.db.insert('productEntitlements', {
-    globalUserId: args.globalUserDocId,
-    productId: COMMUNITYGLOWS_PRODUCT_ID,
-    plan: COMMUNITYGLOWS_TRIAL_PLAN,
-    status: 'trialing',
-    source: COMMUNITYGLOWS_TRIAL_SOURCE,
-    sourceRef: args.sourceRef,
-    environment: args.environment,
-    idempotencyKey,
-    trialStartedAt: args.now,
-    trialExpiresAt,
-    trialAttempt: 1,
-    grantedAt: args.now,
-    createdAt: args.now,
-    updatedAt: args.now,
-  })
-
-  await ctx.db.insert('productAccessEvents', {
-    source: COMMUNITYGLOWS_TRIAL_SOURCE,
-    eventType: 'communityglows_trial.started',
-    sourceRef: args.sourceRef,
-    idempotencyKey,
-    environment: args.environment,
-    productId: COMMUNITYGLOWS_PRODUCT_ID,
-    globalUserId: args.globalUserDocId,
-    status: 'granted',
-    createdAt: args.now,
-  })
-  return true
-}
-
 function resolveTemuShoppingListsAccess(args: {
   globalUserId: string
-  entitlements: { productId: string; status: string; plan: string; source: string }[]
+  entitlements: SuiteEntitlementLike[]
+  now?: number
+  trialEligible?: boolean
 }) {
+  const now = args.now ?? Date.now()
+  const decision = buildProductTrialDecision(
+    args.entitlements,
+    TEMU_SHOPPING_LISTS_PRODUCT_ID,
+    now,
+    args.trialEligible === true
+  )
   const entitlement = selectPreferredActiveProductEntitlement(
     args.entitlements,
-    TEMU_SHOPPING_LISTS_PRODUCT_ID
+    TEMU_SHOPPING_LISTS_PRODUCT_ID,
+    now
   )
 
   if (!entitlement) {
@@ -1542,6 +1720,7 @@ function resolveTemuShoppingListsAccess(args: {
       globalUserId: args.globalUserId,
       planId: null,
       source: null,
+      ...decision,
       reasonCode: 'missing_product_entitlement' as const,
     }
   }
@@ -1551,6 +1730,7 @@ function resolveTemuShoppingListsAccess(args: {
     globalUserId: args.globalUserId,
     planId: entitlement.plan,
     source: entitlement.source,
+    ...decision,
     reasonCode: 'active_entitlement' as const,
   }
 }
@@ -1667,35 +1847,15 @@ export const upsertFirebaseIdentity = mutation({
       )
       .collect()
 
-    const didEnsureDefaultFreeEntitlements =
-      await ensureMissingDefaultFreeEntitlements(ctx, {
-        rawEntitlements,
-        productIds: DEFAULT_FREE_ENTITLEMENT_POLICIES.map(
-          (policy) => policy.productId
-        ),
-        globalUserDocId: identity.globalUserId,
-        globalUserPublicId: globalUser.globalUserId,
-        sourceRef: args.firebaseUid,
-        environment,
-        now,
-      })
-
-    if (didEnsureDefaultFreeEntitlements) {
-      rawEntitlements = await ctx.db
-        .query('productEntitlements')
-        .withIndex('by_globalUserId', (q) =>
-          q.eq('globalUserId', identity.globalUserId)
-        )
-        .collect()
-    }
-
-    const installation = await registerCommandGlowsTrialInstallation(ctx, {
+    const installation = await registerProductTrialInstallation(ctx, {
+      productId: COMMANDGLOWS_APP_PRODUCT_ID,
       globalUserDocId: identity.globalUserId,
       installationHash: args.installationHash,
       environment,
       now,
     })
-    const didStartCommandGlowsTrial = await maybeStartCommandGlowsTrialEntitlement(ctx, {
+    const didStartCommandGlowsTrial = await maybeStartProductTrialEntitlement(ctx, {
+      productId: COMMANDGLOWS_APP_PRODUCT_ID,
       globalUserDocId: identity.globalUserId,
       globalUserPublicId: globalUser.globalUserId,
       sourceRef: args.sourceRef ?? args.firebaseUid,
@@ -1717,7 +1877,7 @@ export const upsertFirebaseIdentity = mutation({
     })
 
     if (didStartCommandGlowsTrial) {
-      await markCommandGlowsTrialInstallationConsumed(
+      await markProductTrialInstallationConsumed(
         ctx,
         installation.installationId,
         now
@@ -1731,8 +1891,46 @@ export const upsertFirebaseIdentity = mutation({
       )
       .collect()
 
+    const commandGlowsTrialCount = countProductTrials(
+      rawEntitlements,
+      COMMANDGLOWS_APP_PRODUCT_ID
+    )
+    const commandGlowsTrialRestartsRemaining = Math.max(
+      0,
+      SUITE_TRIAL_MAX_CYCLES - commandGlowsTrialCount
+    )
+    const commandGlowsHasActiveTrial = rawEntitlements.some(
+      (entry) =>
+        entry.productId === COMMANDGLOWS_APP_PRODUCT_ID &&
+        entry.status === 'trialing' &&
+        typeof entry.trialExpiresAt === 'number' &&
+        entry.trialExpiresAt > now
+    )
+    const commandGlowsHasPaidAccess = hasActivePaidEntitlement(
+      rawEntitlements,
+      COMMANDGLOWS_APP_PRODUCT_ID,
+      now
+    )
+    const commandGlowsTrialRestartEligible =
+      installation.eligible &&
+      !commandGlowsHasPaidAccess &&
+      !commandGlowsHasActiveTrial &&
+      commandGlowsTrialCount > 0 &&
+      commandGlowsTrialRestartsRemaining > 0
+    const commandGlowsTrialDecision = buildProductTrialDecision(
+      rawEntitlements,
+      COMMANDGLOWS_APP_PRODUCT_ID,
+      now,
+      installation.eligible
+    )
+
     const entitlements = rawEntitlements
       .filter((entry) => isAllowedSuiteProduct(entry.productId))
+      .filter(
+        (entry) =>
+          entry.source !== 'product_default' &&
+          !(entry.status === 'active' && entry.plan === 'free')
+      )
       .map((entry) => ({
         productId: entry.productId,
         status: entry.status,
@@ -1741,6 +1939,14 @@ export const upsertFirebaseIdentity = mutation({
         sourceRef: entry.sourceRef,
         trialStartedAt: entry.trialStartedAt,
         trialExpiresAt: entry.trialExpiresAt,
+        ...(entry.productId === COMMANDGLOWS_APP_PRODUCT_ID
+          ? {
+              trialAttempt: entry.trialAttempt,
+              trialRestartsRemaining: commandGlowsTrialRestartsRemaining,
+              trialRestartEligible: commandGlowsTrialRestartEligible,
+              accessState: commandGlowsTrialDecision.accessState,
+            }
+          : {}),
       }))
 
     const replayGlowzProductUserId =
@@ -1811,22 +2017,133 @@ export const getEntitlementSnapshotByGlobalUser = query({
 
     const entitlements = rawEntitlements
       .filter((entry) => isAllowedSuiteProduct(entry.productId))
-      .filter((entry) => isActiveSuiteEntitlementWithExpiration(entry))
-      .map((entry) => ({
-        productId: entry.productId,
-        status: entry.status,
-        plan: entry.plan,
-        source: entry.source,
-        sourceRef: entry.sourceRef,
-        trialStartedAt: entry.trialStartedAt,
-        trialExpiresAt: entry.trialExpiresAt,
-      }))
+      .filter(
+        (entry) =>
+          entry.source !== 'product_default' &&
+          !(entry.status === 'active' && entry.plan === 'free')
+      )
+      .map((entry) => {
+        const decision = buildProductTrialDecision(
+          rawEntitlements,
+          entry.productId,
+          Date.now(),
+          false
+        )
+        return {
+          productId: entry.productId,
+          status: entry.status,
+          plan: entry.plan,
+          source: entry.source,
+          sourceRef: entry.sourceRef,
+          trialStartedAt: entry.trialStartedAt,
+          trialExpiresAt: entry.trialExpiresAt,
+          trialAttempt: entry.trialAttempt,
+          trialRestartsRemaining: decision.trialRestartsRemaining,
+          trialRestartEligible: decision.trialRestartEligible,
+          accessState: decision.accessState,
+        }
+      })
 
     return {
       status: 'ok' as const,
       globalUserId: globalUser.globalUserId,
       firebaseUids,
       entitlements,
+    }
+  },
+})
+
+/**
+ * Generic server-to-server entrypoint for suite products that do not yet own a
+ * dedicated client bridge. Product clients may wrap this mutation later, but
+ * they must not duplicate trial state or policy locally.
+ */
+export const ensureSuiteProductTrialByGlobalUserId = mutation({
+  args: {
+    globalUserId: v.string(),
+    productId: v.string(),
+    installationHash: v.string(),
+    networkHash: v.optional(v.string()),
+    trialAction: v.optional(v.union(v.literal('start'), v.literal('restart'))),
+    sourceRef: v.optional(v.string()),
+    environment: v.optional(v.string()),
+    bridgeSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+
+    const productId = normalizeSuiteProductId(args.productId.trim())
+    if (!isAllowedSuiteProduct(productId)) {
+      throw new Error('product_not_allowed')
+    }
+    if (!args.installationHash.trim()) {
+      throw new Error('installation_hash_required')
+    }
+
+    const globalUser = await ctx.db
+      .query('globalUsers')
+      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', args.globalUserId))
+      .first()
+    if (!globalUser) {
+      throw new Error('global_user_not_found')
+    }
+
+    const now = Date.now()
+    const environment = args.environment ?? 'production'
+    let entitlements = await ctx.db
+      .query('productEntitlements')
+      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
+      .collect()
+    const installation = await registerProductTrialInstallation(ctx, {
+      productId,
+      globalUserDocId: globalUser._id,
+      installationHash: args.installationHash.trim(),
+      environment,
+      now,
+    })
+    const didEnsureTrial = await maybeStartProductTrialEntitlement(ctx, {
+      productId,
+      globalUserDocId: globalUser._id,
+      globalUserPublicId: globalUser.globalUserId,
+      sourceRef: args.sourceRef ?? `${productId}:${globalUser.globalUserId}`,
+      environment,
+      now,
+      allowRestart: args.trialAction === 'restart',
+      trialEligible: installation.eligible,
+      networkHash: args.networkHash,
+      entitlements,
+    })
+    if (didEnsureTrial) {
+      await markProductTrialInstallationConsumed(ctx, installation.installationId, now)
+      entitlements = await ctx.db
+        .query('productEntitlements')
+        .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
+        .collect()
+    }
+
+    const decision = buildProductTrialDecision(
+      entitlements,
+      productId,
+      now,
+      installation.eligible
+    )
+    const entitlement = selectPreferredActiveProductEntitlement(
+      entitlements,
+      productId,
+      now
+    )
+
+    return {
+      status: 'ok' as const,
+      productId,
+      globalUserId: globalUser.globalUserId,
+      hasAccess: Boolean(entitlement),
+      planId: entitlement?.plan ?? null,
+      source: entitlement?.source ?? null,
+      ...decision,
+      reasonCode: entitlement
+        ? ('active_entitlement' as const)
+        : ('missing_product_entitlement' as const),
     }
   },
 })
@@ -1857,7 +2174,7 @@ export const restartCommandGlowsTrialByGlobalUserId = mutation({
       .query('productEntitlements')
       .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
       .collect()
-    const trialCount = countCommandGlowsTrials(
+    const trialCount = countProductTrials(
       rawEntitlements.map((entry) => ({
         productId: entry.productId,
         status: entry.status,
@@ -1865,10 +2182,12 @@ export const restartCommandGlowsTrialByGlobalUserId = mutation({
         trialAttempt: entry.trialAttempt,
         trialStartedAt: entry.trialStartedAt,
         trialExpiresAt: entry.trialExpiresAt,
-      }))
+      })),
+      COMMANDGLOWS_APP_PRODUCT_ID
     )
 
-    const didStartTrial = await maybeStartCommandGlowsTrialEntitlement(ctx, {
+    const didStartTrial = await maybeStartProductTrialEntitlement(ctx, {
+      productId: COMMANDGLOWS_APP_PRODUCT_ID,
       globalUserDocId: globalUser._id,
       globalUserPublicId: globalUser.globalUserId,
       sourceRef: args.sourceRef ?? globalUser.globalUserId,
@@ -1896,58 +2215,7 @@ export const restartCommandGlowsTrialByGlobalUserId = mutation({
       globalUserId: globalUser.globalUserId,
       activeTrialCount: trialCount,
       nextTrialCount: didStartTrial ? trialCount + 1 : trialCount,
-      canRetry: (didStartTrial ? trialCount + 1 : trialCount) < COMMANDGLOWS_TRIAL_MAX_CYCLES,
-    }
-  },
-})
-
-export const backfillDefaultFreeEntitlements = mutation({
-  args: {
-    bridgeSecret: v.string(),
-    environment: v.optional(v.string()),
-    paginationOpts: paginationOptsValidator,
-  },
-  handler: async (ctx, args) => {
-    requireBridgeSecret(args.bridgeSecret)
-
-    const now = Date.now()
-    const environment = args.environment ?? 'production'
-    const result = await ctx.db
-      .query('globalUsers')
-      .order('asc')
-      .paginate(args.paginationOpts)
-
-    let updatedUsers = 0
-    for (const globalUser of result.page) {
-      const rawEntitlements = await ctx.db
-        .query('productEntitlements')
-        .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
-        .collect()
-
-      const didEnsureDefaultFreeEntitlements =
-        await ensureMissingDefaultFreeEntitlements(ctx, {
-          rawEntitlements,
-          productIds: DEFAULT_FREE_ENTITLEMENT_POLICIES.map(
-            (policy) => policy.productId
-          ),
-          globalUserDocId: globalUser._id,
-          globalUserPublicId: globalUser.globalUserId,
-          sourceRef: `backfill:${globalUser.globalUserId}`,
-          environment,
-          now,
-        })
-
-      if (didEnsureDefaultFreeEntitlements) {
-        updatedUsers += 1
-      }
-    }
-
-    return {
-      status: 'ok' as const,
-      scannedUsers: result.page.length,
-      updatedUsers,
-      isDone: result.isDone,
-      continueCursor: result.continueCursor,
+      canRetry: (didStartTrial ? trialCount + 1 : trialCount) < SUITE_TRIAL_MAX_CYCLES,
     }
   },
 })
@@ -2018,6 +2286,9 @@ export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
     clerkId: v.string(),
     bridgeSecret: v.string(),
     environment: v.optional(v.string()),
+    installationHash: v.optional(v.string()),
+    networkHash: v.optional(v.string()),
+    trialAction: v.optional(v.union(v.literal('start'), v.literal('restart'))),
   },
   handler: async (ctx, args) => {
     const configuredSecret = process.env.SUITE_BRIDGE_CONVEX_SECRET
@@ -2067,32 +2338,49 @@ export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
       )
       .collect()
 
-    const currentSnapshot = resolveReplayGlowzAccess({
-      globalUserId: globalUser.globalUserId,
-      entitlements: rawEntitlements,
-      accountExists: true,
-    })
-    if (currentSnapshot.reasonCode !== 'default_free_entitlement') {
-      return currentSnapshot
-    }
-
     const now = Date.now()
     const environment = args.environment ?? 'production'
-    await ensureDefaultFreeEntitlement(ctx, {
+    const installation = await registerProductTrialInstallation(ctx, {
+      productId: REPLAYGLOWZ_PRODUCT_ID,
+      globalUserDocId,
+      installationHash: args.installationHash,
+      environment,
+      now,
+    })
+    const didStartTrial = await maybeStartProductTrialEntitlement(ctx, {
       productId: REPLAYGLOWZ_PRODUCT_ID,
       globalUserDocId,
       globalUserPublicId: globalUser.globalUserId,
       sourceRef: args.clerkId,
       environment,
       now,
+      allowRestart: args.trialAction === 'restart',
+      trialEligible: installation.eligible,
+      networkHash: args.networkHash,
+      entitlements: rawEntitlements,
     })
-
-    return {
-      hasAccess: true,
-      globalUserId: globalUser.globalUserId,
-      matchedProductId: REPLAYGLOWZ_PRODUCT_ID,
-      reasonCode: 'default_free_entitlement',
+    if (didStartTrial) {
+      await markProductTrialInstallationConsumed(
+        ctx,
+        installation.installationId,
+        now
+      )
     }
+
+    const updatedEntitlements = didStartTrial
+      ? await ctx.db
+          .query('productEntitlements')
+          .withIndex('by_globalUserId', (q) =>
+            q.eq('globalUserId', globalUserDocId)
+          )
+          .collect()
+      : rawEntitlements
+
+    return resolveReplayGlowzAccess({
+      globalUserId: globalUser.globalUserId,
+      entitlements: updatedEntitlements,
+      accountExists: true,
+    })
   },
 })
 
@@ -2102,6 +2390,9 @@ export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount = mutation
     email: v.optional(v.string()),
     environment: v.optional(v.string()),
     sourceRef: v.optional(v.string()),
+    installationHash: v.optional(v.string()),
+    networkHash: v.optional(v.string()),
+    trialAction: v.optional(v.union(v.literal('start'), v.literal('restart'))),
     bridgeSecret: v.string(),
   },
   handler: async (ctx, args) => {
@@ -2129,17 +2420,33 @@ export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount = mutation
       .collect()
 
     const now = Date.now()
-    const didEnsureTrialEntitlement = await ensureCommunityGlowsTrialEntitlement(
-      ctx,
-      {
-        entitlements: rawEntitlements,
-        globalUserDocId,
-        globalUserPublicId: globalUser.globalUserId,
-        sourceRef: args.sourceRef ?? providerAccountId,
-        environment,
-        now,
-      }
-    )
+    const installation = await registerProductTrialInstallation(ctx, {
+      productId: COMMUNITYGLOWS_PRODUCT_ID,
+      globalUserDocId,
+      installationHash: args.installationHash,
+      environment,
+      now,
+    })
+    const didEnsureTrialEntitlement = await maybeStartProductTrialEntitlement(ctx, {
+      productId: COMMUNITYGLOWS_PRODUCT_ID,
+      entitlements: rawEntitlements,
+      globalUserDocId,
+      globalUserPublicId: globalUser.globalUserId,
+      sourceRef: args.sourceRef ?? providerAccountId,
+      environment,
+      now,
+      allowRestart: args.trialAction === 'restart',
+      trialEligible: installation.eligible,
+      networkHash: args.networkHash,
+    })
+
+    if (didEnsureTrialEntitlement) {
+      await markProductTrialInstallationConsumed(
+        ctx,
+        installation.installationId,
+        now
+      )
+    }
 
     if (didEnsureTrialEntitlement) {
       rawEntitlements = await ctx.db
@@ -2154,6 +2461,7 @@ export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount = mutation
       globalUserId: globalUser.globalUserId,
       entitlements: rawEntitlements,
       now,
+      trialEligible: installation.eligible,
     })
   },
 })
@@ -2164,6 +2472,9 @@ export const ensureTemuShoppingListsEntitlementSnapshotByProviderAccount = mutat
     email: v.optional(v.string()),
     environment: v.optional(v.string()),
     sourceRef: v.optional(v.string()),
+    installationHash: v.optional(v.string()),
+    networkHash: v.optional(v.string()),
+    trialAction: v.optional(v.union(v.literal('start'), v.literal('restart'))),
     bridgeSecret: v.string(),
   },
   handler: async (ctx, args) => {
@@ -2192,18 +2503,33 @@ export const ensureTemuShoppingListsEntitlementSnapshotByProviderAccount = mutat
       .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUserDocId))
       .collect()
 
-    const didEnsureDefaultFreeEntitlement =
-      await ensureMissingDefaultFreeEntitlements(ctx, {
-        rawEntitlements,
-        productIds: [TEMU_SHOPPING_LISTS_PRODUCT_ID],
-        globalUserDocId,
-        globalUserPublicId: globalUser.globalUserId,
-        sourceRef: args.sourceRef ?? providerAccountId,
-        environment,
-        now: Date.now(),
-      })
+    const now = Date.now()
+    const installation = await registerProductTrialInstallation(ctx, {
+      productId: TEMU_SHOPPING_LISTS_PRODUCT_ID,
+      globalUserDocId,
+      installationHash: args.installationHash,
+      environment,
+      now,
+    })
+    const didEnsureTrialEntitlement = await maybeStartProductTrialEntitlement(ctx, {
+      productId: TEMU_SHOPPING_LISTS_PRODUCT_ID,
+      entitlements: rawEntitlements,
+      globalUserDocId,
+      globalUserPublicId: globalUser.globalUserId,
+      sourceRef: args.sourceRef ?? providerAccountId,
+      environment,
+      now,
+      allowRestart: args.trialAction === 'restart',
+      trialEligible: installation.eligible,
+      networkHash: args.networkHash,
+    })
 
-    if (didEnsureDefaultFreeEntitlement) {
+    if (didEnsureTrialEntitlement) {
+      await markProductTrialInstallationConsumed(
+        ctx,
+        installation.installationId,
+        now
+      )
       rawEntitlements = await ctx.db
         .query('productEntitlements')
         .withIndex('by_globalUserId', (q) =>
@@ -2215,6 +2541,8 @@ export const ensureTemuShoppingListsEntitlementSnapshotByProviderAccount = mutat
     return resolveTemuShoppingListsAccess({
       globalUserId: globalUser.globalUserId,
       entitlements: rawEntitlements,
+      now,
+      trialEligible: installation.eligible,
     })
   },
 })
@@ -2623,6 +2951,27 @@ export const processCommerceEvent = mutation({
     const metadataSource = normalizeCommerceMetadataSource(args.metadata?.source)
     const eventSourceRef = `${args.productId}:${sourceRef}`
 
+    if (args.provider !== 'stripe') {
+      await upsertSuiteCommerceAccessEvent(ctx, {
+        productId: args.productId,
+        environment: incomingEnvironment,
+        sourceRef: eventSourceRef,
+        idempotencyKey: args.idempotencyKey,
+        status: 'pending_review',
+        eventType: 'suite_commerce.provider_rejected',
+        customerEmail: args.customerEmail,
+        providerCustomerId: args.providerCustomerId,
+        providerEventId: args.providerEventId,
+        reason: `provider_not_allowed:${args.provider}`,
+      })
+      return {
+        ok: false,
+        status: 'pending_review',
+        alreadyProcessed: false,
+        reason: 'provider_not_allowed',
+      }
+    }
+
     if (!isAllowedCommerceEnvironment(incomingEnvironment, runtimeEnvironment)) {
       await upsertSuiteCommerceAccessEvent(ctx, {
         productId: args.productId,
@@ -2886,6 +3235,25 @@ export const processCommunityGlowsCommerceEvent = mutation({
     })
 
     const metadataSource = normalizeCommerceMetadataSource(args.metadata?.source)
+    if (args.provider !== 'stripe') {
+      await upsertCommunityGlowsCommerceAccessEvent(ctx, {
+        environment: incomingEnvironment,
+        sourceRef,
+        idempotencyKey: args.idempotencyKey,
+        status: 'pending_review',
+        eventType: 'communityglows_commerce.provider_rejected',
+        customerEmail: args.customerEmail,
+        providerCustomerId: args.providerCustomerId,
+        providerEventId: args.providerEventId,
+        reason: `provider_not_allowed:${args.provider}`,
+      })
+      return {
+        ok: false,
+        status: 'pending_review',
+        alreadyProcessed: false,
+        reason: 'provider_not_allowed',
+      }
+    }
     if (!isAllowedCommerceEnvironment(incomingEnvironment, runtimeEnvironment)) {
       await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: runtimeEnvironment,

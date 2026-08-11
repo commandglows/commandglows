@@ -81,7 +81,7 @@ Minimum no-bankruptcy rule: **do not sell all-platforms + cloud sync below $499*
 ## Decisions Already Reflected
 
 - First launch language: English.
-- Payment provider assumption superseded: Stripe Managed Payments is now the CommandGlows Merchant of Record target; Lemon Squeezy is retained only for CommunityGlows.
+- Payment provider assumption superseded: Stripe Managed Payments is now the CommandGlows Merchant of Record target. CommunityGlows Lemon Squeezy references are historical only and no longer active.
 - License basis: per user, not per platform and not per machine, with a fixed number of active device activations across any released platform.
 - Early Bird framing: beta pricing that may change, not a fake fixed deadline.
 - Other platforms: Windows, iOS, and Linux can be promised as intended future directions only; no release date commitment.
@@ -115,7 +115,7 @@ Practical rule for CommandGlows:
 
 Recommended sequence:
 
-1. Direct-site Early Bird on Lemon Squeezy to validate demand and collect first users.
+1. Direct-site Early Bird on Stripe Managed Payments to validate demand and collect first users (Lemon Squeezy references here are historical migration records only).
 2. Raise direct-site prices to the regular anchors before any AppSumo negotiation.
 3. Negotiate AppSumo with stackable or tiered offers that are cheaper than the then-current public direct price, but not broader than the sustainable entitlement policy.
 4. After AppSumo, either close the LTD or move the direct site to higher LTD pricing / subscription / waitlist.
@@ -124,7 +124,7 @@ AppSumo should not receive an all-platform + unlimited-cloud promise at a low he
 
 ## Cost And Margin Constraints
 
-### Lemon Squeezy
+### Lemon Squeezy (Historical Fee Model)
 
 Lemon Squeezy has no monthly fee and lists a base transaction fee of 5% + 50 cents. It also provides merchant-of-record tax handling. Source: [Lemon Squeezy pricing](https://www.lemonsqueezy.com/pricing).
 

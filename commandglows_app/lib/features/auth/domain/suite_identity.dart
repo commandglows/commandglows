@@ -54,6 +54,22 @@ class SuiteIdentitySnapshot {
     );
   }
 
+  ProductEntitlement? entitlementFor(ProductId productId) {
+    final matching = entitlements
+        .where((entitlement) => entitlement.productId == productId)
+        .toList();
+    if (matching.isEmpty) {
+      return null;
+    }
+    matching.sort((left, right) {
+      if (left.grantsAccess != right.grantsAccess) {
+        return left.grantsAccess ? -1 : 1;
+      }
+      return (right.trialAttempt ?? 0).compareTo(left.trialAttempt ?? 0);
+    });
+    return matching.first;
+  }
+
   SuiteAccountStatus statusFor(ProductId productId) {
     if (status == SuiteAccountStatus.unavailable ||
         status == SuiteAccountStatus.linkingRequired) {

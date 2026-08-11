@@ -2,12 +2,7 @@ import type { APIContext } from 'astro'
 import { ConvexHttpClient } from 'convex/browser'
 import { SITE } from '@/constants'
 
-type CourseUser = {
-	role?: string
-	subscriptionTier?: string
-	subscriptionStatus?: string
-	courseEntitlements?: string[]
-}
+type CourseUser = { role?: string }
 
 type FormationAccess = {
 	hasAccess: boolean
@@ -15,8 +10,8 @@ type FormationAccess = {
 	user?: CourseUser | null
 }
 
-export const COURSE_ENTITLEMENT = 'commandglows-training'
-const CANONICAL_FORMATION_PRODUCT_ID = 'commandglows_formation'
+export const COURSE_ENTITLEMENT = 'commandglows_formation'
+const FORMATION_OFFER_ID = 'commandglows_formation/full_course'
 
 export function isFormationSlug(slug: string) {
 	return (
@@ -52,10 +47,11 @@ export function getPublicCoursePath(slug: string) {
 
 export function getCourseCheckoutPath(slug: string, lang: 'en' | 'fr') {
 	const params = new URLSearchParams({
+		offerId: FORMATION_OFFER_ID,
 		lesson: slug.replace(/^\/+/, ''),
 		lang,
 	})
-	return `/api/polar/checkout?${params.toString()}`
+	return `/api/checkout/start?${params.toString()}`
 }
 
 export function isSafePrivateCoursePath(pathname: string | null) {
@@ -75,7 +71,7 @@ export function isSafeCourseCheckoutPath(pathname: string | null) {
 		const url = new URL(pathname, SITE.url)
 		const lesson = url.searchParams.get('lesson')
 		return (
-			url.pathname === '/api/polar/checkout' &&
+			url.pathname === '/api/checkout/start' &&
 			Boolean(lesson && isFormationSlug(lesson))
 		)
 	} catch {
@@ -125,41 +121,14 @@ export async function getCourseAccess(context: APIContext) {
 
 	try {
 		const convex = new ConvexHttpClient(convexUrl)
-		try {
-			const access = (await convex.query('users:getFormationAccessByClerkId' as never, {
-				clerkId: auth.userId,
-			} as never)) as FormationAccess | null
-
-			if (typeof access?.hasAccess === 'boolean') {
-				return {
-					isAuthenticated: true,
-					hasAccess: access.hasAccess,
-					user: access.user ?? null,
-				}
-			}
-		} catch {
-			// Fallback to legacy local calculation for older Convex deployments.
-		}
-
-		const user = (await convex.query('users:getByClerkId' as never, {
+		const access = (await convex.query('users:getFormationAccessByClerkId' as never, {
 			clerkId: auth.userId,
-		} as never)) as CourseUser | null
-
-		const subscriptionStatus = user?.subscriptionStatus
-		const hasActiveSubscription =
-			subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
-		const hasAccess =
-			user?.role === 'admin' ||
-			Boolean(
-				user?.courseEntitlements?.includes(COURSE_ENTITLEMENT) ||
-					user?.courseEntitlements?.includes(CANONICAL_FORMATION_PRODUCT_ID),
-			) ||
-			(Boolean(user?.subscriptionTier) && hasActiveSubscription)
+		} as never)) as FormationAccess | null
 
 		return {
 			isAuthenticated: true,
-			hasAccess,
-			user,
+			hasAccess: access?.hasAccess === true,
+			user: access?.user ?? null,
 		}
 	} catch {
 		return { isAuthenticated: true, hasAccess: false }

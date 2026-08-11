@@ -99,38 +99,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     }
   }
 
-  Future<void> _continueLocally() async {
-    setState(() {
-      _busy = true;
-      _error = null;
-      _errorDetail = null;
-      _errorTitle = 'Connexion impossible';
-    });
-    try {
-      ref.read(localAuthModeProvider.notifier).enable();
-      final store = ref.read(localAuthSessionStoreProvider);
-      await store.signInAnonymously();
-    } on AuthFailure catch (error, stackTrace) {
-      await _presentAuthFailure(error, stackTrace);
-    } on UnsupportedError catch (error, stackTrace) {
-      await _presentAuthFailure(AuthFailure.unsupported(error), stackTrace);
-    } catch (error, stackTrace) {
-      await _presentAuthFailure(
-        const AuthFailure(
-          kind: AuthFailureKind.unexpected,
-          userMessage: 'Mode local indisponible pour le moment.',
-          category: 'auth_local_unexpected',
-          code: 'local-unexpected',
-        ),
-        stackTrace,
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _busy = false);
-      }
-    }
-  }
-
   Future<void> _signInWithGoogle() async {
     setState(() {
       _busy = true;
@@ -259,8 +227,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             child: SingleChildScrollView(
               padding: AppInsets.screen,
               child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(maxWidth: AppLayoutMetrics.authFormMaxWidth),
+                constraints: const BoxConstraints(
+                  maxWidth: AppLayoutMetrics.authFormMaxWidth,
+                ),
                 child: AppSectionCard(
                   title: 'Connexion',
                   subtitle: widget.remoteOnly
@@ -348,13 +317,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                               ),
                             ],
                           ),
-                          if (!widget.remoteOnly) ...[
-                            AppGaps.x3,
-                            OutlinedButton(
-                              onPressed: _busy ? null : _continueLocally,
-                              child: const Text('Continuer en local'),
-                            ),
-                          ],
                           AppGaps.x2,
                           if (kIsWeb)
                             GoogleWebSignInButton(

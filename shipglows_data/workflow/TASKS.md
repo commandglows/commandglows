@@ -9,7 +9,9 @@
 
 🔴 [CommandGlows] task: Renommer et configurer les variables d’environnement du bridge CommunityGlows dans les environnements locaux, Convex et hébergés (`SOCIALGLOWZ_*` vers `COMMUNITYGLOWS_*`) | status: todo | area: communityglows-bridge-config | id: communityglows-bridge-env-rename | impact: critical | effort: low | unblocks: communityglows-public-trial | risk: bridge-outage-or-wrong-secret | acceptance: `.env.example`, secrets de déploiement et configuration Convex utilisent uniquement les noms CommunityGlows; URL `/api/bridge/communityglows`; secret partagé vérifié sans ancien header
 🔴 [CommandGlows] task: Déployer le bridge CommunityGlows renommé et exécuter le smoke test hébergé du snapshot d’entitlement | status: todo | area: communityglows-bridge-deployment | id: communityglows-bridge-hosted-smoke | impact: critical | effort: medium | unblocks: communityglows-public-trial | risk: production-access-regression | depends_on: communityglows-bridge-env-rename | acceptance: premier snapshot crée un essai de 30 jours; second appel reste idempotent; expiration et priorité d’une entitlement Lifetime sont vérifiées; aucun payload incomplet n’accorde l’accès
-🟡 [CommandGlows] task: Auditer les anciennes entitlements `socialglowz` et migrer les comptes existants vers `communityglows` avant le déploiement renommé | status: todo | area: communityglows-entitlement-migration | id: communityglows-entitlement-migration-audit | impact: high | effort: medium | unblocks: communityglows-public-trial | risk: legacy-access-loss | acceptance: nombre d’entitlements legacy établi; migration idempotente exécutée si nécessaire ou preuve documentée qu’il n’y a aucune donnée à migrer; aucune compatibilité runtime réintroduite
+✅ [CommandGlows] task: Auditer les anciennes entitlements `socialglowz` et migrer les comptes existants vers `communityglows` avant le déploiement renommé | status: done | area: communityglows-entitlement-migration | id: communityglows-entitlement-migration-audit | impact: low | effort: low | unblocks: none | risk: none | acceptance: no legacy entitlement migration is maintained in the active contract; new operators must not add SocialFlowz compatibility paths at runtime
+✅ [CommandGlows] task: Unifier les essais et fermer les contournements d’entitlement partagés | status: done | area: entitlements | id: commandglows-entitlement-access-cleanup | evidence: politique commune de 30 jours par cycle et deux relances; writers/backfills gratuits supprimés; anciens `product_default` et plans actifs gratuits non accordants; routes Flutter protégées par session distante + entitlement; relances serveur exposées par produit | validation: tests Convex/bridge ciblés, tests Flutter et analyse statique
+✅ [CommandGlows] task: Migrer le commerce actif de la suite vers Stripe uniquement | status: done | area: commerce | id: commandglows-commerce-stripe-only-local | evidence: registre et types Stripe-only; Price-ID placeholders CommunityGlows et Formation; handoff signé obligatoire par produit/environnement; Formation et pages publiques via `/api/checkout/start`; webhook Stripe central; providers non-Stripe non accordants; adaptateurs/routes/tests/dépendance Lemon Squeezy et Polar retirés | validation: tests commerce/Convex/Formation ciblés, Astro check, scans runtime, dependency consistency et diff check
 
 ## Reconciled Site Backlog
 
@@ -136,7 +138,7 @@ The following records were consolidated from the former nested site tracker duri
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🟠 | Add route-level auth/flow guarding in `app_router.dart` so feature routes cannot be opened directly when auth and account state are required | 📋 todo |
+| ✅ | Add route-level auth/flow guarding in `app_router.dart` so feature routes cannot be opened directly when auth and account state are required | ✅ done — direct routes now require remote auth plus active suite entitlement; local fallback and inactive accounts return to the entitlement/auth gate |
 | 🟡 | Add null-safety and error mapping around Google Sign-In credential construction in `lib/features/auth/data/firebase_auth_session_store.dart` | 📋 todo |
 | 🟡 | Gate or contextualize diagnostic support export (`_backendDiagnosticText` in `settings_screen.dart`) outside explicit support/debug flows | 📋 todo |
 
@@ -154,10 +156,10 @@ The following records were consolidated from the former nested site tracker duri
 
 ### Audit: Deps
 
-🟠 [WinGlowsApp] task: Refresh non-major Flutter pub dependencies for Firebase, Sentry, secure storage, speech, and permissions, then rerun `flutter analyze` and `flutter test` | status: todo | area: deps-currency | id: wfz-deps-nonmajor-refresh
-🟡 [WinGlowsApp] task: Decide whether legacy Supabase runtime packages stay as compile-compat debt or can be isolated further from active app surfaces | status: todo | area: deps-surface | id: wfz-deps-supabase-legacy-scope
-🟡 [WinGlowsApp] task: Add a project license declaration and a repeatable dependency license inventory step for Flutter pub packages | status: todo | area: deps-license | id: wfz-deps-license-inventory
-🟡 [WinGlowsApp] task: Make Flutter or Dart toolchain pinning explicit for contributors outside Flox and align it with the actual SDK used in CI and local checks | status: todo | area: deps-config | id: wfz-deps-toolchain-pinning
+🟠 [CommandGlowsApp] task: Refresh non-major Flutter pub dependencies for Firebase, Sentry, secure storage, speech, and permissions, then rerun `flutter analyze` and `flutter test` | status: todo | area: deps-currency | id: wfz-deps-nonmajor-refresh
+🟡 [CommandGlowsApp] task: Decide whether legacy Supabase runtime packages stay as compile-compat debt or can be isolated further from active app surfaces | status: todo | area: deps-surface | id: wfz-deps-supabase-legacy-scope
+🟡 [CommandGlowsApp] task: Add a project license declaration and a repeatable dependency license inventory step for Flutter pub packages | status: todo | area: deps-license | id: wfz-deps-license-inventory
+🟡 [CommandGlowsApp] task: Make Flutter or Dart toolchain pinning explicit for contributors outside Flox and align it with the actual SDK used in CI and local checks | status: todo | area: deps-config | id: wfz-deps-toolchain-pinning
 
 
 ---
@@ -166,7 +168,7 @@ The following records were consolidated from the former nested site tracker duri
 
 ## Legacy Imported From Central ShipGlows Data
 
-The following content was preserved from `/home/claude/shipglows_data/projects/winglowz/TASKS.md` during central repository retirement. Treat it as historical backlog/context unless an item is promoted into the active section above.
+The following content was preserved from `/home/claude/shipglows_data/projects/winglowz/TASKS.md` during central repository retirement. It is a frozen historical snapshot, not an active queue. WinGlows naming and Polar implementation details below describe the former system; unchecked boxes are non-actionable unless a task is rewritten and promoted into the active CommandGlows section above. The active payment contract is Stripe-only.
 
 # WinGlows Formation — Backlog
 
@@ -176,7 +178,7 @@ The following content was preserved from `/home/claude/shipglows_data/projects/w
 
 ---
 
-## Active
+## Historical Open Item (not promoted)
 
 🟡 [winglowz] task: Consolidate SITE and PUBLIC_SITE_URL into one canonical site URL env | status: todo | area: env-cleanup | id: wf-site-url-env-single-source
 
@@ -216,7 +218,7 @@ The following content was preserved from `/home/claude/shipglows_data/projects/w
 | 🟠 | Plan an Astro adapter/framework migration under `/sf-migrate` before major upgrades (`astro` 5→6, `@astrojs/vercel` 9→10, `@astrojs/node` 9→10, Clerk/Preline/Tailwind ecosystem majors) | ✅ done |
 | 🟠 | Restore reproducible installs: commit or intentionally replace `pnpm-lock.yaml`, add `packageManager`, and pin Node runtime via `engines` or `.node-version` | 🔄 in progress |
 | 🟡 | Add dependency update automation for pnpm and GitHub Actions with reviewed security updates, not silent major auto-merges | 📋 todo |
-| 🟡 | Remove or justify likely-unused direct dependencies after manual verification: `@heroicons/react`, `@polar-sh/astro`, `@preline/accordion`, `@types/cors`, `@vercel/nft`, `astro-compress`, `astro-compressor`, `astro-vtbot`, `globby`, `html-minifier-terser`, `lucide-react`, `sharp-ico`, `@phosphor-icons/web`, and formatting-only packages | 📋 todo |
+| ✅ | Historical dependency audit included `@polar-sh/astro`; the active Polar dependency was subsequently removed during the Stripe-only migration. Other dependency-review items require promotion before execution. | superseded by Stripe-only migration |
 | 🟡 | Resolve dependency hygiene: choose one Astro compression package, document Preline Fair Use license fit, and add a project license declaration | 📋 todo |
 
 ---
@@ -226,8 +228,8 @@ The following content was preserved from `/home/claude/shipglows_data/projects/w
 ### Done
 
 - [x] Public/private course gating is in place with Starlight override and private lesson route under `/dashboard/docs/...`
-- [x] Public lesson previews now route to a real server checkout entrypoint at `/api/polar/checkout`
-- [x] Polar webhook endpoint added at `/api/polar/webhook` with signature validation
+- [x] Historical implementation: public lesson previews routed to `/api/polar/checkout`; that route was later removed and replaced by the shared Stripe checkout.
+- [x] Historical implementation: `/api/polar/webhook` handled Polar events; that route was later removed and replaced by the central Stripe webhook.
 - [x] Convex user model now supports persistent training entitlements via `courseEntitlements`
 - [x] Clerk sign-in redirect flow now supports returning to checkout or the private lesson
 - [x] Purchase success page now redirects back to the unlocked private lesson
@@ -242,14 +244,14 @@ The following content was preserved from `/home/claude/shipglows_data/projects/w
 - [x] Sales funnel CTAs now point to real localized destinations across landing, product, and success flows
 - [x] Newsletter welcome flow now sends subscribers toward the Windows sales page
 - [x] Product catalog `beta` / `coming_soon` entries now use contact or waitlist CTAs instead of dead `#` links
-- [x] README, GUIDELINES, and `.env.example` now reflect the current Astro + Polar + Convex stack
+- [x] At the time of this historical snapshot, README, GUIDELINES, and `.env.example` reflected the former Astro + Polar + Convex stack; active docs now describe Stripe-only commerce.
 
-### Next Prod Steps
+### Historical Next Prod Steps (superseded; do not execute)
 
-- [ ] Configure Vercel env vars: `POLAR_ACCESS_TOKEN`, `POLAR_WINGLOWZ_PRODUCT_ID` or `POLAR_PRODUCT_ID`, `POLAR_WEBHOOK_SECRET`, `POLAR_SERVER`, `PUBLIC_CONVEX_URL`
-- [ ] Point Polar webhooks to `POST /api/polar/webhook`
+- [x] Superseded: do not configure former Polar environment variables; active provider configuration is Stripe-only.
+- [x] Superseded: do not restore `/api/polar/webhook`; active events use the central Stripe webhook.
 - [ ] Deploy Convex schema and mutations so `courseEntitlements` is available in production
-- [ ] Run an end-to-end production test: public lesson -> sign in -> Polar checkout -> success -> `/dashboard/docs/...`
+- [x] Superseded: replace the former Polar scenario with the active hosted Stripe/Convex smoke task in the main tracker section.
 - [x] Keep `pnpm-lock.yaml` out of the commit, otherwise Vercel will switch back to `pnpm --frozen-lockfile` (currently absent from repo)
 
 ### Next UX / Content Cleanup
@@ -315,7 +317,7 @@ The following content was preserved from `/home/claude/shipglows_data/projects/w
 - [ ] **Video content** — Many source notes reference YouTube videos. Consider embedding key ones or creating course-specific video content.
 - [ ] **Measurable outcomes** — BASB reports "40% improvement in notetaking confidence." Define measurable claims: "saves X hours/week," "reduces email time by Y%."
 - [ ] **Tiered pricing strategy** — Le contenu est le produit (pas l'affiliation). Industry standard: Basic (97-197€), Premium (297-497€ avec communauté + templates), Accompagné (697-997€ avec coaching). Module I gratuit comme vitrine.
-- [x] **Paywall / gating** — Gating Starlight en place : previews publiques + auth (Clerk) + paiement (Polar.sh) + route privée `/dashboard/docs/...`
+- [x] **Historical paywall / gating** — The dated snapshot used Clerk + Polar.sh; active Formation gating now uses the shared Stripe-only commerce and entitlement contract.
 - [ ] **Cohort option** — Cohort-based courses achieve 85-96% completion vs ~30% self-paced. Consider periodic cohort launches.
 - [ ] **Notion/Obsidian templates** — Downloadable templates matching each module's system (weekly review template, PKM starter, habit tracker). Valeur perçue élevée → justifie le prix.
 - [ ] **Evaluate Vovsoft AI Automator for Windows-first training demos** — Test whether its local Ollama/API scheduling and batch prompt workflows can support WinGlows exercises, classroom demos, or guided automation examples without needing shared infra (added 2026-04-18).

@@ -109,6 +109,22 @@ export default defineSchema({
     .index("by_globalUserId", ["globalUserId"])
     .index("by_sourceRef", ["source", "sourceRef"]),
 
+  commerceCheckoutHandoffs: defineTable({
+    jtiHash: v.string(),
+    globalUserId: v.string(),
+    productId: v.string(),
+    offerId: v.string(),
+    environment: v.string(),
+    status: v.string(),
+    idempotencyKey: v.string(),
+    checkoutUrl: v.optional(v.string()),
+    providerOrderId: v.optional(v.string()),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_jtiHash", ["jtiHash"])
+    .index("by_expiresAt", ["expiresAt"]),
+
   users: defineTable({
     clerkId: v.string(),
     email: v.string(),

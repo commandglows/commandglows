@@ -1,10 +1,10 @@
 ---
 artifact: gtm_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-05-17"
+updated: "2026-08-11"
 status: reviewed
 source_skill: sf-docs
 scope: gtm
@@ -14,7 +14,7 @@ risk_level: medium
 target_segment: "Windows-first professionals, freelancers, creators, and productivity enthusiasts looking for structured workflow improvement"
 offer: "A content-led funnel into premium Windows productivity training, gated documentation, and companion workflow tools"
 channels: "SEO, bilingual educational content, product pages, landing pages, newsletter capture, and community distribution"
-proof_points: "Windows-only positioning, bilingual content structure, gated course/docs flow, Polar checkout integration, Clerk auth, and a visible companion product catalog"
+proof_points: "Windows-only positioning, bilingual content structure, gated course/docs flow, authenticated Stripe Managed Payments integration, Clerk auth, and a visible companion product catalog"
 security_impact: unknown
 docs_impact: yes
 evidence:

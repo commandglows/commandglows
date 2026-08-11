@@ -45,6 +45,17 @@ void main() {
     );
   });
 
+  test('legacy permanent free grants fail closed in the client domain', () {
+    const entitlement = ProductEntitlement(
+      productId: ProductId.commandglowsApp,
+      status: ProductEntitlementStatus.active,
+      plan: 'free',
+      source: 'product_default',
+    );
+
+    expect(entitlement.grantsAccess, isFalse);
+  });
+
   test('recognized account without product entitlement is inactive', () {
     const identity = SuiteIdentitySnapshot(
       status: SuiteAccountStatus.recognized,
@@ -72,6 +83,30 @@ void main() {
       identity.statusFor(ProductId.commandglowsApp),
       SuiteAccountStatus.accessInactive,
     );
+  });
+
+  test('selects the latest server trial attempt for restart decisions', () {
+    final identity = SuiteIdentitySnapshot(
+      status: SuiteAccountStatus.recognized,
+      globalUserId: 'global_123',
+      entitlements: [
+        ProductEntitlement(
+          productId: ProductId.commandglowsApp,
+          status: ProductEntitlementStatus.trialing,
+          trialExpiresAt: DateTime.utc(2026),
+          trialAttempt: 1,
+        ),
+        ProductEntitlement(
+          productId: ProductId.commandglowsApp,
+          status: ProductEntitlementStatus.trialing,
+          trialExpiresAt: DateTime.utc(2026),
+          trialAttempt: 3,
+          trialRestartsRemaining: 0,
+        ),
+      ],
+    );
+
+    expect(identity.entitlementFor(ProductId.commandglowsApp)?.trialAttempt, 3);
   });
 
   test('support summary includes redacted issue without full user id', () {

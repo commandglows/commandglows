@@ -1,5 +1,5 @@
 import {
-  DEFAULT_FREE_PRODUCT_IDS,
+  SUITE_PRODUCT_ALLOWLIST,
   buildFirestoreSuiteAccessMirror,
   buildReplayGlowzProductToken,
   getBridgeEndpointSecret,
@@ -119,16 +119,15 @@ describe('suiteBridge helpers', () => {
     expect(isAllowedSuiteProduct('legacy_product')).toBe(false)
   })
 
-  test('keeps default free access scoped to free-tier products', () => {
-    expect(DEFAULT_FREE_PRODUCT_IDS).toEqual([
-      'commandglows_formation',
-      'gocharbon',
-      'contentglowz',
-      'shipglows',
-      'replayglowz',
-      'communityglows',
-      'temu_shopping_lists',
-    ])
+  test('treats legacy product_default grants as non-granting for every product', () => {
+    for (const productId of SUITE_PRODUCT_ALLOWLIST) {
+      expect(
+        hasActiveEntitlement(
+          [{ productId, status: 'active', plan: 'free', source: 'product_default' }],
+          productId
+        )
+      ).toBe(false)
+    }
   })
 
   test('treats an expired trial as inactive even when its status is trialing', () => {
@@ -202,7 +201,7 @@ describe('suiteBridge helpers', () => {
     ).toBe(false)
   })
 
-  test('treats CommandGlows free plan as active sync access and prefers paid plan metadata', () => {
+  test('treats permanent free plans as non-granting and prefers paid plan metadata', () => {
     expect(
       buildFirestoreSuiteAccessMirror({
         globalUserId: 'gu_123',
@@ -211,9 +210,9 @@ describe('suiteBridge helpers', () => {
         ],
       }).products.commandglows_app
     ).toEqual({
-      active: true,
-      status: 'active',
-      plan: 'free',
+      active: false,
+      status: 'inactive',
+      plan: null,
     })
 
     expect(
@@ -317,12 +316,12 @@ describe('suiteBridge helpers', () => {
   })
 
   test('allows only allowlisted communityglows plan/source values', () => {
-    expect(isAllowedCommunityGlowsPlan('free')).toBe(true)
+    expect(isAllowedCommunityGlowsPlan('free')).toBe(false)
     expect(isAllowedCommunityGlowsPlan('lifetime_deal')).toBe(true)
     expect(isAllowedCommunityGlowsPlan('founder_ltd')).toBe(true)
     expect(isAllowedCommunityGlowsPlan('monthly')).toBe(false)
 
-    expect(isAllowedCommunityGlowsSource('product_default')).toBe(true)
+    expect(isAllowedCommunityGlowsSource('product_default')).toBe(false)
     expect(isAllowedCommunityGlowsSource('manual')).toBe(true)
     expect(isAllowedCommunityGlowsSource('direct')).toBe(true)
     expect(isAllowedCommunityGlowsSource('stripe')).toBe(false)
@@ -350,11 +349,14 @@ describe('suiteBridge helpers', () => {
       trialStartedAt: null,
       trialEndsAt: null,
       trialExpiresAt: null,
+      trialAttempt: null,
+      trialRestartsRemaining: 2,
+      trialRestartEligible: false,
       reasonCode: 'active_entitlement',
     })
   })
 
-  test('resolves communityglows free access and prefers paid metadata', () => {
+  test('rejects stale communityglows default-free grants and accepts paid access', () => {
     expect(
       resolveCommunityGlowsEntitlementSnapshot({
         globalUserId: 'gu_123',
@@ -362,21 +364,24 @@ describe('suiteBridge helpers', () => {
           {
             productId: 'communityglows',
             status: 'active',
-            plan: 'free',
+            plan: 'trial',
             source: 'product_default',
           },
         ],
       })
     ).toEqual({
-      hasAccess: true,
-      accessState: 'lifetime_active',
-      planId: 'free',
-      source: 'product_default',
+      hasAccess: false,
+      accessState: 'inactive',
+      planId: null,
+      source: null,
       globalUserId: 'gu_123',
       trialStartedAt: null,
       trialEndsAt: null,
       trialExpiresAt: null,
-      reasonCode: 'active_entitlement',
+      trialAttempt: null,
+      trialRestartsRemaining: 2,
+      trialRestartEligible: false,
+      reasonCode: 'missing_product_entitlement',
     })
 
     expect(
@@ -406,11 +411,14 @@ describe('suiteBridge helpers', () => {
       trialStartedAt: null,
       trialEndsAt: null,
       trialExpiresAt: null,
+      trialAttempt: null,
+      trialRestartsRemaining: 2,
+      trialRestartEligible: false,
       reasonCode: 'active_entitlement',
     })
   })
 
-  test('returns compatible trial fields and prefers a trial over default free access', () => {
+  test('returns compatible trial fields and ignores stale default-free access', () => {
     const trialStartedAt = 1_800_000_000_000
     const trialExpiresAt = trialStartedAt + 30 * 24 * 60 * 60 * 1000
 
@@ -428,22 +436,26 @@ describe('suiteBridge helpers', () => {
           {
             productId: 'communityglows',
             status: 'trialing',
-            plan: 'free',
+            plan: 'trial',
             source: 'product_trial',
             trialStartedAt,
             trialExpiresAt,
+            trialAttempt: 1,
           },
         ],
       })
     ).toEqual({
       hasAccess: true,
       accessState: 'trial_active',
-      planId: 'free',
+      planId: 'trial',
       source: 'product_trial',
       globalUserId: 'gu_trial',
       trialStartedAt,
       trialEndsAt: trialExpiresAt,
       trialExpiresAt,
+      trialAttempt: 1,
+      trialRestartsRemaining: 2,
+      trialRestartEligible: false,
       reasonCode: 'active_entitlement',
     })
   })
@@ -454,7 +466,7 @@ describe('suiteBridge helpers', () => {
     const expired = {
       productId: 'communityglows',
       status: 'trialing',
-      plan: 'free',
+      plan: 'trial',
       source: 'product_trial',
       trialStartedAt,
       trialExpiresAt,
@@ -501,7 +513,13 @@ describe('suiteBridge helpers', () => {
         globalUserId: 'gu_123',
         entitlements: [
           { productId: 'old_youtube_product', status: 'active', plan: 'legacy' },
-          { productId: 'replayglowz', status: 'trialing', plan: 'pro' },
+          {
+            productId: 'replayglowz',
+            status: 'trialing',
+            plan: 'trial',
+            source: 'product_trial',
+            trialExpiresAt: Date.now() + 60_000,
+          },
         ],
       })
     ).toEqual({
@@ -512,7 +530,7 @@ describe('suiteBridge helpers', () => {
     })
   })
 
-  test('ignores old ReplayGlowz aliases and falls back to free access', () => {
+  test('ignores old ReplayGlowz aliases and fails closed', () => {
     expect(
       resolveReplayGlowzEntitlementSnapshot({
         globalUserId: 'gu_123',
@@ -521,14 +539,14 @@ describe('suiteBridge helpers', () => {
         ],
       })
     ).toEqual({
-      hasAccess: true,
+      hasAccess: false,
       globalUserId: 'gu_123',
-      matchedProductId: 'replayglowz',
-      reasonCode: 'default_free_entitlement',
+      matchedProductId: null,
+      reasonCode: 'missing_product_entitlement',
     })
   })
 
-  test('grants ReplayGlowz free access without active product entitlement', () => {
+  test('denies ReplayGlowz access without active product entitlement', () => {
     expect(
       resolveReplayGlowzEntitlementSnapshot({
         globalUserId: 'gu_123',
@@ -538,10 +556,10 @@ describe('suiteBridge helpers', () => {
         ],
       })
     ).toEqual({
-      hasAccess: true,
+      hasAccess: false,
       globalUserId: 'gu_123',
-      matchedProductId: 'replayglowz',
-      reasonCode: 'default_free_entitlement',
+      matchedProductId: null,
+      reasonCode: 'missing_product_entitlement',
     })
   })
 

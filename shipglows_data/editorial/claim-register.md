@@ -1,10 +1,10 @@
 ---
 artifact: editorial_governance
 metadata_schema_version: "1.0"
-artifact_version: "1.0.2"
+artifact_version: "1.1.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-08-09"
+updated: "2026-08-11"
 status: reviewed
 source_skill: sf-docs
 scope: claim-register
@@ -17,7 +17,8 @@ linked_systems:
   - src/pages/[...lang]/[windows_mastery].astro
   - src/content/docs/
   - src/content/products/
-  - src/pages/api/polar/
+  - src/pages/api/checkout/start.ts
+  - src/pages/api/commerce/
   - src/pages/api/newsletter/
   - src/pages/[...lang]/termux.astro
   - src/utils/shipglowsRedirects.ts
@@ -29,7 +30,7 @@ evidence:
   - src/pages/[...lang]/[windows_mastery].astro
   - src/content/docs/en/formations.mdx
   - src/content/docs/fr/formations.mdx
-  - src/pages/api/polar/checkout.ts
+  - src/pages/api/checkout/start.ts
   - src/pages/api/newsletter/subscribe.ts
 next_review: "2026-06-17"
 next_step: "/sf-docs editorial audit"
@@ -46,7 +47,7 @@ Track sensitive public claims and the proof level currently available in the rep
 | --- | --- | --- | --- | --- |
 | Bilingual publishing | CommandGlows ships English and French public surfaces | verified | `src/pages/[...lang]/**`, `src/content/{blog,docs,products}/{en,fr}/` | safe public claim |
 | Flagship curriculum scope | `Windows Mastery` presents an 8-module training structure | verified | `src/content/docs/{en,fr}/formations/**`, sales-page copy | do not strengthen into lesson-count claims without recounting |
-| Gated training access | some training access depends on auth and checkout flows | verified | `src/pages/api/polar/checkout.ts`, `convex/http.ts` | safe if phrased as implemented flow, not entitlement guarantee under all conditions |
+| Gated training access | premium training access depends on auth, signed Stripe checkout, and Convex entitlement fulfillment | verified locally | `src/pages/api/checkout/start.ts`, `src/pages/api/commerce/checkout.ts`, `src/pages/api/commerce/webhooks/stripe.ts`, `convex/bridge.ts` | safe if phrased as locally implemented flow; hosted payment proof remains pending |
 | Newsletter capture | signup and unsubscribe flows exist | verified | `src/pages/api/newsletter/subscribe.ts`, `src/pages/api/newsletter/unsubscribe.ts` | avoid deliverability guarantees |
 | One-command installer availability | CommandGlows can claim its Termux command; ShipGlows and dotfiles installer claims belong to `shipglows.com` | verified | `src/pages/termux-script.ts`, `src/utils/shipglowsRedirects.ts`, canonical ShipGlows site and installer repositories | keep CommandGlows copy limited to Termux ownership; old ShipGlows/dotfiles URLs are compatibility redirects only |
 | Priority support | referenced in public sales copy | unverified | sales-page copy only | requires external policy or operational source before stronger claims |

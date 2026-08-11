@@ -1,0 +1,15 @@
+---
+interface Props {
+	action: string
+	class?: string
+	formClass?: string
+}
+
+const { action, class: className = '', formClass = '' } = Astro.props
+---
+
+<form method="post" action={action} class={formClass}>
+	<button type="submit" class={className}>
+		<slot />
+	</button>
+</form>

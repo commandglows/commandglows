@@ -40,7 +40,7 @@ an old spelling.
 - Existing Vercel preview hostname `winglowz-app.vercel.app` in historical hosted-validation references: external deployment hostname retained until the CommandGlows preview/project cutover is provisioned and proved.
 - CDN host `winflowz.b-cdn.net` in `commandglows_site/src/data/{recommendations,testimonialPeople}.ts`, landing/recommendation pages, CSP, and their tests: legacy object origin retained until each object is copied or aliased and returns HTTP 200 from a CommandGlows-controlled origin.
 - Legacy CDN object keys `winglowz_app_*.jpg` used by the landing media set: retain until the corresponding CommandGlows object is copied/aliased and visually checked.
-- Historical records may mention `LEMONSQUEEZY_WINGLOWZ_APP_*`, but active configuration and runtime code must not use those keys; CommandGlows now uses Stripe Price IDs and CommunityGlows uses its own Lemon Squeezy keys.
+- Historical records may mention `LEMONSQUEEZY_WINGLOWZ_APP_*`, but active configuration and runtime code must not use those keys. No active payment path depends on legacy provider keys.
 - `commandglows_app/.firebaserc` and its documented `firebase use winglowz-dev` command: private provider project ID, not a public brand; replace only after the new Firebase project is registered and proved.
 - Existing external product/store/provider IDs that are not user-visible and cannot be renamed: retain only with redacted provider proof and an owner/retirement condition in the provider ledger.
 - Applied migration filenames such as `supabase/migrations/*_init_winglowz_app.sql`: immutable database history; never rename an applied migration.

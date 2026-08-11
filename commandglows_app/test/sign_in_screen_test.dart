@@ -251,22 +251,11 @@ void main() {
     expect(container.read(signupWelcomePendingProvider), isTrue);
   });
 
-  testWidgets('continue locally bypasses the active remote auth store', (
-    tester,
-  ) async {
+  testWidgets('does not offer a local access bypass', (tester) async {
     final store = _ThrowingAuthSessionStore();
     await tester.pumpWidget(_testWidget(store));
 
-    await tester.tap(find.text('Continuer en local'));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('API key'), findsNothing);
-    expect(
-      find.text(
-        'La configuration Firebase de cette version est invalide. Le détail technique peut être copié pour correction.',
-      ),
-      findsNothing,
-    );
+    expect(find.text('Continuer en local'), findsNothing);
     expect(store.anonymousCalls, 0);
   });
 

@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-05-17"
+updated: "2026-08-11"
 status: reviewed
 source_skill: sf-docs
 scope: guidelines
@@ -25,7 +25,7 @@ supersedes:
   - GUIDELINES.md
 evidence:
   - package.json
-  - src/pages/api/polar/checkout.ts
+  - src/pages/api/checkout/start.ts
   - src/pages/api/newsletter/subscribe.ts
   - src/middleware/i18n.ts
   - convex/http.ts
@@ -50,7 +50,7 @@ Define the active engineering and documentation rules that should stay stable ac
 
 - `package.json`
 - `src/middleware/i18n.ts`
-- `src/pages/api/polar/checkout.ts`
+- `src/pages/api/checkout/start.ts`
 - `convex/http.ts`
 
 ## Stack Summary
@@ -59,7 +59,7 @@ Define the active engineering and documentation rules that should stay stable ac
 - UI: Astro components, React islands, Tailwind CSS, Preline
 - Content: Astro content collections and MDX content
 - Auth: Clerk
-- Payments: Polar
+- Payments: Stripe Managed Payments only
 - Backend: Convex
 - Email: Resend
 - Deployment: Vercel
@@ -85,7 +85,8 @@ Define the active engineering and documentation rules that should stay stable ac
 
 - Astro API routes live in `src/pages/api/`.
 - Convex HTTP endpoints live in `convex/http.ts`.
-- Polar checkout depends on an authenticated Clerk user, valid `PUBLIC_CONVEX_URL`, and configured Polar product IDs.
+- Public and Formation checkout starts require an authenticated Clerk user; every shared checkout then requires a signed product-bound handoff and an offer-specific `STRIPE_*_PRICE_ID`.
+- No provider fallback is allowed. Non-Stripe commerce input is non-granting.
 - Newsletter flows depend on Resend audience configuration.
 
 ## Documentation Rules

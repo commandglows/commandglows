@@ -7,7 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:commandglows_app/core/router/app_router.dart';
 import 'package:commandglows_app/core/sync/sync_status.dart';
 import 'package:commandglows_app/features/auth/application/auth_session_provider.dart';
+import 'package:commandglows_app/features/auth/application/suite_identity_provider.dart';
 import 'package:commandglows_app/features/auth/domain/auth_session_store.dart';
+import 'package:commandglows_app/features/auth/domain/product_entitlement.dart';
+import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
 import 'package:commandglows_app/features/settings/presentation/settings_screen.dart';
 
 const _productRoutes = {
@@ -33,13 +36,31 @@ const _signedIn = AuthSessionSnapshot(
   syncStatus: SyncStatus(health: SyncHealth.synced),
 );
 
+const _activeIdentity = SuiteIdentitySnapshot(
+  status: SuiteAccountStatus.recognized,
+  globalUserId: 'gu_1',
+  entitlements: [
+    ProductEntitlement(
+      productId: ProductId.commandglowsApp,
+      status: ProductEntitlementStatus.active,
+    ),
+  ],
+);
+
+const _inactiveIdentity = SuiteIdentitySnapshot(
+  status: SuiteAccountStatus.recognized,
+  globalUserId: 'gu_1',
+);
+
 Widget _routerWidget(
   AuthSessionSnapshot session,
-  void Function(GoRouter) bind,
-) {
+  void Function(GoRouter) bind, {
+  SuiteIdentitySnapshot identity = _activeIdentity,
+}) {
   return ProviderScope(
     overrides: [
       authSessionProvider.overrideWith((ref) => Stream.value(session)),
+      suiteIdentityProvider.overrideWith((ref) => Stream.value(identity)),
     ],
     child: Consumer(
       builder: (context, ref, _) {
@@ -56,7 +77,12 @@ Widget _streamRouterWidget(
   void Function(GoRouter) bind,
 ) {
   return ProviderScope(
-    overrides: [authSessionProvider.overrideWith((ref) => stream)],
+    overrides: [
+      authSessionProvider.overrideWith((ref) => stream),
+      suiteIdentityProvider.overrideWith(
+        (ref) => Stream.value(_activeIdentity),
+      ),
+    ],
     child: Consumer(
       builder: (context, ref, _) {
         final router = ref.watch(appRouterProvider);
@@ -83,7 +109,7 @@ void _useRouterViewport(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('settings route is preserved while auth state is loading', (
+  testWidgets('product routes fail closed while auth state is loading', (
     tester,
   ) async {
     _useRouterViewport(tester);
@@ -98,20 +124,12 @@ void main() {
     router.go('/settings?section=keys');
     await _pumpRouter(tester);
 
-    expect(
-      router.routeInformationProvider.value.uri.toString(),
-      '/settings?section=keys',
-    );
-    expect(find.byType(CircularProgressIndicator), findsAtLeastNWidgets(1));
-
+    expect(router.routeInformationProvider.value.uri.toString(), '/');
     controller.add(const AuthSessionSnapshot.localFallback());
     await _pumpRouter(tester);
 
-    expect(
-      router.routeInformationProvider.value.uri.toString(),
-      '/settings?section=keys',
-    );
-    expect(find.byType(SettingsScreen), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.toString(), '/');
+    expect(find.byType(SettingsScreen), findsNothing);
 
     await controller.close();
   });
@@ -137,7 +155,7 @@ void main() {
     }
   });
 
-  testWidgets('local mode can open product routes', (tester) async {
+  testWidgets('local mode cannot open product routes', (tester) async {
     _useRouterViewport(tester);
     for (final entry in _productRoutes.entries) {
       late GoRouter router;
@@ -150,12 +168,8 @@ void main() {
       router.go(entry.key);
       await _pumpRouter(tester);
 
-      expect(router.routeInformationProvider.value.uri.path, entry.key);
-      if (entry.key == '/settings') {
-        expect(find.byType(SettingsScreen), findsOneWidget);
-      } else {
-        expect(find.textContaining(entry.value), findsAtLeastNWidgets(1));
-      }
+      expect(router.routeInformationProvider.value.uri.path, '/');
+      expect(find.byType(SettingsScreen), findsNothing);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
@@ -184,4 +198,25 @@ void main() {
       await tester.pump();
     }
   });
+
+  testWidgets(
+    'signed-in session without entitlement cannot open product routes',
+    (tester) async {
+      _useRouterViewport(tester);
+      late GoRouter router;
+      await tester.pumpWidget(
+        _routerWidget(
+          _signedIn,
+          (value) => router = value,
+          identity: _inactiveIdentity,
+        ),
+      );
+      await _pumpRouter(tester);
+      router.go('/home');
+      await _pumpRouter(tester);
+
+      expect(router.routeInformationProvider.value.uri.path, '/');
+      expect(find.text('Accès CommandGlows'), findsOneWidget);
+    },
+  );
 }

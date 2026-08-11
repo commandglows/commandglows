@@ -1,13 +1,14 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.5.0"
+artifact_version: "1.0.0"
 project: "CommandGlows"
 created: "2026-08-06"
 created_at: "2026-08-06 16:50:53 UTC"
 updated: "2026-08-11"
-updated_at: "2026-08-11 16:36:31 UTC"
-status: draft
+updated_at: "2026-08-11 17:29:25 UTC"
+status: superseded
+superseded_by: "/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
 source_skill: sg-docs
 source_model: "GPT-5 Codex"
 scope: "trial-then-paid-entitlements"
@@ -25,7 +26,7 @@ linked_systems:
   - "Clerk/Firebase suite identity bridge"
 depends_on:
   - artifact: "shipglows_data/technical/payment-activation-entitlements.md"
-    artifact_version: "0.7.0"
+    artifact_version: "0.8.0"
     required_status: draft
   - artifact: "shipglows_data/business/commandglows_app/product.md"
     artifact_version: "1.6.0"
@@ -47,11 +48,18 @@ evidence:
   - "Commercial decision of 2026-08-06: eligibility is server-side by global identity and recognized installation; IP is a privacy-aware secondary anti-abuse signal only."
   - "Operator confirmation of 2026-08-06: there are no users to preserve, so no grandfathering or compatibility migration is required."
   - "Commercial provider decision of 2026-08-11: Stripe Managed Payments replaces Lemon Squeezy as the target Merchant of Record for CommandGlows."
-  - "Repository inspection: productEntitlements has no expiry field; commandglows_app is currently granted by the default-free flow; Flutter parses entitlement status without access expiry."
-next_step: "Complete the remaining anti-abuse, client journey, automated proof, and hosted payment verification before release."
+  - "Historical repository inspection before implementation: productEntitlements had no expiry field; commandglows_app was granted by the default-free flow; Flutter parsed entitlement status without access expiry."
+  - "Operator decision later on 2026-08-11: replace this CommandGlows-specific 14-day contract with the suite-wide 30-day, two-restart, Stripe-only contract."
+next_step: "Implement the canonical suite spec; retain this document as historical implementation provenance only."
 ---
 
 # CommandGlows Trial-Then-Paid Entitlements
+
+> **Superseded on 2026-08-11.** The 14-day/42-day CommandGlows-specific
+> contract below is historical. The sole active authority is
+> `/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md`:
+> 30 days per cycle, two maximum restarts, purchase mandatory after three
+> cycles, no permanent freemium, and Stripe Managed Payments only.
 
 ## Title
 
@@ -214,13 +222,13 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 
 ## Implementation Tasks
 
-- [ ] Task 1 — Audit every current writer and reader of `productEntitlements`, default-free grants and Flutter auth snapshot; document the exact response compatibility plan.
-- [ ] Task 2 — Add Convex schema/indexes for trial periods and recognized installations, with minimum-data retention and environment isolation.
-- [ ] Task 3 — Implement a single server entitlement resolver that composes paid, trial, expiry and negative commerce states deterministically.
-- [ ] Task 4 — Implement authenticated, idempotent `startTrial` and `reactivateTrial` bridge operations, including installation registration and generic anti-abuse responses.
-- [ ] Task 5 — Remove `commandglows_app` from automatic default-free grants; preserve any empty-environment legacy records only as non-granting audit data.
-- [ ] Task 6 — Extend commerce transition handling and snapshot refresh so verified purchase, refund, revoke and fraud states take effect immediately and idempotently.
-- [ ] Task 7 — Update Flutter entitlement model/parser/cache and auth-gate UI for expiry, reactivation availability, pending refresh and official purchase handoff.
+- [x] Task 1 — Audit every current writer and reader of `productEntitlements`, default-free grants and Flutter auth snapshot; document the exact response compatibility plan.
+- [x] Task 2 — Add Convex schema/indexes for trial periods and recognized installations, with minimum-data retention and environment isolation. Scheduled retention automation remains in Task 8.
+- [x] Task 3 — Implement a server entitlement resolver that composes paid, trial, expiry and negative commerce states deterministically for the active bridge surfaces.
+- [x] Task 4 — Implement authenticated, idempotent `startTrial` and `reactivateTrial` bridge operations, including installation registration and generic anti-abuse responses.
+- [x] Task 5 — Remove `commandglows_app` and CommunityGlows from automatic default-free grants; stale CommunityGlows default rows are explicitly non-granting.
+- [x] Task 6 — Extend commerce transition handling and snapshot refresh so verified purchase, refund, revoke and fraud states take effect immediately and idempotently.
+- [x] Task 7 — Update Flutter entitlement model/parser and auth/route gate UI for expiry, explicit restart eligibility, exhaustion, visible denial and official purchase handoff.
 - [ ] Task 8 — Add privacy-minimized velocity limiting, retention job/configuration and structured security telemetry; document any platform-integrity extension separately.
 - [x] Task 9 — Implement the local automated test matrix and run static/unit checks for site and Flutter. Provider-hosted and real-device scenarios remain under Task 10.
 - [ ] Task 10 — Stripe Managed Payments is implemented and locally verified. Configure and perform hosted test-mode purchase/refund/revoke proof, then complete the real-device trial/reinstall/new-email checklist and release evidence.
@@ -236,6 +244,16 @@ complete acceptance contract.
   paid-entitlement precedence; installation-hash reuse denial; a temporary
   pseudonymized network velocity window; snapshot parsing through the Astro
   bridge and Flutter; and a customer-facing restart/purchase gate.
+- Hardened: CommunityGlows is no longer a suite default-free product and stale
+  `product_default` rows cannot override its 30-day expiry; CommandGlows direct
+  routes require remote authentication plus an active server entitlement, so
+  local fallback cannot open the product.
+- Hardened: the bridge returns `trialAttempt`, `trialRestartsRemaining`, and
+  `trialRestartEligible`; Flutter hides the restart CTA after two restarts and
+  displays a visible denial instead of silently retrying.
+- Hardened: Lemon Squeezy has no CommandGlows checkout/env branch and signed
+  CommandGlows metadata received by that adapter remains non-applying. Stripe
+  is the sole eligible CommandGlows provider.
 - Implemented local proof: a `convex-test` integration matrix covers
   `ENT-TRIAL-001` through `ENT-TRIAL-007` and `ENT-TRIAL-011` across six
   tests; the complete site suite passes with 131 tests and Astro reports no
@@ -328,10 +346,22 @@ None. The commercial decisions required for this scope are settled: no permanent
   docs into canonical workflow archives, and marked the old WinGlows/Lemon
   Squeezy launch spec as superseded. Hosted provider and device proof remain
   open and are not presented as delivered.
+- `2026-08-11 — sg-development / entitlement cleanup`: removed CommunityGlows
+  from suite default-free grants, closed the Flutter local/direct-route bypass,
+  exposed server-owned restart eligibility, and removed the residual
+  CommandGlows Lemon Squeezy path. Focused site and Flutter tests plus Flutter
+  analysis pass; hosted Stripe/Convex and device proof remain open.
+- `2026-08-11 — sg-engineering + sg-docs`: added a Convex integration
+  regression proving that an expired 30-day CommunityGlows trial remains
+  non-granting when a stale legacy `product_default` row still exists, and
+  synchronized this spec with payment entitlement contract v0.8.0.
 
 ## Current Chantier Flow
 
-Local entitlement implementation, canonical documentation alignment, the
-Convex test matrix and the Stripe Managed Payments adapter are complete. The chantier
-remains open for Stripe/Convex hosted proof, retention/telemetry, stronger
-platform integrity, real-device proof, and release verification.
+Superseded by the suite-wide commercial entitlement and Stripe contract. Prior
+local implementation and proof remain historical evidence; implementation must
+now migrate CommandGlows from 14-day to 30-day cycles before hosted proof.
+
+- `2026-08-11 — sg-docs`: marked this product-specific decision superseded and
+  transferred active authority to the unified suite spec without erasing the
+  original requirements, implementation notes, or proof history.

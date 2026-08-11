@@ -5,6 +5,7 @@ import MainLayout from '@/layouts/MainLayout.astro'
 import { getLangFromUrl } from '@/utils/i18n'
 import { SITE, getLocalizedSiteUrl } from '@/constants'
 import { getCourseCheckoutPath } from '@/utils/courseGating'
+import CheckoutButton from '@/components/commerce/CheckoutButton.astro'
 
 export function getStaticPaths() {
 	return [
@@ -352,9 +353,9 @@ const page =
 					{page.heroBody.map((paragraph) => <p>{paragraph}</p>)}
 				</div>
 				<div class="mt-8 flex flex-col gap-4 sm:flex-row">
-					<a href={checkoutUrl} class="inline-flex items-center justify-center rounded-xl bg-content-bg-inverse px-6 py-3 font-semibold text-content-text-over-dark transition hover:bg-content-bg-strong dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover">
+					<CheckoutButton action={checkoutUrl} class="inline-flex items-center justify-center rounded-xl bg-content-bg-inverse px-6 py-3 font-semibold text-content-text-over-dark transition hover:bg-content-bg-strong dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover">
 						{page.primaryCta}
-					</a>
+					</CheckoutButton>
 					<a href="#modules" class="inline-flex items-center justify-center rounded-xl border border-content-border-strong px-6 py-3 font-semibold text-content-text-secondary transition hover:bg-content-bg-subtle dark:border-content-border-strong dark:text-content-text-primary dark:hover:bg-content-bg-strong">
 						{page.secondaryCta}
 					</a>
@@ -512,9 +513,9 @@ const page =
 						</li>
 					))}
 				</ul>
-				<a href={checkoutUrl} class="mt-8 inline-flex items-center justify-center rounded-xl bg-gradient-rainbow px-6 py-3 font-bold text-content-text-over-dark transition hover:opacity-90">
+				<CheckoutButton action={checkoutUrl} formClass="mt-8" class="inline-flex items-center justify-center rounded-xl bg-gradient-rainbow px-6 py-3 font-bold text-content-text-over-dark transition hover:opacity-90">
 					{page.primaryCta}
-				</a>
+				</CheckoutButton>
 				<p class="mt-4 text-sm text-content-text-muted dark:text-content-text-muted">{page.checkoutNote}</p>
 			</div>
 			<div class="rounded-3xl border border-content-border bg-content-bg-subtle p-8 dark:border-content-border-strong dark:bg-content-bg-strong/60">

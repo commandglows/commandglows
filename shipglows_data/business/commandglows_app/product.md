@@ -1,7 +1,7 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.6.0"
+artifact_version: "1.8.0"
 project: "CommandGlows"
 created: "2026-04-26"
 updated: "2026-08-11"
@@ -23,6 +23,7 @@ evidence:
   - "shipglows_data/technical/payment-activation-entitlements.md"
   - "shipglows_data/workflow/audits/2026-06-10-commandglows-platform-parity.md"
   - "Operator decision 2026-08-11: Stripe Managed Payments is the target Merchant of Record for CommandGlows."
+  - "Operator decision later on 2026-08-11: the suite-wide trial contract is 30 days per cycle, two restarts maximum, then purchase required."
 target_user: "Professionals and power users capturing text from speech across mobile, desktop, and web"
 user_problem: "Typing is slow or disruptive in contexts where quick dictation, cleanup, and structured reuse matter"
 desired_outcomes:
@@ -31,7 +32,7 @@ desired_outcomes:
   - "Use a native Android keyboard entrypoint for typing, dictation, clipboard actions, snippets entry points, and play/pause media"
   - "Use overlay or quick-action capture through the platform host available on Android, desktop, iOS, or web"
 non_goals:
-  - "Not a permanent freemium product; the commercial path is a server-owned 14-day trial followed by paid unlock"
+  - "Not a permanent freemium product; the commercial path is up to three server-owned 30-day cycles followed by paid unlock"
   - "Not a promise of identical OS-level overlay mechanics on every platform"
   - "Not a system keyboard/IME product outside Android"
   - "Not a JS/TS application codebase in final target repository"
@@ -51,8 +52,8 @@ Ce document décrit la cible `target-reviewed` actuelle: Flutter partagé pour l
 
 ## Cadre commercial et entitlement
 
-CommandGlows App suit une politique `trial_then_paid`: 14 jours d'essai
-initial, puis au maximum deux relances de 14 jours, soit 42 jours cumulés.
+CommandGlows App suit la politique commune `trial_then_paid`: 30 jours d'essai
+initial, puis au maximum deux relances de 30 jours, soit 90 jours cumulés.
 Après cette allowance, l'accès premium nécessite un achat. La garantie
 satisfait ou remboursé de 30 jours est une règle commerciale distincte et ne
 doit pas être transformée en expiration technique automatique de l'accès.
@@ -68,8 +69,9 @@ Merchant of Record. Stripe Payments classique ne satisfait pas ce contrat.
 Convex conserve l'autorité sur les entitlements; le fournisseur de paiement ne
 fait qu'émettre des événements commerce vérifiés. Le checkout Stripe, son
 webhook et le handoff d'identité signé entre l'app Firebase et la page publique
-sont implémentés et vérifiés localement. Lemon Squeezy reste réservé à
-CommunityGlows; la preuve hébergée Stripe/Convex reste nécessaire avant lancement.
+sont implémentés et vérifiés localement. Stripe est l'unique provider actif
+de la suite, y compris pour CommunityGlows et la Formation; la preuve hébergée
+Stripe/Convex reste nécessaire avant lancement.
 
 ## Problème utilisateur
 

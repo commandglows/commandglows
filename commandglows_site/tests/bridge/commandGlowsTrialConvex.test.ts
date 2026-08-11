@@ -4,7 +4,7 @@ import schema from '../../convex/schema'
 
 const modules = import.meta.glob('../../convex/**/*.ts')
 const BRIDGE_SECRET = 'convex-trial-test-secret'
-const TRIAL_DURATION_MS = 14 * 24 * 60 * 60 * 1000
+const TRIAL_DURATION_MS = 30 * 24 * 60 * 60 * 1000
 
 type TrialEntitlement = {
   _id: string
@@ -101,7 +101,7 @@ describe('CommandGlows trial Convex integration', () => {
     }
   })
 
-  test('ENT-TRIAL-001/002 creates one 14-day trial idempotently', async () => {
+  test('ENT-TRIAL-001/002 creates one 30-day trial idempotently', async () => {
     const t = createTestBackend()
     const before = Date.now()
 
@@ -120,7 +120,7 @@ describe('CommandGlows trial Convex integration', () => {
     expect(trials).toHaveLength(1)
     expect(trials[0]).toMatchObject({
       status: 'trialing',
-      plan: 'free',
+      plan: 'trial',
       trialAttempt: 1,
     })
     expect(trials[0].trialStartedAt).toBeGreaterThanOrEqual(before)
@@ -132,6 +132,9 @@ describe('CommandGlows trial Convex integration', () => {
         expect.objectContaining({
           productId: 'commandglows_app',
           status: 'trialing',
+          trialAttempt: 1,
+          trialRestartsRemaining: 2,
+          trialRestartEligible: false,
         }),
       ])
     )
@@ -165,6 +168,15 @@ describe('CommandGlows trial Convex integration', () => {
 
     const trials = await commandGlowsTrials(t)
     expect(trials.map((trial) => trial.trialAttempt)).toEqual([1, 2, 3])
+    expect(exhausted.entitlements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          productId: 'commandglows_app',
+          trialRestartsRemaining: 0,
+          trialRestartEligible: false,
+        }),
+      ])
+    )
     expect(
       exhausted.entitlements.some(
         (entry) =>
@@ -314,6 +326,50 @@ describe('CommandGlows trial Convex integration', () => {
       return rows.filter((row) => row.productId === 'commandglows_app' && row.status === 'active')
     })
     expect(active).toHaveLength(0)
+  })
+
+  test('accepts Formation through Stripe and never grants a non-Stripe event', async () => {
+    const t = createTestBackend()
+    const identity = await bridgeIdentity(t, {
+      uid: 'firebase-formation-commerce',
+      installationHash: 'installation-hash-formation-commerce',
+    })
+    const baseEvent = {
+      offerId: 'commandglows_formation/full_course',
+      productId: 'commandglows_formation',
+      plan: 'formation',
+      eventType: 'paid' as const,
+      environment: 'test',
+      providerOrderId: 'cs_formation',
+      status: 'applied' as const,
+      globalUserId: identity.globalUserId,
+      sourceRef: 'purchase:formation',
+      metadata: { source: 'direct' },
+      bridgeSecret: BRIDGE_SECRET,
+    }
+
+    const rejected = await t.mutation(api.bridge.processCommerceEvent, {
+      ...baseEvent,
+      provider: 'polar',
+      providerEventId: 'evt_polar_formation',
+      idempotencyKey: 'polar:formation:rejected',
+    })
+    expect(rejected).toMatchObject({
+      ok: false, status: 'pending_review', reason: 'provider_not_allowed',
+    })
+
+    const granted = await t.mutation(api.bridge.processCommerceEvent, {
+      ...baseEvent,
+      provider: 'stripe',
+      providerEventId: 'evt_stripe_formation',
+      idempotencyKey: 'stripe:formation:granted',
+    })
+    expect(granted).toMatchObject({ ok: true, status: 'granted' })
+
+    const rows = await t.run(async (ctx) => ctx.db.query('productEntitlements').collect())
+    expect(rows.filter((row) =>
+      row.productId === 'commandglows_formation' && row.status === 'active'
+    )).toHaveLength(1)
   })
 
   test('ENT-TRIAL-011 temporarily denies the fourth network grant in 24 hours', async () => {

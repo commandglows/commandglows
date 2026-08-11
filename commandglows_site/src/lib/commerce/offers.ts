@@ -17,6 +17,8 @@ const COMMANDGLOWS_APP_FOCUS_OFFER_ID = "commandglows_app/focus"
 const COMMANDGLOWS_APP_POWER_OFFER_ID = "commandglows_app/power"
 const COMMANDGLOWS_APP_CONTROL_OFFER_ID = "commandglows_app/control"
 const COMMANDGLOWS_APP_COMMAND_OFFER_ID = "commandglows_app/command"
+const COMMANDGLOWS_FORMATION_PRODUCT_ID = "commandglows_formation"
+const COMMANDGLOWS_FORMATION_OFFER_ID = "commandglows_formation/full_course"
 const COMMUNITYGLOWS_SOURCES = [
   "direct",
   "partner",
@@ -38,7 +40,7 @@ const OFFER_BY_ID: Record<CommerceOfferId, CommerceOffer> = {
     productId: COMMUNITYGLOWS_PRODUCT_ID,
     plan: COMMUNITYGLOWS_PLAN,
     sources: COMMUNITYGLOWS_SOURCES,
-    providers: ["lemonsqueezy", "polar"],
+    providers: ["stripe"],
     successPath: "/purchase/success",
     cancelPath: "/purchase/cancel",
     description: "CommunityGlows Lifetime Deal, direct checkout",
@@ -83,6 +85,16 @@ const OFFER_BY_ID: Record<CommerceOfferId, CommerceOffer> = {
     cancelPath: "/purchase/cancel?offerId=commandglows_app/command",
     description: "CommandGlows Command founder access, 10 active devices",
   },
+  [COMMANDGLOWS_FORMATION_OFFER_ID]: {
+    id: COMMANDGLOWS_FORMATION_OFFER_ID,
+    productId: COMMANDGLOWS_FORMATION_PRODUCT_ID,
+    plan: "formation",
+    sources: COMMANDGLOWS_APP_SOURCES,
+    providers: ["stripe"],
+    successPath: "/purchase/success",
+    cancelPath: "/formations/",
+    description: "CommandGlows complete formation access",
+  },
 } as const
 
 export const COMMUNITYGLOWS_LETTER = COMMUNITYGLOWS_OFFER_ID
@@ -91,6 +103,7 @@ export const COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID = COMMANDGLOWS_APP_FOCUS_OFFER_
 export const COMMANDGLOWS_APP_POWER_LTD_OFFER_ID = COMMANDGLOWS_APP_POWER_OFFER_ID
 export const COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID = COMMANDGLOWS_APP_CONTROL_OFFER_ID
 export const COMMANDGLOWS_APP_COMMAND_LTD_OFFER_ID = COMMANDGLOWS_APP_COMMAND_OFFER_ID
+export const COMMANDGLOWS_FORMATION_OFFER = COMMANDGLOWS_FORMATION_OFFER_ID
 
 export function getCommerceOffers(): Record<string, CommerceOffer> {
   return { ...OFFER_BY_ID }
@@ -112,41 +125,10 @@ export function isAllowedCommunityGlowsOffer(
   )
 }
 
-function getLemonSqueezyVariantEnvKey(offerId: string): string | null {
-  if (offerId === COMMUNITYGLOWS_OFFER_ID) {
-    return "LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID"
-  }
-  if (offerId === COMMANDGLOWS_APP_FOCUS_OFFER_ID) {
-    return "LEMONSQUEEZY_COMMANDGLOWS_APP_FOCUS_VARIANT_ID"
-  }
-  if (offerId === COMMANDGLOWS_APP_POWER_OFFER_ID) {
-    return "LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID"
-  }
-  if (offerId === COMMANDGLOWS_APP_CONTROL_OFFER_ID) {
-    return "LEMONSQUEEZY_COMMANDGLOWS_APP_CONTROL_VARIANT_ID"
-  }
-  if (offerId === COMMANDGLOWS_APP_COMMAND_OFFER_ID) {
-    return "LEMONSQUEEZY_COMMANDGLOWS_APP_COMMAND_VARIANT_ID"
-  }
-  return null
-}
-
-function getLemonSqueezyProductEnvKey(offerId: string): string | null {
-  if (offerId === COMMUNITYGLOWS_OFFER_ID) {
-    return "LEMONSQUEEZY_COMMUNITYGLOWS_PRODUCT_ID"
-  }
-  if (
-    offerId === COMMANDGLOWS_APP_FOCUS_OFFER_ID ||
-    offerId === COMMANDGLOWS_APP_POWER_OFFER_ID ||
-    offerId === COMMANDGLOWS_APP_CONTROL_OFFER_ID ||
-    offerId === COMMANDGLOWS_APP_COMMAND_OFFER_ID
-  ) {
-    return "LEMONSQUEEZY_COMMANDGLOWS_APP_PRODUCT_ID"
-  }
-  return null
-}
-
 function getStripePriceEnvKey(offerId: string): string | null {
+  if (offerId === COMMUNITYGLOWS_OFFER_ID) {
+    return "STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID"
+  }
   if (offerId === COMMANDGLOWS_APP_FOCUS_OFFER_ID) {
     return "STRIPE_COMMANDGLOWS_APP_FOCUS_PRICE_ID"
   }
@@ -158,6 +140,9 @@ function getStripePriceEnvKey(offerId: string): string | null {
   }
   if (offerId === COMMANDGLOWS_APP_COMMAND_OFFER_ID) {
     return "STRIPE_COMMANDGLOWS_APP_COMMAND_PRICE_ID"
+  }
+  if (offerId === COMMANDGLOWS_FORMATION_OFFER_ID) {
+    return "STRIPE_COMMANDGLOWS_FORMATION_PRICE_ID"
   }
   return null
 }
@@ -174,36 +159,9 @@ export function getOfferProviderConfig(
 
   const env = envOverride ?? getServerEnv()
 
-  if (provider === "stripe") {
-    const priceEnvKey = getStripePriceEnvKey(offerId)
-    const priceId = priceEnvKey ? env[priceEnvKey] : undefined
-    return priceId ? { provider, priceId } : null
-  }
-
-  if (provider === "lemonsqueezy") {
-    const variantEnvKey = getLemonSqueezyVariantEnvKey(offerId)
-    const variantId = variantEnvKey ? env[variantEnvKey] : undefined
-    if (!variantId) return null
-
-    const storeId = env.LEMONSQUEEZY_STORE_ID
-    const productEnvKey = getLemonSqueezyProductEnvKey(offerId)
-    const productId = productEnvKey ? env[productEnvKey] : undefined
-    return {
-      provider,
-      productId,
-      variantId,
-      storeId,
-    }
-  }
-
-  if (provider === "polar") {
-    const productId =
-      env.POLAR_COMMANDGLOWS_PRODUCT_ID ?? env.POLAR_PRODUCT_ID ?? null
-
-    return productId ? { provider, productId } : null
-  }
-
-  return null
+  const priceEnvKey = getStripePriceEnvKey(offerId)
+  const priceId = priceEnvKey ? env[priceEnvKey] : undefined
+  return priceId ? { provider: "stripe", priceId } : null
 }
 
 export function getOfferProviderCandidates(
@@ -239,37 +197,16 @@ export function buildCommerceCheckoutHints(
     source_ref:
       request.metadata?.source_ref ?? request.idempotencyHint ?? undefined,
     global_user_id: request.metadata?.global_user_id,
+    environment: request.metadata?.environment,
   }
 }
 
 export function normalizeCommerceProviderOrder(
   offerId: string
 ): CommerceProviderId[] {
-  const env = getServerEnv()
-  const fallback: CommerceProviderId[] = ["stripe", "lemonsqueezy", "polar"]
-  const raw = env.COMMERCE_PROVIDER_ORDER?.split(",") ?? []
-  const candidates = raw
-    .map((candidate) => candidate.trim().toLowerCase())
-    .filter((candidate) => candidate.length > 0)
-
-  const candidateSet = new Set(
-    candidates.length > 0 ? candidates : fallback
-  )
-  const ordered = [...candidateSet]
-    .map((candidate) => {
-      if (candidate === "stripe") return "stripe" as const
-      if (candidate === "lemonsqueezy") return "lemonsqueezy" as const
-      if (candidate === "polar") return "polar" as const
-      return null
-    })
-    .filter((candidate) => candidate !== null) as CommerceProviderId[]
-
-  if (ordered.length === 0) {
-    return fallback
-  }
-
-  const allowed = getOfferProviderCandidates(offerId)
-  return ordered.filter((candidate) => allowed.includes(candidate))
+  return getOfferProviderCandidates(offerId).includes("stripe")
+    ? ["stripe"]
+    : []
 }
 
 export function getCommunityGlowsCommerceOfferId(): CommerceOfferId {

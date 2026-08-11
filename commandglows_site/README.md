@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: '1.0'
-artifact_version: '1.0.0'
+artifact_version: '1.2.0'
 project: commandglows
 created: '2026-04-25'
-updated: '2026-05-17'
+updated: '2026-08-11'
 status: reviewed
 source_skill: sf-docs
 scope: readme
@@ -59,7 +59,7 @@ The local dev server runs on `http://localhost:3011`.
 - Tailwind CSS 3
 - React islands
 - Clerk
-- Polar.sh
+- Stripe Managed Payments
 - Convex
 - Resend
 - Vercel
@@ -84,7 +84,7 @@ commandglows_site/
 ├── convex/                 # Convex HTTP handlers, schema, and functions
 ├── docs/                   # Supplementary design and CSS docs
 ├── public/                 # Static assets
-├── scripts/                # Project scripts, including Polar product setup
+├── scripts/                # Project scripts and local verification helpers
 └── tests/                  # Vitest setup and mocks
 ```
 
@@ -96,10 +96,9 @@ commandglows_site/
 - `/products` and `/fr/produits` — product catalog routes
 - `/dashboard/*` — authenticated surfaces
 - `/api/newsletter/*` — newsletter subscribe and unsubscribe
-- `/api/polar/*` — checkout/webhook surfaces
-- `/api/commerce/*` — provider-agnostic checkout/webhook surfaces
-- `/api/commerce/webhooks/stripe` — Stripe Managed Payments webhook for CommandGlows purchase, refund, and dispute events
-- `/api/commerce/webhooks/lemon-squeezy` — Lemon Squeezy webhook for normalized CommunityGlows LTD commerce events
+- `/api/checkout/start` — Clerk-authenticated purchase start for public and Formation surfaces
+- `/api/commerce/checkout` — signed-handoff Stripe Managed Payments checkout
+- `/api/commerce/webhooks/stripe` — central suite purchase, refund, and dispute webhook
 - `/api/bridge/firebase` — Firebase ID token bridge to suite identity snapshot
 - `/api/bridge/sync` — internal entitlement mirror sync by `globalUserId` + shared secret
 - `/api/bridge/communityglows` — CommunityGlows server-to-server entitlement snapshot and activation-code redemption bridge
@@ -137,17 +136,17 @@ It recomputes entitlements from Convex (`productEntitlements` source of truth), 
 
 The bridge also writes a server-owned Firestore mirror at `suiteAccess/{firebaseUid}` after Convex entitlement lookup. CommandGlows app Firestore rules use that mirror to allow or deny `commandglows_app` data under `users/{uid}`.
 
-`POST /api/bridge/entitlement` verifies ReplayGlowz Clerk sessions server-side. A recognized Clerk account without active ReplayGlowz access receives a persisted `replayglowz/free` default entitlement for that product only; this does not unlock other CommandGlows suite products.
+`POST /api/bridge/entitlement` verifies ReplayGlowz Clerk sessions server-side and fails closed without an active paid entitlement or valid shared-policy trial. A recognized installation may receive one 30-day cycle and request at most two restarts; legacy free grants never unlock ReplayGlowz.
 
 `POST /api/bridge/communityglows` accepts:
 
 - header `x-communityglows-suite-secret` with a dedicated shared secret;
-- JSON body with `operation` (`snapshot`, `redeem_code`, or `commerce`), plus
+- JSON body with `operation` (`snapshot`, `restart_trial`, `redeem_code`, `manual_grant`, `revoke`, `refund`, `upsert_code`, or `disable_code`), plus
   operation-specific fields:
-  - `snapshot` and `redeem_code` require `providerAccountId`,
-  - `commerce` requires provider/offer/product/plan/event and identity context (`provider`, `offerId`, `productId`, `plan`, `eventType`, `environment`, `providerEventId`, `providerOrderId`, `idempotencyKey`, `status`).
+  - `snapshot`, `restart_trial`, and `redeem_code` require `providerAccountId`,
+  - trial operations accept product-scoped pseudonymized `installationHash` and short-lived `networkHash` signals; `restart_trial` is accepted only after expiry and before the third cycle is exhausted.
 
-The route calls suite Convex bridge mutations for `communityglows` entitlement snapshot, activation-code redemption, and commerce fulfillment without merging identities by email alone.
+The route calls suite Convex bridge mutations for `communityglows` entitlement snapshots and activation-code redemption without merging identities by email alone. Successful snapshots may include a short-lived, product-bound checkout handoff; payment events enter only through the central Stripe webhook.
 
 - `COMMUNITYGLOWS_SUITE_BRIDGE_SECRET` (preferred dedicated secret)
 - `SUITE_COMMUNITYGLOWS_BRIDGE_SECRET` (legacy/alternate key accepted as fallback)
@@ -158,16 +157,7 @@ The route calls suite Convex bridge mutations for `communityglows` entitlement s
 - `CLERK_SECRET_KEY`
 - `CLERK_WEBHOOK_SECRET`
 
-### Polar
-
-- `POLAR_ACCESS_TOKEN`
-- `POLAR_PRODUCT_ID`
-- `POLAR_COMMANDGLOWS_PRODUCT_ID`
-- `POLAR_WEBHOOK_SECRET`
-- `POLAR_SERVER`
-- `SUITE_BRIDGE_SYNC_URL` (used by Convex Polar webhook handling to call `/api/bridge/sync`)
-
-### Stripe Managed Payments (CommandGlows)
+### Stripe Managed Payments (suite-wide)
 
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
@@ -176,23 +166,13 @@ The route calls suite Convex bridge mutations for `communityglows` entitlement s
 - `STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID`
 - `STRIPE_COMMANDGLOWS_APP_CONTROL_PRICE_ID`
 - `STRIPE_COMMANDGLOWS_APP_COMMAND_PRICE_ID`
+- `STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID`
+- `STRIPE_COMMANDGLOWS_FORMATION_PRICE_ID`
 - `STRIPE_COMMANDGLOWS_FOUNDER_DISCOUNT_CODE` (optional; default: `FOUNDER`)
 - `STRIPE_COMMANDGLOWS_FOUNDER_PROMOTION_CODE_ID` (optional Stripe promotion-code ID)
 - `SUITE_COMMERCE_CHECKOUT_SECRET` (dedicated HMAC secret shared only by the Firebase bridge and checkout route)
 
-CommandGlows Checkout Sessions explicitly set `managed_payments.enabled=true`. The authenticated Firebase bridge issues a short-lived signed checkout handoff; the checkout route rejects missing, expired, or modified handoffs and never trusts a raw client-supplied global user ID. Offer metadata is copied to both the Checkout Session and Payment Intent so signed completion, refund, and dispute events can be normalized into `bridge:processCommerceEvent`. Access is granted only by a verified paid webhook. Full successful refunds and disputes revoke paid access; partial or pending refunds go to `pending_review`.
-
-### Lemon Squeezy (CommunityGlows checkout)
-
-- `LEMONSQUEEZY_API_KEY`
-- `LEMONSQUEEZY_API_URL` (default: `https://api.lemonsqueezy.com`)
-- `LEMONSQUEEZY_STORE_ID`
-- `LEMONSQUEEZY_COMMUNITYGLOWS_PRODUCT_ID`
-- `LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID`
-- `LEMONSQUEEZY_WEBHOOK_SECRET`
-- `COMMERCE_PROVIDER_ORDER` (optional provider preference, e.g. `stripe,lemonsqueezy,polar`)
-
-The Lemon Squeezy adapter remains for CommunityGlows. It is no longer an allowed provider for CommandGlows offers.
+All Checkout Sessions explicitly set `managed_payments.enabled=true`. Every offer requires a short-lived signed handoff bound to its suite product and runtime environment; the checkout route never trusts a raw client-supplied global user ID. Handoffs travel only in POST bodies, carry a random ten-minute `jti`, and are atomically claimed in Convex with a stable Stripe idempotency key so retries cannot create independent sessions. Normalized offer, product, plan, environment, source, and global-user metadata is copied to both the Checkout Session and Payment Intent, but the handoff itself is never copied or logged. Access is granted only by a verified Stripe webhook. Full successful refunds and disputes revoke paid access; partial or pending refunds go to `pending_review`. Lemon Squeezy and Polar have no active runtime route or fallback.
 
 ### Resend
 

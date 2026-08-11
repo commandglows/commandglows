@@ -5,6 +5,8 @@ import {
   getConvexBridgeSecret,
   getCommunityGlowsBridgeSecret,
 } from '@/lib/suiteBridge'
+import { createCommerceCheckoutIdentityToken } from '@/lib/commerce/checkoutIdentity'
+import { pseudonymizeCommunityTrialSignal } from '@/lib/trialSignals'
 
 export const prerender = false
 
@@ -12,10 +14,12 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' }
 const COMMUNITY_BRIDGE_SECRET_HEADER = 'x-communityglows-suite-secret'
 
 type CommunityGlowsSnapshotRequest = {
-  operation: 'snapshot'
+  operation: 'snapshot' | 'restart_trial'
   providerAccountId: string
   email?: string
   sourceRef?: string
+  installationHash?: string
+  networkHash?: string
 }
 
 type CommunityGlowsRedeemRequest = {
@@ -66,27 +70,6 @@ type CommunityGlowsDisableCodeRequest = {
   sourceRef?: string
 }
 
-type CommunityGlowsCommerceRequest = {
-  operation: 'commerce'
-  provider: string
-  offerId: string
-  productId: string
-  plan: string
-  eventType: 'paid' | 'refunded' | 'revoked'
-  environment: 'production' | 'sandbox' | 'development'
-  providerEventId: string
-  providerOrderId: string
-  idempotencyKey: string
-  status: 'applied' | 'pending_review' | 'ignored'
-  customerEmail?: string
-  providerCustomerId?: string
-  globalUserId?: string
-  sourceRef?: string
-  providerSourceRef?: string
-  providerInvoiceId?: string
-  metadata?: Record<string, string>
-}
-
 type CommunityGlowsBridgeRequest =
   | CommunityGlowsSnapshotRequest
   | CommunityGlowsRedeemRequest
@@ -95,7 +78,6 @@ type CommunityGlowsBridgeRequest =
   | CommunityGlowsRefundRequest
   | CommunityGlowsUpsertCodeRequest
   | CommunityGlowsDisableCodeRequest
-  | CommunityGlowsCommerceRequest
 
 function jsonResponse(payload: Record<string, unknown>, status: number) {
   return new Response(JSON.stringify(payload), { status, headers: JSON_HEADERS })
@@ -123,17 +105,20 @@ function parseCommunityGlowsRequest(
   const email = asNonEmptyString(payload.email) ?? undefined
   const sourceRef = asNonEmptyString(payload.sourceRef) ?? undefined
 
-  if (operation === 'snapshot') {
+  if (operation === 'snapshot' || operation === 'restart_trial') {
     const providerAccountId = asNonEmptyString(payload.providerAccountId)
     if (!providerAccountId) {
       return null
     }
 
     return {
-      operation: 'snapshot',
+      operation,
       providerAccountId,
       email,
       sourceRef,
+      installationHash:
+        asNonEmptyString(payload.installationHash) ?? undefined,
+      networkHash: asNonEmptyString(payload.networkHash) ?? undefined,
     }
   }
 
@@ -218,90 +203,6 @@ function parseCommunityGlowsRequest(
     }
   }
 
-  if (operation === 'commerce') {
-    const provider = asNonEmptyString(payload.provider)
-    const offerId = asNonEmptyString(payload.offerId)
-    const productId = asNonEmptyString(payload.productId)
-    const plan = asNonEmptyString(payload.plan)
-    const eventType = asNonEmptyString(payload.eventType)
-    const environment =
-      (asNonEmptyString(payload.environment) as
-        | 'production'
-        | 'sandbox'
-        | 'development'
-        | undefined) ?? undefined
-    const providerEventId = asNonEmptyString(payload.providerEventId)
-    const providerOrderId = asNonEmptyString(payload.providerOrderId)
-    const idempotencyKey = asNonEmptyString(payload.idempotencyKey)
-    const status = asNonEmptyString(payload.status)
-
-    if (
-      !provider ||
-      !offerId ||
-      !productId ||
-      !plan ||
-      !eventType ||
-      !providerEventId ||
-      !providerOrderId ||
-      !idempotencyKey ||
-      !status
-    ) {
-      return null
-    }
-
-    if (
-      eventType !== 'paid' &&
-      eventType !== 'refunded' &&
-      eventType !== 'revoked'
-    ) {
-      return null
-    }
-
-    if (!environment) {
-      return null
-    }
-
-    if (status !== 'applied' && status !== 'pending_review' && status !== 'ignored') {
-      return null
-    }
-
-    const rawMetadata =
-      typeof payload.metadata === 'object' && payload.metadata !== null
-        ? (payload.metadata as Record<string, unknown>)
-        : undefined
-
-    const metadata = rawMetadata
-      ? Object.fromEntries(
-          Object.entries(rawMetadata)
-            .filter(
-              ([, value]) => typeof value === 'string' && value.trim().length > 0
-            )
-            .map(([key, value]) => [key, (value as string).trim()] as const)
-        ) as Record<string, string>
-      : undefined
-
-    return {
-      operation: 'commerce',
-      provider,
-      offerId,
-      productId,
-      plan,
-      eventType,
-      environment,
-      providerEventId,
-      providerOrderId,
-      idempotencyKey,
-      status,
-      customerEmail: asNonEmptyString(payload.customerEmail) ?? undefined,
-      providerCustomerId: asNonEmptyString(payload.providerCustomerId) ?? undefined,
-      globalUserId: asNonEmptyString(payload.globalUserId) ?? undefined,
-      sourceRef: asNonEmptyString(payload.sourceRef) ?? undefined,
-      providerSourceRef: asNonEmptyString(payload.providerSourceRef) ?? undefined,
-      providerInvoiceId: asNonEmptyString(payload.providerInvoiceId) ?? undefined,
-      metadata,
-    }
-  }
-
   if (operation === 'redeem_code') {
     const providerAccountId = asNonEmptyString(payload.providerAccountId)
     const code = asNonEmptyString(payload.code)
@@ -346,6 +247,7 @@ export const POST: APIRoute = async ({ request }) => {
   const endpointSecret = getCommunityGlowsBridgeSecret(env)
   const convexBridgeSecret = getConvexBridgeSecret(env)
   const convexUrl = env.PUBLIC_CONVEX_URL
+  const trialSignalSecret = env.SUITE_TRIAL_SIGNAL_SECRET?.trim()
 
   if (!endpointSecret || !convexBridgeSecret) {
     return jsonResponse(
@@ -386,18 +288,67 @@ export const POST: APIRoute = async ({ request }) => {
   const environment = env.VERCEL_ENV ?? env.NODE_ENV ?? 'production'
 
   try {
-    if (parsed.operation === 'snapshot') {
+    if (
+      parsed.operation === 'snapshot' ||
+      parsed.operation === 'restart_trial'
+    ) {
+      if (!trialSignalSecret) {
+        return jsonResponse(
+          { status: 'unavailable', error: 'trial_signal_secret_not_configured' },
+          503
+        )
+      }
+      if (!parsed.installationHash) {
+        return jsonResponse(
+          { status: 'bad_request', error: 'installation_signal_required' },
+          400
+        )
+      }
+      const installationHash = pseudonymizeCommunityTrialSignal(
+        parsed.installationHash,
+        trialSignalSecret,
+        'installation'
+      )
+      const networkHash = parsed.networkHash
+        ? pseudonymizeCommunityTrialSignal(
+            parsed.networkHash,
+            trialSignalSecret,
+            'network'
+          )
+        : undefined
       const snapshot = await convex.mutation(
         'bridge:ensureCommunityGlowsEntitlementSnapshotByProviderAccount' as never,
         {
           providerAccountId: parsed.providerAccountId,
           email: parsed.email,
           sourceRef: parsed.sourceRef,
+          installationHash,
+          networkHash,
+          trialAction:
+            parsed.operation === 'restart_trial' ? 'restart' : 'start',
           environment,
           bridgeSecret: convexBridgeSecret,
         } as never
       )
-      return jsonResponse({ status: 'ok', snapshot }, 200)
+      const globalUserId =
+        snapshot && typeof snapshot === 'object' &&
+        typeof (snapshot as { globalUserId?: unknown }).globalUserId === 'string'
+          ? (snapshot as { globalUserId: string }).globalUserId
+          : null
+      const checkoutIdentityToken =
+        globalUserId && env.SUITE_COMMERCE_CHECKOUT_SECRET
+          ? createCommerceCheckoutIdentityToken(
+              globalUserId,
+              'communityglows',
+              environment,
+              env.SUITE_COMMERCE_CHECKOUT_SECRET
+            )
+          : null
+      return jsonResponse({
+        status: 'ok',
+        snapshot,
+        ...(checkoutIdentityToken ? { checkoutIdentityToken } : {}),
+      }, 200)
     }
 
     if (parsed.operation === 'manual_grant') {
@@ -443,33 +394,6 @@ export const POST: APIRoute = async ({ request }) => {
       return jsonResponse({ status: 'ok', result }, 200)
     }
 
-    if (parsed.operation === 'commerce') {
-      const result = await convex.mutation(
-        'bridge:processCommunityGlowsCommerceEvent' as never,
-        {
-          provider: parsed.provider,
-          offerId: parsed.offerId,
-          productId: parsed.productId,
-          plan: parsed.plan,
-          eventType: parsed.eventType,
-          environment: parsed.environment,
-          providerEventId: parsed.providerEventId,
-          providerOrderId: parsed.providerOrderId,
-          idempotencyKey: parsed.idempotencyKey,
-          status: parsed.status,
-          customerEmail: parsed.customerEmail,
-          providerCustomerId: parsed.providerCustomerId,
-          globalUserId: parsed.globalUserId,
-          sourceRef: parsed.sourceRef,
-          providerSourceRef: parsed.providerSourceRef,
-          providerInvoiceId: parsed.providerInvoiceId,
-          metadata: parsed.metadata,
-          bridgeSecret: convexBridgeSecret,
-        } as never
-      )
-      return jsonResponse({ status: 'ok', result }, 200)
-    }
-
     if (parsed.operation === 'disable_code') {
       const result = await convex.mutation(
         'bridge:disableCommunityGlowsActivationCode' as never,
@@ -496,18 +420,22 @@ export const POST: APIRoute = async ({ request }) => {
       return jsonResponse({ status: 'ok', result }, 200)
     }
 
-    const redemption = await convex.mutation(
-      'bridge:redeemCommunityGlowsActivationCodeByProviderAccount' as never,
-      {
-        providerAccountId: parsed.providerAccountId,
-        email: parsed.email,
-        sourceRef: parsed.sourceRef,
-        environment,
-        code: parsed.code,
-        bridgeSecret: convexBridgeSecret,
-      } as never
-    )
-    return jsonResponse({ status: 'ok', redemption }, 200)
+    if (parsed.operation === 'redeem_code') {
+      const redemption = await convex.mutation(
+        'bridge:redeemCommunityGlowsActivationCodeByProviderAccount' as never,
+        {
+          providerAccountId: parsed.providerAccountId,
+          email: parsed.email,
+          sourceRef: parsed.sourceRef,
+          environment,
+          code: parsed.code,
+          bridgeSecret: convexBridgeSecret,
+        } as never
+      )
+      return jsonResponse({ status: 'ok', redemption }, 200)
+    }
+
+    return jsonResponse({ status: 'bad_request', error: 'invalid_payload' }, 400)
   } catch (error) {
     const mappedError = mapBridgeError(error)
     const status = mappedError === 'bridge_secret_mismatch' ? 401 : 400

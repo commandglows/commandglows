@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 
 const DEFAULT_FEATURES = [
@@ -106,7 +107,7 @@ function normalizeTitle(value: string) {
 }
 
 async function getGlobalUserIdByClerkId(
-  ctx: Parameters<typeof mutation>[0]["handler"] extends (...args: infer P) => any ? P[0] : never,
+  ctx: MutationCtx,
   clerkId: string,
 ): Promise<Id<"globalUsers"> | null> {
   const user = await ctx.db
@@ -118,7 +119,7 @@ async function getGlobalUserIdByClerkId(
 }
 
 async function ensureFeatureForKey(
-  ctx: Parameters<typeof mutation>[0]["handler"] extends (...args: infer P) => any ? P[0] : never,
+  ctx: MutationCtx,
   key: string,
 ) {
   const existing = await ctx.db

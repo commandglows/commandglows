@@ -1,11 +1,12 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.5.0"
+artifact_version: "1.0.0"
 project: commandglows
 created: "2026-05-30"
 updated: "2026-08-11"
-status: draft
+status: superseded
+superseded_by: "shipglows_data/technical/platforms/stripe-managed-payments.md"
 source_skill: sg-docs
 scope: platform-usage-lemonsqueezy
 owner: Diane
@@ -16,9 +17,7 @@ docs_impact: yes
 linked_systems:
   - shipglows_data/technical/code-docs-map.md
   - /home/claude/shipglows/shipglows_data/technical/external-platforms/lemonsqueezy.md
-  - commandglows_site/src/lib/commerce/
-  - commandglows_site/src/pages/api/commerce/
-  - commandglows_site/convex/bridge.ts
+  - shipglows_data/technical/stripe-managed-payments.md
   - shipglows_data/technical/payment-activation-entitlements.md
 depends_on:
   - artifact: "/home/claude/shipglows/shipglows_data/technical/external-platforms/lemonsqueezy.md"
@@ -28,19 +27,24 @@ supersedes: []
 evidence:
   - "CommandGlows suite owns the processor-agnostic commerce API and CommunityGlows entitlement ledger fulfillment."
   - "Fresh Lemon Squeezy docs checked on 2026-05-30; no official CLI or MCP was identified."
-  - "The active Lemon Squeezy offer is `communityglows/lifetime_deal`; CommandGlows offers are excluded from this adapter."
+  - "Lemon Squeezy was used during migration for historical CommunityGlows flows; no active offer remains on this provider."
   - "Operator decision on 2026-08-11: Stripe Managed Payments replaces Lemon Squeezy as the CommandGlows launch target."
+  - "Implementation proof 2026-08-11: CommandGlows variant env branches were removed; checkout returns unavailable and signed CommandGlows events remain pending review."
+  - "Operator decision later on 2026-08-11: Stripe Managed Payments is the only suite provider, superseding the CommunityGlows Lemon Squeezy exception."
 next_review: "2026-09-11"
-next_step: "Retain the adapter for CommunityGlows; use Stripe Managed Payments for every CommandGlows offer and complete hosted Stripe proof."
+next_step: "Retain as historical migration evidence; remove the active adapter during the Stripe-only implementation batch."
 ---
 
 # Lemon Squeezy Usage
 
+> **Superseded on 2026-08-11.** Lemon Squeezy is not an allowed provider for
+> CommandGlows, CommunityGlows, or any future suite product. This note preserves
+> the former adapter contract for migration provenance only. The active usage
+> contract is `stripe-managed-payments.md`.
+
 ## Purpose
 
-Document the Lemon Squeezy adapter retained for CommunityGlows. It is also
-migration evidence and a regression baseline, but it is no longer an allowed
-provider for CommandGlows offers, which use Stripe Managed Payments.
+This file is migration evidence only. It is not an active runtime contract.
 
 Use the global provider note for source links and tool availability:
 
@@ -54,38 +58,31 @@ This file is the local usage contract for architecture, validation, and automati
 
 ## Owned Files
 
-- `commandglows_site/src/lib/commerce/providers/lemonsqueezy.ts`
-- `commandglows_site/src/lib/commerce/offers.ts`
-- `commandglows_site/src/pages/api/commerce/checkout.ts`
-- `commandglows_site/src/pages/api/commerce/webhooks/lemon-squeezy.ts`
-- `commandglows_site/convex/bridge.ts`
+No active runtime files are owned by this module. All paths below are historical migration references only.
 
 ## Entrypoints
 
-- CommunityGlows checkout: `POST /api/commerce/checkout`
-- Signed provider events: `POST /api/commerce/webhooks/lemon-squeezy`
+No active runtime entrypoints. Historical references were:
+
+- `POST /api/commerce/checkout`
+- `POST /api/commerce/webhooks/lemon-squeezy`
 
 ## Usage Summary
 
-- Provider role: retained CommunityGlows adapter; legacy evidence only for CommandGlows.
+- Provider role: migration-era CommunityGlows adapter; no active runtime role for CommandGlows.
 - Product access owner: CommandGlows suite entitlement ledger, not Lemon Squeezy.
 - Canonical product sales pages stay product-specific even when the checkout route is shared.
-- Applies to paths:
-  - `commandglows_site/src/lib/commerce/**`
-  - `commandglows_site/src/pages/api/commerce/**`
-  - `commandglows_site/src/pages/[...lang]/communityglows-founder.astro`
-  - `commandglows_site/convex/bridge.ts`
-  - `commandglows_site/.env.example`
-  - `commandglows_site/README.md`
-- Environments used: local mocked tests, future Lemon Squeezy test mode, future production for CommunityGlows only.
-- Validation surface: local adapter/route tests, Astro typecheck, hosted Convex fulfillment smoke, Lemon Squeezy test-mode checkout/webhook/refund smoke.
+- This section is migration history only; no active path binds to these identifiers anymore.
+- Historical path set included `commandglows_site/src/lib/commerce/**`, `commandglows_site/src/pages/api/commerce/**`, and related environment/README records.
+- Environments used were historical only.
+- Validation surface was migration proof; active validation now points to Stripe-only contract checks.
 - Owner: Diane.
 - Last verified: 2026-08-11 by local tests and local provider-contract review; hosted provider smoke not yet executed.
 
 ## Sales Surface Rule
 
-- The localized CommunityGlows founder page is the only active Lemon Squeezy sales surface in this repository.
-- The CommandGlows founder page uses Stripe Managed Payments, even though both products share `/api/commerce/checkout`.
+- The localized CommunityGlows founder page was a historical Lemon Squeezy sales surface.
+- The CommandGlows founder page uses Stripe Managed Payments.
 - Shared checkout infrastructure must not blur product ownership or provider eligibility.
 - Product source attribution stays explicit through `offerId`, `productId`, `source`, and `source_ref`.
 
@@ -99,7 +96,7 @@ This file is the local usage contract for architecture, validation, and automati
 | CommunityGlows product id | `LEMONSQUEEZY_COMMUNITYGLOWS_PRODUCT_ID` | sensitive-ish | Provider reference only; never replaces internal `productId=communityglows`. |
 | CommunityGlows LTD variant id | `LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID` | sensitive-ish | Provider reference only; mapped from `communityglows/lifetime_deal`. |
 | Webhook secret | `LEMONSQUEEZY_WEBHOOK_SECRET` | yes | Server-only; used to verify `X-Signature`. |
-| Provider order preference | `COMMERCE_PROVIDER_ORDER` | no | Current default starts with `stripe`, then `lemonsqueezy`, then `polar`; offer eligibility still controls selection. |
+| Provider order preference | `COMMERCE_PROVIDER_ORDER` | no | Historical only; active runtime allowlist is Stripe only. |
 | Checkout route | `/api/commerce/checkout` | no | Creates hosted checkout server-side. |
 | Webhook route | `/api/commerce/webhooks/lemon-squeezy` | no | Reads exact raw body, verifies signature, forwards normalized event to Convex. |
 | Convex bridge secret | `SUITE_BRIDGE_CONVEX_SECRET` | yes | Required for suite ledger mutations. |
@@ -113,10 +110,10 @@ This file is the local usage contract for architecture, validation, and automati
 - `order_refunded` maps to a normalized refunded event.
 - Unsupported or incomplete signed events must be `pending_review`, not an access grant.
 - Fulfillment runs through `bridge:processCommerceEvent` and writes to suite-owned `productEntitlements` / `productAccessEvents`.
-- Historical SocialGlowz and CommandGlows payload fixtures may remain in parser regression tests; they are not active offer eligibility.
+- Historical fixtures may remain in parser regression history; they are not active offer eligibility.
 - Checkout success pages are not payment proof. Access changes come from signed webhooks and idempotent suite fulfillment. Lemon Squeezy owns payment receipt emails; CommandGlows access state must come from the signed webhook and suite ledger.
 - Payment activation and device activation are distinct. Lemon Squeezy can create the CommunityGlows suite entitlement after a signed paid event; CommandGlows trials and device limits are governed by the separate entitlement contract.
-- Polar remains a provider adapter/legacy route and must not be deleted as part of Lemon Squeezy adoption.
+- Polar remains a historical provider route reference in old migration code and is not part of active runtime entitlement authority.
 
 ## MCP / CLI Policy
 
@@ -142,8 +139,9 @@ Requires a new spec or explicit approval:
 
 ## Invariants
 
-- The only active Lemon Squeezy offer is `communityglows/lifetime_deal` with `productId=communityglows` and `plan=lifetime_deal`.
+- No Lemon Squeezy offer is active in current suite runtime.
 - CommandGlows offers must fail provider eligibility for Lemon Squeezy.
+- The Lemon Squeezy adapter has no CommandGlows variant/env branch; even a validly signed Lemon Squeezy event carrying CommandGlows metadata stays `pending_review` and cannot grant access.
 - Provider product, variant, order, customer, invoice, and webhook ids are references only.
 - Lemon Squeezy never becomes the runtime authorization store.
 - No email-only auto-grant or account merge.
@@ -170,20 +168,10 @@ Requires a new spec or explicit approval:
 
 ## Validation
 
-Local checks:
+No active checks remain. Historical evidence can be retained as archived proof snapshots only; active proof is under
+`shipglows_data/technical/platforms/stripe-managed-payments.md` and the related commerce suite tests.
 
-```bash
-pnpm -C /home/claude/commandglows/commandglows_site test tests/commerce/checkoutRoute.test.ts tests/commerce/offers.test.ts tests/commerce/lemonsqueezy.test.ts
-pnpm -C /home/claude/commandglows/commandglows_site test tests/commerce/lemonSqueezyWebhookRoute.test.ts
-pnpm -C /home/claude/commandglows/commandglows_site build:check
-python3 /home/claude/shipglows/tools/shipglows_metadata_lint.py /home/claude/commandglows/shipglows_data/technical/platforms/lemonsqueezy.md
-```
-
-Provider smoke, after test-mode setup:
-
-```text
-Create checkout from CommunityGlows -> complete test order -> receive signed order_created webhook -> verify suite ledger access -> perform or simulate refund -> verify access becomes non-granting. Confirm separately that every CommandGlows offer is rejected by the Lemon Squeezy adapter.
-```
+Keep this file unchanged unless a formal provider reintroduction is approved by spec.
 
 ## Reader Checklist
 

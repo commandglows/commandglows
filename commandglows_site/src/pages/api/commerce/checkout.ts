@@ -1,34 +1,17 @@
 import type { APIRoute } from 'astro'
-import type {
-  CommerceCheckoutRequest,
-  CommerceProviderId,
-} from '@/lib/commerce/types'
+import { ConvexHttpClient } from 'convex/browser'
+import type { CommerceCheckoutRequest } from '@/lib/commerce/types'
 import { getServerEnv } from '@/lib/serverEnv'
-import { createLemonSqueezyCheckout } from '@/lib/commerce/providers/lemonsqueezy'
 import { createStripeManagedPaymentsCheckout } from '@/lib/commerce/providers/stripe'
-import { verifyCommerceCheckoutIdentityToken } from '@/lib/commerce/checkoutIdentity'
 import {
-  createPolarCheckout,
-  isPolarLegacyConfigurationPresent,
-} from '@/lib/commerce/providers/polar'
-import {
-  getCommerceOffer,
-  getOfferProviderConfig,
-  getOfferProviderCandidates,
-  normalizeCommerceProviderOrder,
-} from '@/lib/commerce/offers'
+  hashCommerceCheckoutJti,
+  verifyCommerceCheckoutIdentityToken,
+} from '@/lib/commerce/checkoutIdentity'
+import { getCommerceOffer, getOfferProviderConfig } from '@/lib/commerce/offers'
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
-type CheckoutHttpResult = {
-  ok: boolean
-  provider?: string
-  statusText: string
-  status: number
-  checkoutUrl?: string
-}
-
-type CheckoutRequestData = {
+export type CheckoutRequestData = {
   offerId: string
   provider?: string
   source?: string
@@ -36,412 +19,159 @@ type CheckoutRequestData = {
   discountCode?: string
   successUrl: string
   cancelUrl: string
-  metadata: NonNullable<CommerceCheckoutRequest['metadata']>
+  identityToken?: string
 }
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0
+function nonEmpty(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
-function getFirstNonEmpty(...values: Array<string | null | undefined>): string | undefined {
-  for (const value of values) {
-    if (isNonEmptyString(value)) {
-      return value
-    }
-  }
-  return undefined
-}
-
-function isCommerceProviderId(value: string | undefined): value is CommerceProviderId {
-  return value === 'stripe' || value === 'lemonsqueezy' || value === 'polar' || value === 'custom'
-}
-
-function resolveRedirectUrl(
-  rawValue: string | null,
-  request: Request
-): string | undefined {
-  const value = rawValue?.trim()
-  if (!value) {
-    return undefined
-  }
-
+function redirectUrl(value: string | undefined, request: Request, fallback: string) {
   try {
-    return new URL(value, request.url).toString()
+    return new URL(value ?? fallback, request.url).toString()
   } catch {
-    return undefined
+    return new URL(fallback, request.url).toString()
   }
 }
 
-function normalizeSuccessCancelUrl(
-  rawValue: string | null,
-  request: Request,
-  fallbackPath: string
-) {
-  return resolveRedirectUrl(rawValue, request) ??
-    new URL(fallbackPath, request.url).toString()
-}
-
-function parseCheckoutRequestFromQuery(request: Request): CheckoutRequestData {
-  const url = new URL(request.url)
-  const search = url.searchParams
-  const offerId = getFirstNonEmpty(search.get('offerId'))
-
+function fromBody(body: unknown, request: Request): CheckoutRequestData | null {
+  if (!body || typeof body !== 'object') return null
+  const value = body as Record<string, unknown>
   return {
-    offerId: offerId ?? '',
-    provider: getFirstNonEmpty(search.get('provider')?.toLowerCase()),
-    source: getFirstNonEmpty(search.get('source')),
-    sourceRef: getFirstNonEmpty(search.get('sourceRef')),
-    discountCode: getFirstNonEmpty(search.get('discountCode')),
-    successUrl: normalizeSuccessCancelUrl(
-      search.get('successUrl'),
-      request,
-      '/purchase/success'
-    ),
-    cancelUrl: normalizeSuccessCancelUrl(
-      search.get('cancelUrl'),
-      request,
-      '/purchase/cancel'
-    ),
-    metadata: {
-      offer_id: offerId ?? '',
-      global_user_id: getFirstNonEmpty(search.get('globalUserId')),
-      source: getFirstNonEmpty(search.get('source')),
-      source_ref: getFirstNonEmpty(search.get('sourceRef')),
-      identity_token: getFirstNonEmpty(search.get('identityToken')),
-    },
+    offerId: nonEmpty(value.offerId) ?? '',
+    provider: nonEmpty(value.provider)?.toLowerCase(),
+    source: nonEmpty(value.source),
+    sourceRef: nonEmpty(value.sourceRef),
+    discountCode: nonEmpty(value.discountCode),
+    successUrl: redirectUrl(nonEmpty(value.successUrl), request, '/purchase/success'),
+    cancelUrl: redirectUrl(nonEmpty(value.cancelUrl), request, '/purchase/cancel'),
+    identityToken: nonEmpty(value.identityToken),
   }
 }
 
-function parseCheckoutBody(body: unknown, request: Request): CheckoutRequestData | null {
-  if (!body || typeof body !== 'object') {
-    return null
-  }
-
-  const payload = body as Record<string, unknown>
-  const offerId = getFirstNonEmpty(payload.offerId?.toString()) ?? ''
-
-  return {
-    offerId,
-    provider: getFirstNonEmpty(payload.provider?.toString())?.toLowerCase(),
-    source: getFirstNonEmpty(payload.source?.toString()),
-    sourceRef: getFirstNonEmpty(payload.sourceRef?.toString()),
-    discountCode: getFirstNonEmpty(payload.discountCode?.toString()),
-    successUrl: normalizeSuccessCancelUrl(
-      getFirstNonEmpty(payload.successUrl?.toString()) ?? null,
-      request,
-      '/purchase/success'
-    ),
-    cancelUrl: normalizeSuccessCancelUrl(
-      getFirstNonEmpty(payload.cancelUrl?.toString()) ?? null,
-      request,
-      '/purchase/cancel'
-    ),
-    metadata: {
-      offer_id: offerId,
-      global_user_id: getFirstNonEmpty(payload.globalUserId?.toString()),
-      source: getFirstNonEmpty(payload.source?.toString()),
-      source_ref: getFirstNonEmpty(payload.sourceRef?.toString()),
-      identity_token: getFirstNonEmpty(payload.identityToken?.toString()),
-    },
-  }
+function json(payload: Record<string, unknown>, status: number) {
+  return new Response(JSON.stringify(payload), { status, headers: JSON_HEADERS })
 }
 
-function buildCheckoutRequest(
-  raw: CheckoutRequestData
-): Omit<CommerceCheckoutRequest, 'offerId'> {
-  return {
-    provider: isCommerceProviderId(raw.provider) ? raw.provider : undefined,
-    successUrl: raw.successUrl,
-    cancelUrl: raw.cancelUrl,
-    discountCode: raw.discountCode,
-    customerEmail: undefined,
-    customerName: undefined,
-    metadata: {
-      ...raw.metadata,
-    },
-    idempotencyHint: raw.sourceRef,
-  }
+function runtimeEnvironment(env: Record<string, string | undefined>) {
+  return env.VERCEL_ENV ?? env.NODE_ENV ?? 'production'
 }
 
-function jsonResponse(payload: Record<string, unknown>, status: number) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: JSON_HEADERS,
-  })
-}
-
-function pickProviderCandidates(offerId: string) {
-  const offer = getCommerceOffer(offerId)
-  if (!offer) {
-    return []
+export async function createCommerceCheckout(data: CheckoutRequestData) {
+  if (!data.offerId) return { ok: false as const, status: 400, message: 'Missing offerId' }
+  const offer = getCommerceOffer(data.offerId)
+  if (!offer) return { ok: false as const, status: 404, message: 'Offer not found' }
+  if (data.provider && data.provider !== 'stripe') {
+    return { ok: false as const, status: 400, message: `${data.provider}: provider_not_allowed_or_unknown` }
   }
 
-  const candidates = normalizeCommerceProviderOrder(offerId)
-  const allowed = getOfferProviderCandidates(offerId)
-  return candidates.filter((candidate) => allowed.includes(candidate))
-}
-
-function toProviderUnavailableMessage(provider: string) {
-  if (provider === 'polar') {
-    return 'Polar checkout is now served by the legacy formation checkout route'
-  }
-
-  return `${provider}: missing configuration`
-}
-
-function toInvalidProviderMessage(requestedProvider: string) {
-  return `${requestedProvider}: provider_not_allowed_or_unknown`
-}
-
-async function runPolarCheckout(
-  checkoutRequest: Omit<CommerceCheckoutRequest, 'offerId'>,
-  offerId: string,
-  env: ReturnType<typeof getServerEnv>
-) {
-  const polarResult = await createPolarCheckout(checkoutRequest, offerId, env)
-  if (polarResult.ok) {
-    return {
-      ok: true,
-      provider: 'polar',
-      statusText: polarResult.checkoutUrl,
-      status: 200,
-      checkoutUrl: polarResult.checkoutUrl,
-    } as CheckoutHttpResult
-  }
-
-  if (isPolarLegacyConfigurationPresent(env)) {
-    return {
-      ok: false,
-      statusText: 'Use /api/polar/checkout for polar checkout flows',
-      status: 409,
-    } as CheckoutHttpResult
-  }
-
-  return {
-    ok: false,
-    statusText: toProviderUnavailableMessage('polar'),
-    status: polarResult.code === 'provider_not_configured' ? 503 : 400,
-  } as CheckoutHttpResult
-}
-
-async function runCheckoutWithProvider(
-  requestData: CheckoutRequestData,
-  env: ReturnType<typeof getServerEnv>
-) {
-  if (!requestData.offerId) {
-    return {
-      ok: false,
-      statusText: 'Missing offerId',
-      status: 400,
-    } as CheckoutHttpResult
-  }
-
-  if (!getCommerceOffer(requestData.offerId)) {
-    return {
-      ok: false,
-      statusText: 'Offer not found',
-      status: 404,
-    } as CheckoutHttpResult
-  }
-
-  if (requestData.offerId.startsWith('commandglows_app/')) {
-    const checkoutIdentitySecret = env.SUITE_COMMERCE_CHECKOUT_SECRET
-    const identityToken = requestData.metadata.identity_token
-    const verifiedGlobalUserId =
-      checkoutIdentitySecret && identityToken
-        ? verifyCommerceCheckoutIdentityToken(identityToken, checkoutIdentitySecret)
-        : null
-    if (!verifiedGlobalUserId) {
-      return {
-        ok: false,
-        statusText: 'CommandGlows checkout must be started from the authenticated app',
-        status: 401,
-      } as CheckoutHttpResult
-    }
-    requestData.metadata.global_user_id = verifiedGlobalUserId
-    delete requestData.metadata.identity_token
-  }
-
-  const normalizedCandidateOrder = pickProviderCandidates(requestData.offerId)
-  const requestedProvider = requestData.provider
-  const requestedCommerceProvider = isCommerceProviderId(requestedProvider)
-    ? requestedProvider
-    : undefined
-  if (!requestData.successUrl || !requestData.cancelUrl) {
-    return {
-      ok: false,
-      statusText: 'Missing checkout redirect URLs',
-      status: 400,
-    } as CheckoutHttpResult
-  }
-
-  const checkoutRequest = buildCheckoutRequest(requestData)
-
-  if (requestedProvider && !requestedCommerceProvider) {
-    return {
-      ok: false,
-      statusText: toInvalidProviderMessage(requestedProvider),
-      status: 400,
-    } as CheckoutHttpResult
-  }
-
-  if (requestedCommerceProvider === 'polar') {
-    return runPolarCheckout(checkoutRequest, requestData.offerId, env)
-  }
-
-  if (
-    requestedCommerceProvider &&
-    !normalizedCandidateOrder.includes(requestedCommerceProvider)
-  ) {
-    return {
-      ok: false,
-      statusText: toInvalidProviderMessage(requestedCommerceProvider),
-      status: 400,
-    } as CheckoutHttpResult
-  }
-
-  const providerOrder =
-    requestedCommerceProvider &&
-    normalizedCandidateOrder.includes(requestedCommerceProvider)
-      ? [requestedCommerceProvider]
-      : normalizedCandidateOrder
-
-  for (const provider of providerOrder) {
-    const offerProviderConfig = getOfferProviderConfig(requestData.offerId, provider)
-    if (!offerProviderConfig) {
-      continue
-    }
-
-    if (provider === 'lemonsqueezy') {
-      const providerResult = await createLemonSqueezyCheckout(
-        checkoutRequest,
-        requestData.offerId,
-        env
-      )
-
-      if (providerResult.ok) {
-        return {
-          ok: true,
-          provider,
-          statusText: providerResult.checkoutUrl,
-          status: 200,
-          checkoutUrl: providerResult.checkoutUrl,
-        } as CheckoutHttpResult
-      }
-
-      if (providerResult.code === 'missing_env' || providerResult.code === 'provider_not_configured') {
-        continue
-      }
-
-      return {
-        ok: false,
-        statusText: providerResult.message,
-        status: 502,
-      } as CheckoutHttpResult
-    }
-
-    if (provider === 'stripe') {
-      const providerResult = await createStripeManagedPaymentsCheckout(
-        checkoutRequest,
-        requestData.offerId,
-        env
-      )
-
-      if (providerResult.ok) {
-        return {
-          ok: true,
-          provider,
-          statusText: providerResult.checkoutUrl,
-          status: 200,
-          checkoutUrl: providerResult.checkoutUrl,
-        } as CheckoutHttpResult
-      }
-
-      if (providerResult.code === 'missing_env' || providerResult.code === 'provider_not_configured') {
-        continue
-      }
-
-      return {
-        ok: false,
-        statusText: providerResult.message,
-        status: providerResult.code === 'bad_request' ? 400 : 502,
-      } as CheckoutHttpResult
-    }
-
-    if (provider === 'polar') {
-      const polarResult = await runPolarCheckout(
-        checkoutRequest,
-        requestData.offerId,
-        env
-      )
-      return polarResult
-    }
-  }
-
-  return {
-    ok: false,
-    statusText: 'No configured checkout provider',
-    status: 503,
-  } as CheckoutHttpResult
-}
-
-export const GET: APIRoute = async ({ request }) => {
-  const requestData = parseCheckoutRequestFromQuery(request)
   const env = getServerEnv()
-
-  const result =
-    (await runCheckoutWithProvider(requestData, env)) as CheckoutHttpResult
-
-  if (!result.ok) {
-    return jsonResponse(
-      {
-        message: result.statusText,
-        provider: result.provider,
-      },
-      result.status
-    )
+  const secret = env.SUITE_COMMERCE_CHECKOUT_SECRET
+  if (!secret || !data.identityToken) {
+    return { ok: false as const, status: 401, message: 'Checkout must be started from an authenticated suite product' }
+  }
+  const verified = verifyCommerceCheckoutIdentityToken(data.identityToken, secret)
+  if (
+    !verified ||
+    verified.productId !== offer.productId ||
+    verified.environment !== runtimeEnvironment(env)
+  ) {
+    return { ok: false as const, status: 401, message: 'Checkout must be started from an authenticated suite product' }
   }
 
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: result.statusText,
-      'Referrer-Policy': 'no-referrer',
-      'Cache-Control': 'private, no-store',
+  const convexUrl = env.PUBLIC_CONVEX_URL
+  const bridgeSecret = env.SUITE_BRIDGE_CONVEX_SECRET
+  if (!convexUrl || !bridgeSecret) {
+    return { ok: false as const, status: 503, message: 'Checkout authority is not configured' }
+  }
+  const jtiHash = hashCommerceCheckoutJti(verified.jti, secret)
+  const convex = new ConvexHttpClient(convexUrl)
+  let claim: {
+    status: string
+    idempotencyKey: string
+    checkoutUrl?: string | null
+  }
+  try {
+    claim = await convex.mutation(
+      'bridge:claimCommerceCheckoutHandoff' as never,
+      {
+        jtiHash,
+        globalUserId: verified.globalUserId,
+        productId: verified.productId,
+        offerId: offer.id,
+        environment: verified.environment,
+        expiresAt: verified.expiresAt * 1000,
+        bridgeSecret,
+      } as never
+    ) as typeof claim
+  } catch {
+    return { ok: false as const, status: 409, message: 'Checkout handoff is expired or invalid' }
+  }
+  if (claim.status === 'completed' && claim.checkoutUrl) {
+    return { ok: true as const, provider: 'stripe', checkoutUrl: claim.checkoutUrl }
+  }
+
+  if (!getOfferProviderConfig(data.offerId, 'stripe', env)) {
+    return { ok: false as const, status: 503, message: 'Stripe checkout is not configured for this offer' }
+  }
+
+  const request: Omit<CommerceCheckoutRequest, 'offerId'> = {
+    provider: 'stripe',
+    successUrl: data.successUrl,
+    cancelUrl: data.cancelUrl,
+    discountCode: data.discountCode,
+    metadata: {
+      offer_id: offer.id,
+      product_id: offer.productId,
+      plan: offer.plan,
+      global_user_id: verified.globalUserId,
+      environment: verified.environment,
+      source: data.source ?? 'direct',
+      source_ref: data.sourceRef,
     },
-  })
+    idempotencyHint: claim.idempotencyKey,
+  }
+  const result = await createStripeManagedPaymentsCheckout(request, data.offerId, env)
+  if (!result.ok) {
+    return {
+      ok: false as const,
+      status: result.code === 'bad_request' ? 400 : 502,
+      message: result.message,
+    }
+  }
+  try {
+    await convex.mutation(
+      'bridge:completeCommerceCheckoutHandoff' as never,
+      {
+        jtiHash,
+        globalUserId: verified.globalUserId,
+        productId: verified.productId,
+        offerId: offer.id,
+        environment: verified.environment,
+        checkoutUrl: result.checkoutUrl,
+        providerOrderId: result.providerOrderId,
+        bridgeSecret,
+      } as never
+    )
+  } catch {
+    return { ok: false as const, status: 502, message: 'Checkout handoff could not be finalized' }
+  }
+  return { ok: true as const, provider: 'stripe', checkoutUrl: result.checkoutUrl }
 }
+
+export const GET: APIRoute = async () =>
+  new Response(null, { status: 405, headers: { Allow: 'POST' } })
 
 export const POST: APIRoute = async ({ request }) => {
-  const env = getServerEnv()
   let body: unknown
   try {
     body = await request.json()
   } catch {
-    return jsonResponse({ message: 'Invalid checkout payload' }, 400)
+    return json({ message: 'Invalid checkout payload' }, 400)
   }
-
-  const requestData = parseCheckoutBody(body, request)
-  if (!requestData) {
-    return jsonResponse({ message: 'Invalid checkout payload' }, 400)
-  }
-
-  const result =
-    (await runCheckoutWithProvider(requestData, env)) as CheckoutHttpResult
-
-  if (!result.ok) {
-    return jsonResponse(
-      {
-        message: result.statusText,
-        provider: result.provider,
-      },
-      result.status
-    )
-  }
-
-  return jsonResponse({
-    ok: true,
-    provider: result.provider,
-    checkoutUrl: result.statusText,
-  }, 200)
+  const data = fromBody(body, request)
+  if (!data) return json({ message: 'Invalid checkout payload' }, 400)
+  const result = await createCommerceCheckout(data)
+  if (!result.ok) return json({ message: result.message }, result.status)
+  return json({ ok: true, provider: result.provider, checkoutUrl: result.checkoutUrl }, 200)
 }

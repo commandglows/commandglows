@@ -25,7 +25,7 @@
     "ordering": {
       "title": "4. Processus de Commande",
       "items": [
-        "Les commandes sont passées via notre système de paiement sécurisé propulsé par Polar.sh.",
+        "Les commandes sont passées via notre checkout sécurisé Stripe Managed Payments.",
         "Un e-mail de confirmation est envoyé après le paiement réussi.",
         "L'accès aux produits numériques est accordé immédiatement après confirmation du paiement."
       ]
@@ -33,7 +33,7 @@
     "payment": {
       "title": "5. Paiement",
       "items": [
-        "Les paiements sont traités de manière sécurisée par Polar.sh. Les méthodes acceptées incluent les cartes de crédit/débit et autres méthodes supportées par le processeur de paiement.",
+        "Les paiements sont traités de manière sécurisée via Stripe Managed Payments. Les méthodes acceptées incluent les cartes de crédit/débit et les autres méthodes supportées par le processeur de paiement.",
         "Pour les abonnements, les paiements récurrents sont prélevés automatiquement au début de chaque période de facturation.",
         "Vous pouvez annuler votre abonnement à tout moment ; l'annulation prend effet à la fin de la période de facturation en cours."
       ]

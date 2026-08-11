@@ -12,10 +12,12 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' }
 const TEMU_BRIDGE_SECRET_HEADER = 'x-temu-shopping-lists-suite-secret'
 
 type TemuShoppingListsSnapshotRequest = {
-  operation: 'snapshot'
+  operation: 'snapshot' | 'restart_trial'
   providerAccountId: string
   email?: string
   sourceRef?: string
+  installationHash?: string
+  networkHash?: string
 }
 
 function jsonResponse(payload: Record<string, unknown>, status: number) {
@@ -36,7 +38,10 @@ function parseRequest(body: unknown): TemuShoppingListsSnapshotRequest | null {
   const payload = body as Record<string, unknown>
   const operation = asNonEmptyString(payload.operation)
   const providerAccountId = asNonEmptyString(payload.providerAccountId)
-  if (operation !== 'snapshot' || !providerAccountId) {
+  if (
+    (operation !== 'snapshot' && operation !== 'restart_trial') ||
+    !providerAccountId
+  ) {
     return null
   }
 
@@ -45,6 +50,9 @@ function parseRequest(body: unknown): TemuShoppingListsSnapshotRequest | null {
     providerAccountId,
     email: asNonEmptyString(payload.email) ?? undefined,
     sourceRef: asNonEmptyString(payload.sourceRef) ?? undefined,
+    installationHash:
+      asNonEmptyString(payload.installationHash) ?? undefined,
+    networkHash: asNonEmptyString(payload.networkHash) ?? undefined,
   }
 }
 
@@ -111,6 +119,10 @@ export const POST: APIRoute = async ({ request }) => {
         providerAccountId: parsed.providerAccountId,
         email: parsed.email,
         sourceRef: parsed.sourceRef,
+        installationHash: parsed.installationHash,
+        networkHash: parsed.networkHash,
+        trialAction:
+          parsed.operation === 'restart_trial' ? 'restart' : 'start',
         environment,
         bridgeSecret: convexBridgeSecret,
       } as never

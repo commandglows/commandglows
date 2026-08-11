@@ -17,15 +17,7 @@ export const LEGACY_SHIPGLOWZ_PRODUCT_ID = 'shipglowz'
 export const REPLAYGLOWZ_PRODUCT_ID = 'replayglowz'
 export const COMMUNITYGLOWS_PRODUCT_ID = 'communityglows'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
-export const DEFAULT_FREE_PRODUCT_IDS = [
-  COMMANDGLOWS_FORMATION_PRODUCT_ID,
-  GOCHARBON_PRODUCT_ID,
-  CONTENTGLOWZ_PRODUCT_ID,
-  SHIPGLOWS_PRODUCT_ID,
-  REPLAYGLOWZ_PRODUCT_ID,
-  COMMUNITYGLOWS_PRODUCT_ID,
-  TEMU_SHOPPING_LISTS_PRODUCT_ID,
-] as const
+export const SUITE_TRIAL_MAX_CYCLES = 3
 export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_KEY_ID =
   'replayglowz-suite-2026-06-02'
 // Protocol identifier kept for verifier compatibility; this is not an SEO origin.
@@ -35,13 +27,11 @@ export const REPLAYGLOWZ_PRODUCT_JWT_DEFAULT_AUDIENCE =
 export const REPLAYGLOWZ_PRODUCT_JWT_TTL_SECONDS = 10 * 60
 export const COMMUNITYGLOWS_DEFAULT_PLAN = 'lifetime_deal' as const
 export const COMMUNITYGLOWS_ALLOWED_PLANS = [
-  'free',
   'lifetime_deal',
   'founder_ltd',
   'ltd',
 ] as const
 export const COMMUNITYGLOWS_ALLOWED_SOURCES = [
-  'product_default',
   'manual',
   'partner',
   'appsumo',
@@ -59,6 +49,7 @@ type BridgeEntitlement = {
   source?: string | null
   trialStartedAt?: number | null
   trialExpiresAt?: number | null
+  trialAttempt?: number | null
 }
 const ALLOWED_PRODUCT_SET = new Set<string>(SUITE_PRODUCT_ALLOWLIST)
 
@@ -76,7 +67,6 @@ export type BridgeEntitlementSnapshot = {
 
 export type ReplayGlowzEntitlementReasonCode =
   | 'active_entitlement'
-  | 'default_free_entitlement'
   | 'missing_product_entitlement'
   | 'account_not_found'
   | 'global_user_not_found'
@@ -114,8 +104,10 @@ type ReplayGlowzProductTokenConfig = {
 export type CommunityGlowsEntitlementReasonCode =
   | 'active_entitlement'
   | 'trial_expired'
+  | 'trial_exhausted'
   | 'account_not_found'
   | 'global_user_not_found'
+  | 'missing_product_entitlement'
   | 'code_not_found'
   | 'code_disabled'
   | 'code_used'
@@ -126,13 +118,21 @@ export type CommunityGlowsEntitlementReasonCode =
 
 export type CommunityGlowsEntitlementSnapshot = {
   hasAccess: boolean
-  accessState: 'lifetime_active' | 'trial_active' | 'trial_expired' | 'inactive'
+  accessState:
+    | 'lifetime_active'
+    | 'trial_active'
+    | 'trial_expired'
+    | 'trial_exhausted'
+    | 'inactive'
   planId: string | null
   source: string | null
   globalUserId: string | null
   trialStartedAt: number | null
   trialEndsAt: number | null
   trialExpiresAt: number | null
+  trialAttempt: number | null
+  trialRestartsRemaining: number
+  trialRestartEligible: boolean
   reasonCode: CommunityGlowsEntitlementReasonCode
 }
 
@@ -443,6 +443,12 @@ export function isActiveAccessStatus(status: string): boolean {
 }
 
 function isActiveSuiteEntitlement(entry: BridgeEntitlement, now = Date.now()) {
+  if (
+    entry.source === 'product_default' ||
+    (entry.status === 'active' && entry.plan === 'free')
+  ) {
+    return false
+  }
   if (entry.status === 'active') {
     return true
   }
@@ -494,10 +500,12 @@ export function resolveCommunityGlowsEntitlementSnapshot({
   globalUserId,
   entitlements,
   now = Date.now(),
+  trialEligible = false,
 }: {
   globalUserId: string | null
   entitlements: BridgeEntitlement[]
   now?: number
+  trialEligible?: boolean
 }): CommunityGlowsEntitlementSnapshot {
   const activeSocialEntitlements = entitlements.filter(
     (entry) =>
@@ -510,17 +518,21 @@ export function resolveCommunityGlowsEntitlementSnapshot({
   const activeTrial = activeSocialEntitlements.find(
     (entry) => entry.status === 'trialing'
   )
-  const expiredTrial = entitlements.find(
-    (entry) =>
-      entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
-      entry.status === 'trialing' &&
-      typeof entry.trialExpiresAt === 'number' &&
-      entry.trialExpiresAt <= now
+  const trials = entitlements
+    .filter(
+      (entry) =>
+        entry.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+        entry.source === 'product_trial'
+    )
+    .sort((left, right) =>
+      (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0)
+    )
+  const latestTrial = trials[0]
+  const trialRestartsRemaining = Math.max(
+    0,
+    SUITE_TRIAL_MAX_CYCLES - Math.max(1, trials.length)
   )
-  const defaultActiveEntitlement = activeSocialEntitlements.find(
-    (entry) => entry.status === 'active'
-  )
-  const socialEntitlement = paidEntitlement ?? activeTrial ?? defaultActiveEntitlement
+  const socialEntitlement = paidEntitlement ?? activeTrial
   if (!globalUserId) {
     return {
       hasAccess: false,
@@ -531,22 +543,29 @@ export function resolveCommunityGlowsEntitlementSnapshot({
       trialStartedAt: null,
       trialEndsAt: null,
       trialExpiresAt: null,
+      trialAttempt: null,
+      trialRestartsRemaining: 2,
+      trialRestartEligible: false,
       reasonCode: 'account_not_found',
     }
   }
 
   if (!socialEntitlement) {
-    if (expiredTrial) {
+    if (latestTrial) {
+      const exhausted = trialRestartsRemaining === 0
       return {
         hasAccess: false,
-        accessState: 'trial_expired',
-        planId: expiredTrial.plan ?? COMMUNITYGLOWS_DEFAULT_PLAN,
-        source: expiredTrial.source ?? null,
+        accessState: exhausted ? 'trial_exhausted' : 'trial_expired',
+        planId: latestTrial.plan ?? COMMUNITYGLOWS_DEFAULT_PLAN,
+        source: latestTrial.source ?? null,
         globalUserId,
-        trialStartedAt: expiredTrial.trialStartedAt ?? null,
-        trialEndsAt: expiredTrial.trialExpiresAt ?? null,
-        trialExpiresAt: expiredTrial.trialExpiresAt ?? null,
-        reasonCode: 'trial_expired',
+        trialStartedAt: latestTrial.trialStartedAt ?? null,
+        trialEndsAt: latestTrial.trialExpiresAt ?? null,
+        trialExpiresAt: latestTrial.trialExpiresAt ?? null,
+        trialAttempt: latestTrial.trialAttempt ?? trials.length,
+        trialRestartsRemaining,
+        trialRestartEligible: trialEligible && !exhausted,
+        reasonCode: exhausted ? 'trial_exhausted' : 'trial_expired',
       }
     }
     return {
@@ -558,7 +577,10 @@ export function resolveCommunityGlowsEntitlementSnapshot({
       trialStartedAt: null,
       trialEndsAt: null,
       trialExpiresAt: null,
-      reasonCode: 'global_user_not_found',
+      trialAttempt: null,
+      trialRestartsRemaining: 2,
+      trialRestartEligible: false,
+      reasonCode: 'missing_product_entitlement',
     }
   }
 
@@ -572,6 +594,11 @@ export function resolveCommunityGlowsEntitlementSnapshot({
     trialStartedAt: isTrial ? (socialEntitlement.trialStartedAt ?? null) : null,
     trialEndsAt: isTrial ? (socialEntitlement.trialExpiresAt ?? null) : null,
     trialExpiresAt: isTrial ? (socialEntitlement.trialExpiresAt ?? null) : null,
+    trialAttempt: isTrial
+      ? (socialEntitlement.trialAttempt ?? trials.length)
+      : null,
+    trialRestartsRemaining,
+    trialRestartEligible: false,
     reasonCode: 'active_entitlement',
   }
 }
@@ -594,10 +621,9 @@ export function resolveReplayGlowzEntitlementSnapshot({
     }
   }
 
-  const canonical = entitlements.find(
-    (entry) =>
-      entry.productId === REPLAYGLOWZ_PRODUCT_ID &&
-      isActiveAccessStatus(entry.status)
+  const canonical = selectPreferredActiveEntitlement(
+    entitlements,
+    REPLAYGLOWZ_PRODUCT_ID
   )
   if (canonical) {
     return {
@@ -609,10 +635,10 @@ export function resolveReplayGlowzEntitlementSnapshot({
   }
 
   return {
-    hasAccess: true,
+    hasAccess: false,
     globalUserId,
-    matchedProductId: REPLAYGLOWZ_PRODUCT_ID,
-    reasonCode: 'default_free_entitlement',
+    matchedProductId: null,
+    reasonCode: 'missing_product_entitlement',
   }
 }
 

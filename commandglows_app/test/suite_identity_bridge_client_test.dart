@@ -129,7 +129,7 @@ void main() {
             "globalUserId": "gu_123",
             "accounts": [],
             "entitlements": [
-              {"productId": "commandglows_app", "status": "trialing", "trialExpiresAt": 1}
+              {"productId": "commandglows_app", "status": "trialing", "trialExpiresAt": 1, "trialAttempt": 2, "trialRestartsRemaining": 1, "trialRestartEligible": true}
             ]
           }
           ''',
@@ -152,6 +152,35 @@ void main() {
     final entitlement = identity.entitlements.single;
     expect(entitlement.trialExpiresAt, isNotNull);
     expect(entitlement.grantsAccess, isFalse);
+    expect(entitlement.trialAttempt, 2);
+    expect(entitlement.trialRestartsRemaining, 1);
+    expect(entitlement.canRestartTrial, isTrue);
+  });
+
+  test('starts checkout with the handoff in a POST body, never in the URL', () async {
+    const handoff = 'signed-sensitive-handoff';
+    final client = SuiteIdentityBridgeClient(
+      httpClient: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/api/commerce/checkout');
+        expect(request.url.toString(), isNot(contains(handoff)));
+        expect(request.body, contains(handoff));
+        return http.Response(
+          '{"checkoutUrl":"https://checkout.stripe.test/session"}',
+          200,
+          headers: const {'content-type': 'application/json'},
+        );
+      }),
+    );
+
+    final checkout = await client.startStripeCheckout(
+      bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+        bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+      ),
+      checkoutIdentityToken: handoff,
+    );
+
+    expect(checkout, Uri.parse('https://checkout.stripe.test/session'));
   });
 
   test('missing bridge url fails closed without network call', () async {

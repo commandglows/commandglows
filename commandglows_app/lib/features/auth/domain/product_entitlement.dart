@@ -36,6 +36,9 @@ class ProductEntitlement {
     this.environment,
     this.trialStartedAt,
     this.trialExpiresAt,
+    this.trialAttempt,
+    this.trialRestartsRemaining,
+    this.trialRestartEligible = false,
     this.updatedAt,
   });
 
@@ -47,9 +50,16 @@ class ProductEntitlement {
   final String? environment;
   final DateTime? trialStartedAt;
   final DateTime? trialExpiresAt;
+  final int? trialAttempt;
+  final int? trialRestartsRemaining;
+  final bool trialRestartEligible;
   final DateTime? updatedAt;
 
   bool get grantsAccess {
+    if (source == 'product_default' ||
+        (status == ProductEntitlementStatus.active && plan == 'free')) {
+      return false;
+    }
     if (status == ProductEntitlementStatus.active) {
       return true;
     }
@@ -62,4 +72,10 @@ class ProductEntitlement {
     }
     return false;
   }
+
+  bool get canRestartTrial =>
+      status == ProductEntitlementStatus.trialing &&
+      !grantsAccess &&
+      trialRestartEligible &&
+      (trialRestartsRemaining ?? 0) > 0;
 }

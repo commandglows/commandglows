@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/bootstrap/suite_identity_bridge_bootstrap.dart';
 import '../../../core/diagnostics/app_diagnostics.dart';
@@ -23,21 +24,60 @@ class AuthGateScreen extends ConsumerStatefulWidget {
 
 class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   bool _isRestarting = false;
+  bool _isPurchasing = false;
+  String? _restartError;
+  String? _purchaseError;
+
+  Future<void> _startPurchase(String? checkoutIdentityToken) async {
+    if (checkoutIdentityToken == null) return;
+    setState(() {
+      _isPurchasing = true;
+      _purchaseError = null;
+    });
+    try {
+      final checkoutUri = await ref
+          .read(suiteIdentityBridgeClientProvider)
+          .startStripeCheckout(
+            bridgeConfig: SuiteIdentityBridgeBootstrap.config,
+            checkoutIdentityToken: checkoutIdentityToken,
+          );
+      if (checkoutUri == null ||
+          !await launchUrl(checkoutUri, mode: LaunchMode.externalApplication)) {
+        throw StateError('checkout_unavailable');
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _purchaseError =
+              'Le checkout Stripe ne peut pas être ouvert pour le moment.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isPurchasing = false);
+    }
+  }
 
   Future<void> _restartTrial() async {
-    setState(() => _isRestarting = true);
+    setState(() {
+      _isRestarting = true;
+      _restartError = null;
+    });
     try {
       final session = await ref.read(authSessionProvider.future);
       if (!session.isSignedIn ||
           session.isLocalFallback ||
           session.user == null) {
+        setState(() {
+          _restartError =
+              'Reconnectez-vous à votre compte pour demander une relance.';
+        });
         return;
       }
       final bridgeClient = ref.read(suiteIdentityBridgeClientProvider);
       final resolveIdToken = ref.read(firebaseIdTokenResolverProvider);
       final installationIdStore = ref.read(installationIdStoreProvider);
       final user = session.user!;
-      await bridgeClient.resolveFromFirebaseSession(
+      final identity = await bridgeClient.resolveFromFirebaseSession(
         bridgeConfig: SuiteIdentityBridgeBootstrap.config,
         firebaseAccount: SuiteIdentityAccount(
           provider: SuiteIdentityProvider.firebase,
@@ -48,7 +88,23 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         installationId: await installationIdStore.readOrCreate(),
         requestTrialRestart: true,
       );
+      if (identity.statusFor(ProductId.commandglowsApp) !=
+          SuiteAccountStatus.accessActive) {
+        final entitlement = identity.entitlementFor(ProductId.commandglowsApp);
+        setState(() {
+          _restartError = (entitlement?.trialAttempt ?? 0) >= 3
+              ? 'Les deux relances autorisées ont déjà été utilisées. L’achat est désormais nécessaire.'
+              : 'La relance n’a pas pu être accordée. Vérifiez votre connexion ou choisissez une offre.';
+        });
+      }
       ref.invalidate(suiteIdentityProvider);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _restartError =
+              'La relance n’a pas pu être vérifiée. Réessayez dans quelques instants.';
+        });
+      }
     } finally {
       if (mounted) setState(() => _isRestarting = false);
     }
@@ -63,34 +119,37 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           return const SignInScreen();
         }
         if (session.isLocalFallback) {
-          return const AppShellScreen();
+          return const SignInScreen(remoteOnly: true);
         }
         final identityAsync = ref.watch(suiteIdentityProvider);
         return identityAsync.when(
           loading: () => const _AccessLoadingScreen(),
           error: (error, stackTrace) => TrialAccessScreen(
             entitlement: null,
-            checkoutIdentityToken: null,
             isRestarting: _isRestarting,
+            isPurchasing: _isPurchasing,
             onRestart: _restartTrial,
+            restartError: _restartError,
+            purchaseError: _purchaseError,
           ),
           data: (identity) {
             if (identity.statusFor(ProductId.commandglowsApp) ==
                 SuiteAccountStatus.accessActive) {
               return const AppShellScreen();
             }
-            ProductEntitlement? commandGlowsEntitlement;
-            for (final entitlement in identity.entitlements) {
-              if (entitlement.productId == ProductId.commandglowsApp) {
-                commandGlowsEntitlement = entitlement;
-                break;
-              }
-            }
+            final commandGlowsEntitlement = identity.entitlementFor(
+              ProductId.commandglowsApp,
+            );
             return TrialAccessScreen(
               entitlement: commandGlowsEntitlement,
-              checkoutIdentityToken: identity.checkoutIdentityToken,
               isRestarting: _isRestarting,
+              isPurchasing: _isPurchasing,
+              onPurchase: identity.checkoutIdentityToken == null
+                  ? null
+                  : () => _startPurchase(identity.checkoutIdentityToken),
               onRestart: _restartTrial,
+              restartError: _restartError,
+              purchaseError: _purchaseError,
             );
           },
         );

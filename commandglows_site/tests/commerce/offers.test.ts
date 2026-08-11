@@ -1,4 +1,5 @@
 import {
+  getCommerceOffers,
   getCommerceOffer,
   getOfferProviderConfig,
   getOfferProviderCandidates,
@@ -10,117 +11,54 @@ import {
   COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID,
   COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID,
   COMMANDGLOWS_APP_POWER_LTD_OFFER_ID,
+  COMMANDGLOWS_FORMATION_OFFER,
 } from '@/lib/commerce/offers'
 
-function withEnv(vars: Record<string, string | undefined>, test: () => void) {
-  const previous = { ...process.env }
-  Object.assign(process.env, vars)
-  try {
-    test()
-  } finally {
-    process.env = previous as NodeJS.ProcessEnv
-  }
-}
-
-describe('commerce offer configuration', () => {
-  test('returns communityglows offer config and allowlist', () => {
-    const offer = getCommerceOffer(COMMUNITYGLOWS_LTD_OFFER_ID)
-    expect(offer).toMatchObject({
-      id: COMMUNITYGLOWS_LTD_OFFER_ID,
-      productId: 'communityglows',
-      plan: 'lifetime_deal',
-    })
-
-    expect(isAllowedCommunityGlowsOffer(COMMUNITYGLOWS_LTD_OFFER_ID, 'communityglows', 'lifetime_deal')).toBe(
-      true
-    )
-    expect(isAllowedCommunityGlowsOffer(COMMUNITYGLOWS_LTD_OFFER_ID, 'communityglows', 'monthly')).toBe(
-      false
-    )
+describe('Stripe-only commerce offer configuration', () => {
+  test('allowlists Stripe as the sole provider for every offer', () => {
+    for (const offer of Object.values(getCommerceOffers())) {
+      expect(offer.providers).toEqual(['stripe'])
+      expect(getOfferProviderCandidates(offer.id)).toEqual(['stripe'])
+      expect(normalizeCommerceProviderOrder(offer.id)).toEqual(['stripe'])
+    }
   })
 
-  test('normalizes provider order to configured providers', () => {
-    const candidates = normalizeCommerceProviderOrder(COMMUNITYGLOWS_LTD_OFFER_ID)
-    expect(candidates.includes('lemonsqueezy')).toBe(true)
-    expect(candidates.includes('polar')).toBe(true)
-
-    const allowed = getOfferProviderCandidates(COMMUNITYGLOWS_LTD_OFFER_ID)
-    expect(allowed).toEqual(candidates)
+  test('keeps canonical product and plan mappings', () => {
+    expect(getCommerceOffer(COMMUNITYGLOWS_LTD_OFFER_ID)).toMatchObject({
+      productId: 'communityglows', plan: 'lifetime_deal', providers: ['stripe'],
+    })
+    expect(isAllowedCommunityGlowsOffer(
+      COMMUNITYGLOWS_LTD_OFFER_ID, 'communityglows', 'lifetime_deal'
+    )).toBe(true)
+    expect(getCommerceOffer(COMMANDGLOWS_FORMATION_OFFER)).toMatchObject({
+      productId: 'commandglows_formation', plan: 'formation', providers: ['stripe'],
+    })
+    for (const [offerId, plan] of [
+      [COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID, 'focus'],
+      [COMMANDGLOWS_APP_POWER_LTD_OFFER_ID, 'power'],
+      [COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID, 'control'],
+      [COMMANDGLOWS_APP_COMMAND_LTD_OFFER_ID, 'command'],
+    ] as const) {
+      expect(getCommerceOffer(offerId)).toMatchObject({
+        productId: 'commandglows_app', plan, providers: ['stripe'],
+      })
+    }
   })
 
-  test('returns CommandGlows founder offer configs', () => {
-    expect(getCommerceOffer(COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID)).toMatchObject({
-      productId: 'commandglows_app',
-      plan: 'focus',
-      providers: ['stripe'],
-    })
-    expect(getCommerceOffer(COMMANDGLOWS_APP_POWER_LTD_OFFER_ID)).toMatchObject({
-      productId: 'commandglows_app',
-      plan: 'power',
-      providers: ['stripe'],
-    })
-    expect(getCommerceOffer(COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID)).toMatchObject({
-      productId: 'commandglows_app',
-      plan: 'control',
-      providers: ['stripe'],
-    })
-    expect(getCommerceOffer(COMMANDGLOWS_APP_COMMAND_LTD_OFFER_ID)).toMatchObject({
-      productId: 'commandglows_app',
-      plan: 'command',
-      providers: ['stripe'],
-    })
+  test('resolves only environment-backed Stripe Price IDs', () => {
+    expect(getOfferProviderConfig(COMMUNITYGLOWS_LTD_OFFER_ID, 'stripe', {
+      STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID: 'price_community',
+    })).toEqual({ provider: 'stripe', priceId: 'price_community' })
+    expect(getOfferProviderConfig(COMMANDGLOWS_FORMATION_OFFER, 'stripe', {
+      STRIPE_COMMANDGLOWS_FORMATION_PRICE_ID: 'price_formation',
+    })).toEqual({ provider: 'stripe', priceId: 'price_formation' })
+    expect(getOfferProviderConfig(COMMANDGLOWS_APP_POWER_LTD_OFFER_ID, 'stripe', {
+      STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID: 'price_power',
+    })).toEqual({ provider: 'stripe', priceId: 'price_power' })
+    expect(getOfferProviderConfig(COMMUNITYGLOWS_LTD_OFFER_ID, 'stripe', {})).toBeNull()
   })
 
-  test('reads lemonSqueezy provider config from environment', () => {
-    withEnv(
-      {
-        LEMONSQUEEZY_API_KEY: 'api-key-123',
-        LEMONSQUEEZY_STORE_ID: 'store-456',
-        LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID: 'variant-789',
-        STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID: 'price_commandglows_power',
-        POLAR_COMMANDGLOWS_PRODUCT_ID: 'polar-commandglows',
-      },
-      () => {
-        const lemonConfig = getOfferProviderConfig(
-          COMMUNITYGLOWS_LTD_OFFER_ID,
-          'lemonsqueezy'
-        )
-        expect(lemonConfig).toEqual({
-          provider: 'lemonsqueezy',
-          productId: undefined,
-          variantId: 'variant-789',
-          storeId: 'store-456',
-        })
-
-        const polarConfig = getOfferProviderConfig(
-          COMMUNITYGLOWS_LTD_OFFER_ID,
-          'polar'
-        )
-        expect(polarConfig).toEqual({
-          provider: 'polar',
-          productId: 'polar-commandglows',
-        })
-
-        const commandglowsConfig = getOfferProviderConfig(
-          COMMANDGLOWS_APP_POWER_LTD_OFFER_ID,
-          'stripe'
-        )
-        expect(commandglowsConfig).toEqual({
-          provider: 'stripe',
-          priceId: 'price_commandglows_power',
-        })
-      }
-    )
-  })
-
-  test('returns no provider config without required env', () => {
-    withEnv({}, () => {
-      expect(getOfferProviderConfig(COMMUNITYGLOWS_LTD_OFFER_ID, 'lemonsqueezy')).toBeNull()
-      expect(getOfferProviderConfig(COMMUNITYGLOWS_LTD_OFFER_ID, 'polar')).toBeNull()
-    })
-  })
-
-  test('keeps legacy aliases accessible for source/plan metadata', () => {
+  test('keeps the historical CommunityGlows alias', () => {
     expect(COMMUNITYGLOWS_LETTER).toBe(COMMUNITYGLOWS_LTD_OFFER_ID)
   })
 })

@@ -1,56 +1,42 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.26"
-project: "WinGlows Suite"
+artifact_version: "2.0.0"
+project: "CommandGlows"
 created: "2026-05-17"
 created_at: "2026-05-17 08:05:27 UTC"
-updated: "2026-06-10"
-updated_at: "2026-06-10 09:37:22 UTC"
-status: active
-source_skill: sf-spec
+updated: "2026-08-11"
+updated_at: "2026-08-11 19:25:00 UTC"
+status: superseded
+superseded_by: "/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
+source_skill: sg-docs
 source_model: "GPT-5 Codex"
 scope: "unified-suite-authentication"
 owner: "Diane"
-user_story: "En tant que builder de la suite WinGlows, je veux une identité client unique avec des droits séparés par produit, afin qu'un utilisateur puisse réutiliser le même compte partout sans recevoir automatiquement accès à tous les produits."
+user_story: "Historical: establish one suite identity with product-scoped access; current identity architecture and commercial entitlement behavior are owned by the successor documents."
 confidence: medium
 risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "winflows.com / WinGlows Formation"
-  - "WinGlows Flutter app"
-  - "ReplayGlowz / YouTube product"
-  - "VoiceFlowz historical tracker, now legacy naming for WinGlows app"
+  - "commandglows_app"
+  - "commandglows_formation"
+  - "communityglows"
+  - "replayglowz"
   - "Firebase Auth"
-  - "Google Cloud Identity Platform"
-  - "Firestore Security Rules"
   - "Clerk"
   - "Convex"
-  - "Polar"
-  - "Google Play / App Store future purchases"
+  - "Stripe Managed Payments"
 depends_on:
-  - artifact: "docs/explorations/2026-05-16-unified-suite-auth.md"
-    artifact_version: "1.0.2"
-    required_status: "draft"
-  - artifact: "docs/DECISIONS.md"
-    artifact_version: "1.0.3"
-    required_status: "reviewed"
   - artifact: "shipglows_data/technical/architecture.md"
-    artifact_version: "1.0.1"
+    artifact_version: "1.5.0"
     required_status: "reviewed"
-  - artifact: "shipglows_data/technical/guidelines.md"
-    artifact_version: "1.0.1"
-    required_status: "reviewed"
-  - artifact: "shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
-    artifact_version: "1.0.0"
-    required_status: "ready"
-  - artifact: "/home/claude/shipglows_data/specs/master-auth-playbook.md"
-    artifact_version: "0.1.0"
+  - artifact: "shipglows_data/technical/payment-activation-entitlements.md"
+    artifact_version: "1.3.0"
     required_status: "draft"
-  - artifact: "/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication.md"
-    artifact_version: "1.0.9"
-    required_status: "reviewed"
+  - artifact: "/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
+    artifact_version: "1.3.0"
+    required_status: "ready"
 supersedes: []
 evidence:
   - "User request 2026-05-17: one account across winflows.com, WinGlows app, and YouTube product, with access or no access per product."
@@ -74,16 +60,31 @@ evidence:
   - "Legacy Google Cloud project `winglowz` deletion requested 2026-05-23 after migration to `winglowz-suite`."
   - "User correction 2026-05-23: ReplayGlowz is the canonical YouTube product and `product_id=replayglowz`; the old YouTube product naming is legacy only."
   - "User decision 2026-06-10: Diane prefers one central ledger across her operated products because she is the sole operator and has no current plan to sell separate businesses."
-next_step: "ship the Flutter web init/id-token error handling patch, redeploy `winglowz-app`, then rerun Google web and email/password auth smoke"
+  - "Operator decision 2026-08-11: active product IDs are commandglows_app, commandglows_formation, communityglows and the other canonical suite IDs; Stripe Managed Payments is the sole active direct-payment provider."
+  - "Documentation reconciliation 2026-08-11: this legacy implementation chantier is superseded because its WinGlows branding, Polar routes and first-slice assumptions no longer describe the active runtime."
+next_review: "2027-08-11"
+next_step: "Use shipglows_data/technical/architecture.md for active identity architecture and /home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md for entitlement and payment policy."
 ---
+
+# Superseded Notice
+
+This document is a preserved historical implementation record for the former WinGlows authentication chantier. It is not active runtime or provider guidance. References below to WinGlows/WinFlow naming, `winglowz_app`, `winglowz_formation`, Polar routes, Polar webhooks, former domains, and former deployment steps describe dated provenance only.
+
+Current authority is split deliberately:
+
+- `shipglows_data/technical/architecture.md` owns the active CommandGlows identity and bridge architecture, including the runtime IDs `commandglows_app`, `commandglows_formation`, and `communityglows`.
+- `/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md` owns the suite-wide 30-day trial, two-restart, purchase-required, and Stripe-only contract.
+- `shipglows_data/technical/payment-activation-entitlements.md` owns the current code-adjacent payment and entitlement behavior.
+
+Do not promote an unchecked task, route, provider statement, or next step from the historical body without reconciling it against those successors.
 
 # Title
 
 Unified WinGlows Suite Authentication
 
-# Status
+# Historical Status (superseded)
 
-Ready for `/sf-start` after the 2026-05-19 readiness gate. The product direction and provider gate are explicit: Clerk is the long-term suite identity provider, Firebase Auth remains the WinGlows Android app adapter for now, and a server-owned bridge maps Firebase users to `global_user_id`. The first proof pair is WinGlows Formation plus the WinGlows Android app. The bridge writes a server-owned Firestore `suiteAccess/{uid}` mirror for `winglowz_app`, app product stores require suite entitlement before using Firestore, Formation Polar grant/refund/revoke paths now call an internal sync endpoint that recomputes that mirror from Convex outside the login bridge path, and the Firebase bridge rejects revoked/disabled Firebase sessions through Firebase Admin revocation checks. The WinGlows Formation repository is available at `/home/claude/winglowz`, and active app docs now distinguish legacy direct app-stack Clerk from Clerk as suite identity provider.
+Historical snapshot: this document was ready for `/sf-start` after the 2026-05-19 readiness gate. The product direction and provider gate were explicit: Clerk was the long-term suite identity provider, Firebase Auth remained the WinGlows Android app adapter, and a server-owned bridge mapped Firebase users to `global_user_id`. The first proof pair was WinGlows Formation plus the WinGlows Android app. The bridge wrote a server-owned Firestore `suiteAccess/{uid}` mirror for `winglowz_app`, app product stores required suite entitlement before using Firestore, Formation Polar grant/refund/revoke paths called an internal sync endpoint that recomputed that mirror from Convex outside the login bridge path, and the Firebase bridge rejected revoked/disabled Firebase sessions through Firebase Admin revocation checks. This paragraph is retained only as dated provenance.
 
 # User Story
 
@@ -548,8 +549,9 @@ Resolved decisions:
 | 2026-05-23 19:33:42 UTC | sf-auth-debug | GPT-5 Codex | Read-only verification of the current WinGlows Flutter web auth path after ReplayGlowz ClerkJS bridge discussion. | Confirmed: `winglowz_app` web currently uses Firebase Auth plus `google_sign_in_web` rendered GIS button, then maps the Firebase uid/id token through the suite identity bridge; no ClerkJS bridge exists in `web/index.html`, `auth_session_provider.dart`, or auth data code. | keep current Firebase web smoke path for WinGlows app unless a new spec explicitly migrates Flutter web to ClerkJS |
 | 2026-05-24 14:08:24 UTC | sf-auth-debug | GPT-5 Codex | Verified hosted WinGlows Formation + Flutter web auth flows after env/DNS setup | Partial and patched locally: `app.winglowz.com` initializes Firebase, Email/Password reaches Firebase with controlled invalid-credential UX, Google GIS button renders and opens Google, and focused email/password fields expose browser autofill metadata; production `www.winglowz.com/fr/signin` is blocked by CSP for Clerk custom-domain scripts and `/api/bridge/firebase` still returns `firebase_admin_not_configured`. Local Formation patch now allows Clerk custom-domain CSP and reads bridge secrets through server runtime env. | push/redeploy `/home/claude/winglowz`, run `/sf-prod winglowz`, then rerun real account suite-auth smoke |
 | 2026-06-10 09:37:22 UTC | sf-spec | GPT-5 Codex | Formalized the operator decision for entitlement ledger ownership after Temu Shopping Lists entitlement planning | Updated the active suite-auth spec: one suite-owned ledger is the default across Diane-operated products, with second ledgers allowed only for documented separation or migration exceptions | `/sf-ready Entitlements and access model for Temu Shopping Lists`, then map `temu_shopping_lists` into the suite ledger before protected sync or monetization |
+| 2026-08-11 19:25:00 UTC | sg-docs | GPT-5 Codex | Reconciled the document after the CommandGlows identity reset and suite-wide Stripe migration. | Spec marked superseded; historical WinGlows and Polar implementation detail preserved, while active authority now points to current architecture and the canonical commercial contract. | Follow the successor documents; do not execute historical provider or route tasks from this record. |
 
-# Current Chantier Flow
+# Historical Chantier Flow (superseded)
 
 - sf-spec: done, reviewed after provider-decision update.
 - sf-ready: ready.
@@ -562,4 +564,4 @@ Resolved decisions:
 - sf-test/sf-auth-debug: partial on 2026-05-24; `app.winglowz.com` initializes Firebase, Email/Password reaches Firebase with controlled invalid-credential UX, Google web reaches the Google identifier step, and focused email/password fields expose browser autofill metadata. `www.winglowz.com/fr/signin` currently fails the Clerk UI load because deployed CSP blocks `clerk.winglowz.com` scripts, and the deployed Firebase bridge still returns `firebase_admin_not_configured`.
 - sf-prod: partial on 2026-05-24; Android CI is green against `winglowz-suite`, Firestore rules/indexes deploy to `winglowz-suite`, `winglowz-app` Vercel production is Ready, and local Formation patch now addresses the deployed CSP/runtime-env blockers. Hosted proof is pending push/redeploy.
 
-Next command: push/redeploy `/home/claude/winglowz`, run `/sf-prod winglowz`, then rerun real account suite-auth smoke across `www.winglowz.com` and `app.winglowz.com`.
+Historical next command (no longer actionable): push/redeploy the former WinGlows surfaces and rerun their suite-auth smoke. Current work must instead follow the successor documents named in the superseded notice.

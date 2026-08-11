@@ -1,7 +1,7 @@
 ---
 artifact: architecture_context
 metadata_schema_version: '1.0'
-artifact_version: '1.1.0'
+artifact_version: '1.5.0'
 project: commandglows
 created: '2026-05-17'
 updated: '2026-08-11'
@@ -18,7 +18,7 @@ evidence:
   - src/content/config.ts
   - src/middleware/index.ts
   - src/middleware/i18n.ts
-  - src/pages/api/polar/checkout.ts
+  - src/pages/api/checkout/start.ts
   - src/pages/api/bridge/entitlement.ts
   - src/pages/api/newsletter/subscribe.ts
   - src/pages/api/features/[key]/vote.ts
@@ -29,13 +29,13 @@ evidence:
   - commandglows_site/src/lib/commerce/checkoutIdentity.ts
   - commandglows_site/src/pages/api/commerce/webhooks/stripe.ts
   - commandglows_app/lib/features/auth/domain/suite_identity.dart
+  - commandglows_app/lib/core/router/app_router.dart
 linked_systems:
   - src/content
   - src/pages
   - src/middleware
   - convex
   - Clerk
-  - Polar
   - Resend
   - Stripe Managed Payments
   - Firebase
@@ -44,7 +44,6 @@ external_dependencies:
   - Vercel
   - Clerk
   - Convex
-  - Polar
   - Resend
   - Stripe
   - Firebase
@@ -79,11 +78,10 @@ Describe the stable system boundaries for CommandGlows so technical and docs cha
 ## Entrypoints
 
 - `commandglows_site/src/middleware/index.ts`
-- `commandglows_site/src/pages/api/polar/checkout.ts`
+- `commandglows_site/src/pages/api/checkout/start.ts`
 - `commandglows_site/src/pages/api/commerce/checkout.ts`
 - `commandglows_site/src/pages/api/commerce/webhooks/stripe.ts`
 - `commandglows_site/src/pages/api/bridge/firebase.ts`
-- `commandglows_site/src/pages/api/polar/webhook.ts`
 - `commandglows_site/src/pages/api/newsletter/subscribe.ts`
 - `commandglows_site/src/pages/api/clerk/webhook.ts`
 - `commandglows_site/src/pages/api/features/[key]/vote.ts`
@@ -120,19 +118,33 @@ Typed collections in `src/content/config.ts` define valid shapes for:
 
 Astro API routes act as thin integration controllers for:
 
-- Polar checkout
-- Polar webhook proxying
+- Clerk-authenticated purchase initiation for public and Formation surfaces
 - newsletter subscribe and unsubscribe
 - Clerk webhook intake
 - roadmap voting and suggestion intake
 - suite bridge endpoints:
   - `POST /api/bridge/firebase` maps Firebase users to suite identities, mirrors `commandglows_app` access into Firestore, and issues a short-lived HMAC-signed checkout identity handoff when configured.
   - `POST /api/bridge/sync` refreshes the Firestore access mirror by `globalUserId`.
-  - `POST /api/bridge/entitlement` verifies a Clerk session token server-side and returns a redacted ReplayGlowz entitlement snapshot for `product_id=replayglowz`; old YouTube-product ids are no longer accepted. When a recognized Clerk account has no active ReplayGlowz entitlement yet, the bridge persists a product-scoped `replayglowz/free` default grant instead of granting suite-wide access.
+  - `POST /api/bridge/entitlement` verifies a Clerk session token server-side and returns a fail-closed ReplayGlowz entitlement snapshot for `product_id=replayglowz`; old YouTube-product ids are no longer accepted, and a recognized installation can receive only the shared bounded trial policy.
 - commerce endpoints:
-  - `GET|POST /api/commerce/checkout` resolves an allowlisted offer and provider; CommandGlows purchases require a valid signed app handoff and explicitly create a Stripe Managed Payments Checkout Session.
+  - `POST /api/checkout/start` authenticates Clerk-backed public or Formation purchases, keeps the product-bound handoff server-side, and redirects directly to Stripe.
+  - `POST /api/commerce/checkout` accepts Stripe only; every offer requires a valid signed product/environment handoff in the request body and an environment-backed Price ID before creating a Stripe Managed Payments Checkout Session. Browser-visible GET handoffs are rejected.
   - `POST /api/commerce/webhooks/stripe` verifies the exact raw body and `Stripe-Signature`, then maps paid Checkout, successful full refund, and dispute events to the generic Convex commerce processor.
-  - `POST /api/commerce/webhooks/lemon-squeezy` remains active for the separate CommunityGlows offer.
+
+Flutter route authorization is fail-closed: direct product routes require a
+remote authenticated session and an active CommandGlows entitlement from the
+suite bridge. Local authentication fallback and local data stores do not grant
+access. Trial snapshots include the server-owned attempt number, restart count
+remaining, and restart eligibility used by the purchase/restart gate.
+
+Every registered suite product is governed by the same reusable Convex policy:
+one initial 30-day cycle, two user-triggered 30-day restarts, then paid access
+only. Identity synchronization creates no entitlement; historical
+`product_default` rows remain stored but are non-granting. CommunityGlows,
+All eight registered suite products can reach the same product-scoped trial
+writer through `bridge:ensureSuiteProductTrialByGlobalUserId`; dedicated
+CommandGlows, CommunityGlows, ReplayGlowz and Temu adapters remain thin wrappers.
+Formation access accepts only active paid or non-expired trial entitlements.
 
 ### Backend state layer
 
@@ -158,7 +170,8 @@ Convex is the primary state store. Current tables in `convex/schema.ts` are:
 - Typed content collections continue to define valid docs, blog, product, and service content.
 - API routes should stay thin; durable business state belongs in Convex or provider systems.
 - Checkout redirects never grant access. Only signed, idempotent provider events may change paid entitlement state.
-- Raw client-supplied global user IDs are never trusted for CommandGlows checkout identity.
+- Raw client-supplied global user IDs are never trusted for any suite checkout identity.
+- Convex classifies every non-Stripe commerce event as non-granting `pending_review`.
 
 ## Validation
 

@@ -14,6 +14,40 @@ class SuiteIdentityBridgeClient {
 
   final http.Client _httpClient;
 
+  Future<Uri?> startStripeCheckout({
+    required SuiteIdentityBridgeRuntimeConfig bridgeConfig,
+    required String checkoutIdentityToken,
+    String offerId = 'commandglows_app/power',
+  }) async {
+    final bridgeUri = bridgeConfig.bridgeUri;
+    if (!bridgeConfig.isConfigured || bridgeUri == null) return null;
+    final checkoutUri = bridgeUri.resolve('/api/commerce/checkout');
+    try {
+      final response = await _httpClient.post(
+        checkoutUri,
+        headers: const <String, String>{
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'offerId': offerId,
+          'provider': 'stripe',
+          'source': 'commandglows-app',
+          'sourceRef': 'trial-access-screen',
+          'identityToken': checkoutIdentityToken,
+          'successUrl': 'https://www.commandglows.com/purchase/success',
+          'cancelUrl': 'https://www.commandglows.com/purchase/cancel',
+        }),
+      );
+      if (response.statusCode != 200) return null;
+      final payload = _decodeJsonObject(response.body);
+      final checkoutUrl = _parseNonEmptyString(payload?['checkoutUrl']);
+      return checkoutUrl == null ? null : Uri.tryParse(checkoutUrl);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<SuiteIdentitySnapshot> resolveFromFirebaseSession({
     required SuiteIdentityBridgeRuntimeConfig bridgeConfig,
     required SuiteIdentityAccount firebaseAccount,
@@ -270,6 +304,16 @@ class SuiteIdentityBridgeClient {
           trialExpiresAt: _parseDateTime(
             normalized['trialExpiresAt'] ?? normalized['trial_expires_at'],
           ),
+          trialAttempt: _parseInteger(
+            normalized['trialAttempt'] ?? normalized['trial_attempt'],
+          ),
+          trialRestartsRemaining: _parseInteger(
+            normalized['trialRestartsRemaining'] ??
+                normalized['trial_restarts_remaining'],
+          ),
+          trialRestartEligible:
+              normalized['trialRestartEligible'] == true ||
+              normalized['trial_restart_eligible'] == true,
           updatedAt: _parseDateTime(
             _parseNonEmptyString(normalized['updatedAt']) ??
                 _parseNonEmptyString(normalized['updated_at']),
@@ -313,6 +357,16 @@ class SuiteIdentityBridgeClient {
       return null;
     }
     return DateTime.tryParse(value)?.toUtc();
+  }
+
+  int? _parseInteger(Object? value) {
+    if (value is num) {
+      return value.toInt();
+    }
+    if (value is String) {
+      return int.tryParse(value);
+    }
+    return null;
   }
 
   String? _parseNonEmptyString(Object? value) {

@@ -1,7 +1,7 @@
 ---
 artifact: gtm_context
 metadata_schema_version: "1.0"
-artifact_version: "1.4.0"
+artifact_version: "1.5.0"
 project: "CommandGlows"
 created: "2026-04-26"
 updated: "2026-08-11"
@@ -19,6 +19,7 @@ evidence:
   - "commandglows_app/lib/features/settings/presentation/settings_screen.dart"
   - "Operator decision 2026-08-11: Stripe Managed Payments is the target Merchant of Record for CommandGlows."
   - "Local implementation 2026-08-11: trial recovery, signed app checkout handoff, Stripe checkout and lifecycle webhooks are present; hosted proof remains open."
+  - "Operator decision and local entitlement batch 2026-08-11: all suite products use 30-day cycles, two restarts maximum, then purchase required."
 target_segment:
   - "Mobile professionals dictating notes and messages"
   - "Android power users needing overlay-driven text capture"
@@ -106,7 +107,7 @@ Formulation à éviter:
 |---|---|
 | "Mes données vocales sont-elles privées ?" | Le stockage des clés est local. Les flux audio/IA avancés doivent encore être validés avant promesse publique. |
 | "Est-ce synchronisé entre mes appareils ?" | Les contrats backend-agnostiques et les stores Flutter existent; la validation end-to-end avec vrais comptes et l'adaptateur actif reste à faire avant promesse publique. |
-| "Faut-il payer ?" | Essai complet de 14 jours, avec au plus deux relances de 14 jours. Après 42 jours cumulés, un achat est requis. L’app guide vers la relance éligible ou les offres; la preuve hébergée du paiement reste avant communication publique. |
+| "Faut-il payer ?" | Essai complet de 30 jours, avec au plus deux relances de 30 jours. Après 90 jours cumulés, un achat est requis. L’app guide vers la relance éligible ou les offres; la preuve hébergée du paiement reste avant communication publique. |
 | "Est-ce utilisable dans d'autres apps ?" | Oui sur Android via overlay si les permissions système sont accordées. Sur Windows/macOS/Linux, les hôtes desktop visent raccourci, fenêtre flottante et clipboard/delivery best-effort, mais il faut la QA native avant promesse publique. iOS et web nécessitent des adaptations dédiées. |
 
 ## Preconditions avant lancement public large

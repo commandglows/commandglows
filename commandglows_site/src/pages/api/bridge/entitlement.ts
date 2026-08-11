@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro'
+import { createHmac } from 'node:crypto'
 import { verifyToken } from '@clerk/astro/server'
 import { ConvexHttpClient } from 'convex/browser'
 import { getServerEnv } from '@/lib/serverEnv'
@@ -14,9 +15,10 @@ export const prerender = false
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 const ENTITLEMENT_SECRET_HEADER = 'x-suite-entitlement-secret'
+const INSTALLATION_ID_HEADER = 'x-replayglowz-installation-id'
+const TRIAL_ACTION_HEADER = 'x-suite-trial-action'
 const ALLOWED_REASON_CODES = new Set<ReplayGlowzEntitlementReasonCode>([
   'active_entitlement',
-  'default_free_entitlement',
   'missing_product_entitlement',
   'account_not_found',
   'global_user_not_found',
@@ -52,6 +54,10 @@ function parseNullableString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
 
+function hashTrialSignal(value: string, secret: string, purpose: string): string {
+  return createHmac('sha256', secret).update(`${purpose}:${value}`).digest('hex')
+}
+
 function parseSnapshot(value: unknown): ReplayGlowzEntitlementSnapshot | null {
   if (!value || typeof value !== 'object') {
     return null
@@ -83,6 +89,7 @@ export const POST: APIRoute = async ({ request }) => {
   const convexBridgeSecret = getConvexBridgeSecret(env)
   const clerkSecretKey = env.CLERK_SECRET_KEY?.trim()
   const convexUrl = env.PUBLIC_CONVEX_URL
+  const trialSignalSecret = env.SUITE_TRIAL_SIGNAL_SECRET?.trim()
 
   if (!endpointSecret || !convexBridgeSecret) {
     return jsonResponse(
@@ -150,12 +157,39 @@ export const POST: APIRoute = async ({ request }) => {
 
   const convex = new ConvexHttpClient(convexUrl)
   try {
+    const installationId = request.headers.get(INSTALLATION_ID_HEADER)?.trim()
+    const forwardedAddress = request.headers
+      .get('x-forwarded-for')
+      ?.split(',')[0]
+      ?.trim()
+    const installationHash =
+      trialSignalSecret && installationId && installationId.length <= 128
+        ? hashTrialSignal(
+            installationId,
+            trialSignalSecret,
+            'replayglowz-installation'
+          )
+        : undefined
+    const networkHash =
+      trialSignalSecret && forwardedAddress
+        ? hashTrialSignal(
+            forwardedAddress,
+            trialSignalSecret,
+            'replayglowz-network'
+          )
+        : undefined
     const rawSnapshot = await convex.mutation(
       'bridge:ensureReplayGlowzEntitlementSnapshotByClerkId' as never,
       {
         clerkId: clerkUserId,
         bridgeSecret: convexBridgeSecret,
         environment: env.VERCEL_ENV ?? env.NODE_ENV ?? 'production',
+        installationHash,
+        networkHash,
+        trialAction:
+          request.headers.get(TRIAL_ACTION_HEADER) === 'restart'
+            ? 'restart'
+            : 'start',
       } as never
     )
     const snapshot = parseSnapshot(rawSnapshot)
