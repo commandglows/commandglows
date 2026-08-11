@@ -125,6 +125,7 @@ For `POST /api/bridge/firebase`, the backend verifies Firebase ID tokens with Fi
 - `FIREBASE_PRIVATE_KEY` (fallback split config, keep escaped newlines)
 - `SUITE_BRIDGE_CONVEX_SECRET` (shared secret required by the Convex bridge mutation)
 - `SUITE_BRIDGE_SYNC_SECRET` (optional override; defaults to `SUITE_BRIDGE_CONVEX_SECRET`)
+- `SUITE_TRIAL_SIGNAL_SECRET` (server-only HMAC secret for trial installation and network-abuse signals; it must be configured before Firebase bridge trial access is available)
 
 `POST /api/bridge/sync` accepts only:
 

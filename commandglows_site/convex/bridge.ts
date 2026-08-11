@@ -43,6 +43,8 @@ const COMMUNITYGLOWS_TRIAL_IDEMPOTENCY_PREFIX = 'communityglows_product_trial'
 const SUITE_COMMERCE_EVENT_SOURCE = 'suite_commerce'
 const SUITE_COMMERCE_EVENT_SOURCE_PREFIX = 'suite:commerce'
 const COMMANDGLOWS_TRIAL_IDEMPOTENCY_PREFIX = 'commandglows_app_trial'
+const COMMANDGLOWS_TRIAL_NETWORK_WINDOW_MS = 24 * 60 * 60 * 1000
+const COMMANDGLOWS_TRIAL_NETWORK_MAX_GRANTS = 3
 const COMMANDGLOWS_APP_PLAN_ALLOWLIST = new Set([
   'free',
   'focus',
@@ -148,10 +150,16 @@ async function maybeStartCommandGlowsTrialEntitlement(
     sourceRef: string
     environment: string
     now: number
-    forceRestart: boolean
+    allowRestart: boolean
+    trialEligible: boolean
+    networkHash?: string
     entitlements: SuiteEntitlementLike[]
   }
 ) {
+  if (!args.trialEligible) {
+    return false
+  }
+
   if (hasActiveCommandGlowsPaidEntitlement(args.entitlements, args.now)) {
     return false
   }
@@ -167,16 +175,52 @@ async function maybeStartCommandGlowsTrialEntitlement(
 
   const trialCount = countCommandGlowsTrials(args.entitlements)
   const maxAttemptsReached = trialCount >= COMMANDGLOWS_TRIAL_MAX_CYCLES
-  if (maxAttemptsReached && !args.forceRestart) {
+  if (maxAttemptsReached) {
     return false
   }
 
-  if (!args.forceRestart && trialCount > 0) {
+  if (!args.allowRestart && trialCount > 0) {
     return false
   }
 
-  if (maxAttemptsReached && args.forceRestart) {
-    return false
+  if (args.networkHash) {
+    const windowStartedAt =
+      Math.floor(args.now / COMMANDGLOWS_TRIAL_NETWORK_WINDOW_MS) *
+      COMMANDGLOWS_TRIAL_NETWORK_WINDOW_MS
+    const existingRiskWindow = await ctx.db
+      .query('productTrialRiskWindows')
+      .withIndex('by_productEnvironmentNetworkWindow', (q) =>
+        q
+          .eq('productId', COMMANDGLOWS_APP_PRODUCT_ID)
+          .eq('environment', args.environment)
+          .eq('networkHash', args.networkHash)
+          .eq('windowStartedAt', windowStartedAt)
+      )
+      .first()
+
+    if (
+      existingRiskWindow &&
+      existingRiskWindow.grantCount >= COMMANDGLOWS_TRIAL_NETWORK_MAX_GRANTS
+    ) {
+      return false
+    }
+
+    if (existingRiskWindow) {
+      await ctx.db.patch(existingRiskWindow._id, {
+        grantCount: existingRiskWindow.grantCount + 1,
+        updatedAt: args.now,
+      })
+    } else {
+      await ctx.db.insert('productTrialRiskWindows', {
+        productId: COMMANDGLOWS_APP_PRODUCT_ID,
+        environment: args.environment,
+        networkHash: args.networkHash,
+        windowStartedAt,
+        grantCount: 1,
+        expiresAt: windowStartedAt + COMMANDGLOWS_TRIAL_NETWORK_WINDOW_MS,
+        updatedAt: args.now,
+      })
+    }
   }
 
   const nextTrialAttempt = trialCount + 1
@@ -227,6 +271,61 @@ async function maybeStartCommandGlowsTrialEntitlement(
   })
 
   return true
+}
+
+async function registerCommandGlowsTrialInstallation(
+  ctx: MutationCtx,
+  args: {
+    globalUserDocId: Id<'globalUsers'>
+    installationHash?: string
+    environment: string
+    now: number
+  }
+) {
+  if (!args.installationHash) {
+    return { eligible: false, installationId: null as Id<'productTrialInstallations'> | null }
+  }
+
+  const existing = await ctx.db
+    .query('productTrialInstallations')
+    .withIndex('by_productEnvironmentInstallation', (q) =>
+      q
+        .eq('productId', COMMANDGLOWS_APP_PRODUCT_ID)
+        .eq('environment', args.environment)
+        .eq('installationHash', args.installationHash!)
+    )
+    .first()
+
+  if (existing) {
+    await ctx.db.patch(existing._id, { lastSeenAt: args.now })
+    return {
+      eligible: existing.globalUserId === args.globalUserDocId,
+      installationId: existing._id,
+    }
+  }
+
+  const installationId = await ctx.db.insert('productTrialInstallations', {
+    productId: COMMANDGLOWS_APP_PRODUCT_ID,
+    environment: args.environment,
+    installationHash: args.installationHash,
+    globalUserId: args.globalUserDocId,
+    firstSeenAt: args.now,
+    lastSeenAt: args.now,
+  })
+  return { eligible: true, installationId }
+}
+
+async function markCommandGlowsTrialInstallationConsumed(
+  ctx: MutationCtx,
+  installationId: Id<'productTrialInstallations'> | null,
+  now: number
+) {
+  if (installationId) {
+    await ctx.db.patch(installationId, {
+      trialConsumedAt: now,
+      lastSeenAt: now,
+    })
+  }
 }
 
 function normalizeBridgeEnvironment(value: unknown): string {
@@ -1470,6 +1569,9 @@ export const upsertFirebaseIdentity = mutation({
     firebaseEmail: v.optional(v.string()),
     environment: v.optional(v.string()),
     sourceRef: v.optional(v.string()),
+    installationHash: v.optional(v.string()),
+    networkHash: v.optional(v.string()),
+    trialAction: v.optional(v.union(v.literal('start'), v.literal('restart'))),
     bridgeSecret: v.string(),
   },
   handler: async (ctx, args) => {
@@ -1587,13 +1689,21 @@ export const upsertFirebaseIdentity = mutation({
         .collect()
     }
 
-    await maybeStartCommandGlowsTrialEntitlement(ctx, {
+    const installation = await registerCommandGlowsTrialInstallation(ctx, {
+      globalUserDocId: identity.globalUserId,
+      installationHash: args.installationHash,
+      environment,
+      now,
+    })
+    const didStartCommandGlowsTrial = await maybeStartCommandGlowsTrialEntitlement(ctx, {
       globalUserDocId: identity.globalUserId,
       globalUserPublicId: globalUser.globalUserId,
       sourceRef: args.sourceRef ?? args.firebaseUid,
       environment,
       now,
-      forceRestart: false,
+      allowRestart: args.trialAction === 'restart',
+      trialEligible: installation.eligible,
+      networkHash: args.networkHash,
       entitlements: rawEntitlements.map((entry) => ({
         productId: entry.productId,
         status: entry.status,
@@ -1606,6 +1716,14 @@ export const upsertFirebaseIdentity = mutation({
       })),
     })
 
+    if (didStartCommandGlowsTrial) {
+      await markCommandGlowsTrialInstallationConsumed(
+        ctx,
+        installation.installationId,
+        now
+      )
+    }
+
     rawEntitlements = await ctx.db
       .query('productEntitlements')
       .withIndex('by_globalUserId', (q) =>
@@ -1615,7 +1733,6 @@ export const upsertFirebaseIdentity = mutation({
 
     const entitlements = rawEntitlements
       .filter((entry) => isAllowedSuiteProduct(entry.productId))
-      .filter((entry) => isActiveSuiteEntitlementWithExpiration(entry))
       .map((entry) => ({
         productId: entry.productId,
         status: entry.status,
@@ -1757,7 +1874,11 @@ export const restartCommandGlowsTrialByGlobalUserId = mutation({
       sourceRef: args.sourceRef ?? globalUser.globalUserId,
       environment,
       now,
-      forceRestart: args.forceRestart ?? true,
+      allowRestart: args.forceRestart ?? true,
+      // This mutation is restricted to the server-to-server bridge secret and
+      // is the audited support exception; customer trial requests go through
+      // the Firebase bridge with a recognized installation.
+      trialEligible: true,
       entitlements: rawEntitlements.map((entry) => ({
         productId: entry.productId,
         status: entry.status,

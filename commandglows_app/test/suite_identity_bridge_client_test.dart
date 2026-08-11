@@ -20,6 +20,10 @@ void main() {
         httpClient: MockClient((request) async {
           expect(request.method, 'POST');
           expect(request.headers['authorization'], 'Bearer firebase-id-token');
+          expect(
+            request.headers['x-commandglows-installation-id'],
+            'test-installation-id',
+          );
           return http.Response(
             '''
           {
@@ -109,6 +113,43 @@ void main() {
     );
     expect(identity.entitlements.single.productId, ProductId.commandglowsApp);
     expect(identity.entitlements.single.plan, 'pro');
+  });
+
+  test('parses trial expiry and sends a customer restart request', () async {
+    final client = SuiteIdentityBridgeClient(
+      httpClient: MockClient((request) async {
+        expect(request.body, '{"trialAction":"restart"}');
+        expect(request.headers['x-commandglows-installation-id'], 'device-123');
+        return http.Response(
+          '''
+          {
+            "status": "ok",
+            "globalUserId": "gu_123",
+            "accounts": [],
+            "entitlements": [
+              {"productId": "commandglows_app", "status": "trialing", "trialExpiresAt": 1}
+            ]
+          }
+          ''',
+          200,
+          headers: const {'content-type': 'application/json'},
+        );
+      }),
+    );
+
+    final identity = await client.resolveFromFirebaseSession(
+      bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+        bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+      ),
+      firebaseAccount: firebaseAccount,
+      resolveIdToken: () async => 'firebase-id-token',
+      installationId: 'device-123',
+      requestTrialRestart: true,
+    );
+
+    final entitlement = identity.entitlements.single;
+    expect(entitlement.trialExpiresAt, isNotNull);
+    expect(entitlement.grantsAccess, isFalse);
   });
 
   test('missing bridge url fails closed without network call', () async {

@@ -1,10 +1,10 @@
 ---
 artifact: business_context
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.4.0"
 project: "CommandGlows"
 created: "2026-03-18"
-updated: "2026-08-06"
+updated: "2026-08-11"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "business"
@@ -21,17 +21,25 @@ evidence:
   - "docs/API.md"
   - "README.md"
   - "shipglows_data/workflow/audits/2026-06-10-commandglows-platform-parity.md"
+  - "Operator decision 2026-08-11: Stripe Managed Payments is the target Merchant of Record for CommandGlows."
 business_model: "14-day trial-then-paid voice productivity app with bring-your-own-key advanced features and bounded founder plans"
 market: "Cross-platform dictation, transcript cleanup, snippets, dictionary, and clipboard productivity tools"
 target_audience: "Professionals and power users who produce text from speech across Android, iOS, desktop, and web"
 value_proposition: "Capture speech quickly from the Android keyboard, overlay or platform quick-action surface, use local language packs where available, clean text when needed, and reuse it across apps with sync paths designed to avoid unbounded server cost"
 depends_on: []
 supersedes: []
-next_review: "2026-05-26"
-next_step: "$sf-docs update"
+next_review: "2026-09-11"
+next_step: "Validate the customer trial-to-purchase journey and hosted payment lifecycle before public launch."
 ---
 
 # Business — CommandGlows
+
+## Payment Provider Decision
+
+CommandGlows uses Stripe Managed Payments as its target Merchant of Record for
+direct digital-product sales. Ordinary Stripe Payments does not satisfy this
+decision. Convex remains the source of truth for product access, and the current
+Lemon Squeezy integration is migration source code rather than the launch target.
 
 ## Statut de preuve
 
@@ -70,6 +78,13 @@ Le modèle commercial target-reviewed est `trial_then_paid`: essai initial de
 l'accès premium. Les clés BYO restent locales et ne constituent pas un
 entitlement. La garantie commerciale de 30 jours est une fenêtre de
 remboursement, pas une expiration automatique de l'accès.
+
+Le socle technique local applique désormais l'expiration d'essai par identité
+globale et installation aléatoire pseudonymisée côté serveur, et ne délivre
+plus de grant gratuit permanent pour `commandglows_app`. Une fenêtre réseau
+temporaire limite les créations d'essai sans conserver l'IP brute. Le parcours
+client de relance/achat est présent localement; la preuve hébergée du paiement
+et la rétention automatisée des signaux de risque restent à finaliser.
 
 ### Offre target-reviewed (post-migration attendue)
 

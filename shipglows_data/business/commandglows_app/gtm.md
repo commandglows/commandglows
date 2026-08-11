@@ -1,10 +1,10 @@
 ---
 artifact: gtm_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.3.0"
 project: "CommandGlows"
 created: "2026-04-26"
-updated: "2026-06-10"
+updated: "2026-08-11"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "gtm"
@@ -17,6 +17,7 @@ evidence:
   - "shipglows_data/business/business.md"
   - "shipglows_data/business/product.md"
   - "lib/features/settings/presentation/settings_screen.dart"
+  - "Operator decision 2026-08-11: Stripe Managed Payments is the target Merchant of Record for CommandGlows."
 target_segment:
   - "Mobile professionals dictating notes and messages"
   - "Android power users needing overlay-driven text capture"
@@ -36,8 +37,8 @@ depends_on:
   - "shipglows_data/business/branding.md@0.1.0"
   - "shipglows_data/business/product.md@0.1.0"
 supersedes: []
-next_review: "2026-05-26"
-next_step: "$sf-docs update"
+next_review: "2026-09-11"
+next_step: "Complete hosted payment proof and the customer-facing trial/purchase journey before publishing commercial claims."
 ---
 
 # GTM — CommandGlows
@@ -62,7 +63,9 @@ Utilisateurs orientés productivité, en priorité :
 ## Promesses à éviter
 
 - "Synchronisation sécurisée par compte" tant que Supabase Auth/RLS n'a pas été validé end-to-end sur un vrai environnement.
-- "Accès gratuit permanent" tant que la politique `trial_then_paid` et le billing n'ont pas été implémentés.
+- "Accès gratuit permanent" : CommandGlows est un produit `trial_then_paid`, pas freemium.
+- "Essai impossible à contourner" : l'installation reconnue et la limitation de fréquence réduisent l'abus, sans garantie absolue ni blocage permanent par IP.
+- "Achat et remboursement activent immédiatement l'app" tant que le cycle hébergé Stripe Managed Payments + webhook + refresh n'a pas été prouvé.
 - "Premium illimité" sans infrastructure de quota.
 - "Données vocales jamais stockées" sans audit complet du flux audio, des caches natifs et des fournisseurs externes.
 - "Prêt entreprise" sans auth, politiques de rétention et garanties sécurité.
@@ -99,7 +102,7 @@ Formulation à éviter:
 |---|---|
 | "Mes données vocales sont-elles privées ?" | Le stockage des clés est local. Les flux audio/IA avancés doivent encore être validés avant promesse publique. |
 | "Est-ce synchronisé entre mes appareils ?" | Les contrats backend-agnostiques et les stores Flutter existent; la validation end-to-end avec vrais comptes et l'adaptateur actif reste à faire avant promesse publique. |
-| "Faut-il payer ?" | Pas de billing implémenté. Les modes cloud utilisent les clés API de l'utilisateur. |
+| "Faut-il payer ?" | Essai complet de 14 jours, avec au plus deux relances de 14 jours. Après 42 jours cumulés, un achat est requis. L’app guide vers la relance éligible ou les offres; la preuve hébergée du paiement reste avant communication publique. |
 | "Est-ce utilisable dans d'autres apps ?" | Oui sur Android via overlay si les permissions système sont accordées. Sur Windows/macOS/Linux, les hôtes desktop visent raccourci, fenêtre flottante et clipboard/delivery best-effort, mais il faut la QA native avant promesse publique. iOS et web nécessitent des adaptations dédiées. |
 
 ## Preconditions avant lancement public large

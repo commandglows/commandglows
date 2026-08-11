@@ -18,6 +18,8 @@ class SuiteIdentityBridgeClient {
     required SuiteIdentityBridgeRuntimeConfig bridgeConfig,
     required SuiteIdentityAccount firebaseAccount,
     required FirebaseIdTokenResolver resolveIdToken,
+    String installationId = 'test-installation-id',
+    bool requestTrialRestart = false,
   }) async {
     if (!bridgeConfig.isConfigured) {
       return _conservativeAccountSnapshot(
@@ -38,6 +40,8 @@ class SuiteIdentityBridgeClient {
     final response = await _requestBridge(
       bridgeUri: bridgeConfig.bridgeUri!,
       idToken: idToken,
+      installationId: installationId,
+      requestTrialRestart: requestTrialRestart,
     );
     if (response == null) {
       return _conservativeAccountSnapshot(
@@ -91,6 +95,8 @@ class SuiteIdentityBridgeClient {
   Future<http.Response?> _requestBridge({
     required Uri bridgeUri,
     required String idToken,
+    required String installationId,
+    required bool requestTrialRestart,
   }) async {
     try {
       return await _httpClient.post(
@@ -99,8 +105,9 @@ class SuiteIdentityBridgeClient {
           'Authorization': 'Bearer $idToken',
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'X-CommandGlows-Installation-Id': installationId,
         },
-        body: '{}',
+        body: requestTrialRestart ? '{"trialAction":"restart"}' : '{}',
       );
     } catch (_) {
       return null;

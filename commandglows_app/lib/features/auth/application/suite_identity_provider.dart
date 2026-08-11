@@ -3,12 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/bootstrap/suite_identity_bridge_bootstrap.dart';
 import '../data/suite_identity_bridge_client.dart';
+import '../data/installation_id_store.dart';
 import '../domain/suite_identity.dart';
 import '../domain/auth_session_store.dart';
 import 'auth_session_provider.dart';
 
 final suiteIdentityBridgeClientProvider = Provider<SuiteIdentityBridgeClient>(
   (ref) => SuiteIdentityBridgeClient(),
+);
+
+final installationIdStoreProvider = Provider<InstallationIdStore>(
+  (ref) => InstallationIdStore(),
 );
 
 final firebaseIdTokenResolverProvider = Provider<FirebaseIdTokenResolver>(
@@ -61,12 +66,17 @@ Future<SuiteIdentitySnapshot> _identityFromAuthSession(
   );
 
   final bridgeClient = ref.read(suiteIdentityBridgeClientProvider);
+  final installationIdStore = ref.read(installationIdStoreProvider);
   final resolveIdToken = ref.read(firebaseIdTokenResolverProvider);
+  final bridgeConfig = SuiteIdentityBridgeBootstrap.config;
   try {
     return await bridgeClient.resolveFromFirebaseSession(
-      bridgeConfig: SuiteIdentityBridgeBootstrap.config,
+      bridgeConfig: bridgeConfig,
       firebaseAccount: firebaseAccount,
       resolveIdToken: resolveIdToken,
+      installationId: bridgeConfig.isConfigured
+          ? await installationIdStore.readOrCreate()
+          : 'not-needed-when-bridge-is-unconfigured',
     );
   } catch (error) {
     return SuiteIdentitySnapshot(

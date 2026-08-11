@@ -18,7 +18,6 @@ export const REPLAYGLOWZ_PRODUCT_ID = 'replayglowz'
 export const COMMUNITYGLOWS_PRODUCT_ID = 'communityglows'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
 export const DEFAULT_FREE_PRODUCT_IDS = [
-  'commandglows_app',
   COMMANDGLOWS_FORMATION_PRODUCT_ID,
   GOCHARBON_PRODUCT_ID,
   CONTENTGLOWZ_PRODUCT_ID,
@@ -465,7 +464,7 @@ export function hasActiveEntitlement(
   return entitlements.some(
     (entry) =>
       normalizeSuiteProductId(entry.productId) === normalizeSuiteProductId(productId) &&
-      isActiveAccessStatus(entry.status)
+      isActiveSuiteEntitlement(entry)
   )
 }
 

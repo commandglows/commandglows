@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.5.0"
 project: "CommandGlows"
 created: "2026-04-26"
-updated: "2026-08-07"
+updated: "2026-08-11"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "product"
@@ -21,6 +21,7 @@ evidence:
   - "shipglows_data/technical/guidelines.md"
   - "docs/API.md"
   - "shipglows_data/workflow/audits/2026-06-10-commandglows-platform-parity.md"
+  - "Operator decision 2026-08-11: Stripe Managed Payments is the target Merchant of Record for CommandGlows."
 target_user: "Professionals and power users capturing text from speech across mobile, desktop, and web"
 user_problem: "Typing is slow or disruptive in contexts where quick dictation, cleanup, and structured reuse matter"
 desired_outcomes:
@@ -37,8 +38,8 @@ depends_on:
   - "shipglows_data/business/business.md@0.1.0"
   - "shipglows_data/business/branding.md@0.1.0"
 supersedes: []
-next_review: "2026-05-26"
-next_step: "$sf-docs update"
+next_review: "2026-09-11"
+next_step: "Finish anti-abuse, in-app trial recovery, and provider lifecycle proof before public trial messaging."
 ---
 
 # Product — CommandGlows
@@ -56,8 +57,16 @@ satisfait ou remboursé de 30 jours est une règle commerciale distincte et ne
 doit pas être transformée en expiration technique automatique de l'accès.
 
 L'éligibilité est calculée côté serveur à partir de l'identité globale et
-d'une installation reconnue. L'IP est un signal anti-abus secondaire et un
-outil de limitation de fréquence, jamais une clé d'identité unique.
+d'une installation aléatoire pseudonymisée. Un hash de signal réseau limite
+temporairement la vélocité des nouveaux essais, sans conserver l'IP brute ni
+devenir une clé d'identité. Une IP ne fonde jamais à elle seule un refus
+permanent.
+
+Le checkout cible utilise Stripe Managed Payments afin que Stripe agisse comme
+Merchant of Record. Stripe Payments classique ne satisfait pas ce contrat.
+Convex conserve l'autorité sur les entitlements; le fournisseur de paiement ne
+fait qu'émettre des événements commerce vérifiés. L'adaptateur Lemon Squeezy
+existant doit être remplacé avant la preuve de lancement.
 
 ## Problème utilisateur
 

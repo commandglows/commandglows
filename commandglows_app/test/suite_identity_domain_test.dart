@@ -5,12 +5,15 @@ import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
 void main() {
   test('product ids are parsed from the allowlist only', () {
     expect(ProductId.parse('commandglows_app'), ProductId.commandglowsApp);
-    expect(ProductId.parse('commandglows_formation'), ProductId.commandglowsFormation);
+    expect(
+      ProductId.parse('commandglows_formation'),
+      ProductId.commandglowsFormation,
+    );
     expect(ProductId.parse('voiceflowz'), isNull);
     expect(ProductId.parse('admin'), isNull);
   });
 
-  test('only active and trialing entitlements grant access', () {
+  test('only active and unexpired trial entitlements grant access', () {
     expect(
       const ProductEntitlement(
         productId: ProductId.commandglowsApp,
@@ -19,11 +22,19 @@ void main() {
       isTrue,
     );
     expect(
+      ProductEntitlement(
+        productId: ProductId.commandglowsApp,
+        status: ProductEntitlementStatus.trialing,
+        trialExpiresAt: DateTime.now().toUtc().add(const Duration(days: 1)),
+      ).grantsAccess,
+      isTrue,
+    );
+    expect(
       const ProductEntitlement(
         productId: ProductId.commandglowsApp,
         status: ProductEntitlementStatus.trialing,
       ).grantsAccess,
-      isTrue,
+      isFalse,
     );
     expect(
       const ProductEntitlement(

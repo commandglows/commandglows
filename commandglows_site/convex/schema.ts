@@ -43,6 +43,35 @@ export default defineSchema({
     .index("by_productStatus", ["productId", "status"])
     .index("by_idempotencyKey", ["idempotencyKey"]),
 
+  productTrialInstallations: defineTable({
+    productId: v.string(),
+    environment: v.string(),
+    installationHash: v.string(),
+    globalUserId: v.id("globalUsers"),
+    firstSeenAt: v.number(),
+    lastSeenAt: v.number(),
+    trialConsumedAt: v.optional(v.number()),
+  }).index("by_productEnvironmentInstallation", [
+    "productId",
+    "environment",
+    "installationHash",
+  ]).index("by_globalUserProduct", ["globalUserId", "productId"]),
+
+  productTrialRiskWindows: defineTable({
+    productId: v.string(),
+    environment: v.string(),
+    networkHash: v.string(),
+    windowStartedAt: v.number(),
+    grantCount: v.number(),
+    expiresAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_productEnvironmentNetworkWindow", [
+    "productId",
+    "environment",
+    "networkHash",
+    "windowStartedAt",
+  ]).index("by_expiresAt", ["expiresAt"]),
+
   productActivationCodes: defineTable({
     codeNormalized: v.string(),
     productId: v.string(),

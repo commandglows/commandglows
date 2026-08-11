@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.3.0"
 project: "CommandGlows"
 created: "2026-08-06"
 created_at: "2026-08-06 16:50:53 UTC"
-updated: "2026-08-06"
-updated_at: "2026-08-06 16:50:53 UTC"
+updated: "2026-08-11"
+updated_at: "2026-08-11 00:00:00 UTC"
 status: draft
 source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
@@ -21,17 +21,17 @@ linked_systems:
   - "commandglows_site Astro API bridge"
   - "Convex identity and entitlement ledger"
   - "commandglows_app Flutter authentication gate"
-  - "Lemon Squeezy checkout and webhooks"
+  - "Stripe Managed Payments checkout and webhooks"
   - "Clerk/Firebase suite identity bridge"
 depends_on:
   - artifact: "shipglows_data/technical/payment-activation-entitlements.md"
-    artifact_version: "0.3.0"
-    required_status: reviewed
+    artifact_version: "0.4.0"
+    required_status: draft
   - artifact: "shipglows_data/business/commandglows_app/product.md"
-    artifact_version: "1.2.0"
+    artifact_version: "1.4.0"
     required_status: reviewed
   - artifact: "shipglows_data/business/commandglows_app/business.md"
-    artifact_version: "1.2.0"
+    artifact_version: "1.3.0"
     required_status: reviewed
   - artifact: "shipglows_data/business/commandglows_app/gtm.md"
     artifact_version: "1.2.0"
@@ -46,8 +46,9 @@ evidence:
   - "Commercial decision of 2026-08-06: the 30-day satisfaction/refund policy is distinct from technical access expiry."
   - "Commercial decision of 2026-08-06: eligibility is server-side by global identity and recognized installation; IP is a privacy-aware secondary anti-abuse signal only."
   - "Operator confirmation of 2026-08-06: there are no users to preserve, so no grandfathering or compatibility migration is required."
+  - "Commercial provider decision of 2026-08-11: Stripe Managed Payments replaces Lemon Squeezy as the target Merchant of Record for CommandGlows."
   - "Repository inspection: productEntitlements has no expiry field; commandglows_app is currently granted by the default-free flow; Flutter parses entitlement status without access expiry."
-next_step: "/101-sg-refine commandglows-trial-then-paid-entitlements"
+next_step: "Complete the remaining anti-abuse, client journey, automated proof, and hosted payment verification before release."
 ---
 
 # CommandGlows Trial-Then-Paid Entitlements
@@ -70,7 +71,7 @@ En tant qu'opératrice, je veux que l'essai soit difficile à contourner par de 
 
 Une identité globale authentifiée peut démarrer un essai CommandGlows complet de 14 jours depuis une installation reconnue. Après l'expiration, elle peut demander au maximum deux réactivations supplémentaires de 14 jours; le total de temps d'essai accordé ne dépasse jamais 42 jours. Toute décision est rendue par le backend à partir du ledger d'identité, de produit et d'installation; le client ne peut ni définir la date d'expiration ni incrémenter son compteur d'essais.
 
-À l'expiration du dernier essai, l'application refuse les fonctions réservées et propose l'achat de l'offre CommandGlows. Un achat Lemon Squeezy vérifié accorde l'entitlement correspondant; un remboursement, une révocation ou une fraude signalée retire l'accès selon le contrat commerce. La garantie commerciale de remboursement de 30 jours demeure une politique de vente: elle ne prolonge, ne réinitialise et ne remplace aucun essai.
+À l'expiration du dernier essai, l'application refuse les fonctions réservées et propose l'achat de l'offre CommandGlows. Un achat Stripe Managed Payments vérifié accorde l'entitlement correspondant; un remboursement, une révocation ou une fraude signalée retire l'accès selon le contrat commerce. La garantie commerciale de remboursement de 30 jours demeure une politique de vente: elle ne prolonge, ne réinitialise et ne remplace aucun essai.
 
 ## Success Behavior
 
@@ -123,8 +124,8 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 - Bloquer définitivement un utilisateur, un foyer ou une entreprise à partir d'une IP, d'une empreinte matérielle, ou d'un identifiant publicitaire.
 - Collecter un IMEI, Android ID, adresse MAC, numéro de série, empreinte navigateur opaque ou toute donnée matérielle stable pour l'entitlement.
 - Offrir une version gratuite permanente, des quotas freemium ou des capacités dégradées comme échappatoire après l'essai.
-- Modifier les prix, les variantes Lemon Squeezy, la garantie de remboursement de 30 jours, les conditions de vente ou les offres Founder existantes.
-- Réaliser un achat réel, modifier les réglages Lemon Squeezy/Clerk/Firebase en production, ou déployer sans validation opératrice.
+- Modifier les prix, les produits/prix Stripe, la garantie de remboursement de 30 jours, les conditions de vente ou les offres Founder existantes.
+- Réaliser un achat réel, modifier les réglages Stripe/Clerk/Firebase en production, ou déployer sans validation opératrice.
 - Implémenter la vérification Google Play Integrity comme condition de lancement initial; elle reste une extension renforcée documentée après le socle serveur.
 
 ## Constraints
@@ -141,9 +142,9 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 
 ## Test Contract
 
-- `surface`: Convex schema/functions, Astro bridge API, Lemon Squeezy webhook adapter, Flutter entitlement domain and gate UI.
+- `surface`: Convex schema/functions, Astro bridge API, Stripe Managed Payments webhook adapter, Flutter entitlement domain and gate UI.
 - `proof_profile`: server-authoritative entitlement + identity bridge + mobile client + commerce lifecycle.
-- `proof_order`: schema/resolver tests → bridge contract tests → Flutter unit/widget tests → static checks → Lemon Squeezy test-mode webhook proof → device/browser manual proof.
+- `proof_order`: schema/resolver tests → bridge contract tests → Flutter unit/widget tests → static checks → Stripe Managed Payments test-mode webhook proof → device/browser manual proof.
 - `required_scenario_ids`: `ENT-TRIAL-001` through `ENT-TRIAL-012`.
 - `required_results`: every automated scenario passes; provider/device evidence that cannot be run locally is recorded as `exception_with_proof` and prevents a production-ready claim.
 
@@ -167,7 +168,7 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 - `commandglows_site/convex/schema.ts`, identity synchronization and entitlement functions.
 - `commandglows_site/convex/defaultFreeEntitlements.ts` and all callers that create default access.
 - `commandglows_site/convex/bridge.ts` plus the Astro Firebase/Clerk-to-Convex bridge endpoint.
-- Lemon Squeezy offer registry, signed webhook verification and the existing commerce grant/revoke mapping.
+- Existing provider-agnostic offer registry and commerce grant/revoke mapping; the Lemon Squeezy adapter is migration source only and must be replaced by Stripe-specific checkout and webhook verification.
 - `commandglows_app/lib/features/auth/domain/product_entitlement.dart`, bridge client/parser and authentication gate/purchase surface.
 - The payment activation contract v0.3.0 and CommandGlows commercial documents listed in front matter.
 
@@ -188,7 +189,7 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 - `defaultFreeEntitlements.ts` → remove `commandglows_app` from the automatic grant set; identity sync no longer unlocks the product indefinitely.
 - Convex entitlement snapshot → becomes the canonical expiry contract consumed by Flutter and any future CommandGlows client.
 - Flutter auth gate → evolves from status-only parsing to an explicit access state (`paid`, `trial_active`, `trial_expired_eligible`, `trial_exhausted`, `blocked_pending_refresh`).
-- Lemon Squeezy webhook → remains the sole paid-access writer, but its refund/revoke states must be evaluated alongside the trial ledger.
+- Stripe Managed Payments webhook → becomes the sole provider paid-access writer, with refund/revoke states evaluated alongside the trial ledger.
 - Product documentation → distinguishes 14-day trial, two additional discretionary reactivations, and 30-day refund policy; public claims must not promise “free forever.”
 - Future products → may reuse the generic ledger/resolver only after their business owner explicitly selects `trial_then_paid`; no implicit suite-wide behavior is introduced.
 
@@ -221,8 +222,33 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 - [ ] Task 6 — Extend commerce transition handling and snapshot refresh so verified purchase, refund, revoke and fraud states take effect immediately and idempotently.
 - [ ] Task 7 — Update Flutter entitlement model/parser/cache and auth-gate UI for expiry, reactivation availability, pending refresh and official purchase handoff.
 - [ ] Task 8 — Add privacy-minimized velocity limiting, retention job/configuration and structured security telemetry; document any platform-integrity extension separately.
-- [ ] Task 9 — Implement the automated test matrix and run static/unit checks for site and Flutter.
-- [ ] Task 10 — Perform Lemon Squeezy test-mode purchase/refund/revoke proof and a real-device trial/reinstall/new-email manual checklist; update docs and release evidence.
+- [x] Task 9 — Implement the local automated test matrix and run static/unit checks for site and Flutter. Provider-hosted and real-device scenarios remain under Task 10.
+- [ ] Task 10 — Replace the Lemon Squeezy adapter with Stripe Managed Payments, perform test-mode purchase/refund/revoke proof, and complete a real-device trial/reinstall/new-email checklist; update docs and release evidence.
+
+## Implementation Status (2026-08-11)
+
+The initial local implementation covers the commercial invariant, but not the
+complete acceptance contract.
+
+- Implemented: removal of the automatic `commandglows_app` free policy;
+  trial metadata in `productEntitlements`; server-generated 14-day periods;
+  a maximum of three trial attempts; server-side trial expiry resolution;
+  paid-entitlement precedence; installation-hash reuse denial; a temporary
+  pseudonymized network velocity window; snapshot parsing through the Astro
+  bridge and Flutter; and a customer-facing restart/purchase gate.
+- Implemented local proof: a `convex-test` integration matrix covers
+  `ENT-TRIAL-001` through `ENT-TRIAL-007` and `ENT-TRIAL-011` across six
+  tests; the complete site suite passes with 118 tests and Astro reports no
+  errors. This is a deterministic JavaScript mock of Convex, not proof against
+  a hosted Convex deployment.
+- Not implemented: scheduled retention cleanup and structured risk telemetry,
+  and stronger platform integrity.
+- Not yet proven in a hosted environment: Stripe Managed Payments test purchase,
+  signed webhook fulfillment, refund/revoke replay, real-device expiry,
+  reinstall, or alternate-email behavior.
+
+Consequently, this spec is `partial`: it records an implemented local access
+slice, not a production-ready anti-abuse or payment-launch claim.
 
 ## Acceptance Criteria
 
@@ -242,7 +268,7 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 - Contract-test the bridge JSON shape, especially ISO dates and fail-closed handling of omitted/malformed fields.
 - Add Flutter unit tests for parsing/access calculation and widget tests for trial active, reactivation, exhausted, purchase pending and paid states.
 - Run the repository's documented site and Flutter static/unit suites at the supported Node/Flutter versions; do not treat a missing local dependency directory as a passing test.
-- Exercise signed Lemon Squeezy test-mode lifecycle events end-to-end, retaining only redacted proof.
+- Exercise signed Stripe Managed Payments test-mode lifecycle events end-to-end, retaining only redacted proof.
 - Conduct manual Android proof for install, sign-in, expiry simulation through a server-controlled test clock/data fixture, reinstall, alternate e-mail and post-purchase refresh.
 
 ## Risks
@@ -270,7 +296,27 @@ None. The commercial decisions required for this scope are settled: no permanent
 - `shipglows` routed the request to the product-entitlement and specification workflow.
 - `601-sg-product-entitlements` supplied the suite identity, access and anti-abuse guardrails.
 - `100-sg-spec` supplied the durable implementation-spec contract and verification structure.
+- `2026-08-11 — sg-docs`: reconciled business, product, GTM and payment
+  contracts with the local implementation. Recorded the remaining gaps rather
+  than documenting installation/IP protections or hosted payment behavior as
+  delivered.
+- `2026-08-11 — sg-development + sg-engineering`: added the local
+  installation-hash and network-velocity protections, customer restart and
+  purchase gate, expiration-safe Firestore mirror behavior, and focused/full
+  local tests. Hosted provider and device proof remain open.
+- `2026-08-11 — sg-engineering / product entitlements`: added the local Convex
+  integration matrix for trial creation, idempotency, restart exhaustion,
+  installation reuse, identity continuity, paid precedence and network
+  velocity. Six focused tests and the 118-test site suite pass; hosted Convex,
+  Stripe Managed Payments and real-device evidence remain outside this proof.
+- `2026-08-11 — shipglows → sg-docs`: recorded Stripe Managed Payments as the
+  CommandGlows target Merchant of Record and the default for future eligible
+  Glows digital products. The current Lemon Squeezy adapter is migration source,
+  not the launch target.
 
 ## Current Chantier Flow
 
-`/101-sg-refine commandglows-trial-then-paid-entitlements` → implementation through `/200-sg-build` or `/602-sg-access` → `/103-sg-verify commandglows-trial-then-paid-entitlements` → release decision.
+Local implementation, documentation alignment and the local Convex integration
+matrix are complete for the first slice. The chantier remains open for
+retention/telemetry, stronger platform integrity, the Stripe Managed Payments
+adapter and hosted proof, real-device proof, and release verification.

@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.3.0"
+artifact_version: "0.5.0"
 project: "CommandGlows"
 created: "2026-06-18"
-updated: "2026-08-06"
+updated: "2026-08-11"
 status: draft
 source_skill: "001-sf-build"
 scope: "payment-activation-entitlements"
@@ -20,8 +20,11 @@ linked_systems:
   - "commandglows_site/convex/schema.ts"
   - "commandglows_app/lib/features/auth"
   - "shipglows_data/technical/platforms/lemonsqueezy.md"
+  - "shipglows_data/technical/platforms/stripe-managed-payments.md"
 depends_on:
   - artifact: "shipglows_data/technical/platforms/lemonsqueezy.md"
+    required_status: "draft"
+  - artifact: "shipglows_data/technical/platforms/stripe-managed-payments.md"
     required_status: "draft"
   - artifact: "shipglows_data/workflow/specs/commandglows-android-lifetime-deal-launch.md"
     required_status: "draft"
@@ -31,8 +34,10 @@ evidence:
   - "Lemon Squeezy checkout creation sends checkout_data.custom with offer_id, product_id, plan, source, source_ref, and provider metadata."
   - "Lemon Squeezy signed webhooks are normalized and forwarded to Convex bridge:processCommerceEvent."
   - "Convex owns durable productEntitlements and productAccessEvents."
+  - "Implementation review 2026-08-11: CommandGlows trial rows are now written by `bridge:upsertFirebaseIdentity`, carry server timestamps and attempts, and are parsed fail-closed by Flutter."
+  - "Commercial provider decision of 2026-08-11: CommandGlows targets Stripe Managed Payments as Merchant of Record; the existing Lemon Squeezy adapter is migration source code, not the launch target."
 next_review: "2026-07-18"
-next_step: "/103-sf-verify payment activation after hosted Lemon Squeezy test-mode order/refund smoke"
+next_step: "Complete the remaining trial anti-abuse, client journey, automated proof, and hosted provider proof before a production access claim."
 ---
 
 # Payment Activation And Entitlements
@@ -63,13 +68,63 @@ This policy is the reusable suite decision for products explicitly classified
 as `trial_then_paid`; it is not an instruction to convert every current suite
 product without a product-specific pricing and cost review.
 
+## Merchant Of Record Decision (2026-08-11)
+
+CommandGlows will use Stripe Managed Payments, not ordinary Stripe Payments, as
+its target Merchant of Record. Convex remains the runtime entitlement source of
+truth and Stripe remains a verified commerce-event source.
+
+The current Lemon Squeezy checkout/webhook implementation is a legacy migration
+source and must not be presented as the intended launch provider. Because there
+are no users or paid orders to preserve, migration requires no customer or
+subscription transfer. Provider identifiers, signatures and event names must
+be replaced through a Stripe-specific adapter rather than mechanically reused.
+
+## CommandGlows Implementation Status (2026-08-11)
+
+The first server-authoritative slice is implemented locally for
+`commandglows_app`:
+
+- `commandglows_app` no longer receives an automatic permanent-free grant;
+- identity synchronization starts the first 14-day trial once, records
+  `trialStartedAt`, `trialExpiresAt`, and `trialAttempt`, and exposes them in
+  the suite snapshot;
+- an expired `trialing` row is non-granting in the Convex and Flutter access
+  resolvers; an absent expiry is also non-granting;
+- the bridge can create at most three total periods (the initial trial plus
+  two restarts), exposes an authenticated customer restart request through the
+  Firebase bridge, and retains a server-to-server support operation;
+- a current paid CommandGlows entitlement prevents a new trial from being
+  created.
+
+This is not yet the complete commercial release contract. Trial creation is
+keyed to the suite global identity and a random app-installation identifier.
+The app stores that identifier securely; the API persists only a keyed hash.
+The same recognized installation cannot start a trial for another identity.
+The API also maintains a keyed, 24-hour network risk window and temporarily
+denies the fourth trial grant in that window; raw IP values are not persisted.
+The Flutter gate now shows an expired trial, allows an eligible restart, and
+links to the official purchase page.
+
+Scheduled cleanup/retention automation for expired risk windows, stronger
+platform integrity, the Stripe Managed Payments adapter, and hosted Stripe
+checkout/payment/refund/revoke proof are
+still required before calling the whole access lifecycle production-ready.
+
+The local `convex-test` matrix now covers trial creation/idempotency, the two
+allowed reactivations and exhaustion, installation reuse across identities,
+identity continuity across installations, paid-entitlement precedence and the
+network velocity threshold. It passes as part of the 118-test site suite, but
+`convex-test` is a JavaScript mock and does not replace hosted Convex or provider
+proof.
+
 ## Purpose
 
-This document is the reusable contract for paid access activation in the CommandGlows suite. It explains how a payment becomes product access, what Lemon Squeezy owns, what Convex owns, and what still needs a separate device-activation ledger.
+This document is the reusable contract for paid access activation in the CommandGlows suite. It explains how a payment becomes product access, what Stripe Managed Payments owns, what Convex owns, and what still needs a separate device-activation ledger. Lemon Squeezy sections describe the currently implemented adapter until migration is complete.
 
 ## Vocabulary
 
-- Payment provider: external system that collects money and emits signed events. Current direct-sale provider: Lemon Squeezy.
+- Payment provider: external system that collects money and emits signed events. Target direct-sale provider: Stripe Managed Payments. Current local adapter awaiting replacement: Lemon Squeezy.
 - Offer id: internal checkout id such as `commandglows_app/focus`.
 - Product id: canonical suite product id such as `commandglows_app`.
 - Plan id: internal entitlement plan such as `focus`, `power`, `control`, or `command`.
@@ -92,7 +147,9 @@ The Lifetime Deal grants access to present and future released CommandGlows plat
 
 ## Source Of Truth
 
-Lemon Squeezy is never the runtime authorization store. It is a payment event source.
+Stripe Managed Payments is never the runtime authorization store. It is a
+payment event source. The same boundary applies to the legacy Lemon Squeezy
+adapter while it remains in the codebase.
 
 Convex is the durable suite entitlement store:
 
@@ -110,7 +167,7 @@ Product marketing authority and checkout infrastructure are separate concerns.
 - Each product should keep its own canonical sales page on its own public domain when that domain exists.
 - A shared suite checkout route is allowed and preferred when it reduces duplicated provider code and keeps product metadata explicit.
 - Shared checkout infrastructure does not make `www.commandglows.com` the canonical marketing home for every suite product.
-- The user should start the purchase flow from the product page for the product they are buying, then open the Lemon Squeezy hosted checkout or overlay for that exact offer.
+- The user should start the purchase flow from the product page for the product they are buying, then open the Stripe Managed Payments Checkout Session for that exact offer.
 
 Current application of this rule:
 
@@ -122,17 +179,17 @@ Current application of this rule:
 
 1. The sales page links to `/api/commerce/checkout` with an explicit `offerId`.
 2. The route rejects a missing or unknown `offerId`.
-3. The route creates a Lemon Squeezy checkout through the REST API.
-4. The checkout payload includes `checkout_data.custom` with:
+3. The route creates a Stripe Checkout Session with Managed Payments explicitly enabled.
+4. The checkout metadata includes:
    - `offer_id`
    - `offer_name`
    - `product_id`
    - `plan`
    - `source`
    - `source_ref`
-   - `provider=lemonsqueezy`
+   - `provider=stripe_managed_payments`
    - optional `global_user_id` or identity metadata when available
-5. When a launch coupon applies, the route may also send `checkout_data.discount_code`, for example `FOUNDER`.
+5. When a launch coupon applies, the route may attach an allowlisted Stripe promotion code or discount.
 
 Checkout success pages are not payment proof. They are UX only.
 
@@ -149,10 +206,10 @@ Do not create a separate checkout endpoint per domain unless a product requires 
 
 ## Webhook Fulfillment Flow
 
-1. Lemon Squeezy sends a signed webhook to `/api/commerce/webhooks/lemon-squeezy`.
-2. The route verifies the exact raw body with `X-Signature`.
-3. `order_created` normalizes to `eventType=paid`.
-4. `order_refunded` normalizes to `eventType=refunded`.
+1. Stripe sends signed events to the dedicated Stripe webhook route.
+2. The route verifies the exact raw body with the Stripe signature header and server-only endpoint secret.
+3. A completed, paid Checkout transaction normalizes to `eventType=paid` only after server verification.
+4. Verified refund, dispute, revoke, cancellation, or fraud transitions normalize to the corresponding non-granting commerce state.
 5. Unsupported, malformed, or incomplete signed events must become `pending_review` or `ignored`, never active access.
 6. The route forwards normalized data to Convex `bridge:processCommerceEvent`.
 7. Convex allowlists the product, offer, plan, environment, and idempotency key before writing.
@@ -190,7 +247,7 @@ Until this exists, the public page may describe active-device limits as the comm
 
 Support must be able to:
 
-- Find an order by Lemon Squeezy order id, customer id, checkout id, or redacted buyer email.
+- Find a transaction by Stripe Checkout Session, Payment Intent, Customer or redacted buyer identity reference.
 - Find the matching `productAccessEvents` row by provider idempotency key or `sourceRef`.
 - Verify whether a `productEntitlements` row exists for `productId=commandglows_app`.
 - See `plan`, `status`, `source`, `sourceRef`, `environment`, and update time without exposing secrets.
@@ -205,13 +262,13 @@ Never paste raw webhook payloads, API keys, signatures, cookies, raw activation 
 Local proof:
 
 - Commerce offer registry tests cover all founder offers.
-- Checkout route tests reject missing/unknown offers and create Lemon Squeezy checkouts with correct metadata.
-- Lemon Squeezy adapter tests verify `checkout_data.custom`, `discount_code`, signed webhook parsing, paid/refund normalization, and idempotency key shape.
-- Webhook route tests verify all four CommandGlows plans are forwarded to `bridge:processCommerceEvent`.
+- Existing Lemon Squeezy adapter tests are migration baseline only.
+- Stripe tests must reject missing/unknown offers and prove Managed Payments is explicitly enabled with correct metadata.
+- Stripe webhook tests must prove exact-body signature verification, paid/refund/revoke normalization, replay idempotency and forwarding of all four CommandGlows plans to `bridge:processCommerceEvent`.
 
 Hosted provider proof:
 
-- Create a Lemon Squeezy test-mode checkout for a CommandGlows founder plan.
+- Create a Stripe Managed Payments test-mode checkout for a CommandGlows founder plan.
 - Complete a test order.
 - Confirm the signed webhook reaches production/preview.
 - Confirm Convex writes a `productAccessEvents` entry and active `productEntitlements` row.

@@ -121,7 +121,6 @@ describe('suiteBridge helpers', () => {
 
   test('keeps default free access scoped to free-tier products', () => {
     expect(DEFAULT_FREE_PRODUCT_IDS).toEqual([
-      'commandglows_app',
       'commandglows_formation',
       'gocharbon',
       'contentglowz',
@@ -132,17 +131,34 @@ describe('suiteBridge helpers', () => {
     ])
   })
 
-  test('accepts only active and trialing status for access', () => {
+  test('treats an expired trial as inactive even when its status is trialing', () => {
     expect(isActiveAccessStatus('active')).toBe(true)
     expect(isActiveAccessStatus('trialing')).toBe(true)
     expect(isActiveAccessStatus('refunded')).toBe(false)
+    expect(
+      hasActiveEntitlement(
+        [
+          {
+            productId: 'commandglows_app',
+            status: 'trialing',
+            trialExpiresAt: Date.now() - 1,
+          },
+        ],
+        'commandglows_app'
+      )
+    ).toBe(false)
   })
 
   test('detects active product entitlement', () => {
     expect(
       hasActiveEntitlement(
         [
-          { productId: 'commandglows_app', status: 'trialing', plan: 'monthly' },
+          {
+            productId: 'commandglows_app',
+            status: 'trialing',
+            plan: 'monthly',
+            trialExpiresAt: Date.now() + 60_000,
+          },
           { productId: 'old_youtube_product', status: 'refunded', plan: 'pro' },
         ],
         'commandglows_app'

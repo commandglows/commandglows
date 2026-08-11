@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.2.1"
+artifact_version: "0.3.0"
 project: commandglows
 created: "2026-05-30"
-updated: "2026-07-17"
+updated: "2026-08-11"
 status: draft
 source_skill: sf-docs
 scope: platform-usage-lemonsqueezy
@@ -22,22 +22,25 @@ linked_systems:
   - shipglows_data/technical/payment-activation-entitlements.md
 depends_on:
   - artifact: "/home/claude/shipglows/shipglows_data/technical/external-platforms/lemonsqueezy.md"
-    artifact_version: "0.1.0"
+    artifact_version: "0.2.0"
     required_status: "draft"
 supersedes: []
 evidence:
   - "CommandGlows suite owns the processor-agnostic commerce API and SocialGlowz entitlement ledger fulfillment."
   - "Fresh Lemon Squeezy docs checked on 2026-05-30; no official CLI or MCP was identified."
   - "CommandGlows App founder plans are represented by internal offers `commandglows_app/focus`, `commandglows_app/power`, `commandglows_app/control`, and `commandglows_app/command`."
+  - "Operator decision on 2026-08-11: Stripe Managed Payments replaces Lemon Squeezy as the CommandGlows launch target."
 next_review: "2026-06-30"
-next_step: "/sf-verify socialglowz-processor-agnostic-ltd-commerce after Lemon Squeezy test-mode and hosted Convex refund/replay smoke"
+next_step: "Retain as migration evidence until the Stripe Managed Payments adapter passes equivalent local and hosted proof."
 ---
 
 # Lemon Squeezy Usage
 
 ## Purpose
 
-Document how CommandGlows uses Lemon Squeezy for suite-owned direct Lifetime Deal checkout paths, including SocialGlowz and CommandGlows App founder offers.
+Document the legacy Lemon Squeezy adapter currently present in CommandGlows.
+It remains migration evidence and a regression baseline; Stripe Managed
+Payments is the target Merchant of Record for CommandGlows launch.
 
 Use the global provider note for source links and tool availability:
 
@@ -51,7 +54,7 @@ This file is the local usage contract for architecture, validation, and automati
 
 ## Usage Summary
 
-- Provider role: first payment provider adapter for direct suite Lifetime Deal sales.
+- Provider role: legacy implemented adapter awaiting replacement by Stripe Managed Payments.
 - Product access owner: CommandGlows suite entitlement ledger, not Lemon Squeezy.
 - Canonical product sales pages stay product-specific even when the checkout route is shared.
 - Applies to paths:
