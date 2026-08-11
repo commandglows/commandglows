@@ -1,12 +1,12 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-05-17"
+updated: "2026-08-11"
 status: reviewed
-source_skill: sf-docs
+source_skill: sg-docs
 scope: context-function-tree
 owner: "Diane"
 confidence: high
@@ -32,8 +32,11 @@ evidence:
   - convex/http.ts
   - convex/polar.ts
   - convex/users.ts
-next_review: "2026-06-17"
-next_step: "pnpm build:check"
+  - commandglows_site/src/pages/api/commerce/checkout.ts
+  - commandglows_site/src/pages/api/commerce/webhooks/stripe.ts
+  - commandglows_site/src/lib/commerce/providers/stripe.ts
+next_review: "2026-09-11"
+next_step: "Refresh after hosted commerce proof or request-pipeline changes."
 ---
 # Context Function Tree
 
@@ -43,19 +46,19 @@ Capture the request, routing, and integration flow so behavior changes in middle
 
 ## Owned Files
 
-- `src/middleware/index.ts`
-- `src/middleware/i18n.ts`
-- `src/utils/routing.ts`
-- `src/pages/api/**`
-- `convex/http.ts`
+- `commandglows_site/src/middleware/index.ts`
+- `commandglows_site/src/middleware/i18n.ts`
+- `commandglows_site/src/utils/routing.ts`
+- `commandglows_site/src/pages/api/**`
+- `commandglows_site/convex/http.ts`
 
 ## Entrypoints
 
-- `src/middleware/index.ts`
-- `src/middleware/i18n.ts`
-- `src/utils/routing.ts`
-- `src/pages/api/polar/checkout.ts`
-- `convex/http.ts`
+- `commandglows_site/src/middleware/index.ts`
+- `commandglows_site/src/middleware/i18n.ts`
+- `commandglows_site/src/utils/routing.ts`
+- `commandglows_site/src/pages/api/polar/checkout.ts`
+- `commandglows_site/convex/http.ts`
 
 ## Request And Middleware Layer
 
@@ -78,6 +81,22 @@ Capture the request, routing, and integration flow so behavior changes in middle
   - `getLocalizedPath(lang, routeKey)`
 
 ## Checkout And Billing Flow
+
+- `commandglows_app` obtains a short-lived checkout identity handoff from the authenticated Firebase bridge and opens the Founder page with that opaque token.
+- `src/pages/[...lang]/commandglows-founder.astro` forwards the handoff to the shared checkout route without exposing it to Stripe metadata.
+- `src/pages/api/commerce/checkout.ts`
+  - verifies the handoff and derives the canonical global user id;
+  - resolves one of the four allowlisted CommandGlows offers;
+  - creates a Stripe Checkout Session with Managed Payments explicitly enabled;
+  - never treats the success redirect as payment proof.
+- `src/pages/api/commerce/webhooks/stripe.ts`
+  - verifies the exact raw body with `Stripe-Signature`;
+  - normalizes paid Checkout, successful full refunds and disputes;
+  - forwards deterministic idempotency keys to `bridge:processCommerceEvent`.
+- `convex/bridge.ts`
+  - grants paid access only for a verified, resolvable global user;
+  - rejects replay through the provider event idempotency key;
+  - makes refund and revoke transitions non-granting.
 
 - `src/pages/api/polar/checkout.ts`
   - validates lesson and locale input
@@ -108,11 +127,12 @@ Capture the request, routing, and integration flow so behavior changes in middle
 - Route translation logic in `src/utils/routing.ts`, `src/i18n/config.ts`, and `src/middleware/i18n.ts` must stay aligned.
 - Checkout flow depends on both Astro route behavior and Convex entitlement handling.
 - Webhook verification remains a security boundary and must not be bypassed.
+- CommandGlows checkout identity must come from a valid bridge-signed handoff, never a raw query parameter.
 
 ## Validation
 
 ```bash
-pnpm build:check
+pnpm -C commandglows_site build:check
 python3 /home/claude/shipglows/tools/shipglows_metadata_lint.py shipglows_data/technical/context-function-tree.md
 ```
 

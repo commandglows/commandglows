@@ -1,5 +1,6 @@
 import { describe, test, expect, afterEach, vi } from 'vitest'
 import { GET } from '@/pages/api/commerce/checkout'
+import { createCommerceCheckoutIdentityToken } from '@/lib/commerce/checkoutIdentity'
 
 const ORIGINAL_FETCH = globalThis.fetch
 const ORIGINAL_ENV = { ...process.env }
@@ -10,6 +11,10 @@ function resetCommerceEnv() {
   delete process.env.LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID
   delete process.env.LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID
   delete process.env.LEMONSQUEEZY_API_URL
+  delete process.env.STRIPE_SECRET_KEY
+  delete process.env.STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID
+  delete process.env.STRIPE_COMMANDGLOWS_FOUNDER_PROMOTION_CODE_ID
+  delete process.env.SUITE_COMMERCE_CHECKOUT_SECRET
   delete process.env.POLAR_COMMANDGLOWS_PRODUCT_ID
   delete process.env.POLAR_PRODUCT_ID
   delete process.env.COMMERCE_PROVIDER_ORDER
@@ -110,20 +115,20 @@ describe('commerce checkout route', () => {
     expect(body).not.toContain('api-key')
   })
 
-  test('redirects CommandGlows founder checkout to Lemon Squeezy', async () => {
+  test('redirects CommandGlows founder checkout to Stripe Managed Payments', async () => {
     resetCommerceEnv()
-    process.env.LEMONSQUEEZY_API_KEY = 'api-key'
-    process.env.LEMONSQUEEZY_STORE_ID = 'store-id'
-    process.env.LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID = 'commandglows-power-variant'
+    process.env.STRIPE_SECRET_KEY = 'sk_test_route'
+    process.env.STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID = 'price_commandglows_power'
+    process.env.STRIPE_COMMANDGLOWS_FOUNDER_PROMOTION_CODE_ID = 'promo_founder'
+    process.env.SUITE_COMMERCE_CHECKOUT_SECRET = 'checkout-identity-secret'
+    const identityToken = createCommerceCheckoutIdentityToken(
+      'gu_checkout_user',
+      'checkout-identity-secret'
+    )
 
     const fetchSpy = vi.fn().mockResolvedValue(
       new Response(
-        JSON.stringify({
-          data: {
-            id: 'co_wfz_route',
-            attributes: { url: 'https://checkout.lemonsqueezy.test/commandglows' },
-          },
-        }),
+        JSON.stringify({ id: 'cs_test_commandglows', url: 'https://checkout.stripe.test/commandglows' }),
         { status: 200, headers: { 'content-type': 'application/json' } }
       )
     )
@@ -131,20 +136,35 @@ describe('commerce checkout route', () => {
 
     const response = await GET({
       request: checkoutRequest(
-        'https://commandglows.test/api/commerce/checkout?offerId=commandglows_app/power&provider=lemonsqueezy&source=direct&sourceRef=/commandglows-founder&successUrl=https://commandglows.test/purchase/success?offerId=commandglows_app%2Fpower&cancelUrl=https://commandglows.test/purchase/cancel?offerId=commandglows_app%2Fpower'
+        `https://commandglows.test/api/commerce/checkout?offerId=commandglows_app/power&provider=stripe&source=direct&sourceRef=/commandglows-founder&discountCode=FOUNDER&identityToken=${encodeURIComponent(identityToken)}&successUrl=https://commandglows.test/purchase/success?offerId=commandglows_app%2Fpower&cancelUrl=https://commandglows.test/purchase/cancel?offerId=commandglows_app%2Fpower`
       ),
     })
 
     expect(response.status).toBe(302)
     expect(response.headers.get('location')).toBe(
-      'https://checkout.lemonsqueezy.test/commandglows'
+      'https://checkout.stripe.test/commandglows'
     )
 
     const body = String(fetchSpy.mock.calls[0]?.[1]?.body)
-    expect(body).toContain('"offer_id":"commandglows_app/power"')
-    expect(body).toContain('"product_id":"commandglows_app"')
-    expect(body).toContain('"plan":"power"')
-    expect(body).toContain('"id":"commandglows-power-variant"')
-    expect(body).not.toContain('api-key')
+    expect(body).toContain('managed_payments[enabled]=true')
+    expect(body).toContain('line_items[0][price]=price_commandglows_power')
+    expect(body).toContain('metadata[offer_id]=commandglows_app%2Fpower')
+    expect(body).toContain('metadata[provider]=stripe')
+    expect(body).toContain('metadata[global_user_id]=gu_checkout_user')
+    expect(body).not.toContain(identityToken)
+    expect(body).toContain('payment_intent_data[metadata][plan]=power')
+    expect(body).toContain('discounts[0][promotion_code]=promo_founder')
+    expect(new Headers(fetchSpy.mock.calls[0]?.[1]?.headers).get('authorization')).toBe('Bearer sk_test_route')
+  })
+
+  test('rejects a CommandGlows checkout without a signed app identity handoff', async () => {
+    resetCommerceEnv()
+    process.env.STRIPE_SECRET_KEY = 'sk_test_route'
+    process.env.STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID = 'price_commandglows_power'
+    process.env.SUITE_COMMERCE_CHECKOUT_SECRET = 'checkout-identity-secret'
+    const response = await GET({
+      request: checkoutRequest('https://commandglows.test/api/commerce/checkout?offerId=commandglows_app/power&provider=stripe'),
+    })
+    expect(response.status).toBe(401)
   })
 })

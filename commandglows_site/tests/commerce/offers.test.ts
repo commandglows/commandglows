@@ -52,22 +52,22 @@ describe('commerce offer configuration', () => {
     expect(getCommerceOffer(COMMANDGLOWS_APP_FOCUS_LTD_OFFER_ID)).toMatchObject({
       productId: 'commandglows_app',
       plan: 'focus',
-      providers: ['lemonsqueezy'],
+      providers: ['stripe'],
     })
     expect(getCommerceOffer(COMMANDGLOWS_APP_POWER_LTD_OFFER_ID)).toMatchObject({
       productId: 'commandglows_app',
       plan: 'power',
-      providers: ['lemonsqueezy'],
+      providers: ['stripe'],
     })
     expect(getCommerceOffer(COMMANDGLOWS_APP_CONTROL_LTD_OFFER_ID)).toMatchObject({
       productId: 'commandglows_app',
       plan: 'control',
-      providers: ['lemonsqueezy'],
+      providers: ['stripe'],
     })
     expect(getCommerceOffer(COMMANDGLOWS_APP_COMMAND_LTD_OFFER_ID)).toMatchObject({
       productId: 'commandglows_app',
       plan: 'command',
-      providers: ['lemonsqueezy'],
+      providers: ['stripe'],
     })
   })
 
@@ -77,8 +77,7 @@ describe('commerce offer configuration', () => {
         LEMONSQUEEZY_API_KEY: 'api-key-123',
         LEMONSQUEEZY_STORE_ID: 'store-456',
         LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID: 'variant-789',
-        LEMONSQUEEZY_COMMANDGLOWS_APP_PRODUCT_ID: 'commandglows-product',
-        LEMONSQUEEZY_COMMANDGLOWS_APP_POWER_VARIANT_ID: 'commandglows-power-variant',
+        STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID: 'price_commandglows_power',
         POLAR_COMMANDGLOWS_PRODUCT_ID: 'polar-commandglows',
       },
       () => {
@@ -104,13 +103,11 @@ describe('commerce offer configuration', () => {
 
         const commandglowsConfig = getOfferProviderConfig(
           COMMANDGLOWS_APP_POWER_LTD_OFFER_ID,
-          'lemonsqueezy'
+          'stripe'
         )
         expect(commandglowsConfig).toEqual({
-          provider: 'lemonsqueezy',
-          productId: 'commandglows-product',
-          variantId: 'commandglows-power-variant',
-          storeId: 'store-456',
+          provider: 'stripe',
+          priceId: 'price_commandglows_power',
         })
       }
     )

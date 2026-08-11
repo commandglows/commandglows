@@ -80,6 +80,7 @@ void main() {
           {
             "status": "ok",
             "globalUserId": "gu_123",
+            "checkoutIdentityToken": "signed-checkout-token",
             "accounts": [
               {
                 "provider": "firebase",
@@ -107,6 +108,7 @@ void main() {
 
     expect(identity.status, SuiteAccountStatus.recognized);
     expect(identity.globalUserId, 'gu_123');
+    expect(identity.checkoutIdentityToken, 'signed-checkout-token');
     expect(
       identity.accounts.single.providerUserId,
       firebaseAccount.providerUserId,

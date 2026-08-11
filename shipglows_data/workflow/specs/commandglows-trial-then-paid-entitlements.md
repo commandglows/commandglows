@@ -1,14 +1,14 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.3.0"
+artifact_version: "0.5.0"
 project: "CommandGlows"
 created: "2026-08-06"
 created_at: "2026-08-06 16:50:53 UTC"
 updated: "2026-08-11"
-updated_at: "2026-08-11 00:00:00 UTC"
+updated_at: "2026-08-11 16:36:31 UTC"
 status: draft
-source_skill: 100-sg-spec
+source_skill: sg-docs
 source_model: "GPT-5 Codex"
 scope: "trial-then-paid-entitlements"
 owner: "Diane"
@@ -25,16 +25,16 @@ linked_systems:
   - "Clerk/Firebase suite identity bridge"
 depends_on:
   - artifact: "shipglows_data/technical/payment-activation-entitlements.md"
-    artifact_version: "0.4.0"
+    artifact_version: "0.7.0"
     required_status: draft
   - artifact: "shipglows_data/business/commandglows_app/product.md"
-    artifact_version: "1.4.0"
+    artifact_version: "1.6.0"
     required_status: reviewed
   - artifact: "shipglows_data/business/commandglows_app/business.md"
-    artifact_version: "1.3.0"
+    artifact_version: "1.5.0"
     required_status: reviewed
   - artifact: "shipglows_data/business/commandglows_app/gtm.md"
-    artifact_version: "1.2.0"
+    artifact_version: "1.4.0"
     required_status: reviewed
   - artifact: "/home/claude/shipglows/skills/references/winflowz-suite-product-registry.md"
     artifact_version: "1.1.0"
@@ -59,7 +59,7 @@ CommandGlows Trial-Then-Paid Entitlements
 
 ## Status
 
-Draft implementation contract. It replaces the current implicit permanent-free entitlement for `commandglows_app` with a server-authoritative, full-featured 14-day trial followed by a paid access gate. The scope is deliberately CommandGlows-only: other products retain their declared policy until a separate product decision opts them into `trial_then_paid`.
+Partially implemented contract. It replaces the former implicit permanent-free entitlement for `commandglows_app` with a server-authoritative, full-featured 14-day trial followed by a paid access gate. The scope is deliberately CommandGlows-only: other products retain their declared policy until a separate product decision opts them into `trial_then_paid`.
 
 ## User Story
 
@@ -168,7 +168,7 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 - `commandglows_site/convex/schema.ts`, identity synchronization and entitlement functions.
 - `commandglows_site/convex/defaultFreeEntitlements.ts` and all callers that create default access.
 - `commandglows_site/convex/bridge.ts` plus the Astro Firebase/Clerk-to-Convex bridge endpoint.
-- Existing provider-agnostic offer registry and commerce grant/revoke mapping; the Lemon Squeezy adapter is migration source only and must be replaced by Stripe-specific checkout and webhook verification.
+- Existing provider-agnostic offer registry and commerce grant/revoke mapping; Stripe owns CommandGlows checkout/webhooks while Lemon Squeezy remains CommunityGlows-only.
 - `commandglows_app/lib/features/auth/domain/product_entitlement.dart`, bridge client/parser and authentication gate/purchase surface.
 - The payment activation contract v0.3.0 and CommandGlows commercial documents listed in front matter.
 
@@ -223,7 +223,7 @@ Créer un ledger serveur dédié aux essais et aux installations reconnues, puis
 - [ ] Task 7 — Update Flutter entitlement model/parser/cache and auth-gate UI for expiry, reactivation availability, pending refresh and official purchase handoff.
 - [ ] Task 8 — Add privacy-minimized velocity limiting, retention job/configuration and structured security telemetry; document any platform-integrity extension separately.
 - [x] Task 9 — Implement the local automated test matrix and run static/unit checks for site and Flutter. Provider-hosted and real-device scenarios remain under Task 10.
-- [ ] Task 10 — Replace the Lemon Squeezy adapter with Stripe Managed Payments, perform test-mode purchase/refund/revoke proof, and complete a real-device trial/reinstall/new-email checklist; update docs and release evidence.
+- [ ] Task 10 — Stripe Managed Payments is implemented and locally verified. Configure and perform hosted test-mode purchase/refund/revoke proof, then complete the real-device trial/reinstall/new-email checklist and release evidence.
 
 ## Implementation Status (2026-08-11)
 
@@ -238,17 +238,22 @@ complete acceptance contract.
   bridge and Flutter; and a customer-facing restart/purchase gate.
 - Implemented local proof: a `convex-test` integration matrix covers
   `ENT-TRIAL-001` through `ENT-TRIAL-007` and `ENT-TRIAL-011` across six
-  tests; the complete site suite passes with 118 tests and Astro reports no
+  tests; the complete site suite passes with 131 tests and Astro reports no
   errors. This is a deterministic JavaScript mock of Convex, not proof against
   a hosted Convex deployment.
+- Implemented locally: Stripe Managed Payments checkout for all four Founder
+  plans, signed exact-body webhook verification, paid/refund/dispute
+  normalization, provider event idempotency, forwarding to the suite ledger,
+  and a short-lived signed Firebase-to-checkout identity handoff.
 - Not implemented: scheduled retention cleanup and structured risk telemetry,
   and stronger platform integrity.
 - Not yet proven in a hosted environment: Stripe Managed Payments test purchase,
   signed webhook fulfillment, refund/revoke replay, real-device expiry,
   reinstall, or alternate-email behavior.
 
-Consequently, this spec is `partial`: it records an implemented local access
-slice, not a production-ready anti-abuse or payment-launch claim.
+Consequently, this spec remains `draft` with a partial implementation: it
+records an implemented local access slice, not a production-ready anti-abuse
+or payment-launch claim.
 
 ## Acceptance Criteria
 
@@ -311,12 +316,22 @@ None. The commercial decisions required for this scope are settled: no permanent
   Stripe Managed Payments and real-device evidence remain outside this proof.
 - `2026-08-11 — shipglows → sg-docs`: recorded Stripe Managed Payments as the
   CommandGlows target Merchant of Record and the default for future eligible
-  Glows digital products. The current Lemon Squeezy adapter is migration source,
-  not the launch target.
+  Glows digital products. Lemon Squeezy remains the CommunityGlows provider,
+  not the CommandGlows launch target.
+- `2026-08-11 — shipglows → sg-development`: implemented the local Stripe
+  Managed Payments adapter, four-plan Price mapping, allowlisted promotion-code
+  support, signed paid/refund/dispute webhooks and Convex forwarding. The full
+  131-test site suite, Flutter analyze/tests and Astro check pass; no Stripe account, hosted environment
+  or production deployment was changed.
+- `2026-08-11 — sg-docs`: audited the post-implementation corpus, reconciled
+  technical maps and provider contracts, migrated the remaining legacy root
+  docs into canonical workflow archives, and marked the old WinGlows/Lemon
+  Squeezy launch spec as superseded. Hosted provider and device proof remain
+  open and are not presented as delivered.
 
 ## Current Chantier Flow
 
-Local implementation, documentation alignment and the local Convex integration
-matrix are complete for the first slice. The chantier remains open for
-retention/telemetry, stronger platform integrity, the Stripe Managed Payments
-adapter and hosted proof, real-device proof, and release verification.
+Local entitlement implementation, canonical documentation alignment, the
+Convex test matrix and the Stripe Managed Payments adapter are complete. The chantier
+remains open for Stripe/Convex hosted proof, retention/telemetry, stronger
+platform integrity, real-device proof, and release verification.

@@ -269,6 +269,53 @@ describe('CommandGlows trial Convex integration', () => {
     )
   })
 
+  test('ENT-TRIAL-007/008 applies Stripe payment once and revokes it once', async () => {
+    const t = createTestBackend()
+    const identity = await bridgeIdentity(t, {
+      uid: 'firebase-stripe-lifecycle',
+      installationHash: 'installation-hash-stripe-lifecycle',
+    })
+    await expireLatestTrial(t, identity.globalUserId)
+
+    const paidEvent = {
+      provider: 'stripe',
+      offerId: 'commandglows_app/power',
+      productId: 'commandglows_app',
+      plan: 'power',
+      eventType: 'paid' as const,
+      environment: 'test',
+      providerEventId: 'evt_stripe_paid',
+      providerOrderId: 'cs_stripe_paid',
+      idempotencyKey: 'stripe:checkout.session.completed:evt_stripe_paid',
+      status: 'applied' as const,
+      globalUserId: identity.globalUserId,
+      sourceRef: 'purchase:stripe-lifecycle',
+      providerSourceRef: 'cs_stripe_paid',
+      metadata: { source: 'direct', managed_payments: 'true' },
+      bridgeSecret: BRIDGE_SECRET,
+    }
+    const first = await t.mutation(api.bridge.processCommerceEvent, paidEvent)
+    const replay = await t.mutation(api.bridge.processCommerceEvent, paidEvent)
+    expect(first).toMatchObject({ ok: true, status: 'granted', alreadyProcessed: false })
+    expect(replay).toMatchObject({ ok: true, alreadyProcessed: true })
+
+    const revoked = await t.mutation(api.bridge.processCommerceEvent, {
+      ...paidEvent,
+      eventType: 'refunded',
+      providerEventId: 'evt_stripe_refund',
+      providerOrderId: 'ch_stripe_paid',
+      idempotencyKey: 'stripe:refund.created:evt_stripe_refund',
+      providerSourceRef: 'ch_stripe_paid',
+    })
+    expect(revoked).toMatchObject({ ok: true, status: 'revoked', alreadyProcessed: false })
+
+    const active = await t.run(async (ctx) => {
+      const rows = await ctx.db.query('productEntitlements').collect()
+      return rows.filter((row) => row.productId === 'commandglows_app' && row.status === 'active')
+    })
+    expect(active).toHaveLength(0)
+  })
+
   test('ENT-TRIAL-011 temporarily denies the fourth network grant in 24 hours', async () => {
     const t = createTestBackend()
     const snapshots = []

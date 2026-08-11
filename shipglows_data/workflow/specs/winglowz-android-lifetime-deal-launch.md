@@ -1,14 +1,15 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.2.0"
 project: "WinGlows"
 created: "2026-06-11"
 created_at: "2026-06-11 19:07:18 UTC"
-updated: "2026-06-18"
-updated_at: "2026-06-18 11:32:51 UTC"
-status: draft
-source_skill: 100-sf-spec
+updated: "2026-08-11"
+updated_at: "2026-08-11 16:29:37 UTC"
+status: superseded
+superseded_by: "shipglows_data/workflow/specs/commandglows-trial-then-paid-entitlements.md"
+source_skill: sg-docs
 source_model: "GPT-5 Codex"
 scope: "android-lifetime-deal-launch"
 owner: "Diane"
@@ -83,10 +84,15 @@ evidence:
   - "Design implementation 2026-06-12: `winglowz_site/src/pages/[...lang]/winglowz-founder.astro` creates a bilingual Founder Access sales-page draft focused on page architecture, visual hierarchy, activation tiers, and honest availability."
   - "Commerce implementation 2026-06-12: WinGlows App founder offers are registered as `winglowz_app/focus`, `winglowz_app/power`, `winglowz_app/control`, and `winglowz_app/command`, with Lemon Squeezy variant env keys, checkout CTAs, signed webhook parsing, and generic suite entitlement fulfillment via `bridge:processCommerceEvent`."
   - "Documentation update 2026-06-18: `shipglows_data/technical/payment-activation-entitlements.md` defines the reusable payment activation, entitlement, and future device activation contract."
-next_step: "/103-sf-verify WinGlows Founder checkout and entitlement flow after Lemon Squeezy test-mode variants are configured"
+next_step: "Use shipglows_data/workflow/specs/commandglows-trial-then-paid-entitlements.md as the active entitlement and payment specification."
 ---
 
 # Spec: WinGlows Android Lifetime Deal Launch
+
+> Superseded on 2026-08-11 by
+> `shipglows_data/workflow/specs/commandglows-trial-then-paid-entitlements.md`.
+> The body below is retained as historical launch context and must not be used
+> as the current provider, trial, entitlement, naming, or domain contract.
 
 ## Title
 

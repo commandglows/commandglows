@@ -48,7 +48,7 @@ const OFFER_BY_ID: Record<CommerceOfferId, CommerceOffer> = {
     productId: COMMANDGLOWS_APP_PRODUCT_ID,
     plan: "focus",
     sources: COMMANDGLOWS_APP_SOURCES,
-    providers: ["lemonsqueezy"],
+    providers: ["stripe"],
     successPath: "/purchase/success?offerId=commandglows_app/focus",
     cancelPath: "/purchase/cancel?offerId=commandglows_app/focus",
     description: "CommandGlows Focus founder access, 1 active device",
@@ -58,7 +58,7 @@ const OFFER_BY_ID: Record<CommerceOfferId, CommerceOffer> = {
     productId: COMMANDGLOWS_APP_PRODUCT_ID,
     plan: "power",
     sources: COMMANDGLOWS_APP_SOURCES,
-    providers: ["lemonsqueezy"],
+    providers: ["stripe"],
     successPath: "/purchase/success?offerId=commandglows_app/power",
     cancelPath: "/purchase/cancel?offerId=commandglows_app/power",
     description: "CommandGlows Power founder access, 2 active devices",
@@ -68,7 +68,7 @@ const OFFER_BY_ID: Record<CommerceOfferId, CommerceOffer> = {
     productId: COMMANDGLOWS_APP_PRODUCT_ID,
     plan: "control",
     sources: COMMANDGLOWS_APP_SOURCES,
-    providers: ["lemonsqueezy"],
+    providers: ["stripe"],
     successPath: "/purchase/success?offerId=commandglows_app/control",
     cancelPath: "/purchase/cancel?offerId=commandglows_app/control",
     description: "CommandGlows Control founder access, 5 active devices",
@@ -78,7 +78,7 @@ const OFFER_BY_ID: Record<CommerceOfferId, CommerceOffer> = {
     productId: COMMANDGLOWS_APP_PRODUCT_ID,
     plan: "command",
     sources: COMMANDGLOWS_APP_SOURCES,
-    providers: ["lemonsqueezy"],
+    providers: ["stripe"],
     successPath: "/purchase/success?offerId=commandglows_app/command",
     cancelPath: "/purchase/cancel?offerId=commandglows_app/command",
     description: "CommandGlows Command founder access, 10 active devices",
@@ -146,16 +146,39 @@ function getLemonSqueezyProductEnvKey(offerId: string): string | null {
   return null
 }
 
+function getStripePriceEnvKey(offerId: string): string | null {
+  if (offerId === COMMANDGLOWS_APP_FOCUS_OFFER_ID) {
+    return "STRIPE_COMMANDGLOWS_APP_FOCUS_PRICE_ID"
+  }
+  if (offerId === COMMANDGLOWS_APP_POWER_OFFER_ID) {
+    return "STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID"
+  }
+  if (offerId === COMMANDGLOWS_APP_CONTROL_OFFER_ID) {
+    return "STRIPE_COMMANDGLOWS_APP_CONTROL_PRICE_ID"
+  }
+  if (offerId === COMMANDGLOWS_APP_COMMAND_OFFER_ID) {
+    return "STRIPE_COMMANDGLOWS_APP_COMMAND_PRICE_ID"
+  }
+  return null
+}
+
 export function getOfferProviderConfig(
   offerId: string,
-  provider: CommerceProviderId
+  provider: CommerceProviderId,
+  envOverride?: Record<string, string | undefined>
 ): CommerceProviderConfig | null {
   const offer = getCommerceOffer(offerId)
   if (!offer || !offer.providers.includes(provider)) {
     return null
   }
 
-  const env = getServerEnv()
+  const env = envOverride ?? getServerEnv()
+
+  if (provider === "stripe") {
+    const priceEnvKey = getStripePriceEnvKey(offerId)
+    const priceId = priceEnvKey ? env[priceEnvKey] : undefined
+    return priceId ? { provider, priceId } : null
+  }
 
   if (provider === "lemonsqueezy") {
     const variantEnvKey = getLemonSqueezyVariantEnvKey(offerId)
@@ -223,7 +246,7 @@ export function normalizeCommerceProviderOrder(
   offerId: string
 ): CommerceProviderId[] {
   const env = getServerEnv()
-  const fallback: CommerceProviderId[] = ["lemonsqueezy", "polar"]
+  const fallback: CommerceProviderId[] = ["stripe", "lemonsqueezy", "polar"]
   const raw = env.COMMERCE_PROVIDER_ORDER?.split(",") ?? []
   const candidates = raw
     .map((candidate) => candidate.trim().toLowerCase())
@@ -234,6 +257,7 @@ export function normalizeCommerceProviderOrder(
   )
   const ordered = [...candidateSet]
     .map((candidate) => {
+      if (candidate === "stripe") return "stripe" as const
       if (candidate === "lemonsqueezy") return "lemonsqueezy" as const
       if (candidate === "polar") return "polar" as const
       return null

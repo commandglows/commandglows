@@ -5,6 +5,8 @@ import type {
 } from '@/lib/commerce/types'
 import { getServerEnv } from '@/lib/serverEnv'
 import { createLemonSqueezyCheckout } from '@/lib/commerce/providers/lemonsqueezy'
+import { createStripeManagedPaymentsCheckout } from '@/lib/commerce/providers/stripe'
+import { verifyCommerceCheckoutIdentityToken } from '@/lib/commerce/checkoutIdentity'
 import {
   createPolarCheckout,
   isPolarLegacyConfigurationPresent,
@@ -51,7 +53,7 @@ function getFirstNonEmpty(...values: Array<string | null | undefined>): string |
 }
 
 function isCommerceProviderId(value: string | undefined): value is CommerceProviderId {
-  return value === 'lemonsqueezy' || value === 'polar' || value === 'custom'
+  return value === 'stripe' || value === 'lemonsqueezy' || value === 'polar' || value === 'custom'
 }
 
 function resolveRedirectUrl(
@@ -242,6 +244,24 @@ async function runCheckoutWithProvider(
     } as CheckoutHttpResult
   }
 
+  if (requestData.offerId.startsWith('commandglows_app/')) {
+    const checkoutIdentitySecret = env.SUITE_COMMERCE_CHECKOUT_SECRET
+    const identityToken = requestData.metadata.identity_token
+    const verifiedGlobalUserId =
+      checkoutIdentitySecret && identityToken
+        ? verifyCommerceCheckoutIdentityToken(identityToken, checkoutIdentitySecret)
+        : null
+    if (!verifiedGlobalUserId) {
+      return {
+        ok: false,
+        statusText: 'CommandGlows checkout must be started from the authenticated app',
+        status: 401,
+      } as CheckoutHttpResult
+    }
+    requestData.metadata.global_user_id = verifiedGlobalUserId
+    delete requestData.metadata.identity_token
+  }
+
   const normalizedCandidateOrder = pickProviderCandidates(requestData.offerId)
   const requestedProvider = requestData.provider
   const requestedCommerceProvider = isCommerceProviderId(requestedProvider)
@@ -320,6 +340,34 @@ async function runCheckoutWithProvider(
       } as CheckoutHttpResult
     }
 
+    if (provider === 'stripe') {
+      const providerResult = await createStripeManagedPaymentsCheckout(
+        checkoutRequest,
+        requestData.offerId,
+        env
+      )
+
+      if (providerResult.ok) {
+        return {
+          ok: true,
+          provider,
+          statusText: providerResult.checkoutUrl,
+          status: 200,
+          checkoutUrl: providerResult.checkoutUrl,
+        } as CheckoutHttpResult
+      }
+
+      if (providerResult.code === 'missing_env' || providerResult.code === 'provider_not_configured') {
+        continue
+      }
+
+      return {
+        ok: false,
+        statusText: providerResult.message,
+        status: providerResult.code === 'bad_request' ? 400 : 502,
+      } as CheckoutHttpResult
+    }
+
     if (provider === 'polar') {
       const polarResult = await runPolarCheckout(
         checkoutRequest,
@@ -358,6 +406,8 @@ export const GET: APIRoute = async ({ request }) => {
     status: 302,
     headers: {
       Location: result.statusText,
+      'Referrer-Policy': 'no-referrer',
+      'Cache-Control': 'private, no-store',
     },
   })
 }

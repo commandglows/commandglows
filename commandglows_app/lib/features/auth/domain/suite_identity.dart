@@ -27,6 +27,7 @@ class SuiteIdentitySnapshot {
   const SuiteIdentitySnapshot({
     required this.status,
     this.globalUserId,
+    this.checkoutIdentityToken,
     this.accounts = const [],
     this.entitlements = const [],
     this.issue,
@@ -35,11 +36,13 @@ class SuiteIdentitySnapshot {
   const SuiteIdentitySnapshot.unavailable([this.issue])
     : status = SuiteAccountStatus.unavailable,
       globalUserId = null,
+      checkoutIdentityToken = null,
       accounts = const [],
       entitlements = const [];
 
   final SuiteAccountStatus status;
   final String? globalUserId;
+  final String? checkoutIdentityToken;
   final List<SuiteIdentityAccount> accounts;
   final List<ProductEntitlement> entitlements;
   final String? issue;

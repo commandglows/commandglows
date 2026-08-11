@@ -136,6 +136,9 @@ class SuiteIdentityBridgeClient {
     }
 
     final globalUserId = _parseNonEmptyString(payload['globalUserId']);
+    final checkoutIdentityToken = _parseNonEmptyString(
+      payload['checkoutIdentityToken'],
+    );
 
     final parsedAccounts = _parseAccounts(payload['accounts']);
     final accounts = parsedAccounts.isEmpty
@@ -146,6 +149,7 @@ class SuiteIdentityBridgeClient {
     return SuiteIdentitySnapshot(
       status: status,
       globalUserId: globalUserId,
+      checkoutIdentityToken: checkoutIdentityToken,
       accounts: accounts,
       entitlements: entitlements,
       issue: null,

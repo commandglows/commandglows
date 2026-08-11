@@ -1,12 +1,12 @@
 ---
 artifact: gtm_context
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.4.0"
 project: "CommandGlows"
 created: "2026-04-26"
 updated: "2026-08-11"
 status: "reviewed"
-source_skill: "sf-docs"
+source_skill: "sg-docs"
 scope: "gtm"
 owner: "Diane"
 confidence: "medium"
@@ -16,8 +16,9 @@ security_impact: "none"
 evidence:
   - "shipglows_data/business/business.md"
   - "shipglows_data/business/product.md"
-  - "lib/features/settings/presentation/settings_screen.dart"
+  - "commandglows_app/lib/features/settings/presentation/settings_screen.dart"
   - "Operator decision 2026-08-11: Stripe Managed Payments is the target Merchant of Record for CommandGlows."
+  - "Local implementation 2026-08-11: trial recovery, signed app checkout handoff, Stripe checkout and lifecycle webhooks are present; hosted proof remains open."
 target_segment:
   - "Mobile professionals dictating notes and messages"
   - "Android power users needing overlay-driven text capture"
@@ -38,14 +39,17 @@ depends_on:
   - "shipglows_data/business/product.md@0.1.0"
 supersedes: []
 next_review: "2026-09-11"
-next_step: "Complete hosted payment proof and the customer-facing trial/purchase journey before publishing commercial claims."
+next_step: "Complete hosted payment and real-device trial proof before publishing production-ready commercial claims."
 ---
 
 # GTM — CommandGlows
 
 ## Positionnement
 
-CommandGlows est un produit sibling de CommandGlows dans le même écosystème. CommandGlows porte l'axe voice-first (dictée, transcription, nettoyage, clipboard), tandis que CommandGlows porte d'autres workflows de productivité.
+CommandGlows App est la surface voice-first de l'écosystème CommandGlows:
+dictée, transcription, nettoyage, clipboard et réutilisation de texte. Le site
+CommandGlows porte son acquisition, son checkout et les bridges d'identité et
+d'entitlement associés.
 
 ## Segment prioritaire
 

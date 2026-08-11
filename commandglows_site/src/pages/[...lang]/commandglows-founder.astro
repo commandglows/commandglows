@@ -405,11 +405,19 @@ const copy = copyByLang[lang]
 const pagePath = lang === 'fr' ? '/fr/commandglows-founder' : '/commandglows-founder'
 const defaultOfferId = 'commandglows_app/power'
 const founderCode = 'FOUNDER'
+const checkoutIdentityToken = Astro.url.searchParams.get('checkoutToken')?.trim()
+if (checkoutIdentityToken) {
+	Astro.response.headers.set('Referrer-Policy', 'no-referrer')
+	Astro.response.headers.set('Cache-Control', 'private, no-store')
+}
 
 function checkoutUrl(offerId: string) {
 	const successUrl = `/purchase/success?offerId=${encodeURIComponent(offerId)}`
 	const cancelUrl = `/purchase/cancel?offerId=${encodeURIComponent(offerId)}`
-	return `/api/commerce/checkout?offerId=${encodeURIComponent(offerId)}&provider=lemonsqueezy&source=direct&sourceRef=${encodeURIComponent(pagePath)}&discountCode=${encodeURIComponent(founderCode)}&successUrl=${encodeURIComponent(successUrl)}&cancelUrl=${encodeURIComponent(cancelUrl)}`
+	const identityQuery = checkoutIdentityToken
+		? `&identityToken=${encodeURIComponent(checkoutIdentityToken)}`
+		: ''
+	return `/api/commerce/checkout?offerId=${encodeURIComponent(offerId)}&provider=stripe&source=direct&sourceRef=${encodeURIComponent(pagePath)}&discountCode=${encodeURIComponent(founderCode)}&successUrl=${encodeURIComponent(successUrl)}&cancelUrl=${encodeURIComponent(cancelUrl)}${identityQuery}`
 }
 ---
 

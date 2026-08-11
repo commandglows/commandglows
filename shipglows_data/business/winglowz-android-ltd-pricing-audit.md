@@ -1,12 +1,12 @@
 ---
 artifact: market_study
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.2.0"
 project: "CommandGlows"
 created: "2026-06-12"
-updated: "2026-06-12"
+updated: "2026-08-11"
 status: "draft"
-source_skill: "204-sf-market-study"
+source_skill: "sg-docs"
 scope: "commandglows-android-ltd-pricing"
 owner: "Diane"
 confidence: "medium"
@@ -20,7 +20,7 @@ security_impact: "yes"
 linked_systems:
   - "commandglows_site"
   - "commandglows_app"
-  - "Lemon Squeezy"
+  - "Stripe Managed Payments"
   - "Firebase"
   - "shipglows_data/workflow/specs/commandglows-android-lifetime-deal-launch.md"
 depends_on:
@@ -46,13 +46,20 @@ evidence:
   - "https://help.appsumo.com/article/680-how-is-the-list-price-calculated"
   - "https://help.appsumo.com/article/678-how-can-i-list-multiple-plan-tiers"
   - "https://www.lemonsqueezy.com/pricing"
+  - "https://www.lemonsqueezy.com/blog/2026-update"
+  - "https://stripe.com/managed-payments"
   - "https://firebase.google.com/pricing"
   - "https://developers.openai.com/api/docs/pricing"
-next_review: "2026-06-26"
-next_step: "Diane validates one recommended pricing ladder before 101-sf-ready"
+next_review: "2026-09-11"
+next_step: "Recalculate launch net revenue with current Stripe Managed Payments pricing before final public prices are approved."
 ---
 
 # CommandGlows Android LTD Pricing Audit
+
+> Amendment — 2026-08-11: the commercial ladder and cost-risk reasoning remain
+> useful, but the original Lemon Squeezy launch-provider and fee assumptions are
+> historical. CommandGlows now targets Stripe Managed Payments; figures derived
+> from Lemon Squeezy fees must not be used as current launch net-revenue proof.
 
 ## Executive Verdict
 
@@ -74,7 +81,7 @@ Minimum no-bankruptcy rule: **do not sell all-platforms + cloud sync below $499*
 ## Decisions Already Reflected
 
 - First launch language: English.
-- Payment provider: Lemon Squeezy.
+- Payment provider assumption superseded: Stripe Managed Payments is now the CommandGlows Merchant of Record target; Lemon Squeezy is retained only for CommunityGlows.
 - License basis: per user, not per platform and not per machine, with a fixed number of active device activations across any released platform.
 - Early Bird framing: beta pricing that may change, not a fake fixed deadline.
 - Other platforms: Windows, iOS, and Linux can be promised as intended future directions only; no release date commitment.

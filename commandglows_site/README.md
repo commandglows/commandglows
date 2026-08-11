@@ -98,7 +98,8 @@ commandglows_site/
 - `/api/newsletter/*` — newsletter subscribe and unsubscribe
 - `/api/polar/*` — checkout/webhook surfaces
 - `/api/commerce/*` — provider-agnostic checkout/webhook surfaces
-- `/api/commerce/webhooks/lemon-squeezy` — Lemon Squeezy webhook for normalized LTD commerce events
+- `/api/commerce/webhooks/stripe` — Stripe Managed Payments webhook for CommandGlows purchase, refund, and dispute events
+- `/api/commerce/webhooks/lemon-squeezy` — Lemon Squeezy webhook for normalized CommunityGlows LTD commerce events
 - `/api/bridge/firebase` — Firebase ID token bridge to suite identity snapshot
 - `/api/bridge/sync` — internal entitlement mirror sync by `globalUserId` + shared secret
 - `/api/bridge/communityglows` — CommunityGlows server-to-server entitlement snapshot and activation-code redemption bridge
@@ -166,21 +167,32 @@ The route calls suite Convex bridge mutations for `communityglows` entitlement s
 - `POLAR_SERVER`
 - `SUITE_BRIDGE_SYNC_URL` (used by Convex Polar webhook handling to call `/api/bridge/sync`)
 
-### Lemon Squeezy (direct LTD checkout)
+### Stripe Managed Payments (CommandGlows)
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_API_VERSION` (optional; omit to use the Stripe SDK default)
+- `STRIPE_COMMANDGLOWS_APP_FOCUS_PRICE_ID`
+- `STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID`
+- `STRIPE_COMMANDGLOWS_APP_CONTROL_PRICE_ID`
+- `STRIPE_COMMANDGLOWS_APP_COMMAND_PRICE_ID`
+- `STRIPE_COMMANDGLOWS_FOUNDER_DISCOUNT_CODE` (optional; default: `FOUNDER`)
+- `STRIPE_COMMANDGLOWS_FOUNDER_PROMOTION_CODE_ID` (optional Stripe promotion-code ID)
+- `SUITE_COMMERCE_CHECKOUT_SECRET` (dedicated HMAC secret shared only by the Firebase bridge and checkout route)
+
+CommandGlows Checkout Sessions explicitly set `managed_payments.enabled=true`. The authenticated Firebase bridge issues a short-lived signed checkout handoff; the checkout route rejects missing, expired, or modified handoffs and never trusts a raw client-supplied global user ID. Offer metadata is copied to both the Checkout Session and Payment Intent so signed completion, refund, and dispute events can be normalized into `bridge:processCommerceEvent`. Access is granted only by a verified paid webhook. Full successful refunds and disputes revoke paid access; partial or pending refunds go to `pending_review`.
+
+### Lemon Squeezy (CommunityGlows checkout)
 
 - `LEMONSQUEEZY_API_KEY`
 - `LEMONSQUEEZY_API_URL` (default: `https://api.lemonsqueezy.com`)
 - `LEMONSQUEEZY_STORE_ID`
 - `LEMONSQUEEZY_COMMUNITYGLOWS_PRODUCT_ID`
 - `LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID`
-- `LEMONSQUEEZY_COMMANDGLOWS_APP_PRODUCT_ID`
-- `LEMONSQUEEZY_COMMANDGLOWS_APP_STARTER_FOUNDER_VARIANT_ID`
-- `LEMONSQUEEZY_COMMANDGLOWS_APP_PRO_FOUNDER_VARIANT_ID`
-- `LEMONSQUEEZY_COMMANDGLOWS_APP_STUDIO_FOUNDER_VARIANT_ID`
 - `LEMONSQUEEZY_WEBHOOK_SECRET`
-- `COMMERCE_PROVIDER_ORDER` (optional provider preference, e.g. `lemonsqueezy,polar`)
+- `COMMERCE_PROVIDER_ORDER` (optional provider preference, e.g. `stripe,lemonsqueezy,polar`)
 
-The direct checkout adapter creates hosted Lemon Squeezy checkouts with `product_options.redirect_url` and `checkout_data.custom`. Webhook fulfillment reads the signed raw body, verifies `X-Signature`, uses `X-Event-Name`, and maps Lemon Squeezy `meta.custom_data` back to the suite entitlement ledger through `bridge:processCommerceEvent`. Lemon Squeezy owns payment receipts and checkout emails; app access is granted or marked `pending_review` only from the signed webhook path, never from the success redirect alone.
+The Lemon Squeezy adapter remains for CommunityGlows. It is no longer an allowed provider for CommandGlows offers.
 
 ### Resend
 

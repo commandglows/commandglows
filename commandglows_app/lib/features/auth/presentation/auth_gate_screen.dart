@@ -70,6 +70,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           loading: () => const _AccessLoadingScreen(),
           error: (error, stackTrace) => TrialAccessScreen(
             entitlement: null,
+            checkoutIdentityToken: null,
             isRestarting: _isRestarting,
             onRestart: _restartTrial,
           ),
@@ -87,6 +88,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
             }
             return TrialAccessScreen(
               entitlement: commandGlowsEntitlement,
+              checkoutIdentityToken: identity.checkoutIdentityToken,
               isRestarting: _isRestarting,
               onRestart: _restartTrial,
             );

@@ -1,4 +1,4 @@
-export type CommerceProviderId = "lemonsqueezy" | "polar" | "custom"
+export type CommerceProviderId = "stripe" | "lemonsqueezy" | "polar" | "custom"
 
 export type CommerceOfferId = `${string}/${string}`
 
@@ -16,6 +16,7 @@ export type CommerceOffer = {
 export type CommerceEnvironment = "production" | "sandbox" | "development"
 
 export type CommerceProviderName =
+  | "stripe"
   | "lemonsqueezy"
   | "polar"
   | "custom"
@@ -174,6 +175,7 @@ export type CommerceFulfillmentResponse =
 
 export type CommerceProviderConfig = {
   provider: CommerceProviderId
+  priceId?: string
   productId?: string
   variantId?: string
   storeId?: string

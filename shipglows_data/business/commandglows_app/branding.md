@@ -1,12 +1,12 @@
 ---
 artifact: brand_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "CommandGlows"
 created: "2026-03-18"
-updated: "2026-06-10"
+updated: "2026-08-11"
 status: "reviewed"
-source_skill: "sf-docs"
+source_skill: "sg-docs"
 scope: "branding"
 owner: "Diane"
 confidence: "medium"
@@ -14,7 +14,9 @@ risk_level: "low"
 docs_impact: "yes"
 security_impact: "none"
 evidence:
-  - "docs/SPEC_FLUTTER_SUPABASE_MIGRATION.md"
+  - "commandglows_app/README.md"
+  - "shipglows_data/technical/architecture.md"
+  - "shipglows_data/technical/payment-activation-entitlements.md"
   - "shipglows_data/business/business.md"
   - "shipglows_data/business/product.md"
   - "shipglows_data/workflow/audits/2026-06-10-commandglows-platform-parity.md"
@@ -23,8 +25,8 @@ trust_posture: "Do not overpromise auth, billing, privacy, or AI quality beyond 
 depends_on:
   - "shipglows_data/business/business.md@0.1.0"
 supersedes: []
-next_review: "2026-05-26"
-next_step: "$sf-docs update"
+next_review: "2026-09-11"
+next_step: "Refresh after public naming, entitlement claims, or platform-proof changes."
 ---
 
 # Branding — CMDglows
@@ -96,11 +98,11 @@ CMDglows reste visuellement relié à l'écosystème CommandGlows, avec une iden
 
 ### Claims interdits tant que non implémentés
 
-- "Billing premium actif", "quotas appliqués", "entitlements en production".
+- "Billing et entitlements prêts pour la production" tant que le cycle Stripe/Convex hébergé et le refresh app ne sont pas prouvés.
 - "Chiffrement bout-en-bout".
 - "Overlay système identique sur iOS/macOS/Windows/Linux/web".
 - "Parité complète sur toutes les plateformes" sans preuve de QA et matrice de limites.
 
-### Claims legacy-current à ne pas utiliser comme cible
+### Claims historiques à ne pas utiliser comme cible
 
 - "Backend Convex", "auth Clerk en cours", "application Expo/React Native" comme direction produit.

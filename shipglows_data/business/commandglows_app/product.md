@@ -1,12 +1,12 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.5.0"
+artifact_version: "1.6.0"
 project: "CommandGlows"
 created: "2026-04-26"
 updated: "2026-08-11"
 status: "reviewed"
-source_skill: "sf-docs"
+source_skill: "sg-docs"
 scope: "product"
 owner: "Diane"
 confidence: "medium"
@@ -14,12 +14,13 @@ risk_level: "medium"
 docs_impact: "yes"
 security_impact: "high"
 evidence:
-  - "docs/SPEC_FLUTTER_SUPABASE_MIGRATION.md"
-  - "docs/MIGRATION_FLUTTER.md"
-  - "docs/DECISIONS.md"
+  - "commandglows_app/README.md"
+  - "commandglows_app/lib/features/auth/presentation/trial_access_screen.dart"
+  - "commandglows_site/src/pages/api/commerce/checkout.ts"
+  - "commandglows_site/src/pages/api/commerce/webhooks/stripe.ts"
   - "shipglows_data/technical/architecture.md"
   - "shipglows_data/technical/guidelines.md"
-  - "docs/API.md"
+  - "shipglows_data/technical/payment-activation-entitlements.md"
   - "shipglows_data/workflow/audits/2026-06-10-commandglows-platform-parity.md"
   - "Operator decision 2026-08-11: Stripe Managed Payments is the target Merchant of Record for CommandGlows."
 target_user: "Professionals and power users capturing text from speech across mobile, desktop, and web"
@@ -65,8 +66,10 @@ permanent.
 Le checkout cible utilise Stripe Managed Payments afin que Stripe agisse comme
 Merchant of Record. Stripe Payments classique ne satisfait pas ce contrat.
 Convex conserve l'autorité sur les entitlements; le fournisseur de paiement ne
-fait qu'émettre des événements commerce vérifiés. L'adaptateur Lemon Squeezy
-existant doit être remplacé avant la preuve de lancement.
+fait qu'émettre des événements commerce vérifiés. Le checkout Stripe, son
+webhook et le handoff d'identité signé entre l'app Firebase et la page publique
+sont implémentés et vérifiés localement. Lemon Squeezy reste réservé à
+CommunityGlows; la preuve hébergée Stripe/Convex reste nécessaire avant lancement.
 
 ## Problème utilisateur
 
@@ -145,7 +148,7 @@ Les utilisateurs produisent souvent du texte dans des contextes où taper est le
 - Overlay / quick actions comme concept produit cross-platform, avec Android via bridge Flutter/Kotlin, Windows/macOS/Linux via hôtes desktop natifs, et iOS/web à spécifier par chantiers d'adaptation.
 - Parité extension visée pour auth, sync, dictée, historique, snippets, dictionnaire, actions texte et livraison dans le champ actif; clipboard continu, IME, contrôles système et automatisations desktop restent adaptés ou indisponibles selon les contraintes navigateur.
 
-## Legacy-current (pré-migration, non cible)
+## Contexte historique de migration (non cible)
 
 - Expo/React Native + code applicatif TS.
 - Backend Convex.
@@ -171,7 +174,7 @@ Mitigations obligatoires:
 
 ## Non-goals actuels
 
-- Pas de billing/entitlements dans la migration.
+- Pas d'accès payé accordé par le client, le retour checkout ou un état local non vérifié; l'entitlement reste serveur.
 - Pas de promesse d'overlay système identique sur toutes les plateformes; chaque OS doit avoir un hôte natif, une adaptation meilleure ou une limite documentée.
 - Pas de clavier système CommandGlows hors Android dans cette phase.
 - Pas de promesse de chiffrement bout-en-bout.

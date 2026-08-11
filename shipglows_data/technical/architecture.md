@@ -1,12 +1,12 @@
 ---
 artifact: architecture_context
 metadata_schema_version: '1.0'
-artifact_version: '1.0.1'
+artifact_version: '1.1.0'
 project: commandglows
 created: '2026-05-17'
-updated: '2026-06-12'
+updated: '2026-08-11'
 status: reviewed
-source_skill: sf-docs
+source_skill: sg-docs
 scope: architecture
 owner: 'Diane'
 confidence: high
@@ -25,6 +25,10 @@ evidence:
   - src/pages/api/features/suggest.ts
   - convex/http.ts
   - convex/schema.ts
+  - commandglows_site/src/lib/commerce/providers/stripe.ts
+  - commandglows_site/src/lib/commerce/checkoutIdentity.ts
+  - commandglows_site/src/pages/api/commerce/webhooks/stripe.ts
+  - commandglows_app/lib/features/auth/domain/suite_identity.dart
 linked_systems:
   - src/content
   - src/pages
@@ -33,6 +37,8 @@ linked_systems:
   - Clerk
   - Polar
   - Resend
+  - Stripe Managed Payments
+  - Firebase
 external_dependencies:
   - Astro
   - Vercel
@@ -40,6 +46,8 @@ external_dependencies:
   - Convex
   - Polar
   - Resend
+  - Stripe
+  - Firebase
 invariants:
   - English routes remain unprefixed while French routes stay under /fr.
   - Checkout initiation and webhook entitlement updates remain coordinated between Astro routes and Convex.
@@ -50,8 +58,8 @@ depends_on:
   - shipglows_data/business/branding.md
 supersedes:
   - ARCHITECTURE.md
-next_review: '2026-06-17'
-next_step: 'pnpm build:check'
+next_review: '2026-09-11'
+next_step: 'Capture hosted Stripe, Convex and app-refresh proof before production readiness.'
 ---
 
 # Architecture
@@ -62,21 +70,25 @@ Describe the stable system boundaries for CommandGlows so technical and docs cha
 
 ## Owned Files
 
-- `src/pages/**`
-- `src/middleware/**`
-- `src/content/config.ts`
-- `convex/**`
+- `commandglows_site/src/pages/**`
+- `commandglows_site/src/middleware/**`
+- `commandglows_site/src/content/config.ts`
+- `commandglows_site/convex/**`
+- `commandglows_app/lib/features/auth/**`
 
 ## Entrypoints
 
-- `src/middleware/index.ts`
-- `src/pages/api/polar/checkout.ts`
-- `src/pages/api/polar/webhook.ts`
-- `src/pages/api/newsletter/subscribe.ts`
-- `src/pages/api/clerk/webhook.ts`
-- `src/pages/api/features/[key]/vote.ts`
-- `src/pages/api/features/suggest.ts`
-- `convex/http.ts`
+- `commandglows_site/src/middleware/index.ts`
+- `commandglows_site/src/pages/api/polar/checkout.ts`
+- `commandglows_site/src/pages/api/commerce/checkout.ts`
+- `commandglows_site/src/pages/api/commerce/webhooks/stripe.ts`
+- `commandglows_site/src/pages/api/bridge/firebase.ts`
+- `commandglows_site/src/pages/api/polar/webhook.ts`
+- `commandglows_site/src/pages/api/newsletter/subscribe.ts`
+- `commandglows_site/src/pages/api/clerk/webhook.ts`
+- `commandglows_site/src/pages/api/features/[key]/vote.ts`
+- `commandglows_site/src/pages/api/features/suggest.ts`
+- `commandglows_site/convex/http.ts`
 
 ## System Overview
 
@@ -114,9 +126,13 @@ Astro API routes act as thin integration controllers for:
 - Clerk webhook intake
 - roadmap voting and suggestion intake
 - suite bridge endpoints:
-  - `POST /api/bridge/firebase` maps Firebase users to suite identities and mirrors `commandglows_app` access into Firestore.
+  - `POST /api/bridge/firebase` maps Firebase users to suite identities, mirrors `commandglows_app` access into Firestore, and issues a short-lived HMAC-signed checkout identity handoff when configured.
   - `POST /api/bridge/sync` refreshes the Firestore access mirror by `globalUserId`.
   - `POST /api/bridge/entitlement` verifies a Clerk session token server-side and returns a redacted ReplayGlowz entitlement snapshot for `product_id=replayglowz`; old YouTube-product ids are no longer accepted. When a recognized Clerk account has no active ReplayGlowz entitlement yet, the bridge persists a product-scoped `replayglowz/free` default grant instead of granting suite-wide access.
+- commerce endpoints:
+  - `GET|POST /api/commerce/checkout` resolves an allowlisted offer and provider; CommandGlows purchases require a valid signed app handoff and explicitly create a Stripe Managed Payments Checkout Session.
+  - `POST /api/commerce/webhooks/stripe` verifies the exact raw body and `Stripe-Signature`, then maps paid Checkout, successful full refund, and dispute events to the generic Convex commerce processor.
+  - `POST /api/commerce/webhooks/lemon-squeezy` remains active for the separate CommunityGlows offer.
 
 ### Backend state layer
 
@@ -126,6 +142,9 @@ Convex is the primary state store. Current tables in `convex/schema.ts` are:
 - `globalUsers`
 - `identityAccounts`
 - `productEntitlements`
+- `productTrialInstallations`
+- `productTrialRiskWindows`
+- `productActivationCodes`
 - `productAccessEvents`
 - `apiKeys`
 - `features`
@@ -138,11 +157,13 @@ Convex is the primary state store. Current tables in `convex/schema.ts` are:
 - Checkout initiation and webhook entitlement updates remain coordinated between Astro routes and Convex.
 - Typed content collections continue to define valid docs, blog, product, and service content.
 - API routes should stay thin; durable business state belongs in Convex or provider systems.
+- Checkout redirects never grant access. Only signed, idempotent provider events may change paid entitlement state.
+- Raw client-supplied global user IDs are never trusted for CommandGlows checkout identity.
 
 ## Validation
 
 ```bash
-pnpm build:check
+pnpm -C commandglows_site build:check
 python3 /home/claude/shipglows/tools/shipglows_metadata_lint.py shipglows_data/technical/architecture.md
 ```
 

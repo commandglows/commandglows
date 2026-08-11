@@ -1,12 +1,12 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.2"
+artifact_version: "1.1.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-08-09"
+updated: "2026-08-11"
 status: reviewed
-source_skill: sf-docs
+source_skill: sg-docs
 scope: technical-context
 owner: "Diane"
 confidence: high
@@ -14,30 +14,26 @@ risk_level: medium
 security_impact: unknown
 docs_impact: yes
 linked_systems:
-  - src/pages
-  - src/components
-  - src/content
-  - src/i18n
-  - src/middleware
-  - convex
+  - commandglows_site
+  - commandglows_app
+  - commandglows_site/convex
 depends_on:
   - AGENT.md
   - shipglows_data/technical/guidelines.md
 supersedes:
   - CONTEXT.md
 evidence:
-  - package.json
-  - src/content/config.ts
-  - src/pages
-  - src/components
-  - src/middleware
-  - convex/schema.ts
-  - src/pages/[...lang]/termux.astro
-  - src/utils/shipglowsRedirects.ts
-  - src/pages/shipglows.ts
-  - src/pages/dotfiles.ts
-next_review: "2026-06-17"
-next_step: "pnpm build:check"
+  - commandglows_site/package.json
+  - commandglows_site/src/content/config.ts
+  - commandglows_site/src/pages
+  - commandglows_site/src/components
+  - commandglows_site/src/middleware
+  - commandglows_site/convex/schema.ts
+  - commandglows_site/src/pages/api/commerce/checkout.ts
+  - commandglows_site/src/pages/api/commerce/webhooks/stripe.ts
+  - commandglows_app/lib/features/auth/presentation/trial_access_screen.dart
+next_review: "2026-09-11"
+next_step: "Refresh after hosted Stripe proof or a major site/app boundary change."
 ---
 # Repository Context
 
@@ -47,34 +43,32 @@ Provide a compact mental model of the repository layout and runtime surfaces bef
 
 ## Owned Files
 
-- `src/pages/**`
-- `src/components/**`
-- `src/content/**`
-- `src/i18n/**`
-- `src/middleware/**`
-- `convex/**`
+- `commandglows_site/src/**`
+- `commandglows_site/convex/**`
+- `commandglows_app/lib/**`
 
 ## Entrypoints
 
 - `AGENT.md`
 - `shipglows_data/technical/code-docs-map.md`
-- `src/pages/[...lang]/**`
-- `src/pages/dashboard/**`
-- `src/pages/api/**`
+- `commandglows_site/src/pages/[...lang]/**`
+- `commandglows_site/src/pages/dashboard/**`
+- `commandglows_site/src/pages/api/**`
 
 ## What This Repo Is
 
-CommandGlows is an Astro server-rendered site with bilingual marketing pages, documentation content, product pages, a training sales path, a lightweight dashboard, and backend integrations for auth, billing, and email.
+CommandGlows is a governed monorepo containing an Astro server-rendered site
+for bilingual content, commerce and identity bridges, plus a Flutter
+Android-first app. Convex owns suite identity and entitlement state; Firebase
+is the app authentication bridge; Stripe Managed Payments is the implemented
+CommandGlows Merchant of Record adapter pending hosted proof.
 
 ## Top-Level Mental Model
 
-- `src/pages/`: route surface
-- `src/components/`: Astro and React UI building blocks
-- `src/content/`: typed markdown collections
-- `src/i18n/`: locale strings and route labels
-- `src/middleware/`: request shaping before route execution
-- `src/utils/`: routing, docs, UI, gating, and helper logic
-- `convex/`: database schema and backend business logic
+- `commandglows_site/`: Astro routes, content, commerce APIs and Convex backend
+- `commandglows_app/`: Flutter app, Firebase session bridge, entitlement gate and native platform hosts
+- `ext/`: browser-extension surface
+- `shipglows_data/`: canonical business, technical, editorial and workflow governance
 
 ## Route Surface
 
@@ -110,6 +104,10 @@ CommandGlows is an Astro server-rendered site with bilingual marketing pages, do
 - `src/pages/api/clerk/webhook.ts`
 - `src/pages/api/polar/checkout.ts`
 - `src/pages/api/polar/webhook.ts`
+- `src/pages/api/commerce/checkout.ts`
+- `src/pages/api/commerce/webhooks/stripe.ts`
+- `src/pages/api/commerce/webhooks/lemon-squeezy.ts` for CommunityGlows only
+- `src/pages/api/bridge/firebase.ts`
 - `src/pages/api/newsletter/subscribe.ts`
 - `src/pages/api/newsletter/unsubscribe.ts`
 
@@ -122,7 +120,7 @@ CommandGlows is an Astro server-rendered site with bilingual marketing pages, do
 ## Validation
 
 ```bash
-pnpm build:check
+pnpm -C commandglows_site build:check
 python3 /home/claude/shipglows/tools/shipglows_metadata_lint.py shipglows_data/technical/context.md
 ```
 

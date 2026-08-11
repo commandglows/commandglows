@@ -1,12 +1,12 @@
 ---
 artifact: editorial_governance
 metadata_schema_version: "1.0"
-artifact_version: "1.1.2"
+artifact_version: "1.2.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-08-09"
+updated: "2026-08-11"
 status: reviewed
-source_skill: sf-docs
+source_skill: sg-docs
 scope: public-surface-map
 owner: "Diane"
 confidence: medium
@@ -29,12 +29,12 @@ evidence:
   - src/pages/[...lang]/[blog].astro
   - src/pages/[...lang]/termux.astro
   - src/utils/shipglowsRedirects.ts
-  - src/pages/[...lang]/commandglows-founder.astro
-  - src/pages/[...lang]/socialglowz-founder.astro
-  - src/lib/commerce/offers.ts
-  - src/pages/api/commerce/checkout.ts
-next_review: "2026-06-17"
-next_step: "/sf-docs update"
+  - commandglows_site/src/pages/[...lang]/commandglows-founder.astro
+  - commandglows_site/src/pages/[...lang]/communityglows-founder.astro
+  - commandglows_site/src/lib/commerce/offers.ts
+  - commandglows_site/src/pages/api/commerce/checkout.ts
+next_review: "2026-09-11"
+next_step: "Refresh after any public domain, sales route, provider eligibility, or checkout-authority change."
 ---
 # Public Surface Map
 
@@ -48,8 +48,8 @@ Use this as the minimum canonical map for product sales copy and checkout author
 
 | Product | Canonical marketing site | Canonical sales page | Checkout authority | Post-purchase authority | Notes |
 | --- | --- | --- | --- | --- | --- |
-| SocialGlowz | `socialglowz.com` | `socialglowz.com/lifetime-deal` | shared suite commerce route in `commandglows_site` using `offerId=socialglowz/lifetime_deal` | shared suite success and cancel routes plus suite entitlements | Keep SocialGlowz sales copy on the SocialGlowz domain even if checkout infra is shared |
-| CommandGlows App | `www.commandglows.com` | `www.commandglows.com/commandglows-founder` | shared suite commerce route in `commandglows_site` using `offerId=commandglows_app/*` | shared suite success and cancel routes plus suite entitlements | CommandGlows is both product site and commerce host for the current shared checkout layer |
+| CommunityGlows | `communityglows.com` | `communityglows.com/lifetime-deal` | shared suite commerce route using `offerId=communityglows/lifetime_deal`, eligible for Lemon Squeezy | shared suite success and cancel routes plus suite entitlements | Keep CommunityGlows sales copy on the CommunityGlows domain even if checkout infrastructure is shared |
+| CommandGlows App | `www.commandglows.com` | `www.commandglows.com/commandglows-founder` | shared suite commerce route using `offerId=commandglows_app/*`, eligible for Stripe Managed Payments only | shared suite success and cancel routes plus suite entitlements | CommandGlows is both product site and commerce host for the current shared checkout layer |
 
 ## Canonical Sales Rules
 
@@ -67,7 +67,7 @@ Use this as the minimum canonical map for product sales copy and checkout author
 | Flagship offer page | `/windows-mastery`, `/fr/maitrise-windows` | high-intent buyers | high | pricing, support, curriculum, and promise claims |
 | Product catalog and detail pages | `/products`, `/fr/produits`, localized product routes | buyers comparing offers | high | status, CTA destination, availability |
 | CommandGlows founder offer | `/commandglows-founder`, `/fr/commandglows-founder` | high-intent app buyers | high | canonical direct-sale page for CommandGlows App founder tiers |
-| Shared-commerce SocialGlowz founder mirror | `/socialglowz-founder`, `/fr/socialglowz-founder` | buyers entering via suite commerce paths | high | supporting commerce surface only; do not treat as the canonical SocialGlowz marketing home when `socialglowz.com` has the live offer page |
+| Shared-commerce CommunityGlows founder mirror | `/communityglows-founder`, `/fr/communityglows-founder` | buyers entering via suite commerce paths | high | supporting commerce surface only; CommunityGlows remains the marketing authority on its own domain |
 | Termux script utility pages | `/termux`, `/fr/termux` | operators who want the Android one-command installer | medium | CommandGlows owns this page and raw endpoint |
 | ShipGlows compatibility boundary | former ShipGlows, dotfiles and ShipGlowz page/script paths | operators following old links or commands | low | exact `308` redirects only; canonical content and installers belong to `https://shipglows.com` |
 | Blog index and articles | localized blog routes | top-of-funnel discovery | medium | claim discipline and internal linking |

@@ -1,12 +1,12 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.3.0"
+artifact_version: "0.5.0"
 project: commandglows
 created: "2026-05-30"
 updated: "2026-08-11"
 status: draft
-source_skill: sf-docs
+source_skill: sg-docs
 scope: platform-usage-lemonsqueezy
 owner: Diane
 confidence: high
@@ -26,21 +26,21 @@ depends_on:
     required_status: "draft"
 supersedes: []
 evidence:
-  - "CommandGlows suite owns the processor-agnostic commerce API and SocialGlowz entitlement ledger fulfillment."
+  - "CommandGlows suite owns the processor-agnostic commerce API and CommunityGlows entitlement ledger fulfillment."
   - "Fresh Lemon Squeezy docs checked on 2026-05-30; no official CLI or MCP was identified."
-  - "CommandGlows App founder plans are represented by internal offers `commandglows_app/focus`, `commandglows_app/power`, `commandglows_app/control`, and `commandglows_app/command`."
+  - "The active Lemon Squeezy offer is `communityglows/lifetime_deal`; CommandGlows offers are excluded from this adapter."
   - "Operator decision on 2026-08-11: Stripe Managed Payments replaces Lemon Squeezy as the CommandGlows launch target."
-next_review: "2026-06-30"
-next_step: "Retain as migration evidence until the Stripe Managed Payments adapter passes equivalent local and hosted proof."
+next_review: "2026-09-11"
+next_step: "Retain the adapter for CommunityGlows; use Stripe Managed Payments for every CommandGlows offer and complete hosted Stripe proof."
 ---
 
 # Lemon Squeezy Usage
 
 ## Purpose
 
-Document the legacy Lemon Squeezy adapter currently present in CommandGlows.
-It remains migration evidence and a regression baseline; Stripe Managed
-Payments is the target Merchant of Record for CommandGlows launch.
+Document the Lemon Squeezy adapter retained for CommunityGlows. It is also
+migration evidence and a regression baseline, but it is no longer an allowed
+provider for CommandGlows offers, which use Stripe Managed Payments.
 
 Use the global provider note for source links and tool availability:
 
@@ -52,30 +52,42 @@ Use the payment activation contract for product access, entitlement ownership, a
 
 This file is the local usage contract for architecture, validation, and automation decisions.
 
+## Owned Files
+
+- `commandglows_site/src/lib/commerce/providers/lemonsqueezy.ts`
+- `commandglows_site/src/lib/commerce/offers.ts`
+- `commandglows_site/src/pages/api/commerce/checkout.ts`
+- `commandglows_site/src/pages/api/commerce/webhooks/lemon-squeezy.ts`
+- `commandglows_site/convex/bridge.ts`
+
+## Entrypoints
+
+- CommunityGlows checkout: `POST /api/commerce/checkout`
+- Signed provider events: `POST /api/commerce/webhooks/lemon-squeezy`
+
 ## Usage Summary
 
-- Provider role: legacy implemented adapter awaiting replacement by Stripe Managed Payments.
+- Provider role: retained CommunityGlows adapter; legacy evidence only for CommandGlows.
 - Product access owner: CommandGlows suite entitlement ledger, not Lemon Squeezy.
 - Canonical product sales pages stay product-specific even when the checkout route is shared.
 - Applies to paths:
   - `commandglows_site/src/lib/commerce/**`
   - `commandglows_site/src/pages/api/commerce/**`
-  - `commandglows_site/src/pages/api/bridge/socialglowz.ts`
+  - `commandglows_site/src/pages/[...lang]/communityglows-founder.astro`
   - `commandglows_site/convex/bridge.ts`
   - `commandglows_site/.env.example`
   - `commandglows_site/README.md`
-- Environments used: local mocked tests, future Lemon Squeezy test mode, future production.
+- Environments used: local mocked tests, future Lemon Squeezy test mode, future production for CommunityGlows only.
 - Validation surface: local adapter/route tests, Astro typecheck, hosted Convex fulfillment smoke, Lemon Squeezy test-mode checkout/webhook/refund smoke.
 - Owner: Diane.
-- Last verified: 2026-06-18 by local tests and local provider-contract review; hosted provider smoke not yet executed.
+- Last verified: 2026-08-11 by local tests and local provider-contract review; hosted provider smoke not yet executed.
 
 ## Sales Surface Rule
 
-- `socialglowz.com/lifetime-deal` is the canonical SocialGlowz sales page.
-- `www.commandglows.com/commandglows-founder` is the canonical CommandGlows App sales page.
-- Both products may call the same `/api/commerce/checkout` route.
-- Shared checkout infrastructure must not imply that `www.commandglows.com` becomes the canonical marketing home for SocialGlowz.
-- Product source attribution must stay explicit through `offerId`, `productId`, `source`, and `source_ref`.
+- The localized CommunityGlows founder page is the only active Lemon Squeezy sales surface in this repository.
+- The CommandGlows founder page uses Stripe Managed Payments, even though both products share `/api/commerce/checkout`.
+- Shared checkout infrastructure must not blur product ownership or provider eligibility.
+- Product source attribution stays explicit through `offerId`, `productId`, `source`, and `source_ref`.
 
 ## Local Configuration
 
@@ -84,15 +96,10 @@ This file is the local usage contract for architecture, validation, and automati
 | API base URL | `LEMONSQUEEZY_API_URL` defaulting to `https://api.lemonsqueezy.com` | no | Override only for controlled tests or documented provider change. |
 | API key | `LEMONSQUEEZY_API_KEY` | yes | Server-only. Use test-mode key for pre-production proof. |
 | Store id | `LEMONSQUEEZY_STORE_ID` | sensitive-ish | Record key name only in docs; do not record real value. |
-| SocialGlowz product id | `LEMONSQUEEZY_SOCIALGLOWZ_PRODUCT_ID` | sensitive-ish | Provider reference only; never replaces internal `productId=socialglowz`. |
-| SocialGlowz LTD variant id | `LEMONSQUEEZY_SOCIALGLOWZ_LIFETIME_DEAL_VARIANT_ID` | sensitive-ish | Provider reference only; mapped from internal offer `socialglowz/lifetime_deal`. |
-| CommandGlows App product id | `LEMONSQUEEZY_WINGLOWZ_APP_PRODUCT_ID` | sensitive-ish | Provider reference only; internal product remains `commandglows_app`. |
-| CommandGlows Focus variant id | `LEMONSQUEEZY_WINGLOWZ_APP_FOCUS_VARIANT_ID` | sensitive-ish | Provider reference only; mapped from internal offer `commandglows_app/focus`. |
-| CommandGlows Power variant id | `LEMONSQUEEZY_WINGLOWZ_APP_POWER_VARIANT_ID` | sensitive-ish | Provider reference only; mapped from internal offer `commandglows_app/power`. |
-| CommandGlows Control variant id | `LEMONSQUEEZY_WINGLOWZ_APP_CONTROL_VARIANT_ID` | sensitive-ish | Provider reference only; mapped from internal offer `commandglows_app/control`. |
-| CommandGlows Command variant id | `LEMONSQUEEZY_WINGLOWZ_APP_COMMAND_VARIANT_ID` | sensitive-ish | Provider reference only; mapped from internal offer `commandglows_app/command`. |
+| CommunityGlows product id | `LEMONSQUEEZY_COMMUNITYGLOWS_PRODUCT_ID` | sensitive-ish | Provider reference only; never replaces internal `productId=communityglows`. |
+| CommunityGlows LTD variant id | `LEMONSQUEEZY_COMMUNITYGLOWS_LIFETIME_DEAL_VARIANT_ID` | sensitive-ish | Provider reference only; mapped from `communityglows/lifetime_deal`. |
 | Webhook secret | `LEMONSQUEEZY_WEBHOOK_SECRET` | yes | Server-only; used to verify `X-Signature`. |
-| Provider order preference | `COMMERCE_PROVIDER_ORDER` | no | Current default: `lemonsqueezy,polar`. |
+| Provider order preference | `COMMERCE_PROVIDER_ORDER` | no | Current default starts with `stripe`, then `lemonsqueezy`, then `polar`; offer eligibility still controls selection. |
 | Checkout route | `/api/commerce/checkout` | no | Creates hosted checkout server-side. |
 | Webhook route | `/api/commerce/webhooks/lemon-squeezy` | no | Reads exact raw body, verifies signature, forwards normalized event to Convex. |
 | Convex bridge secret | `SUITE_BRIDGE_CONVEX_SECRET` | yes | Required for suite ledger mutations. |
@@ -105,9 +112,10 @@ This file is the local usage contract for architecture, validation, and automati
 - `order_created` maps to a normalized paid event.
 - `order_refunded` maps to a normalized refunded event.
 - Unsupported or incomplete signed events must be `pending_review`, not an access grant.
-- Fulfillment runs through `bridge:processCommerceEvent` and writes to suite-owned `productEntitlements` / `productAccessEvents`. The legacy SocialGlowz bridge mutation remains for compatibility.
+- Fulfillment runs through `bridge:processCommerceEvent` and writes to suite-owned `productEntitlements` / `productAccessEvents`.
+- Historical SocialGlowz and CommandGlows payload fixtures may remain in parser regression tests; they are not active offer eligibility.
 - Checkout success pages are not payment proof. Access changes come from signed webhooks and idempotent suite fulfillment. Lemon Squeezy owns payment receipt emails; CommandGlows access state must come from the signed webhook and suite ledger.
-- Payment activation and device activation are distinct. The current Lemon Squeezy integration can create a suite product entitlement after a signed paid event, but Focus/Power/Control/Command active-device limits need a separate server-owned activation ledger before they are enforceable.
+- Payment activation and device activation are distinct. Lemon Squeezy can create the CommunityGlows suite entitlement after a signed paid event; CommandGlows trials and device limits are governed by the separate entitlement contract.
 - Polar remains a provider adapter/legacy route and must not be deleted as part of Lemon Squeezy adoption.
 
 ## MCP / CLI Policy
@@ -134,8 +142,8 @@ Requires a new spec or explicit approval:
 
 ## Invariants
 
-- Internal offer ids remain product-owned, for example `socialglowz/lifetime_deal`, `commandglows_app/focus`, `commandglows_app/power`, `commandglows_app/control`, and `commandglows_app/command`.
-- Internal product and plan values remain canonical suite values, for example `productId=socialglowz`, `productId=commandglows_app`, `plan=lifetime_deal`, `plan=focus`, `plan=power`, `plan=control`, or `plan=command`.
+- The only active Lemon Squeezy offer is `communityglows/lifetime_deal` with `productId=communityglows` and `plan=lifetime_deal`.
+- CommandGlows offers must fail provider eligibility for Lemon Squeezy.
 - Provider product, variant, order, customer, invoice, and webhook ids are references only.
 - Lemon Squeezy never becomes the runtime authorization store.
 - No email-only auto-grant or account merge.
@@ -165,7 +173,7 @@ Requires a new spec or explicit approval:
 Local checks:
 
 ```bash
-pnpm -C /home/claude/commandglows/commandglows_site test tests/commerce/checkoutRoute.test.ts tests/commerce/offers.test.ts tests/commerce/lemonsqueezy.test.ts tests/api/bridge/socialGlowzCommerceBridge.test.ts
+pnpm -C /home/claude/commandglows/commandglows_site test tests/commerce/checkoutRoute.test.ts tests/commerce/offers.test.ts tests/commerce/lemonsqueezy.test.ts
 pnpm -C /home/claude/commandglows/commandglows_site test tests/commerce/lemonSqueezyWebhookRoute.test.ts
 pnpm -C /home/claude/commandglows/commandglows_site build:check
 python3 /home/claude/shipglows/tools/shipglows_metadata_lint.py /home/claude/commandglows/shipglows_data/technical/platforms/lemonsqueezy.md
@@ -174,7 +182,7 @@ python3 /home/claude/shipglows/tools/shipglows_metadata_lint.py /home/claude/com
 Provider smoke, after test-mode setup:
 
 ```text
-Create checkout from SocialGlowz or each CommandGlows founder plan -> complete test order -> receive signed order_created webhook -> verify suite ledger access/code path -> perform/simulate refund -> verify access becomes non-granting. For CommandGlows founder plans, repeat the smoke for Focus, Power, Control, and Command or document why a provider-level variant is intentionally not public yet.
+Create checkout from CommunityGlows -> complete test order -> receive signed order_created webhook -> verify suite ledger access -> perform or simulate refund -> verify access becomes non-granting. Confirm separately that every CommandGlows offer is rejected by the Lemon Squeezy adapter.
 ```
 
 ## Reader Checklist

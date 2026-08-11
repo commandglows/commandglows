@@ -11,11 +11,13 @@ class TrialAccessScreen extends StatelessWidget {
     required this.entitlement,
     required this.isRestarting,
     required this.onRestart,
+    this.checkoutIdentityToken,
   });
 
   final ProductEntitlement? entitlement;
   final bool isRestarting;
   final Future<void> Function() onRestart;
+  final String? checkoutIdentityToken;
 
   bool get _canRestart =>
       entitlement?.status == ProductEntitlementStatus.trialing &&
@@ -29,10 +31,13 @@ class TrialAccessScreen extends StatelessWidget {
   }
 
   Future<void> _openPurchase() async {
-    await launchUrl(
-      Uri.parse('https://www.commandglows.com/commandglows-founder'),
-      mode: LaunchMode.externalApplication,
-    );
+    final uri = Uri.parse('https://www.commandglows.com/commandglows-founder')
+        .replace(
+          queryParameters: checkoutIdentityToken == null
+              ? null
+              : <String, String>{'checkoutToken': checkoutIdentityToken!},
+        );
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -57,7 +62,9 @@ class TrialAccessScreen extends StatelessWidget {
                     ),
                   AppGaps.x3,
                   FilledButton.icon(
-                    onPressed: _openPurchase,
+                    onPressed: checkoutIdentityToken == null
+                        ? null
+                        : _openPurchase,
                     icon: const Icon(Icons.shopping_bag_outlined),
                     label: const Text('Voir les offres'),
                   ),

@@ -17,6 +17,7 @@ import {
   type ReplayGlowzEntitlementReasonCode,
   type ReplayGlowzProductUserIdSource,
 } from "@/lib/suiteBridge";
+import { createCommerceCheckoutIdentityToken } from "@/lib/commerce/checkoutIdentity";
 
 export const prerender = false;
 
@@ -401,12 +402,20 @@ export const POST: APIRoute = async ({ request }) => {
         { merge: true }
       );
 
+    const checkoutIdentityToken = env.SUITE_COMMERCE_CHECKOUT_SECRET
+      ? createCommerceCheckoutIdentityToken(
+          snapshot.globalUserId,
+          env.SUITE_COMMERCE_CHECKOUT_SECRET
+        )
+      : null;
+
     const response = {
       status: snapshot.status,
       globalUserId: snapshot.globalUserId,
       accounts: snapshot.accounts,
       entitlements: snapshot.entitlements,
       replayGlowz: replayGlowzForClient,
+      ...(checkoutIdentityToken ? { checkoutIdentityToken } : {}),
       ...(productToken ? { productToken, product_token: productToken } : {}),
       ...(productTokenIssue ? { productTokenIssue } : {}),
     };

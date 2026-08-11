@@ -33,7 +33,7 @@ The following records were consolidated from the former nested site tracker duri
 🟠 [CommandGlowsApp] task: Run Linux overlay/hotkeys native QA checklist on a Linux machine | status: todo | area: linux-overlay | id: wfz-linux-overlay-native-qa
 ✅ [CommandGlowsApp] task: Ship first local macOS/Linux desktop overlay host version for native QA handoff | status: done | area: desktop-overlay | id: wfz-macos-linux-overlay-local-ship
 🟡 [CommandGlowsApp] task: Decide and implement stronger Linux global hotkey/paste integration after first Linux QA results | status: todo | area: linux-overlay | id: wfz-linux-overlay-host-followup
-🟠 [CommandGlows] task: Configure Lemon Squeezy test-mode env and run hosted commerce proof for SocialGlowz LTD webhooks, idempotent replay, refund revoke, and Convex fulfillment | status: blocked | area: commerce | id: wfz-commerce-lemonsqueezy-hosted-smoke
+🟠 [CommandGlows] task: Configure Stripe Managed Payments test-mode Price IDs, webhook secret and `SUITE_COMMERCE_CHECKOUT_SECRET`, then run hosted authenticated checkout, idempotent replay, full-refund/dispute revoke, Convex fulfillment, and app-refresh proof | status: todo | area: commerce | id: commandglows-commerce-stripe-managed-payments-hosted-smoke
 🟠 [CommandGlowsApp] task: Retest BUG-2026-05-24-001 onboarding active-state info box on Android APK | status: fixed_pending_verify | area: onboarding | id: BUG-2026-05-24-001
 ✅ [CommandGlowsApp] task: Retest BUG-2026-05-24-002 clipboard edit dialog cancel/save on Android APK | status: done | area: clipboard | id: BUG-2026-05-24-002
 🟢 [CommandGlowsApp] task: Reduce Android IME layout rebuilds during rapid typing | status: done | area: keyboard-ime-performance | id: wfz-ime-rapid-typing-layout-rebuild

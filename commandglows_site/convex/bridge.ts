@@ -2749,10 +2749,7 @@ export const processCommerceEvent = mutation({
         productId: args.productId,
         environment: incomingEnvironment,
         sourceRef: eventSourceRef,
-        idempotencyKey: buildSuiteCommerceIdempotencyKey(
-          'access',
-          `${args.productId}:${args.providerOrderId}`
-        ),
+        idempotencyKey: args.idempotencyKey,
         status: 'granted',
         eventType: `${args.productId}_access.granted`,
         customerEmail: args.customerEmail,

@@ -1,5 +1,8 @@
 # Conversation sf-prod - dernier run blacksmith ci ?
 
+> Historical conversation capture migrated from the legacy root `docs/`
+> directory without changing its transcript content.
+
 - Captured at: `2026-05-28 20:00:15 UTC`
 - tmux session: `0`
 - tmux source: `current pane`
