@@ -1,16 +1,14 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../../../data/supabase/snippet_repository.dart' as supabase;
-import '../domain/snippet_store.dart';
+import 'snippet_repository.dart' as supabase;
+import '../../features/snippets/domain/snippet_store.dart';
 
 class SupabaseSnippetStore implements SnippetStore {
-  const SupabaseSnippetStore(this._client);
+  const SupabaseSnippetStore(this._repository);
 
-  final SupabaseClient _client;
+  final supabase.SnippetRepository _repository;
 
   @override
   Future<List<SnippetRecord>> list() async {
-    final rows = await supabase.SnippetRepository(_client).list();
+    final rows = await _repository.list();
     return rows
         .map(
           (row) => SnippetRecord(
@@ -30,9 +28,7 @@ class SupabaseSnippetStore implements SnippetStore {
     required String content,
     String? label,
   }) {
-    return supabase.SnippetRepository(
-      _client,
-    ).insert(trigger: trigger, content: content, label: label);
+    return _repository.insert(trigger: trigger, content: content, label: label);
   }
 
   @override
@@ -42,13 +38,14 @@ class SupabaseSnippetStore implements SnippetStore {
     required String content,
     String? label,
   }) {
-    return supabase.SnippetRepository(
-      _client,
-    ).update(id: id, trigger: trigger, content: content, label: label);
+    return _repository.update(
+      id: id,
+      trigger: trigger,
+      content: content,
+      label: label,
+    );
   }
 
   @override
-  Future<void> softDelete(String id) {
-    return supabase.SnippetRepository(_client).softDelete(id);
-  }
+  Future<void> softDelete(String id) => _repository.softDelete(id);
 }

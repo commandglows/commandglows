@@ -1,16 +1,14 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../../../data/supabase/dictionary_repository.dart' as supabase;
-import '../domain/dictionary_store.dart';
+import 'dictionary_repository.dart' as supabase;
+import '../../features/dictionary/domain/dictionary_store.dart';
 
 class SupabaseDictionaryStore implements DictionaryStore {
-  const SupabaseDictionaryStore(this._client);
+  const SupabaseDictionaryStore(this._repository);
 
-  final SupabaseClient _client;
+  final supabase.DictionaryRepository _repository;
 
   @override
   Future<List<DictionaryTermRecord>> list() async {
-    final rows = await supabase.DictionaryRepository(_client).list();
+    final rows = await _repository.list();
     return rows
         .map(
           (row) => DictionaryTermRecord(
@@ -30,7 +28,7 @@ class SupabaseDictionaryStore implements DictionaryStore {
     required String replacement,
     required bool caseSensitive,
   }) {
-    return supabase.DictionaryRepository(_client).insert(
+    return _repository.insert(
       term: term,
       replacement: replacement,
       caseSensitive: caseSensitive,
@@ -44,7 +42,7 @@ class SupabaseDictionaryStore implements DictionaryStore {
     required String replacement,
     required bool caseSensitive,
   }) {
-    return supabase.DictionaryRepository(_client).update(
+    return _repository.update(
       id: id,
       term: term,
       replacement: replacement,
@@ -53,7 +51,5 @@ class SupabaseDictionaryStore implements DictionaryStore {
   }
 
   @override
-  Future<void> softDelete(String id) {
-    return supabase.DictionaryRepository(_client).softDelete(id);
-  }
+  Future<void> softDelete(String id) => _repository.softDelete(id);
 }

@@ -1,7 +1,7 @@
-import '../../../data/supabase/transcription_repository.dart';
-import '../../../core/sync/sync_status.dart';
-import '../application/transcription_store.dart';
-import '../domain/transcription_draft.dart';
+import 'transcription_repository.dart';
+import '../../core/sync/sync_status.dart';
+import '../../features/voice/application/transcription_store.dart';
+import '../../features/voice/domain/transcription_draft.dart';
 
 class SupabaseTranscriptionStore implements TranscriptionStore {
   const SupabaseTranscriptionStore(this._repository);
