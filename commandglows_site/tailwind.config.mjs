@@ -1,5 +1,12 @@
+/**
+ * Legacy Tailwind config retained for tooling that still reads v3-style
+ * configuration. Runtime Tailwind v4 tokens live in global.css's @theme
+ * block. Keep this file as a thin semantic adapter, not a color authority.
+ */
 /** @type {import('tailwindcss').Config} */
-import colors from 'tailwindcss/colors';
+const canonicalColor = (token) =>
+  `var(--cg-semantic-color-brand-logo-${token})`;
+
 export default {
   content: [
     "./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}",
@@ -10,27 +17,21 @@ export default {
     colors: {
       transparent: "transparent",
       current: "currentColor",
-      black: "#000000",
-      white: "#ffffff",
-      gray: colors.gray,
-      neutral: colors.neutral,
-      test: "#ff00ff",
-      red: "#ff0033",
-      magenta: "#ff00c8",
-      yellow: "#ffe500",
-      green: "#00ff44",
-      cyan: "#00c8ff",
-      // Keep zinc for subtle UI elements
-      zinc: colors.zinc,
-      emerald: colors.emerald,
+      black: "var(--cg-primitive-color-neutral-black)",
+      white: "var(--cg-primitive-color-neutral-white)",
+      red: canonicalColor("red"),
+      magenta: canonicalColor("magenta"),
+      yellow: canonicalColor("yellow"),
+      green: canonicalColor("green"),
+      cyan: canonicalColor("cyan"),
     },
     extend: {
       fontFamily: {
         logo: ['var(--font-logo)'],
         display: ['var(--font-display)'],
         heading: ['var(--font-heading)'],
-        body: ['var(--font-body)'],
-        sans: ['var(--font-body)'],
+        body: ['var(--cg-semantic-typography-site-body-family)'],
+        sans: ['var(--cg-semantic-typography-site-body-family)'],
       },
       colors: {
         border: "hsl(var(--border) / <alpha-value>)",
@@ -132,11 +133,6 @@ export default {
           divider: "hsl(var(--content-divider) / <alpha-value>)",
         },
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
       fontSize: {
         // Mobile-optimized font sizes (16px base minimum for readability)
         'xs': ['0.8125rem', { lineHeight: '1.5' }],     // 13px
@@ -163,12 +159,12 @@ export default {
         'gradient-rainbow-horizontal': 'var(--gradient-rainbow-h)',
       },
       ringColor: {
-        magenta: 'var(--brand-magenta)',
-        blue: 'var(--brand-cyan)',
+        magenta: canonicalColor('magenta'),
+        blue: canonicalColor('cyan'),
       },
       borderColor: {
-        magenta: 'var(--brand-magenta)',
-        blue: 'var(--brand-cyan)',
+        magenta: canonicalColor('magenta'),
+        blue: canonicalColor('cyan'),
       },
     },
   },

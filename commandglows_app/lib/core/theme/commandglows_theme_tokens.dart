@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'generated/commandglows_tokens.g.dart';
+
 /// Tokens source de l'UI CommandGlows.
 ///
 /// Cette classe expose la couche stable utilisée par `core/theme/app_theme.dart`.
@@ -7,12 +9,13 @@ import 'package:flutter/material.dart';
 /// éviter de réintroduire des marques historiques dans l'app.
 class CommandGlowsThemeTokens {
   // Typography
-  static const fontSans = 'Manrope';
-  static const fontDisplay = 'Cal Sans';
+  // Inter is the only family bundled by `pubspec.yaml`. Keep the platform
+  // fallbacks for hosts that cannot load the asset; do not name an unbundled
+  // family here because Flutter silently falls back and hides mapping drift.
+  static const fontSans = 'Inter';
+  static const fontDisplay = 'Inter';
   static const fontMonospace = 'ui-monospace';
   static const List<String> fontFallback = <String>[
-    'Manrope',
-    'Instrument Sans',
     'Segoe UI',
     'Roboto',
     'Arial',
@@ -133,11 +136,12 @@ class CommandGlowsThemeTokens {
   static const double lineHeightTight = 1.2;
   static const double lineHeightSnug = 1.3;
   static const double lineHeightNormal = 1.6;
+  static const double lineHeightRelaxed = 1.8;
   static const double trackingWide = 0.04;
   static const double trackingWider = 0.08;
 
   // Espacement.
-  static const double spacing1 = 4.0;
+  static const double spacing1 = CommandGlowsGeneratedTokens.semanticSpaceUnit;
   static const double spacing2 = 8.0;
   static const double spacing3 = 12.0;
   static const double spacing4 = 16.0;
@@ -180,6 +184,48 @@ class CommandGlowsThemeTokens {
   static const double keyboardCornerPresetDropdownWidth = 280.0;
   static const double keyboardPreviewPinnedBadgeInset = 3.0;
 
+  // Theme adapter compatibility values. Roles not yet exposed by the generated
+  // adapter remain centralized here so `app_theme.dart` does not become a
+  // second raw-value authority.
+  static const double minimumTouchTarget = 48.0;
+  static const double compactControlHeight = 40.0;
+  static const double navigationBottomBarHeight = 58.0;
+  static const double navigationBottomBarShadowBlur = 14.0;
+  static const double navigationBottomBarShadowOffsetY = 4.0;
+  static const double navigationBottomBarLightAlpha = 0.98;
+  static const double navigationBottomBarDarkAlpha = 0.94;
+  static const double navigationBottomBarLightShadowAlpha = 0.06;
+  static const double navigationBottomBarDarkShadowAlpha = 0.2;
+  static const double navigationBottomIndicatorLightAlpha = 0.1;
+  static const double navigationBottomIndicatorDarkAlpha = 0.18;
+  static const double navigationBottomIconSize = 23.0;
+  static const double navigationBottomSelectedIconSize = 24.0;
+  static const double onboardingOverlayMaxWidth = 520.0;
+  static const double settingsTwoColumnBreakpoint = 1180.0;
+  static const double keyboardPreviewCompactDropdownWidth = 188.0;
+  static const double keyboardStudioSliderLabelWidth = 82.0;
+  static const double keyboardStudioSliderValueWidth = 62.0;
+  static const double keyboardStudioImportExportDialogWidth = 420.0;
+  static const double keyboardStudioColorFieldPicker = 52.0;
+  static const double keyboardStudioColorFieldPickerIcon = 24.0;
+  static const double keyboardStudioPreviewPanelHeight = 74.0;
+  static const double keyboardStudioColorChannelWidth = 24.0;
+  static const double keyboardStudioColorValueWidth = 42.0;
+  static const double keyboardStudioFieldCornerRadius = 5.0;
+  static const double keyboardStudioPreviewSwatchRadius = 4.0;
+  static const double shellGradientDarkMidStop = 0.48;
+  static const double shellGradientLightMidStop = 0.52;
+  static const double shadowSmallBlur = 8.0;
+  static const double shadowSmallOffsetY = 2.0;
+  static const double shadowCardBlur = 20.0;
+  static const double shadowCardOffsetY = 4.0;
+  static const double shadowCardHoverBlur = 30.0;
+  static const double shadowCardHoverOffsetY = 8.0;
+  static const double shadowCardLargeBlur = 40.0;
+  static const double shadowCardLargeOffsetY = 12.0;
+  static const double shadowPrimaryBlur = 15.0;
+  static const double shadowPrimaryOffsetY = 4.0;
+
   // Motion / settings slider tokens.
   static const double appAnimationFast = 0.22;
   static const double appAnimationBase = 1.0;
@@ -204,6 +250,27 @@ class CommandGlowsThemeTokens {
   static const double dividerThickness = 1.0;
   static const double elevationOverlay = 18.0;
   static const double themeRadiusXxl = 28.0;
+  static const double appBarBackgroundAlpha = 0.98;
+  static const double appBarDividerAlpha = 0.6;
+  static const double cardShadowLightAlpha = 0.12;
+  static const double cardShadowDarkAlpha = 0.22;
+  static const double outlineWidth = 1.0;
+  static const double focusOutlineWidth = 1.25;
+  static const double surfaceControlAlpha = 0.2;
+  static const double navigationIndicatorAlpha = 0.16;
+  static const double navigationBackgroundAlpha = 0.94;
+  static const double navigationOverlayAlpha = 0.12;
+  static const double dividerAlpha = 0.75;
+  static const double navigationRailBackgroundAlpha = 0.82;
+  static const double navigationRailIndicatorLightAlpha = 0.1;
+  static const double navigationRailIndicatorDarkAlpha = 0.14;
+  static const double navigationRailUnselectedAlpha = 0.58;
+  static const double switchSelectedTrackDarkAlpha = 0.45;
+  static const double switchUnselectedTrackLightAlpha = 0.24;
+  static const double switchUnselectedTrackDarkAlpha = 0.28;
+  static const double switchSelectedOutlineLightAlpha = 0.45;
+  static const double switchSelectedOutlineDarkAlpha = 0.7;
+  static const double listTileIconAlpha = 0.72;
 
   // Screen-specific layout and visual tokens.
   static const double appShellBottomNavIconBoxSize = 32.0;
@@ -265,9 +332,32 @@ class CommandGlowsThemeTokens {
   static const Color keyboardPrivateFrame = Color(0xFFF6E8E2);
   static const Color keyboardDefaultFrame = Color(0xFFEEF1EE);
   static const Color keyboardStatusText = Color(0xFF333D38);
-  static const Color keyboardKeyActive = Color(0xFF17795D);
+  static const Color keyboardKeyActive =
+      CommandGlowsGeneratedTokens.semanticColorKeyboardKeyActive;
   static const Color keyboardKeySpecial = Color(0xFFE0E6E3);
   static const Color keyboardKeyDisabled = Color(0xFFD6D9D7);
-  static const Color keyboardKeyForeground = Color(0xFF1D2320);
+  static const Color keyboardKeyForeground =
+      CommandGlowsGeneratedTokens.semanticColorKeyboardKeyForeground;
   static const Color keyboardCornerLabel = Color(0xFF5C6762);
+  static const Color keyboardStudioHazard = Color(0xFFFFD400);
+  static const Color keyboardStudioPinnedOnLight = Color(0xEB181C20);
+  static const Color keyboardStudioPinnedOnDark = Color(0xEBFFFFFF);
+  static const Color keyboardStudioAuroraAccent = Color(0xFFFFD84D);
+  static const Color keyboardStudioEffectSurface = Color(0xFF1E2421);
+
+  // Serialized KeyboardThemeConfig v1 values. These integer mappings are used
+  // by the Dart compatibility reader and mirrored by the independent Kotlin
+  // adapter; DS-PRESET-001 fixtures prove parity without coupling the IME to
+  // Flutter at runtime.
+  static const int keyboardThemeV1Background = 0xFFEEF1EE;
+  static const int keyboardThemeV1Key = 0xFFFFFFFF;
+  static const int keyboardThemeV1SpecialKey = 0xFFE0E6E3;
+  static const int keyboardThemeV1ActiveKey = 0xFF17795D;
+  static const int keyboardThemeV1PressedKey = 0xFFCADAD3;
+  static const int keyboardThemeV1Text = 0xFF1D2320;
+  static const int keyboardThemeV1CornerText = 0xFF5C6762;
+  static const int keyboardThemeV1StatusText = 0xFF333D38;
+  static const int keyboardThemeV1Border = 0x00000000;
+  static const int keyboardThemeV1Shadow = 0x33000000;
+  static const int keyboardThemeV1PressDurationMs = 170;
 }

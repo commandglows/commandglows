@@ -992,14 +992,14 @@ class KeyboardStateStore(private val context: Context) {
             THEME_LIGHT -> parsed.copy(presetId = "commandglows_light")
             THEME_DARK -> parsed.copy(
                 presetId = "commandglows_dark",
-                backgroundStartColor = android.graphics.Color.parseColor("#121815"),
-                backgroundEndColor = android.graphics.Color.parseColor("#121815"),
-                keyColor = android.graphics.Color.parseColor("#232B27"),
-                specialKeyColor = android.graphics.Color.parseColor("#2E3833"),
-                activeKeyColor = android.graphics.Color.parseColor("#36B384"),
-                pressedKeyColor = android.graphics.Color.parseColor("#43524B"),
-                textColor = android.graphics.Color.parseColor("#EBF2EE"),
-                statusTextColor = android.graphics.Color.parseColor("#CCD9D2"),
+                backgroundStartColor = NativeImeVisualTokens.DARK_BACKGROUND,
+                backgroundEndColor = NativeImeVisualTokens.DARK_BACKGROUND,
+                keyColor = NativeImeVisualTokens.DARK_KEY,
+                specialKeyColor = NativeImeVisualTokens.DARK_SPECIAL_KEY,
+                activeKeyColor = NativeImeVisualTokens.DARK_ACTIVE_KEY,
+                pressedKeyColor = NativeImeVisualTokens.DARK_PRESSED_KEY,
+                textColor = NativeImeVisualTokens.DARK_TEXT,
+                statusTextColor = NativeImeVisualTokens.DARK_STATUS_TEXT,
             )
             else -> parsed.copy(presetId = "system")
         }

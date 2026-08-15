@@ -1,65 +1,40 @@
-import * as React from 'react'
-import {
-	Body,
-	Head,
-	Html,
-	Link,
-	Preview,
-	Row,
-	Section,
-} from '@react-email/components'
-import { Markdown } from '@react-email/markdown'
+import { renderNewsletterEmail } from '../../src/lib/email/newsletter';
 
-export type BasicEmailProps = {
-	body: string
-	preview?: string
-	messageType?: 'transactional' | 'broadcast'
-	unsubscribeLinkUrl?: string
-}
+/**
+ * Official bilingual render fixtures for the production newsletter renderer.
+ * They are not a separate template or token authority.
+ */
+export const BASIC_EMAIL_FIXTURES = {
+  en: renderNewsletterEmail({
+    lang: 'en',
+    content: {
+      subject: 'Your CommandGlows workflow is ready',
+      heading: 'A calmer Windows workflow starts here',
+      intro: 'Your practical setup guide is ready.',
+      body: 'Use it to reduce repeated actions and keep your tools easier to reach.',
+      cta: 'Open the guide',
+      footer: 'You are receiving this because you subscribed to CommandGlows updates.',
+      unsubscribe: 'Unsubscribe',
+    },
+    ctaUrl: 'https://www.commandglows.com/windows-mastery',
+    unsubscribeUrl:
+      'https://www.commandglows.com/api/newsletter/unsubscribe?email=reader%40example.com&lang=en',
+  }),
+  fr: renderNewsletterEmail({
+    lang: 'fr',
+    content: {
+      subject: 'Votre environnement CommandGlows est prêt',
+      heading: 'Un environnement Windows plus calme commence ici',
+      intro: 'Votre guide de configuration pratique est prêt.',
+      body: 'Utilisez-le pour réduire les actions répétitives et garder vos outils à portée de main.',
+      cta: 'Ouvrir le guide',
+      footer: 'Vous recevez cet e-mail car vous êtes inscrit(e) aux actualités CommandGlows.',
+      unsubscribe: 'Se désabonner',
+    },
+    ctaUrl: 'https://www.commandglows.com/fr/maitrise-windows',
+    unsubscribeUrl:
+      'https://www.commandglows.com/api/newsletter/unsubscribe?email=lecteur%40example.com&lang=fr',
+  }),
+} as const;
 
-export const BasicEmail = ({
-	body = `Hi Joel,\n\nJust catching up on your progress in the Full Stack Foundations module. Good going with the asset links management in your web applications. This lesson is fundamental for enhancing the user experience on nested routes, so it's great to see you moving along.\n\nAs a snapshot:\n- Section: Styling\n- Completed: 'Manage Asset Links in a Remix Application'\n- Module Progress: 7% \n\nRemember, every small technique you master now is adding up to a significant toolkit in full-stack web development.\n\nFor a comprehensive review or for tackling any tricky bits, all past lessons and exercises remain accessible for you.\n\nYour consistency is crucial. Every step forward counts.\n\nKeep going,\nKody the Koala 🐨`,
-	preview = ``,
-	messageType = 'broadcast',
-	unsubscribeLinkUrl = '{{{ pm:unsubscribe }}}',
-}: BasicEmailProps) => {
-	return (
-		<Html>
-			<Head />
-			<Preview>{preview}</Preview>
-			<Body style={main}>
-				<Section style={content}>
-					<Markdown>{body}</Markdown>
-				</Section>
-				<Section style={footer}>
-					{messageType === 'broadcast' ? (
-						<>
-							<Row>
-								<Link href={unsubscribeLinkUrl}>unsubscribe</Link>
-							</Row>
-							<Row>env.NEXT_PUBLIC_SUPPORT_PHYSICAL_ADDRESS</Row>
-						</>
-					) : null}
-				</Section>
-			</Body>
-		</Html>
-	)
-}
-
-export default BasicEmail
-
-const fontFamily = 'HelveticaNeue,Helvetica,Arial,sans-serif'
-
-const main = {
-	fontFamily,
-}
-
-const footer = {
-	padding: '70px 8px',
-	lineHeight: 1.5,
-	fontSize: 12,
-}
-
-const content = {
-	padding: '0 8px',
-}
+export default BASIC_EMAIL_FIXTURES;

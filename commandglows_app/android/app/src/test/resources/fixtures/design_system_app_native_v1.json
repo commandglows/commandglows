@@ -1,0 +1,106 @@
+{
+  "contractVersion": 1,
+  "sourceMapping": {
+    "fontBodyFamily": "Inter",
+    "fontDisplayFamily": "Inter",
+    "semanticBaseSize": 16,
+    "resolvedCompactBodySize": 14,
+    "semanticInfoArgb": 4282090230,
+    "resolvedLocalOnlyCompatibilityArgb": 4282664004,
+    "semanticPrimaryLightArgb": 4281314933,
+    "semanticPrimaryDarkArgb": 4281774980,
+    "resolvedSeedLightArgb": 4280690214
+  },
+  "presetIds": [
+    "system",
+    "commandglows",
+    "neon_terminal",
+    "glass_mint",
+    "sunset_gradient",
+    "midnight_aurora",
+    "paper_ink",
+    "pixel_candy",
+    "minimal_contrast"
+  ],
+  "legacyPresetIds": ["commandglows_light", "commandglows_dark"],
+  "sharedPreferences": {
+    "name": "commandglows_app_keyboard_prefs",
+    "themeModeKey": "theme_mode",
+    "themeConfigKey": "theme_config"
+  },
+  "themeV1": {
+    "version": 1,
+    "presetId": "pixel_candy",
+    "backgroundStartColor": -7951,
+    "backgroundEndColor": -2821633,
+    "useGradient": true,
+    "gradientStyle": "linear",
+    "useImage": true,
+    "backgroundImagePath": "C:/fixtures/keyboard-theme.png",
+    "keyboardOpacity": 0.75,
+    "keyColor": -1,
+    "specialKeyColor": -14622,
+    "activeKeyColor": -16754020,
+    "pressedKeyColor": -11946,
+    "pressHighlightDurationMs": 170,
+    "textColor": -15392454,
+    "cornerTextColor": -13147526,
+    "cornerTextOpacity": 0.8,
+    "statusTextColor": -14864048,
+    "borderColor": -15392454,
+    "borderWidth": 1.5,
+    "keyReliefEnabled": true,
+    "keyReliefDepth": 3,
+    "keyRadius": 5,
+    "keyHorizontalGap": 4,
+    "rowVerticalGap": 8,
+    "shadowColor": 855638016,
+    "shadowBlur": 4,
+    "shadowOffsetY": 1,
+    "pressEffect": "confettiLite",
+    "effectIntensity": 0.35,
+    "effectDurationMs": 170,
+    "effectEasing": "easeOut"
+  },
+  "syncV1": {
+    "schemaVersion": 1,
+    "profileRevision": 7,
+    "baseCloudRevision": 6,
+    "updatedAt": "2026-08-14T00:00:00Z",
+    "updatedByDeviceId": "fixture-device-v1",
+    "sourcePlatform": "android",
+    "sanitizationPolicy": "keyboard_sync_v1",
+    "checksum": "91ac2867a97a36f6bc2e9c16d187dd049da4b843886835c3821063a56486c441",
+    "payload": {
+      "preferences": {"themeMode": "dark", "keySoundEnabled": false},
+      "themeConfig": {"version": 1, "presetId": "pixel_candy", "useImage": false, "activeKeyColor": 4278213276},
+      "metadata": {"themePresetId": "pixel_candy"}
+    }
+  },
+  "syncV2": {
+    "schemaVersion": 2,
+    "profileRevision": 11,
+    "baseCloudRevision": 10,
+    "updatedAt": "2026-08-14T00:00:00Z",
+    "updatedByDeviceId": "fixture-device-v2",
+    "sourcePlatform": "android",
+    "sanitizationPolicy": "keyboard_sync_v2",
+    "checksum": "ae50330de15a23cd804658f479924ed1ca70d858514aaf908792ee645ab9b71a",
+    "payload": {
+      "preferences": {"themeMode": "system", "keySoundEnabled": true},
+      "themeConfig": {"version": 1, "presetId": "glass_mint", "useImage": true, "themeBackgroundSource": "image"},
+      "themeAsset": {
+        "assetId": "fixture-asset",
+        "storagePath": "users/fixture/keyboard_theme_assets/fixture-asset",
+        "checksum": "abc123abc123abc123abc123abc123abc123abc123abc123abc123abc123abcd",
+        "byteSize": 2048,
+        "mimeType": "image/png",
+        "profileRevision": 11,
+        "createdAt": "2026-08-14T00:00:00Z",
+        "updatedAt": "2026-08-14T00:00:00Z",
+        "width": 1280,
+        "height": 720
+      }
+    }
+  }
+}

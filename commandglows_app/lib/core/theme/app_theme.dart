@@ -22,8 +22,12 @@ enum AppThemeMode {
 
 class AppColors {
   // Brand primitives exposés pour CommandGlows.
-  static const primary = CommandGlowsThemeTokens.brandPrimary;
-  static const primaryDark = CommandGlowsThemeTokens.brandPrimaryDark;
+  // Keep the historical monochrome values as ColorScheme seed inputs while
+  // exposing the primary colors that each resolved theme actually uses.
+  static const seedLight = CommandGlowsThemeTokens.brandPrimary;
+  static const seedDark = CommandGlowsThemeTokens.brandPrimaryDark;
+  static const primary = CommandGlowsThemeTokens.themeLightPrimary;
+  static const primaryDark = CommandGlowsThemeTokens.themeDarkPrimary;
   static const secondary = CommandGlowsThemeTokens.brandSecondary;
   static const accent = secondary;
 
@@ -72,7 +76,8 @@ class AppColors {
   static const warning = CommandGlowsThemeTokens.brandWarning;
   static const danger = CommandGlowsThemeTokens.brandDanger;
   static const dangerLight = CommandGlowsThemeTokens.brandDangerLight;
-  static const info = accent;
+  static const info = CommandGlowsThemeTokens.brandInfo;
+  static const localOnlyCompatibility = accent;
 
   // Keyboard preview surface-specific tokens (copied from pages de debug).
   static const keyboardPrivateFrame = CommandGlowsThemeTokens.keyboardPrivateFrame;
@@ -94,7 +99,10 @@ class AppTypography {
   // CommandGlows scale (cohérente avec le thème site, bornée à un set court).
   static const xs = CommandGlowsThemeTokens.typographyXs;
   static const sm = CommandGlowsThemeTokens.typographySm;
-  static const base = CommandGlowsThemeTokens.typographySm;
+  static const base = CommandGlowsThemeTokens.typographyBase;
+  // Existing body/title styles resolve to 14px. Name that compatibility
+  // mapping explicitly instead of hiding it behind the semantic base role.
+  static const compactBodyCompatibility = CommandGlowsThemeTokens.typographySm;
   static const lg = CommandGlowsThemeTokens.typographyLg;
   static const h3 = CommandGlowsThemeTokens.typographyH3;
   static const h2 = CommandGlowsThemeTokens.typographyH2;
@@ -105,7 +113,7 @@ class AppTypography {
   static const leadingNormal = CommandGlowsThemeTokens.lineHeightNormal;
   static const leadingCompact =
       CommandGlowsThemeTokens.settingsDiagnosticLogLineHeight;
-  static const leadingRelaxed = 1.8;
+  static const leadingRelaxed = CommandGlowsThemeTokens.lineHeightRelaxed;
 
   static const trackingWide = CommandGlowsThemeTokens.trackingWide;
   static const trackingWider = CommandGlowsThemeTokens.trackingWider;
@@ -215,32 +223,45 @@ class AppIconMetrics {
   static const sm = AppSpacing.x4;
   static const progressStroke = AppSpacing.x1 / 2;
   static const stepAvatarRadius = AppSpacing.x3;
-  static const minTarget = 48.0;
+  static const minTarget = CommandGlowsThemeTokens.minimumTouchTarget;
   static const listActionSpacing = AppSpacing.x1;
 }
 
 class AppButtonMetrics {
-  static const minHeight = 48.0;
-  static const compactMinHeight = 40.0;
+  static const minHeight = CommandGlowsThemeTokens.minimumTouchTarget;
+  static const compactMinHeight = CommandGlowsThemeTokens.compactControlHeight;
 }
 
 class AppInputMetrics {
-  static const minHeight = 48.0;
-  static const iconMinSize = 48.0;
+  static const minHeight = CommandGlowsThemeTokens.minimumTouchTarget;
+  static const iconMinSize = CommandGlowsThemeTokens.minimumTouchTarget;
 }
 
 class AppNavigationMetrics {
-  static const bottomBarHeight = 58.0;
-  static const bottomBarShadowBlur = 14.0;
-  static const bottomBarShadowOffset = Offset(0, 4);
-  static const bottomBarLightAlpha = 0.98;
-  static const bottomBarDarkAlpha = 0.94;
-  static const bottomBarLightShadowAlpha = 0.06;
-  static const bottomBarDarkShadowAlpha = 0.2;
-  static const bottomIndicatorLightAlpha = 0.1;
-  static const bottomIndicatorDarkAlpha = 0.18;
-  static const bottomIconSize = 23.0;
-  static const bottomSelectedIconSize = 24.0;
+  static const bottomBarHeight =
+      CommandGlowsThemeTokens.navigationBottomBarHeight;
+  static const bottomBarShadowBlur =
+      CommandGlowsThemeTokens.navigationBottomBarShadowBlur;
+  static const bottomBarShadowOffset = Offset(
+    0,
+    CommandGlowsThemeTokens.navigationBottomBarShadowOffsetY,
+  );
+  static const bottomBarLightAlpha =
+      CommandGlowsThemeTokens.navigationBottomBarLightAlpha;
+  static const bottomBarDarkAlpha =
+      CommandGlowsThemeTokens.navigationBottomBarDarkAlpha;
+  static const bottomBarLightShadowAlpha =
+      CommandGlowsThemeTokens.navigationBottomBarLightShadowAlpha;
+  static const bottomBarDarkShadowAlpha =
+      CommandGlowsThemeTokens.navigationBottomBarDarkShadowAlpha;
+  static const bottomIndicatorLightAlpha =
+      CommandGlowsThemeTokens.navigationBottomIndicatorLightAlpha;
+  static const bottomIndicatorDarkAlpha =
+      CommandGlowsThemeTokens.navigationBottomIndicatorDarkAlpha;
+  static const bottomIconSize =
+      CommandGlowsThemeTokens.navigationBottomIconSize;
+  static const bottomSelectedIconSize =
+      CommandGlowsThemeTokens.navigationBottomSelectedIconSize;
   static const bottomNavIconBoxSize =
       CommandGlowsThemeTokens.appShellBottomNavIconBoxSize;
   static const bottomNavSparkBadgeTop =
@@ -259,8 +280,10 @@ class AppNavigationMetrics {
 }
 
 class AppLayoutMetrics {
-  static const onboardingOverlayMaxWidth = 520.0;
-  static const settingsTwoColumnBreakpoint = 1180.0;
+  static const onboardingOverlayMaxWidth =
+      CommandGlowsThemeTokens.onboardingOverlayMaxWidth;
+  static const settingsTwoColumnBreakpoint =
+      CommandGlowsThemeTokens.settingsTwoColumnBreakpoint;
   static const settingsFeatureCardWidth =
       CommandGlowsThemeTokens.settingsFeatureCardWidth;
   static const actionRailMinWidthLarge =
@@ -295,7 +318,8 @@ class AppBreakpoints {
 class AppKeyboardPreview {
   static const double maxWidth =
       CommandGlowsThemeTokens.keyboardPreviewFrameMaxWidth;
-  static const double dropdownWidth = 188.0;
+  static const double dropdownWidth =
+      CommandGlowsThemeTokens.keyboardPreviewCompactDropdownWidth;
   static const double pinnedBadgeInset =
       CommandGlowsThemeTokens.keyboardPreviewPinnedBadgeInset;
   static const double statusHeight =
@@ -338,22 +362,32 @@ class AppSliders {
 }
 
 class AppKeyboardStudioMetrics {
-  static const double sliderLabelWidth = 82.0;
-  static const double sliderValueWidth = 62.0;
-  static const double importExportDialogWidth = 420.0;
-  static const double colorFieldPicker = 52.0;
-  static const double colorFieldPickerIcon = 24.0;
-  static const double previewPanelHeight = 74.0;
-  static const double colorChannelWidth = 24.0;
-  static const double colorValueWidth = 42.0;
-  static const double fieldCornerRadius = 5.0;
+  static const double sliderLabelWidth =
+      CommandGlowsThemeTokens.keyboardStudioSliderLabelWidth;
+  static const double sliderValueWidth =
+      CommandGlowsThemeTokens.keyboardStudioSliderValueWidth;
+  static const double importExportDialogWidth =
+      CommandGlowsThemeTokens.keyboardStudioImportExportDialogWidth;
+  static const double colorFieldPicker =
+      CommandGlowsThemeTokens.keyboardStudioColorFieldPicker;
+  static const double colorFieldPickerIcon =
+      CommandGlowsThemeTokens.keyboardStudioColorFieldPickerIcon;
+  static const double previewPanelHeight =
+      CommandGlowsThemeTokens.keyboardStudioPreviewPanelHeight;
+  static const double colorChannelWidth =
+      CommandGlowsThemeTokens.keyboardStudioColorChannelWidth;
+  static const double colorValueWidth =
+      CommandGlowsThemeTokens.keyboardStudioColorValueWidth;
+  static const double fieldCornerRadius =
+      CommandGlowsThemeTokens.keyboardStudioFieldCornerRadius;
   static const double presetDropdownWidth =
       CommandGlowsThemeTokens.keyboardCornerPresetDropdownWidth;
   static const double previewLabelFontSize =
       CommandGlowsThemeTokens.settingsThemePreviewLabelFontSize;
   static const double previewSwatchHeight =
       CommandGlowsThemeTokens.settingsThemePreviewSwatchHeight;
-  static const double previewSwatchRadius = 4.0;
+  static const double previewSwatchRadius =
+      CommandGlowsThemeTokens.keyboardStudioPreviewSwatchRadius;
 }
 
 class AppVoiceMetrics {
@@ -388,7 +422,7 @@ class AppGradients {
           CommandGlowsThemeTokens.themeGradientDarkMid,
           CommandGlowsThemeTokens.siteCard,
         ],
-        stops: [0, 0.48, 1],
+        stops: [0, CommandGlowsThemeTokens.shellGradientDarkMidStop, 1],
       );
     }
 
@@ -400,7 +434,7 @@ class AppGradients {
         CommandGlowsThemeTokens.appLightSurface,
         CommandGlowsThemeTokens.themeGradientLightMid,
       ],
-      stops: [0, 0.52, 1],
+      stops: [0, CommandGlowsThemeTokens.shellGradientLightMidStop, 1],
     );
   }
 }
@@ -419,40 +453,40 @@ class AppShadows {
   static const sm = [
     BoxShadow(
       color: CommandGlowsThemeTokens.shadowSoft,
-      blurRadius: 8,
-      offset: Offset(0, 2),
+      blurRadius: CommandGlowsThemeTokens.shadowSmallBlur,
+      offset: Offset(0, CommandGlowsThemeTokens.shadowSmallOffsetY),
     ),
   ];
 
   static const card = [
     BoxShadow(
       color: CommandGlowsThemeTokens.shadowCard,
-      blurRadius: 20,
-      offset: Offset(0, 4),
+      blurRadius: CommandGlowsThemeTokens.shadowCardBlur,
+      offset: Offset(0, CommandGlowsThemeTokens.shadowCardOffsetY),
     ),
   ];
 
   static const cardHover = [
     BoxShadow(
       color: CommandGlowsThemeTokens.shadowCardHover,
-      blurRadius: 30,
-      offset: Offset(0, 8),
+      blurRadius: CommandGlowsThemeTokens.shadowCardHoverBlur,
+      offset: Offset(0, CommandGlowsThemeTokens.shadowCardHoverOffsetY),
     ),
   ];
 
   static const cardLarge = [
     BoxShadow(
       color: CommandGlowsThemeTokens.shadowCardLarge,
-      blurRadius: 40,
-      offset: Offset(0, 12),
+      blurRadius: CommandGlowsThemeTokens.shadowCardLargeBlur,
+      offset: Offset(0, CommandGlowsThemeTokens.shadowCardLargeOffsetY),
     ),
   ];
 
   static const primary = [
     BoxShadow(
       color: CommandGlowsThemeTokens.shadowPrimary,
-      blurRadius: 15,
-      offset: Offset(0, 4),
+      blurRadius: CommandGlowsThemeTokens.shadowPrimaryBlur,
+      offset: Offset(0, CommandGlowsThemeTokens.shadowPrimaryOffsetY),
     ),
   ];
 }
@@ -477,7 +511,7 @@ class AppMotion {
 class AppTheme {
   static ThemeData get light => _build(
     ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
+      seedColor: AppColors.seedLight,
       brightness: Brightness.light,
     ).copyWith(
       primary: CommandGlowsThemeTokens.themeLightPrimary,
@@ -506,7 +540,7 @@ class AppTheme {
 
   static ThemeData get dark => _build(
     ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
+      seedColor: AppColors.seedLight,
       brightness: Brightness.dark,
     ).copyWith(
       primary: CommandGlowsThemeTokens.themeDarkPrimary,
@@ -553,15 +587,19 @@ class AppTheme {
       canvasColor: colorScheme.surface,
       appBarTheme: AppBarTheme(
         centerTitle: true,
-        elevation: 0,
+        elevation: CommandGlowsThemeTokens.appBarElevation,
         scrolledUnderElevation: CommandGlowsThemeTokens.appBarElevation,
-        backgroundColor: colorScheme.surface.withValues(alpha: 0.98),
+        backgroundColor: colorScheme.surface.withValues(
+          alpha: CommandGlowsThemeTokens.appBarBackgroundAlpha,
+        ),
         foregroundColor: colorScheme.onSurface,
         surfaceTintColor: AppColors.transparent,
         shape: Border(
           bottom: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-            width: 1,
+            color: colorScheme.outlineVariant.withValues(
+              alpha: CommandGlowsThemeTokens.appBarDividerAlpha,
+            ),
+            width: CommandGlowsThemeTokens.outlineWidth,
           ),
         ),
         titleTextStyle: textTheme.titleLarge?.copyWith(
@@ -571,15 +609,22 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         margin: AppSectionMetrics.cardMargin,
-        elevation: 0,
-        shadowColor: AppColors.black.withValues(alpha: isDark ? 0.22 : 0.12),
+        elevation: CommandGlowsThemeTokens.appBarElevation,
+        shadowColor: AppColors.black.withValues(
+          alpha: isDark
+              ? CommandGlowsThemeTokens.cardShadowDarkAlpha
+              : CommandGlowsThemeTokens.cardShadowLightAlpha,
+        ),
         color: isDark
             ? colorScheme.surfaceContainer
             : colorScheme.surfaceContainerLow,
         surfaceTintColor: AppColors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          side: BorderSide(color: colorScheme.outline, width: 1),
+          side: BorderSide(
+            color: colorScheme.outline,
+            width: CommandGlowsThemeTokens.outlineWidth,
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -595,15 +640,24 @@ class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+            width: CommandGlowsThemeTokens.outlineWidth,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+            width: CommandGlowsThemeTokens.outlineWidth,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          borderSide: BorderSide(color: colorScheme.primary, width: 1.25),
+          borderSide: BorderSide(
+            color: colorScheme.primary,
+            width: CommandGlowsThemeTokens.focusOutlineWidth,
+          ),
         ),
         filled: true,
         fillColor: isDark
@@ -617,7 +671,7 @@ class AppTheme {
           padding: AppInsets.button,
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          elevation: 0,
+          elevation: CommandGlowsThemeTokens.appBarElevation,
           shadowColor: AppColors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.md),
@@ -631,7 +685,9 @@ class AppTheme {
           padding: AppInsets.button,
           foregroundColor: colorScheme.primary,
           side: BorderSide(color: colorScheme.outline),
-          backgroundColor: colorScheme.surfaceContainer.withValues(alpha: 0.2),
+          backgroundColor: colorScheme.surfaceContainer.withValues(
+            alpha: CommandGlowsThemeTokens.surfaceControlAlpha,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.md),
           ),
@@ -658,13 +714,15 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: AppNavigationMetrics.bottomBarHeight,
-        elevation: 0,
-        indicatorColor: colorScheme.primary.withValues(alpha: 0.16),
+        elevation: CommandGlowsThemeTokens.appBarElevation,
+        indicatorColor: colorScheme.primary.withValues(
+          alpha: CommandGlowsThemeTokens.navigationIndicatorAlpha,
+        ),
         indicatorShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
         ),
         backgroundColor: colorScheme.surfaceContainerLow.withValues(
-          alpha: 0.94,
+          alpha: CommandGlowsThemeTokens.navigationBackgroundAlpha,
         ),
         surfaceTintColor: AppColors.transparent,
         shadowColor: AppColors.transparent,
@@ -694,12 +752,16 @@ class AppTheme {
           );
         }),
         overlayColor: WidgetStateProperty.all(
-          colorScheme.primary.withValues(alpha: 0.12),
+          colorScheme.primary.withValues(
+            alpha: CommandGlowsThemeTokens.navigationOverlayAlpha,
+          ),
         ),
       ),
       dividerTheme: DividerThemeData(
-        color: colorScheme.outlineVariant.withValues(alpha: 0.75),
-        thickness: 1,
+        color: colorScheme.outlineVariant.withValues(
+          alpha: CommandGlowsThemeTokens.dividerAlpha,
+        ),
+        thickness: CommandGlowsThemeTokens.dividerThickness,
         space: 0,
       ),
       menuTheme: MenuThemeData(
@@ -761,19 +823,27 @@ class AppTheme {
         textColor: colorScheme.onSurface,
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: colorScheme.surface.withValues(alpha: 0.82),
+        backgroundColor: colorScheme.surface.withValues(
+          alpha: CommandGlowsThemeTokens.navigationRailBackgroundAlpha,
+        ),
         indicatorColor: colorScheme.primary.withValues(
-          alpha: isDark ? 0.14 : 0.1,
+          alpha: isDark
+              ? CommandGlowsThemeTokens.navigationRailIndicatorDarkAlpha
+              : CommandGlowsThemeTokens.navigationRailIndicatorLightAlpha,
         ),
         selectedIconTheme: IconThemeData(color: colorScheme.primary),
         selectedLabelTextStyle: textTheme.labelMedium?.copyWith(
           color: colorScheme.primary,
         ),
         unselectedIconTheme: IconThemeData(
-          color: colorScheme.onSurface.withValues(alpha: 0.58),
+          color: colorScheme.onSurface.withValues(
+            alpha: CommandGlowsThemeTokens.navigationRailUnselectedAlpha,
+          ),
         ),
         unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(
-          color: colorScheme.onSurface.withValues(alpha: 0.58),
+          color: colorScheme.onSurface.withValues(
+            alpha: CommandGlowsThemeTokens.navigationRailUnselectedAlpha,
+          ),
         ),
       ),
       switchTheme: SwitchThemeData(
@@ -788,16 +858,29 @@ class AppTheme {
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return isDark
-                ? colorScheme.primary.withValues(alpha: 0.45)
+                ? colorScheme.primary.withValues(
+                    alpha:
+                        CommandGlowsThemeTokens.switchSelectedTrackDarkAlpha,
+                  )
                 : colorScheme.primaryContainer;
           }
-          return colorScheme.onSurface.withValues(alpha: isDark ? 0.28 : 0.24);
+          return colorScheme.onSurface.withValues(
+            alpha: isDark
+                ? CommandGlowsThemeTokens.switchUnselectedTrackDarkAlpha
+                : CommandGlowsThemeTokens.switchUnselectedTrackLightAlpha,
+          );
         }),
         trackOutlineColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return isDark
-                ? colorScheme.primary.withValues(alpha: 0.7)
-                : colorScheme.onPrimaryContainer.withValues(alpha: 0.45);
+                ? colorScheme.primary.withValues(
+                    alpha:
+                        CommandGlowsThemeTokens.switchSelectedOutlineDarkAlpha,
+                  )
+                : colorScheme.onPrimaryContainer.withValues(
+                    alpha: CommandGlowsThemeTokens
+                        .switchSelectedOutlineLightAlpha,
+                  );
           }
           return colorScheme.outline;
         }),
@@ -817,7 +900,9 @@ class AppTheme {
       ),
       listTileTheme: ListTileThemeData(
         dense: true,
-        iconColor: colorScheme.onSurface.withValues(alpha: 0.72),
+        iconColor: colorScheme.onSurface.withValues(
+          alpha: CommandGlowsThemeTokens.listTileIconAlpha,
+        ),
         textColor: colorScheme.onSurface,
         subtitleTextStyle: textTheme.bodySmall,
         minVerticalPadding: 0,
@@ -912,7 +997,7 @@ class AppTheme {
       titleMedium: TextStyle(
         fontFamily: AppTypography.fontFamily,
         fontFamilyFallback: AppTypography.fontFallback,
-        fontSize: AppTypography.base,
+        fontSize: AppTypography.compactBodyCompatibility,
         height: AppTypography.leadingNormal,
         fontWeight: AppFontWeights.bold,
         letterSpacing: 0,
@@ -921,7 +1006,7 @@ class AppTheme {
       bodyLarge: TextStyle(
         fontFamily: AppTypography.fontFamily,
         fontFamilyFallback: AppTypography.fontFallback,
-        fontSize: AppTypography.base,
+        fontSize: AppTypography.compactBodyCompatibility,
         height: AppTypography.leadingNormal,
         letterSpacing: 0,
         color: colorScheme.onSurface,

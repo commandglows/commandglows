@@ -216,7 +216,7 @@ class KeyboardPressEffects(
         accentColor: Int,
     ) {
         val eased = easedProgress(effect.spec, progress)
-        val inset = -14f * density * effect.spec.intensity.coerceAtLeast(0.35f) * (1f - eased)
+        val inset = -SCALE_EXPANSION_DP * density * effect.spec.intensity.coerceAtLeast(0.35f) * (1f - eased)
         val rect = RectF(effect.rect).apply { inset(inset, inset) }
         fillPaint.color = alphaColor(accentColor, (135 * (1f - progress)).toInt())
         canvas.drawRoundRect(rect, keyRadius, keyRadius, fillPaint)
@@ -230,7 +230,7 @@ class KeyboardPressEffects(
         accentColor: Int,
     ) {
         val rect = RectF(effect.rect).apply {
-            val inset = -16f * density * effect.spec.intensity.coerceAtLeast(0.35f) * progress
+            val inset = -PULSE_EXPANSION_DP * density * effect.spec.intensity.coerceAtLeast(0.35f) * progress
             inset(inset, inset)
         }
         strokePaint.color = alphaColor(accentColor, (210 * (1f - progress)).toInt())
@@ -566,7 +566,7 @@ class KeyboardPressEffects(
             canvas.drawLine(-size * 0.15f, y, -size * 0.95f, y - size * 0.28f, strokePaint)
             canvas.drawLine(size * 0.15f, y, size * 0.95f, y - size * 0.28f, strokePaint)
         }
-        fillPaint.color = alphaColor(Color.rgb(30, 36, 33), 238)
+        fillPaint.color = alphaColor(SPIDER_BODY_COLOR, 238)
         canvas.drawOval(RectF(-size * 0.44f, -size * 0.56f, size * 0.44f, size * 0.56f), fillPaint)
         fillPaint.color = alphaColor(Color.WHITE, 230)
         canvas.drawCircle(size * 0.18f, -size * 0.18f, size * 0.08f, fillPaint)
@@ -602,11 +602,23 @@ class KeyboardPressEffects(
         private const val MAX_TRAIL_POINTS = 14
         private const val TRAIL_TTL_MS = 420L
         private const val MASCOT_PRESS_EXPANSION = 0.14f
+        private const val SCALE_EXPANSION_DP = 14f
+        private const val PULSE_EXPANSION_DP = 16f
+        private const val SPIDER_BODY_COLOR = -14801887
+        private const val CELEBRATION_GREEN = -13192316
+        private const val CELEBRATION_YELLOW = -11930
+        private const val CELEBRATION_PINK = -1095825
+        private const val CELEBRATION_BLUE = -11744784
+        private const val WATER_LIGHT_BLUE = -7282449
+        private const val WATER_PALE_BLUE = -3477256
+        private const val WATER_CYAN = -12006684
+        private const val EMBER_ORANGE = -29630
+        private const val EMBER_PALE_YELLOW = -3672
         private val CELEBRATION_PALETTE =
-            intArrayOf(0xFF36B384.toInt(), 0xFFFFD166.toInt(), 0xFFEF476F.toInt(), 0xFF4CC9F0.toInt())
+            intArrayOf(CELEBRATION_GREEN, CELEBRATION_YELLOW, CELEBRATION_PINK, CELEBRATION_BLUE)
         private val WATER_SPLASH_PALETTE =
-            intArrayOf(0xFF4CC9F0.toInt(), 0xFF90E0EF.toInt(), 0xFFCAF0F8.toInt(), 0xFF48CAE4.toInt())
+            intArrayOf(CELEBRATION_BLUE, WATER_LIGHT_BLUE, WATER_PALE_BLUE, WATER_CYAN)
         private val EMBER_BURST_PALETTE =
-            intArrayOf(0xFFFFD166.toInt(), 0xFFFF8C42.toInt(), 0xFFEF476F.toInt(), 0xFFFFF1A8.toInt())
+            intArrayOf(CELEBRATION_YELLOW, EMBER_ORANGE, CELEBRATION_PINK, EMBER_PALE_YELLOW)
     }
 }

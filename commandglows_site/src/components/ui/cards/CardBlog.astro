@@ -52,7 +52,7 @@ const cleanSlug = blogEntry.id.split('/')[1].replace(/\.md$/, '')
 					<h4 class="font-bold text-content-text-over-dark">
 						{blogEntry.data.author}
 					</h4>
-					<p class="text-content-text-over-dark/[.8]">
+					<p class="text-content-text-over-dark/80">
 						{formatDate(blogEntry.data.pubDate)}
 					</p>
 				</div>
@@ -63,13 +63,13 @@ const cleanSlug = blogEntry.id.split('/')[1].replace(/\.md$/, '')
 	<div class="absolute inset-x-0 bottom-0 z-10">
 		<div class="flex h-full flex-col p-4 sm:p-6">
 			<h3
-				class="text-balance text-lg font-bold text-content-text-over-dark group-hover:text-content-text-over-dark/[.8] sm:text-3xl"
+				class="text-balance text-lg font-bold text-content-text-over-dark group-hover:text-content-text-over-dark/80 sm:text-3xl"
 				transition:name={`blog-title-${cleanSlug}`}
 			>
 				{title}
 			</h3>
 			<p
-				class="mt-2 text-pretty text-content-text-over-dark/[.8]"
+				class="mt-2 text-pretty text-content-text-over-dark/80"
 				transition:name={`blog-desc-${cleanSlug}`}
 			>
 				{description}

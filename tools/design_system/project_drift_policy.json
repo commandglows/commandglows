@@ -1,0 +1,142 @@
+{
+  "generatedManifest": "design-system/tokens.json",
+  "ignoredDirectoryNames": [
+    ".astro",
+    ".git",
+    ".next",
+    ".nuxt",
+    ".svelte-kit",
+    ".vercel",
+    "build",
+    "coverage",
+    "dist",
+    "node_modules",
+    "test-results"
+  ],
+  "literalAllowlist": [
+    {
+      "mode": "file",
+      "owner": "CommandGlows app design-system owner",
+      "path": "commandglows_app/lib/core/theme/commandglows_theme_tokens.dart",
+      "reason": "Transitional Flutter source mapping retained until the integration batch activates the generated Dart adapter.",
+      "removalCondition": "Remove when the generated Flutter adapter owns these resolved values."
+    },
+    {
+      "mode": "file",
+      "owner": "CommandGlows app and IME owners",
+      "path": "commandglows_app/lib/features/keyboard/domain/keyboard_models.dart",
+      "reason": "The preset catalog and stored-theme parser are compatibility data covered by the user-authored keyboard-theme exception.",
+      "removalCondition": "Review after DS-PRESET-001 proves generated defaults and stored-theme round trips."
+    },
+    {
+      "mode": "file",
+      "owner": "CommandGlows app design-system owner",
+      "path": "commandglows_app/lib/features/keyboard/presentation/keyboard_theme_studio_screen.dart",
+      "reason": "The registered Theme Studio fixture perimeter contains user-selected color controls and preview effects, not shared brand roles.",
+      "removalCondition": "Remove after DS-PRESET-001 proves generated defaults and the fixture perimeter is migrated."
+    },
+    {
+      "mode": "file",
+      "owner": "CommandGlows app and IME owners",
+      "path": "commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/KeyboardDesignSystemMapping.kt",
+      "reason": "Transitional native source mapping keeps the IME independent from the Flutter runtime before generated Kotlin activation.",
+      "removalCondition": "Remove when the generated Android IME adapter replaces this mapping."
+    },
+    {
+      "mode": "match",
+      "owner": "CommandGlows app and IME owners",
+      "path": "commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/KeyboardThemeModels.kt",
+      "pattern": "Color\\.parseColor\\(|0x[0-9A-Fa-f]{8}",
+      "reason": "The preset catalog is frozen compatibility data covered by the user-authored keyboard-theme exception.",
+      "removalCondition": "Review after generated defaults and DS-PRESET-001 round-trip proof are integrated."
+    },
+    {
+      "mode": "file",
+      "owner": "CommandGlows email owner",
+      "path": "commandglows_site/src/theme/newsletter-email-theme.ts",
+      "reason": "Client-safe resolved values and the integration fixture are intentionally centralized here until generated email-adapter activation.",
+      "removalCondition": "Narrow or remove when the generated email adapter replaces the source fixture."
+    },
+    {
+      "mode": "file",
+      "owner": "CommandGlows extension owner",
+      "path": "ext/src/design-system-mapping.js",
+      "reason": "The extension-owned fallback palette and CSS are a CSP-safe source fixture until the integration batch activates the generated extension adapter.",
+      "removalCondition": "Narrow or remove when the generated extension CSS owns the canonical roles and retained platform fallbacks are registered adaptations."
+    },
+    {
+      "mode": "file",
+      "owner": "CommandGlows content-data owner",
+      "path": "commandglows_site/src/data/termux-themes.ts",
+      "reason": "The values are imported terminal-theme content selected by users, not CommandGlows interface design decisions.",
+      "removalCondition": "Retain while the terminal-theme catalog remains content data; review if these values style CommandGlows chrome."
+    },
+    {
+      "mode": "file",
+      "owner": "CommandGlows site design-system owner",
+      "path": "commandglows_site/src/theme/icons.ts",
+      "reason": "Embedded SVG artwork retains source-defined fills; surrounding interface styling must still resolve through tokens.",
+      "removalCondition": "Review when icons are replaced or their fills become theme-responsive UI roles."
+    },
+    {
+      "mode": "css-custom-properties",
+      "owner": "CommandGlows site design-system owner",
+      "path": "commandglows_site/src/assets/styles/global.css",
+      "reason": "The F0 ledger classifies every retained CSS custom-property declaration; non-declaration literals in this file remain scanned.",
+      "removalCondition": "Retain while classified site-local component and compatibility variables remain necessary."
+    },
+    {
+      "mode": "match",
+      "owner": "CommandGlows site docs owner",
+      "path": "commandglows_site/src/assets/styles/global.css",
+      "pattern": "(?:background|scrollbar-color):\\s*.*var\\(--sl-color-[^)]+,\\s*#[0-9a-fA-F]{6}\\)",
+      "reason": "Starlight iframe/docs fallbacks keep embedded documentation readable when host custom properties are unavailable.",
+      "removalCondition": "Remove when the supported Starlight surface guarantees the referenced properties across iframe and theme states."
+    },
+    {
+      "mode": "css-custom-properties",
+      "owner": "CommandGlows site design-system owner",
+      "path": "commandglows_site/src/components/Button.astro",
+      "reason": "The named component-local motion variables centralize the legacy button transition contract pending canonical motion-role coverage.",
+      "removalCondition": "Remove when the canonical manifest exposes the equivalent site button motion roles."
+    },
+    {
+      "mode": "match",
+      "owner": "CommandGlows site design-system owner",
+      "path": "commandglows_site/src/theme/bio-page.css",
+      "pattern": "(?:min-height|width|height|border-radius)\\s*:\\s*(?:100vh|100%|50%)",
+      "reason": "Full-viewport, full-container, and circular geometry are structural CSS primitives rather than product-scale dimensions.",
+      "removalCondition": "Retain while the bio surface uses these standard intrinsic/viewport geometry patterns."
+    },
+    {
+      "mode": "match",
+      "owner": "CommandGlows app design-system owner",
+      "path": "commandglows_app/lib/core/theme/app_theme.dart",
+      "pattern": "static const transparent = Colors\\.transparent",
+      "reason": "Transparent is the Flutter platform primitive exposed through the shared AppColors bridge.",
+      "removalCondition": "Remove when AppColors consumes the generated Flutter adapter directly."
+    }
+  ],
+  "scanRoots": [
+    "commandglows_app/lib",
+    "commandglows_app/android/app/src/main",
+    "commandglows_site/src",
+    "commandglows_site/idees/emails",
+    "ext/src"
+  ],
+  "sourceExtensions": [
+    ".astro",
+    ".css",
+    ".dart",
+    ".html",
+    ".js",
+    ".jsx",
+    ".kt",
+    ".kts",
+    ".scss",
+    ".ts",
+    ".tsx",
+    ".xml"
+  ],
+  "version": 1
+}

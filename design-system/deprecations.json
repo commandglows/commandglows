@@ -1,0 +1,98 @@
+{
+  "compatibilityAliases": [
+    {
+      "alias": "--cg-semantic-typography-site-body-family",
+      "aliasKind": "css-custom-property",
+      "consumerCount": 2,
+      "id": "site-body-font-generated-css-alias",
+      "owner": "CommandGlows site owner",
+      "removalCondition": "Remove after global.css and its Tailwind bridge consume --cg-semantic-typography-body-family directly.",
+      "surface": "site",
+      "targetToken": "typography.body.family"
+    },
+    {
+      "alias": "semantic.typography.email.body.family",
+      "aliasKind": "typescript-key",
+      "consumerCount": 1,
+      "id": "email-body-font-generated-key-alias",
+      "owner": "CommandGlows email owner",
+      "removalCondition": "Remove after newsletter-email-theme.ts consumes semantic.typography.body.family directly.",
+      "surface": "email",
+      "targetToken": "typography.body.family"
+    },
+    {
+      "alias": "--cg-color-brand-website",
+      "aliasKind": "css-custom-property",
+      "consumerCount": 1,
+      "id": "extension-brand-generated-css-alias",
+      "owner": "CommandGlows extension owner",
+      "removalCondition": "Remove after design-system-mapping.js consumes --cg-semantic-color-brand-website.",
+      "surface": "extension",
+      "targetToken": "color.brand.website"
+    },
+    {
+      "alias": "--cg-color-brand-logo-cyan",
+      "aliasKind": "css-custom-property",
+      "consumerCount": 1,
+      "id": "extension-focus-generated-css-alias",
+      "owner": "CommandGlows extension owner",
+      "removalCondition": "Remove after design-system-mapping.js consumes --cg-semantic-color-brand-logo-cyan.",
+      "surface": "extension",
+      "targetToken": "color.brand.logo.cyan"
+    },
+    {
+      "alias": "--cg-color-brand-logo-red",
+      "aliasKind": "css-custom-property",
+      "consumerCount": 1,
+      "id": "extension-danger-generated-css-alias",
+      "owner": "CommandGlows extension owner",
+      "removalCondition": "Remove after design-system-mapping.js consumes --cg-semantic-color-brand-logo-red.",
+      "surface": "extension",
+      "targetToken": "color.brand.logo.red"
+    },
+    {
+      "alias": "--cg-color-neutral-black",
+      "aliasKind": "css-custom-property",
+      "consumerCount": 1,
+      "id": "extension-on-brand-generated-css-alias",
+      "owner": "CommandGlows extension owner",
+      "removalCondition": "Remove after design-system-mapping.js consumes --cg-primitive-color-neutral-black.",
+      "surface": "extension",
+      "targetToken": "color.neutral.black"
+    },
+    {
+      "alias": "--cg-typography-site-body-family",
+      "aliasKind": "css-custom-property",
+      "consumerCount": 1,
+      "id": "extension-body-font-generated-css-alias",
+      "owner": "CommandGlows extension owner",
+      "removalCondition": "Remove after design-system-mapping.js consumes --cg-semantic-typography-body-family.",
+      "surface": "extension",
+      "targetToken": "typography.body.family"
+    }
+  ],
+  "deprecations": [
+    {
+      "deprecatedToken": "typography.app.body.family",
+      "id": "platform-specific-app-body-font-role",
+      "owner": "CommandGlows app design-system owner",
+      "removalCondition": "Remove transitional references after A-act consumes the generated Flutter adaptation.",
+      "targetToken": "typography.body.family"
+    },
+    {
+      "deprecatedToken": "typography.email.body.family",
+      "id": "platform-specific-email-body-font-role",
+      "owner": "CommandGlows email owner",
+      "removalCondition": "Remove the generated key alias after C-act consumes the canonical semantic key.",
+      "targetToken": "typography.body.family"
+    },
+    {
+      "deprecatedToken": "typography.site.body.family",
+      "id": "platform-specific-site-body-font-role",
+      "owner": "CommandGlows site owner",
+      "removalCondition": "Remove the generated CSS alias after B-act consumes the canonical semantic variable.",
+      "targetToken": "typography.body.family"
+    }
+  ],
+  "registryVersion": "1.1.0"
+}

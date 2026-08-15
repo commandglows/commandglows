@@ -702,8 +702,9 @@ class OverlayForegroundService : Service() {
     }
 
     private fun dismissTargetBackground(active: Boolean): GradientDrawable {
-        val fillColor = if (active) Color.parseColor("#dc2626") else Color.parseColor("#111827")
-        val strokeColor = if (active) Color.parseColor("#fecaca") else Color.parseColor("#475569")
+        val fillColor = if (active) NativeOverlayVisualTokens.DANGER else NativeOverlayVisualTokens.SURFACE
+        val strokeColor =
+            if (active) NativeOverlayVisualTokens.DISMISS_ACTIVE_STROKE else NativeOverlayVisualTokens.DISMISS_IDLE_STROKE
         return GradientDrawable().apply {
             shape = GradientDrawable.OVAL
             setColor(fillColor)

@@ -18,15 +18,25 @@ const actionList = document.querySelector('#actions');
 const exportBackup = document.querySelector('#export-backup');
 const restoreBackup = document.querySelector('#restore-backup');
 
+document.adoptedStyleSheets = [
+  ...document.adoptedStyleSheets,
+  globalThis.__commandglowsDesignSystem.createStyleSheet('popup'),
+];
+
 openButton.addEventListener('click', async () => {
   openButton.disabled = true;
+  openButton.setAttribute('aria-busy', 'true');
+  status.dataset.state = '';
+  status.textContent = 'Opening CMDglows…';
   const result = await chrome.runtime.sendMessage({ type: 'OPEN_COMMANDGLOWS' });
   if (result?.ok) {
     globalThis.close();
     return;
   }
   status.textContent = messageForCode(result?.code);
+  status.dataset.state = 'error';
   openButton.disabled = false;
+  openButton.removeAttribute('aria-busy');
 });
 
 snippetForm.addEventListener('submit', async (event) => {
@@ -36,12 +46,15 @@ snippetForm.addEventListener('submit', async (event) => {
     snippet: { trigger: triggerInput.value, content: contentInput.value },
   });
   if (!result?.ok) {
+    status.dataset.state = 'error';
     status.textContent = result?.code === 'SNIPPET_TRIGGER_EXISTS'
       ? 'That snippet trigger already exists.'
       : 'The snippet could not be saved.';
     return;
   }
   snippetForm.reset();
+  status.dataset.state = '';
+  status.textContent = 'Snippet saved.';
   renderSnippets(result.snippets);
 });
 
@@ -55,10 +68,13 @@ dictionaryForm.addEventListener('submit', async (event) => {
     },
   });
   if (!result?.ok) {
+    status.dataset.state = 'error';
     status.textContent = 'The dictionary entry could not be saved.';
     return;
   }
   dictionaryForm.reset();
+  status.dataset.state = '';
+  status.textContent = 'Dictionary entry saved.';
   renderDictionary(result.dictionary);
 });
 
@@ -69,10 +85,13 @@ actionForm.addEventListener('submit', async (event) => {
     action: { label: actionLabel.value, kind: actionKind.value, value: actionValue.value },
   });
   if (!result?.ok) {
+    status.dataset.state = 'error';
     status.textContent = 'The custom action could not be saved.';
     return;
   }
   actionForm.reset();
+  status.dataset.state = '';
+  status.textContent = 'Custom action saved.';
   renderCustomActions(result.customActions);
 });
 
@@ -97,9 +116,11 @@ restoreBackup.addEventListener('change', async () => {
     const result = await chrome.runtime.sendMessage({ type: 'RESTORE_LOCAL_BACKUP', backup });
     if (!result?.ok) throw new Error(result?.code);
     status.textContent = 'Local backup restored.';
+    status.dataset.state = '';
     await loadState();
   } catch (_error) {
     status.textContent = 'This backup is invalid or unsupported.';
+    status.dataset.state = 'error';
   } finally {
     restoreBackup.value = '';
   }
@@ -120,12 +141,18 @@ async function loadState() {
 
 function renderCustomActions(actions) {
   actionList.replaceChildren();
+  if (!actions.length) {
+    actionList.append(emptyListItem('No custom actions saved.'));
+    return;
+  }
   for (const action of actions) {
     const item = document.createElement('li');
+    item.className = 'commandglows-popup__list-item';
     const label = document.createElement('span');
     label.textContent = `${action.label} (${action.kind})`;
     const remove = document.createElement('button');
     remove.type = 'button';
+    remove.className = 'commandglows-popup__button';
     remove.textContent = 'Delete';
     remove.addEventListener('click', async () => {
       const result = await chrome.runtime.sendMessage({
@@ -141,8 +168,13 @@ function renderCustomActions(actions) {
 
 function renderDictionary(entries) {
   dictionaryList.replaceChildren();
+  if (!entries.length) {
+    dictionaryList.append(emptyListItem('No dictionary entries saved.'));
+    return;
+  }
   for (const entry of entries) {
     const item = document.createElement('li');
+    item.className = 'commandglows-popup__list-item';
     item.textContent = `${entry.source} → ${entry.replacement}`;
     dictionaryList.append(item);
   }
@@ -150,8 +182,13 @@ function renderDictionary(entries) {
 
 function renderHistory(items) {
   historyList.replaceChildren();
+  if (!items.length) {
+    historyList.append(emptyListItem('No recent insertions.'));
+    return;
+  }
   for (const item of items.slice(0, 10)) {
     const row = document.createElement('li');
+    row.className = 'commandglows-popup__list-item';
     row.textContent = item.text;
     historyList.append(row);
   }
@@ -159,12 +196,18 @@ function renderHistory(items) {
 
 function renderSnippets(snippets) {
   snippetList.replaceChildren();
+  if (!snippets.length) {
+    snippetList.append(emptyListItem('No snippets saved.'));
+    return;
+  }
   for (const snippet of snippets) {
     const item = document.createElement('li');
+    item.className = 'commandglows-popup__list-item';
     const label = document.createElement('span');
     label.textContent = `${snippet.trigger}: ${snippet.content}`;
     const remove = document.createElement('button');
     remove.type = 'button';
+    remove.className = 'commandglows-popup__button';
     remove.textContent = 'Delete';
     remove.addEventListener('click', async () => {
       const result = await chrome.runtime.sendMessage({
@@ -176,6 +219,13 @@ function renderSnippets(snippets) {
     item.append(label, remove);
     snippetList.append(item);
   }
+}
+
+function emptyListItem(message) {
+  const item = document.createElement('li');
+  item.className = 'commandglows-popup__list-item commandglows-popup__list-item--empty';
+  item.textContent = message;
+  return item;
 }
 
 function messageForCode(code) {

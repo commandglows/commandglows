@@ -3,107 +3,168 @@
 import { getLangFromUrl } from '@/utils/i18n'
 
 const lang = getLangFromUrl(Astro.url)
-const windowsMasteryUrl = lang === 'fr' ? '/fr/maitrise-windows' : '/windows-mastery'
-const recommendationsUrl = lang === 'fr' ? '/fr/recommandations' : '/recommendations'
+const windowsMasteryUrl =
+  lang === 'fr' ? '/fr/maitrise-windows' : '/windows-mastery'
+const recommendationsUrl =
+  lang === 'fr' ? '/fr/recommandations' : '/recommendations'
 
-const copy = lang === 'fr'
-  ? {
-      title: 'Quelle est votre prochaine étape ?',
-      sub: 'Le parcours phare reste la formation Windows, avec l’app CMDglows et les preuves sociales en support.',
-      flagship: {
-        name: 'Formation Windows Mastery',
-        description: 'Parcours de référence pour passer d’un environnement bruité à un système de travail clair.',
-        points: [
-          '8 modules organisés autour d’une méthode d’adoption pratique',
-          'Contenu en FR + EN',
-          'Objectif: réduire la friction pour travailler plus efficacement',
-          'Accès au chemin premium via votre compte',
-        ],
-        cta: 'Voir la page de vente',
-        href: windowsMasteryUrl,
-        highlight: true,
-      },
-      ecosystem: {
-        name: 'App CMDglows',
-        description: 'Les captures actuelles montrent la surface Android à côté du parcours de formation.',
-        points: ['Captures réelles', 'Version app', 'Focus sur l’usage concret'],
-        cta: 'Voir les recommandations',
-        href: recommendationsUrl,
-      },
-    }
-  : {
-      title: 'What should you do next?',
-      sub: 'The flagship path is the Windows Mastery training, with the CMDglows app and social proof supporting it.',
-      flagship: {
-        name: 'Windows Mastery',
-        description: 'The recommended first step to move from noisy, fragmented work to a clear system.',
-        points: [
-          '8 practical modules built around a structured workflow',
-          'FR + EN training content',
-          'Designed to reduce daily friction and regain focus',
-          'Premium path opens after sign-in and checkout flow',
-        ],
-        cta: 'See the course',
-        href: windowsMasteryUrl,
-        highlight: true,
-      },
-      ecosystem: {
-        name: 'CMDglows app',
-        description: 'Current Android screenshots show the product surface alongside the course.',
-        points: ['Real screenshots', 'App version', 'Focus on practical use'],
-        cta: 'See recommendations',
-        href: recommendationsUrl,
-      },
-    }
+const copy =
+  lang === 'fr'
+    ? {
+        title: 'Quelle est votre prochaine étape ?',
+        sub: 'Le parcours phare reste la formation Windows, avec l’app CMDglows et les preuves sociales en support.',
+        flagship: {
+          name: 'Formation Windows Mastery',
+          description:
+            'Parcours de référence pour passer d’un environnement bruité à un système de travail clair.',
+          points: [
+            '8 modules organisés autour d’une méthode d’adoption pratique',
+            'Contenu en FR + EN',
+            'Objectif: réduire la friction pour travailler plus efficacement',
+            'Accès au chemin premium via votre compte',
+          ],
+          cta: 'Voir la page de vente',
+          href: windowsMasteryUrl,
+          highlight: true,
+        },
+        ecosystem: {
+          name: 'App CMDglows',
+          description:
+            'Les captures actuelles montrent la surface Android à côté du parcours de formation.',
+          points: [
+            'Captures réelles',
+            'Version app',
+            'Focus sur l’usage concret',
+          ],
+          cta: 'Voir les recommandations',
+          href: recommendationsUrl,
+        },
+      }
+    : {
+        title: 'What should you do next?',
+        sub: 'The flagship path is the Windows Mastery training, with the CMDglows app and social proof supporting it.',
+        flagship: {
+          name: 'Windows Mastery',
+          description:
+            'The recommended first step to move from noisy, fragmented work to a clear system.',
+          points: [
+            '8 practical modules built around a structured workflow',
+            'FR + EN training content',
+            'Designed to reduce daily friction and regain focus',
+            'Premium path opens after sign-in and checkout flow',
+          ],
+          cta: 'See the course',
+          href: windowsMasteryUrl,
+          highlight: true,
+        },
+        ecosystem: {
+          name: 'CMDglows app',
+          description:
+            'Current Android screenshots show the product surface alongside the course.',
+          points: ['Real screenshots', 'App version', 'Focus on practical use'],
+          cta: 'See recommendations',
+          href: recommendationsUrl,
+        },
+      }
 ---
 
 <section id="pricing" class="landing-section bg-content-bg-subtle px-4">
-  <div class="max-w-6xl mx-auto">
+  <div class="mx-auto max-w-6xl">
     <div class="reveal landing-section-header text-center">
-      <h2 class="landing-section-title font-display text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl">
+      <h2
+        class="landing-section-title font-display text-content-text-primary dark:text-content-text-over-dark text-3xl font-bold sm:text-4xl"
+      >
         {copy.title}
       </h2>
-      <p class="landing-section-copy mx-auto max-w-2xl text-content-text-secondary dark:text-content-text-tertiary">
+      <p
+        class="landing-section-copy text-content-text-secondary dark:text-content-text-tertiary mx-auto max-w-2xl"
+      >
         {copy.sub}
       </p>
     </div>
 
     <div class="reveal landing-section-grid grid grid-cols-1 md:grid-cols-2">
       <article
-        class="landing-surface landing-section-card relative rounded-2xl border border-content-border dark:border-content-border-strong"
+        class="landing-surface landing-section-card border-content-border dark:border-content-border-strong relative rounded-2xl border"
       >
-        <p class="landing-eyebrow landing-section-eyebrow text-sm font-semibold uppercase text-content-text-muted dark:text-content-text-tertiary">{copy.flagship.name}</p>
-        <h3 class="text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.flagship.description}</h3>
-          <ul class="landing-section-list text-sm text-content-text-secondary dark:text-content-text-muted">
-          {copy.flagship.points.map((point) => (
-            <li class="landing-section-list-item flex">
-              <svg class="h-5 w-5 flex-shrink-0 text-green" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7" /></svg>
-              {point}
-            </li>
-          ))}
+        <p
+          class="landing-eyebrow landing-section-eyebrow text-content-text-muted dark:text-content-text-tertiary text-sm font-semibold uppercase"
+        >
+          {copy.flagship.name}
+        </p>
+        <h3
+          class="text-content-text-primary dark:text-content-text-over-dark text-2xl font-bold"
+        >
+          {copy.flagship.description}
+        </h3>
+        <ul
+          class="landing-section-list text-content-text-secondary dark:text-content-text-muted text-sm"
+        >
+          {
+            copy.flagship.points.map((point) => (
+              <li class="landing-section-list-item flex">
+                <svg
+                  class="text-green h-5 w-5 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="m5 13 4 4L19 7" />
+                </svg>
+                {point}
+              </li>
+            ))
+          }
         </ul>
-        <a href={copy.flagship.href}>
-          <button class="landing-primary-action landing-section-button inline-flex h-11 w-full items-center justify-center rounded-full px-5 text-sm font-semibold">
-            {copy.flagship.cta}
-          </button>
+        <a
+          href={copy.flagship.href}
+          class="landing-primary-action landing-section-button inline-flex h-11 w-full items-center justify-center rounded-full px-5 text-sm font-semibold"
+        >
+          {copy.flagship.cta}
         </a>
       </article>
 
-      <article class="landing-surface landing-section-card rounded-2xl border border-content-border dark:border-content-border-strong">
-        <p class="landing-eyebrow landing-section-eyebrow text-sm font-semibold uppercase text-content-text-muted dark:text-content-text-tertiary">{copy.ecosystem.name}</p>
-        <h3 class="text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">{copy.ecosystem.description}</h3>
-          <ul class="landing-section-list text-sm text-content-text-secondary dark:text-content-text-muted">
-          {copy.ecosystem.points.map((point) => (
-            <li class="landing-section-list-item flex">
-              <svg class="h-5 w-5 flex-shrink-0 text-green" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7" /></svg>
-              {point}
-            </li>
-          ))}
+      <article
+        class="landing-surface landing-section-card border-content-border dark:border-content-border-strong rounded-2xl border"
+      >
+        <p
+          class="landing-eyebrow landing-section-eyebrow text-content-text-muted dark:text-content-text-tertiary text-sm font-semibold uppercase"
+        >
+          {copy.ecosystem.name}
+        </p>
+        <h3
+          class="text-content-text-primary dark:text-content-text-over-dark text-2xl font-bold"
+        >
+          {copy.ecosystem.description}
+        </h3>
+        <ul
+          class="landing-section-list text-content-text-secondary dark:text-content-text-muted text-sm"
+        >
+          {
+            copy.ecosystem.points.map((point) => (
+              <li class="landing-section-list-item flex">
+                <svg
+                  class="text-green h-5 w-5 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="m5 13 4 4L19 7" />
+                </svg>
+                {point}
+              </li>
+            ))
+          }
         </ul>
-        <a href={copy.ecosystem.href}>
-          <button class="landing-secondary-action landing-section-button inline-flex h-11 w-full items-center justify-center rounded-full border border-content-border px-5 text-sm font-semibold text-content-text-secondary transition-colors hover:bg-content-bg-hover dark:border-content-border-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover">
-            {copy.ecosystem.cta}
-          </button>
+        <a
+          href={copy.ecosystem.href}
+          class="landing-secondary-action landing-section-button border-content-border text-content-text-secondary hover:bg-content-bg-hover dark:border-content-border-strong dark:text-content-text-over-dark dark:hover:bg-content-bg-hover inline-flex h-11 w-full items-center justify-center rounded-full border px-5 text-sm font-semibold transition-colors"
+        >
+          {copy.ecosystem.cta}
         </a>
       </article>
     </div>

@@ -7,19 +7,19 @@ import { getEntrySlug } from '@/utils/docs'
 const requestedSlug = Astro.params.slug?.replace(/\/$/, '')
 const docs = await getCollection('docs')
 const entry = docs.find((doc) => {
-	const slug = getEntrySlug(doc)
-	const normalized = (slug === 'index' ? '' : slug).replace(/\/$/, '')
-	return normalized === requestedSlug
+  const slug = getEntrySlug(doc)
+  const normalized = (slug === 'index' ? '' : slug).replace(/\/$/, '')
+  return normalized === requestedSlug
 })
 
 if (!entry || !isFormationSlug(getEntrySlug(entry))) {
-	return Astro.redirect('/404')
+  return Astro.redirect('/404')
 }
 
 const access = await getCourseAccess(Astro)
 const entrySlug = getEntrySlug(entry)
 if (!access.hasAccess) {
-	return Astro.redirect(`/${entrySlug}`)
+  return Astro.redirect(`/${entrySlug}`)
 }
 
 const { Content, headings } = await render(entry)
@@ -28,37 +28,49 @@ const publicPath = `/${entrySlug}`
 ---
 
 <MainLayout title={entry.data.title} lang={lang}>
-	<div class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-		<div class="mb-6 flex flex-wrap items-center gap-3">
-			<span class="inline-flex rounded-full bg-green/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-green ring-1 ring-green/30">
-				{lang === 'fr' ? 'Lecon debloquee' : 'Unlocked lesson'}
-			</span>
-			<a href={publicPath} class="text-sm text-magenta hover:underline">
-				{lang === 'fr' ? 'Voir la version publique' : 'View public version'}
-			</a>
-		</div>
+  <div class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="mb-6 flex flex-wrap items-center gap-3">
+      <span
+        class="bg-green/15 tracking-eyebrow text-green ring-green/30 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ring-1"
+      >
+        {lang === 'fr' ? 'Lecon debloquee' : 'Unlocked lesson'}
+      </span>
+      <a
+        href={publicPath}
+        class="dashboard-action-link brand-text-magenta text-sm hover:underline"
+      >
+        {lang === 'fr' ? 'Voir la version publique' : 'View public version'}
+      </a>
+    </div>
 
-		<article class="sl-markdown-content rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong dark:bg-content-bg-elevated">
-			{Content && <Content />}
-		</article>
+    <article
+      class="sl-markdown-content border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-elevated rounded-2xl border p-6"
+    >
+      {Content && <Content />}
+    </article>
 
-		{
-			headings.length > 0 && (
-				<div class="mt-8 rounded-2xl border border-content-border bg-content-bg-subtle p-6 dark:border-content-border-strong dark:bg-content-bg-strong">
-					<h2 class="mb-4 text-2xl font-bold text-content-text-primary dark:text-content-text-primary">
-						{lang === 'fr' ? 'Navigation rapide' : 'Quick navigation'}
-					</h2>
-					<ul class="space-y-2">
-						{headings.filter((heading) => heading.depth <= 2).map((heading) => (
-							<li>
-								<a href={`#${heading.slug}`} class="text-content-text-secondary hover:text-magenta dark:text-content-text-muted dark:hover:text-magenta">
-									{heading.text}
-								</a>
-							</li>
-						))}
-					</ul>
-				</div>
-			)
-		}
-	</div>
+    {
+      headings.length > 0 && (
+        <div class="border-content-border bg-content-bg-subtle dark:border-content-border-strong dark:bg-content-bg-strong mt-8 rounded-2xl border p-6">
+          <h2 class="text-content-text-primary dark:text-content-text-primary mb-4 text-2xl font-bold">
+            {lang === 'fr' ? 'Navigation rapide' : 'Quick navigation'}
+          </h2>
+          <ul class="space-y-2">
+            {headings
+              .filter((heading) => heading.depth <= 2)
+              .map((heading) => (
+                <li>
+                  <a
+                    href={`#${heading.slug}`}
+                    class="dashboard-action-link brand-text-magenta hover:underline"
+                  >
+                    {heading.text}
+                  </a>
+                </li>
+              ))}
+          </ul>
+        </div>
+      )
+    }
+  </div>
 </MainLayout>

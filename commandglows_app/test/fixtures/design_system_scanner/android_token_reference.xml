@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scanner coverage fixture: references only, never packaged as Android UI. -->
+<resources>
+    <item name="keyboard_active" type="color">@color/commandglows_keyboard_active</item>
+    <item name="keyboard_foreground" type="color">@color/commandglows_keyboard_foreground</item>
+    <item name="keyboard_press_duration" type="integer">@integer/commandglows_keyboard_press_duration</item>
+</resources>

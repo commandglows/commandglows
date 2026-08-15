@@ -4,118 +4,185 @@ import { getLangFromUrl } from '@/utils/i18n'
 
 const lang = getLangFromUrl(Astro.url)
 
-const content = lang === 'fr'
-  ? {
-      badge: "Ressource Gratuite",
-      title: "Top 10 des astuces de productivité Windows",
-      sub: "Un guide PDF avec 10 idées Windows utiles pour réduire la friction dès la première semaine. Envoi immédiat par email.",
-      placeholder: "Votre email",
-      cta: "Recevoir le guide",
-      privacy: "Pas de spam. Désabonnement en un clic.",
-      success: "Merci ! Vérifiez votre boîte mail.",
-      error: "Erreur. Veuillez réessayer.",
-    }
-  : {
-      badge: "Free Resource",
-      title: "Top 10 Windows Productivity Hacks",
-      sub: "A free PDF with 10 practical Windows ideas to reduce friction. Delivered instantly to your inbox.",
-      placeholder: "Your email",
-      cta: "Get the Free Guide",
-      privacy: "No spam. Unsubscribe in one click.",
-      success: "Thanks! Check your inbox.",
-      error: "Something went wrong. Please try again.",
-    }
+const content =
+  lang === 'fr'
+    ? {
+        badge: 'Ressource Gratuite',
+        title: 'Top 10 des astuces de productivité Windows',
+        sub: 'Un guide PDF avec 10 idées Windows utiles pour réduire la friction dès la première semaine. Envoi immédiat par email.',
+        placeholder: 'Votre email',
+        cta: 'Recevoir le guide',
+        privacy: 'Pas de spam. Désabonnement en un clic.',
+        success: 'Merci ! Vérifiez votre boîte mail.',
+        error: 'Erreur. Veuillez réessayer.',
+      }
+    : {
+        badge: 'Free Resource',
+        title: 'Top 10 Windows Productivity Hacks',
+        sub: 'A free PDF with 10 practical Windows ideas to reduce friction. Delivered instantly to your inbox.',
+        placeholder: 'Your email',
+        cta: 'Get the Free Guide',
+        privacy: 'No spam. Unsubscribe in one click.',
+        success: 'Thanks! Check your inbox.',
+        error: 'Something went wrong. Please try again.',
+      }
 ---
 
 <section class="landing-section bg-content-bg-subtle px-4">
-  <div class="reveal max-w-3xl mx-auto">
-    <div class="landing-surface landing-section-card relative overflow-hidden rounded-2xl border">
+  <div class="reveal mx-auto max-w-3xl">
+    <div
+      class="landing-surface landing-section-card relative overflow-hidden rounded-2xl border"
+    >
       <!-- Background glow -->
-      <div class="landing-lead-glow absolute -top-24 -right-24 h-64 w-64 pointer-events-none rounded-full blur-3xl"></div>
+      <div
+        class="landing-lead-glow pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full blur-3xl"
+      >
+      </div>
 
       <div class="relative z-10 text-center">
         <!-- Badge -->
-        <span class="landing-soft-badge landing-section-badge landing-badge inline-flex items-center rounded-full border px-3 py-1 text-xs">
-          <svg class="h-3 w-3 text-green" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3V18a3 3 0 0 0 3 3h15zM1.5 10.146V6a3 3 0 0 1 3-3h5.379a2.25 2.25 0 0 1 1.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 0 1 3 3v1.146A4.483 4.483 0 0 0 19.5 9h-15a4.483 4.483 0 0 0-3 1.146z"/></svg>
+        <span
+          class="landing-soft-badge landing-section-badge landing-badge inline-flex items-center rounded-full border px-3 py-1 text-xs"
+        >
+          <svg
+            class="text-green h-3 w-3"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            ><path
+              d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3V18a3 3 0 0 0 3 3h15zM1.5 10.146V6a3 3 0 0 1 3-3h5.379a2.25 2.25 0 0 1 1.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 0 1 3 3v1.146A4.483 4.483 0 0 0 19.5 9h-15a4.483 4.483 0 0 0-3 1.146z"
+            ></path></svg
+          >
           {content.badge}
         </span>
 
-        <h2 class="landing-section-title font-display text-3xl font-bold text-content-text-primary dark:text-content-text-over-dark sm:text-4xl">
+        <h2
+          class="landing-section-title font-display text-content-text-primary dark:text-content-text-over-dark text-3xl font-bold sm:text-4xl"
+        >
           {content.title}
         </h2>
 
-        <p class="landing-section-copy mx-auto max-w-xl text-content-text-secondary dark:text-content-text-tertiary">
+        <p
+          class="landing-section-copy text-content-text-secondary dark:text-content-text-tertiary mx-auto max-w-xl"
+        >
           {content.sub}
         </p>
 
         <!-- Email form -->
-        <form id="lead-magnet-form" data-lang={lang} class="landing-section-form mx-auto flex max-w-md flex-col sm:flex-row">
+        <form
+          id="lead-magnet-form"
+          data-lang={lang}
+          class="landing-section-form mx-auto flex max-w-md flex-col sm:flex-row"
+        >
+          <label for="lead-magnet-email" class="sr-only"
+            >{content.placeholder}</label
+          >
           <input
+            id="lead-magnet-email"
             type="email"
             name="email"
+            autocomplete="email"
             required
             placeholder={content.placeholder}
-            class="flex-1 rounded-full border border-content-border bg-content-bg-elevated px-5 py-3 text-sm text-content-text-primary placeholder:text-content-text-muted focus:border-content-border-strong focus:outline-none dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:placeholder:text-content-text-muted dark:focus:border-content-border-strong"
+            class="border-content-border bg-content-bg-elevated text-content-text-primary placeholder:text-content-text-muted focus:border-content-border-strong dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:placeholder:text-content-text-muted dark:focus:border-content-border-strong flex-1 rounded-full border px-5 py-3 text-sm focus:outline-none"
           />
           <button
             type="submit"
-            class="landing-primary-action landing-cta-inline shimmer-btn inline-flex items-center justify-center whitespace-nowrap rounded-full px-6 py-3 text-sm font-medium"
+            class="landing-primary-action landing-cta-inline shimmer-btn inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium whitespace-nowrap"
             data-track="lead-magnet-cta"
           >
             {content.cta}
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg
+            >
           </button>
         </form>
 
-        <p id="lead-magnet-success" class="landing-section-form-feedback hidden text-sm text-green">{content.success}</p>
-        <p id="lead-magnet-error" class="landing-section-form-feedback hidden text-sm text-red">{content.error}</p>
+        <p
+          id="lead-magnet-success"
+          role="status"
+          aria-live="polite"
+          class="brand-text-green landing-section-form-feedback hidden text-sm"
+        >
+          {content.success}
+        </p>
+        <p
+          id="lead-magnet-error"
+          role="alert"
+          class="brand-text-red landing-section-form-feedback hidden text-sm"
+        >
+          {content.error}
+        </p>
 
-        <p class="landing-section-form-privacy text-xs text-content-text-muted dark:text-content-text-tertiary">{content.privacy}</p>
+        <p
+          class="landing-section-form-privacy text-content-text-muted dark:text-content-text-tertiary text-xs"
+        >
+          {content.privacy}
+        </p>
       </div>
     </div>
   </div>
 </section>
 
 <script>
-  const leadForm = document.getElementById('lead-magnet-form') as HTMLFormElement | null;
+  const leadForm = document.getElementById(
+    'lead-magnet-form'
+  ) as HTMLFormElement | null
   leadForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const emailInput = leadForm.querySelector('input[type="email"]') as HTMLInputElement;
-    const email = emailInput?.value;
-    const successEl = document.getElementById('lead-magnet-success');
-    const errorEl = document.getElementById('lead-magnet-error');
-    const submitBtn = leadForm.querySelector('button[type="submit"]') as HTMLButtonElement;
-    const currentLang = leadForm.dataset.lang === 'fr' ? 'fr' : 'en';
+    e.preventDefault()
+    const emailInput = leadForm.querySelector(
+      'input[type="email"]'
+    ) as HTMLInputElement
+    const email = emailInput?.value
+    const successEl = document.getElementById('lead-magnet-success')
+    const errorEl = document.getElementById('lead-magnet-error')
+    const submitBtn = leadForm.querySelector(
+      'button[type="submit"]'
+    ) as HTMLButtonElement
+    const currentLang = leadForm.dataset.lang === 'fr' ? 'fr' : 'en'
 
-    if (!email) return;
+    if (!email) return
 
-    submitBtn.disabled = true;
-    emailInput.disabled = true;
+    submitBtn.disabled = true
+    emailInput.disabled = true
 
     try {
       const res = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'lead-magnet', lang: currentLang }),
-      });
+        body: JSON.stringify({
+          email,
+          source: 'lead-magnet',
+          lang: currentLang,
+        }),
+      })
 
       if (res.ok) {
-        successEl?.classList.remove('hidden');
-        errorEl?.classList.add('hidden');
-        emailInput.value = '';
-        setTimeout(() => successEl?.classList.add('hidden'), 5000);
+        successEl?.classList.remove('hidden')
+        errorEl?.classList.add('hidden')
+        emailInput.value = ''
+        setTimeout(() => successEl?.classList.add('hidden'), 5000)
       } else {
-        errorEl?.classList.remove('hidden');
-        successEl?.classList.add('hidden');
-        setTimeout(() => errorEl?.classList.add('hidden'), 5000);
+        errorEl?.classList.remove('hidden')
+        successEl?.classList.add('hidden')
+        setTimeout(() => errorEl?.classList.add('hidden'), 5000)
       }
     } catch {
-      errorEl?.classList.remove('hidden');
-      successEl?.classList.add('hidden');
-      setTimeout(() => errorEl?.classList.add('hidden'), 5000);
+      errorEl?.classList.remove('hidden')
+      successEl?.classList.add('hidden')
+      setTimeout(() => errorEl?.classList.add('hidden'), 5000)
     } finally {
-      submitBtn.disabled = false;
-      emailInput.disabled = false;
+      submitBtn.disabled = false
+      emailInput.disabled = false
     }
-  });
+  })
 </script>

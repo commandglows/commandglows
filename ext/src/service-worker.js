@@ -15,6 +15,21 @@ const SNIPPETS_KEY = 'snippets';
 const DICTIONARY_KEY = 'dictionary';
 const HISTORY_KEY = 'history';
 const CUSTOM_ACTIONS_KEY = 'customActions';
+const GENERATED_TOKEN_CSS_URL = chrome.runtime.getURL('src/generated/commandglows-tokens.css');
+
+let generatedTokenCssPromise;
+
+function loadGeneratedTokenCss() {
+  generatedTokenCssPromise ??= fetch(GENERATED_TOKEN_CSS_URL).then((response) => {
+    if (!response.ok) throw new Error('GENERATED_TOKEN_CSS_UNAVAILABLE');
+    return response.text();
+  });
+  return generatedTokenCssPromise;
+}
+
+function installGeneratedTokenCss(css) {
+  globalThis.__commandglowsGeneratedTokenCss = css;
+}
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -103,9 +118,15 @@ async function openInActiveTab(trigger) {
   });
 
   try {
+    const generatedTokenCss = await loadGeneratedTokenCss();
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      files: ['src/content-script.js'],
+      func: installGeneratedTokenCss,
+      args: [generatedTokenCss],
+    });
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['src/design-system-mapping.js', 'src/content-script.js'],
     });
     const result = await chrome.tabs.sendMessage(tab.id, {
       type: 'OPEN_COMMANDGLOWS_PALETTE',

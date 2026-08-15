@@ -1,0 +1,70 @@
+name: CommandGlows design-system token gate
+
+on:
+  pull_request:
+    paths:
+      - "design-system/**"
+      - "design-system/resolved-values.json"
+      - "tools/design_system/**"
+      - "commandglows_site/src/assets/styles/generated/commandglows-tokens.css"
+      - "commandglows_site/src/assets/styles/global.css"
+      - "commandglows_site/tailwind.config.mjs"
+      - "commandglows_site/tests/design-system/site-token-contract.test.ts"
+      - "commandglows_site/src/theme/generated/email-tokens.ts"
+      - "commandglows_site/src/theme/newsletter-email-theme.ts"
+      - "commandglows_app/lib/core/theme/generated/commandglows_tokens.g.dart"
+      - "commandglows_app/lib/core/theme/commandglows_theme_tokens.dart"
+      - "commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/generated/CommandGlowsTokens.kt"
+      - "commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/KeyboardDesignSystemMapping.kt"
+      - "ext/src/generated/commandglows-tokens.css"
+      - "ext/src/design-system-mapping.js"
+      - ".github/workflows/design-system-token-gate.yml"
+  push:
+    branches: [dev, main]
+    paths:
+      - "design-system/**"
+      - "design-system/resolved-values.json"
+      - "tools/design_system/**"
+      - "commandglows_site/src/assets/styles/generated/commandglows-tokens.css"
+      - "commandglows_site/src/assets/styles/global.css"
+      - "commandglows_site/tailwind.config.mjs"
+      - "commandglows_site/tests/design-system/site-token-contract.test.ts"
+      - "commandglows_site/src/theme/generated/email-tokens.ts"
+      - "commandglows_site/src/theme/newsletter-email-theme.ts"
+      - "commandglows_app/lib/core/theme/generated/commandglows_tokens.g.dart"
+      - "commandglows_app/lib/core/theme/commandglows_theme_tokens.dart"
+      - "commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/generated/CommandGlowsTokens.kt"
+      - "commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/KeyboardDesignSystemMapping.kt"
+      - "ext/src/generated/commandglows-tokens.css"
+      - "ext/src/design-system-mapping.js"
+      - ".github/workflows/design-system-token-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  token-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.12.2"
+      - name: Validate manifest, registries, immutable baselines, and consumer contracts
+        run: uv run python tools/design_system/generate_tokens.py --validate-only
+      - name: Run foundation tests
+        run: uv run python -m unittest discover -s tools/design_system/tests -v
+      - name: Reject stale active outputs
+        run: uv run python tools/design_system/generate_tokens.py --all --check
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install site dependencies
+        run: pnpm --dir commandglows_site install --frozen-lockfile
+      - name: Verify the site token bridge contract
+        run: pnpm --dir commandglows_site exec vitest run tests/design-system/site-token-contract.test.ts

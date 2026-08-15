@@ -13,7 +13,7 @@ interface Props {
 
 // Define classes to be used with the Image component
 const imageClass =
-	'absolute inset-0 h-full w-full object-cover object-center transition duration-[600ms] ease-[cubic-bezier(0.45,0,0.55,1)] group-hover:scale-110'
+	'absolute inset-0 h-full w-full object-cover object-center transition duration-card-hover ease-card-hover group-hover:scale-110'
 
 const status = product.data.status ?? 'available'
 const statusLabel =
@@ -67,7 +67,7 @@ const statusClasses =
 	</span>
 	<!-- The product's subtitle and the anchor SVG icon-->
 	<span
-		class="relative mb-3 ml-4 inline-block text-sm font-bold text-white transition duration-[600ms] ease-[cubic-bezier(0.45,0,0.55,1)] group-hover:scale-110 md:ml-5 md:text-lg"
+		class="relative mb-3 ml-4 inline-block text-sm font-bold text-white transition duration-card-hover ease-card-hover group-hover:scale-110 md:ml-5 md:text-lg"
 	>
 		{product.data.description}
 		<Icon name="openInNew" />

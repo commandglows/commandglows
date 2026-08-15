@@ -1,0 +1,127 @@
+{
+  "adaptations": [
+    {
+      "id": "flutter-body-font-inter",
+      "owner": "CommandGlows app design-system owner",
+      "proof": "pubspec.yaml bundles Inter and design_system_app_native_v1.json freezes Inter for the Flutter body role",
+      "rationale": "Flutter must use the bundled Inter asset instead of naming the site's Manrope family and silently falling back.",
+      "reviewOrRemovalCondition": "Review only if the bundled Flutter font asset or approved product typography changes.",
+      "surface": "flutter",
+      "token": "typography.body.family",
+      "value": [
+        "Inter",
+        "Segoe UI",
+        "Roboto",
+        "Arial",
+        "sans-serif"
+      ]
+    },
+    {
+      "id": "email-body-font-client-safe",
+      "owner": "CommandGlows email owner",
+      "proof": "newsletter-email-theme.ts and DS-EMAIL-001 require email-safe resolved inline values without remote fonts",
+      "rationale": "Delivered email cannot depend on the site's bundled or remote font delivery.",
+      "reviewOrRemovalCondition": "Permanent client constraint; review when the supported email-client matrix changes.",
+      "surface": "email",
+      "token": "typography.body.family",
+      "value": [
+        "sans-serif"
+      ]
+    },
+    {
+      "id": "extension-body-font-local-system-stack",
+      "owner": "CommandGlows extension owner",
+      "proof": "ext/src/design-system-mapping.js defines a local CSP-safe popup and closed-Shadow-Root font fallback",
+      "rationale": "The extension must remain local, CSP-safe, and independent of site font loading.",
+      "reviewOrRemovalCondition": "Review if a local extension font asset is deliberately added and browser proof is available.",
+      "surface": "extension",
+      "token": "typography.body.family",
+      "value": [
+        "system-ui",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "sans-serif"
+      ]
+    }
+  ],
+  "clientAdaptations": [
+    {
+      "id": "newsletter-client-visual-baseline",
+      "owner": "CommandGlows email owner",
+      "proof": "commandglows_site/tests/email/newsletterEmail.test.ts and DS-EMAIL-001",
+      "rationale": "These resolved inline values preserve the existing readable newsletter and confirmation-page baseline across constrained email clients without claiming cross-surface parity.",
+      "reviewOrRemovalCondition": "Review against the supported email-client matrix before any value changes or promotion to shared semantics.",
+      "scope": "newsletter HTML and unsubscribe confirmation pages",
+      "surface": "email",
+      "values": {
+        "confirmationText": {
+          "type": "color",
+          "value": "#999999"
+        },
+        "divider": {
+          "type": "color",
+          "value": "#e5e5e5"
+        },
+        "foreground": {
+          "type": "color",
+          "value": "#000000"
+        },
+        "maxContentWidth": {
+          "type": "dimension",
+          "value": {
+            "amount": 600,
+            "unit": "px"
+          }
+        },
+        "mutedText": {
+          "type": "color",
+          "value": "#525252"
+        },
+        "subtleText": {
+          "type": "color",
+          "value": "#737373"
+        },
+        "surface": {
+          "type": "color",
+          "value": "#ffffff"
+        },
+        "text": {
+          "type": "color",
+          "value": "#171717"
+        }
+      }
+    }
+  ],
+  "legacyUnexplained": [],
+  "observations": [
+    {
+      "surfaceValues": {
+        "email": [
+          "sans-serif"
+        ],
+        "extension": [
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif"
+        ],
+        "flutter": [
+          "Inter",
+          "Segoe UI",
+          "Roboto",
+          "Arial",
+          "sans-serif"
+        ],
+        "site": [
+          "Manrope",
+          "sans-serif"
+        ]
+      },
+      "token": "typography.body.family"
+    }
+  ],
+  "registryVersion": "1.2.0",
+  "unresolvedMigrationInventory": []
+}

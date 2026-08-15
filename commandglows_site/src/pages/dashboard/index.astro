@@ -3,47 +3,110 @@ import MainLayout from '@/layouts/MainLayout.astro'
 
 const auth = Astro.locals.auth()
 if (!auth.userId) {
-	return Astro.redirect('/signin')
+  return Astro.redirect('/signin')
 }
 ---
 
 <MainLayout title="Dashboard">
-	<div class="min-h-screen py-12">
-		<div class="mx-auto max-w-4xl">
-			<h1 class="text-3xl font-bold text-content-text-primary dark:text-content-text-primary mb-8">
-				Dashboard
-			</h1>
+  <div class="min-h-screen py-12">
+    <div class="mx-auto max-w-4xl">
+      <h1
+        class="text-content-text-primary dark:text-content-text-primary mb-8 text-3xl font-bold"
+      >
+        Dashboard
+      </h1>
 
-			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				<!-- Subscription Status -->
-			<div class="rounded-xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong dark:bg-content-bg-strong">
-				<h2 class="text-sm font-medium text-content-text-tertiary dark:text-content-text-muted mb-2">Plan</h2>
-					<p class="text-2xl font-bold text-content-text-primary dark:text-content-text-over-dark">Free</p>
-					<a href="/landing#pricing" class="mt-3 inline-block text-sm text-magenta hover:underline">
-						Upgrade to Pro
-					</a>
-				</div>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <!-- Subscription Status -->
+        <div
+          class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
+        >
+          <h2
+            class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
+          >
+            Plan
+          </h2>
+          <p
+            class="text-content-text-primary dark:text-content-text-over-dark text-2xl font-bold"
+          >
+            Free
+          </p>
+          <a
+            href="/landing#pricing"
+            class="dashboard-action-link brand-text-magenta mt-3 text-sm hover:underline"
+          >
+            Upgrade to Pro
+          </a>
+        </div>
 
-				<!-- Quick Links -->
-				<div class="rounded-xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong dark:bg-content-bg-strong">
-					<h2 class="text-sm font-medium text-content-text-tertiary dark:text-content-text-muted mb-2">Quick Links</h2>
-					<ul class="space-y-2 text-sm">
-						<li><a href="/dashboard/taches" class="text-magenta hover:underline">Tasks</a></li>
-						<li><a href="/dashboard/parametres" class="text-magenta hover:underline">Settings</a></li>
-						<li><a href="/products" class="text-magenta hover:underline">Products</a></li>
-					</ul>
-				</div>
+        <!-- Quick Links -->
+        <div
+          class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
+        >
+          <h2
+            class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
+          >
+            Quick Links
+          </h2>
+          <ul class="space-y-2 text-sm">
+            <li>
+              <a
+                href="/dashboard/taches"
+                class="dashboard-action-link brand-text-magenta hover:underline"
+                >Tasks</a
+              >
+            </li>
+            <li>
+              <a
+                href="/dashboard/parametres"
+                class="dashboard-action-link brand-text-magenta hover:underline"
+                >Settings</a
+              >
+            </li>
+            <li>
+              <a
+                href="/products"
+                class="dashboard-action-link brand-text-magenta hover:underline"
+                >Products</a
+              >
+            </li>
+          </ul>
+        </div>
 
-				<!-- Resources -->
-				<div class="rounded-xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong dark:bg-content-bg-strong">
-					<h2 class="text-sm font-medium text-content-text-tertiary dark:text-content-text-muted mb-2">Resources</h2>
-					<ul class="space-y-2 text-sm">
-						<li><a href="/en/formations/" class="text-magenta hover:underline">Courses</a></li>
-						<li><a href="/blog" class="text-magenta hover:underline">Blog</a></li>
-						<li><a href="/roadmap" class="text-magenta hover:underline">Roadmap</a></li>
-					</ul>
-				</div>
-			</div>
-		</div>
-	</div>
+        <!-- Resources -->
+        <div
+          class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
+        >
+          <h2
+            class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
+          >
+            Resources
+          </h2>
+          <ul class="space-y-2 text-sm">
+            <li>
+              <a
+                href="/en/formations/"
+                class="dashboard-action-link brand-text-magenta hover:underline"
+                >Courses</a
+              >
+            </li>
+            <li>
+              <a
+                href="/blog"
+                class="dashboard-action-link brand-text-magenta hover:underline"
+                >Blog</a
+              >
+            </li>
+            <li>
+              <a
+                href="/roadmap"
+                class="dashboard-action-link brand-text-magenta hover:underline"
+                >Roadmap</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 </MainLayout>

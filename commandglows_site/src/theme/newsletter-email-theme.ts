@@ -1,106 +1,140 @@
-import { SITE_VISUAL_TOKENS } from '@/constants';
+import {
+  EMAIL_CLIENT_ADAPTATIONS,
+  EMAIL_TOKENS,
+  type EmailAdapterTokenSource,
+} from '@/theme/generated/email-tokens'
 
-type InlineStyleValue = string | number;
-type InlineStyleObject = Record<string, InlineStyleValue>;
+type InlineStyleValue = string | number
+type InlineStyleObject = Record<string, InlineStyleValue>
 
-const NEWSLETTER_ACCENT = '#ff00c8';
-const NEWSLETTER_TEXT = '#171717';
-const NEWSLETTER_MUTED = '#525252';
-const NEWSLETTER_SUBTLE = '#737373';
-const NEWSLETTER_DIVIDER = '#e5e5e5';
-const NEWSLETTER_SURFACE = SITE_VISUAL_TOKENS.themeMeta.manifestBackground;
-const NEWSLETTER_FOREGROUND = SITE_VISUAL_TOKENS.themeMeta.manifestTheme;
-const NEWSLETTER_PRIMARY = SITE_VISUAL_TOKENS.themeMeta.website;
+type EmailDimension = EmailAdapterTokenSource['semantic.space.unit']
+
+/**
+ * Compatibility name retained for the existing email-contract tests. The
+ * value is the generated adapter itself, never a locally maintained copy.
+ */
+export const EMAIL_ADAPTER_SOURCE_FIXTURE = EMAIL_TOKENS
+export { EMAIL_CLIENT_ADAPTATIONS }
 
 function serializeInlineStyle(style: InlineStyleObject): string {
   return Object.entries(style)
     .map(([property, value]) => {
-      const serializedValue = typeof value === 'number' ? `${value}px` : value;
-      return `${property}: ${serializedValue};`;
+      const serializedValue = typeof value === 'number' ? `${value}px` : value
+      return `${property}: ${serializedValue};`
     })
-    .join(' ');
+    .join(' ')
 }
 
+function dimensionToCss(value: EmailDimension): string {
+  return `${value.amount}${value.unit}`
+}
+
+const spacingUnit = EMAIL_TOKENS['semantic.space.unit'].amount
+const emailFontFamily =
+  EMAIL_TOKENS['semantic.typography.email.body.family'].join(', ')
+
 const NEWSLETTER_EMAIL_STYLES = {
+  documentBody: {
+    'background-color': EMAIL_CLIENT_ADAPTATIONS.surface,
+    color: EMAIL_CLIENT_ADAPTATIONS.text,
+    'font-family': emailFontFamily,
+    margin: '0',
+    padding: `${spacingUnit * 6}px ${spacingUnit * 3}px`,
+  },
   shell: {
-    'font-family': 'sans-serif',
-    'max-width': 600,
+    'background-color': EMAIL_CLIENT_ADAPTATIONS.surface,
+    color: EMAIL_CLIENT_ADAPTATIONS.text,
+    'font-family': emailFontFamily,
+    'max-width': EMAIL_CLIENT_ADAPTATIONS.maxContentWidth,
     margin: '0 auto',
-    color: NEWSLETTER_TEXT,
   },
   heading: {
-    color: NEWSLETTER_TEXT,
+    color: EMAIL_CLIENT_ADAPTATIONS.text,
     'font-size': 28,
     'line-height': '1.2',
-    'margin-bottom': 16,
+    margin: `0 0 ${spacingUnit * 4}px`,
   },
   paragraph: {
+    color: EMAIL_CLIENT_ADAPTATIONS.text,
     'font-size': 16,
     'line-height': '1.6',
-    margin: '0 0 16px',
+    margin: `0 0 ${spacingUnit * 4}px`,
   },
   body: {
+    color: EMAIL_CLIENT_ADAPTATIONS.text,
     'font-size': 16,
     'line-height': '1.6',
-    margin: '0 0 24px',
+    margin: `0 0 ${spacingUnit * 6}px`,
   },
   ctaRow: {
-    margin: '0 0 24px',
+    margin: `0 0 ${spacingUnit * 6}px`,
   },
   button: {
     display: 'inline-block',
-    'background-color': NEWSLETTER_PRIMARY,
-    color: NEWSLETTER_FOREGROUND,
+    'background-color': EMAIL_TOKENS['component.email.button.background'],
+    color: EMAIL_CLIENT_ADAPTATIONS.foreground,
     'text-decoration': 'none',
-    padding: '12px 18px',
-    'border-radius': 10,
+    padding: `${spacingUnit * 3}px ${spacingUnit * 4.5}px`,
+    'border-radius': dimensionToCss(
+      EMAIL_TOKENS['component.email.button.radius']
+    ),
     'font-weight': '600',
   },
   footer: {
+    color: EMAIL_CLIENT_ADAPTATIONS.mutedText,
     'font-size': 14,
     'line-height': '1.6',
-    color: NEWSLETTER_MUTED,
-    margin: '0 0 24px',
+    margin: `0 0 ${spacingUnit * 6}px`,
   },
   divider: {
     border: 'none',
-    'border-top': `1px solid ${NEWSLETTER_DIVIDER}`,
-    margin: '20px 0',
+    'border-top': `1px solid ${EMAIL_CLIENT_ADAPTATIONS.divider}`,
+    margin: `${spacingUnit * 5}px 0`,
   },
   link: {
-    color: NEWSLETTER_SUBTLE,
+    color: EMAIL_CLIENT_ADAPTATIONS.subtleText,
   },
   smallNote: {
+    color: EMAIL_CLIENT_ADAPTATIONS.subtleText,
     'font-size': 12,
-    color: NEWSLETTER_SUBTLE,
+    'line-height': '1.6',
     margin: '0',
   },
   page: {
-    'font-family': 'sans-serif',
+    'background-color': EMAIL_CLIENT_ADAPTATIONS.foreground,
+    color: EMAIL_CLIENT_ADAPTATIONS.surface,
+    'font-family': emailFontFamily,
     display: 'flex',
     'align-items': 'center',
     'justify-content': 'center',
     'min-height': '100vh',
     margin: '0',
-    padding: '2rem',
-    background: NEWSLETTER_FOREGROUND,
+    padding: `${spacingUnit * 8}px`,
   },
   pageShell: {
+    color: EMAIL_CLIENT_ADAPTATIONS.surface,
     'text-align': 'center',
-    color: NEWSLETTER_SURFACE,
   },
   pageHeading: {
-    margin: '0 0 16px',
+    margin: `0 0 ${spacingUnit * 4}px`,
   },
   pageBody: {
-    color: '#999999',
-    margin: '0 0 24px',
+    color: EMAIL_CLIENT_ADAPTATIONS.confirmationText,
+    margin: `0 0 ${spacingUnit * 6}px`,
   },
   pageLink: {
-    color: NEWSLETTER_ACCENT,
+    color: EMAIL_TOKENS['component.email.button.background'],
   },
-} as const;
+} as const
 
-export function newsletterStyle(name: keyof typeof NEWSLETTER_EMAIL_STYLES): string {
-  return serializeInlineStyle(NEWSLETTER_EMAIL_STYLES[name] as InlineStyleObject);
+export type NewsletterStyleName = keyof typeof NEWSLETTER_EMAIL_STYLES
+
+export const NEWSLETTER_STYLE_NAMES = Object.freeze(
+  Object.keys(NEWSLETTER_EMAIL_STYLES) as NewsletterStyleName[]
+)
+
+export function newsletterStyle(name: NewsletterStyleName): string {
+  return serializeInlineStyle(
+    NEWSLETTER_EMAIL_STYLES[name] as InlineStyleObject
+  )
 }

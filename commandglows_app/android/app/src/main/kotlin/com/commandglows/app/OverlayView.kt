@@ -16,6 +16,26 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import kotlin.math.roundToInt
 
+/**
+ * Native overlay visual roles compiled directly into the Android surface.
+ * They intentionally remain independent from Flutter lifecycle and preserve
+ * the existing overlay and waveform appearance exactly.
+ */
+internal object NativeOverlayVisualTokens {
+    const val PRIMARY: Int = -14326805
+    const val RECORDING: Int = -1096636
+    const val PAUSED: Int = -680437
+    const val DANGER: Int = -2349530
+    const val SUCCESS: Int = -15293622
+    const val ACCENT: Int = -14494738
+    const val PROCESSING: Int = -8286984
+    const val SURFACE: Int = -15656921
+    const val SURFACE_STROKE: Int = -13418155
+    const val DISMISS_ACTIVE_STROKE: Int = -79158
+    const val DISMISS_IDLE_STROKE: Int = -12102295
+    const val LABEL_LETTER_SPACING: Float = 0.08f
+}
+
 class OverlayView(context: Context) : FrameLayout(context) {
 
     var onBubbleTap: (() -> Unit)? = null
@@ -35,15 +55,15 @@ class OverlayView(context: Context) : FrameLayout(context) {
     private val waveformWidth = dpToPx(64f)
     private val cornerRadius = dpToPx(26f)
 
-    private val primaryColor = Color.parseColor("#2563eb")
-    private val recordingColor = Color.parseColor("#ef4444")
-    private val pausedColor = Color.parseColor("#f59e0b")
-    private val dangerColor = Color.parseColor("#dc2626")
-    private val successColor = Color.parseColor("#16a34a")
-    private val accentColor = Color.parseColor("#22d3ee")
-    private val processingColor = Color.parseColor("#818cf8")
-    private val surfaceColor = Color.parseColor("#111827")
-    private val surfaceStrokeColor = Color.parseColor("#334155")
+    private val primaryColor = NativeOverlayVisualTokens.PRIMARY
+    private val recordingColor = NativeOverlayVisualTokens.RECORDING
+    private val pausedColor = NativeOverlayVisualTokens.PAUSED
+    private val dangerColor = NativeOverlayVisualTokens.DANGER
+    private val successColor = NativeOverlayVisualTokens.SUCCESS
+    private val accentColor = NativeOverlayVisualTokens.ACCENT
+    private val processingColor = NativeOverlayVisualTokens.PROCESSING
+    private val surfaceColor = NativeOverlayVisualTokens.SURFACE
+    private val surfaceStrokeColor = NativeOverlayVisualTokens.SURFACE_STROKE
 
     private val fabView: TextView
     private val recordingChromeView: RecordingChromeView
@@ -62,7 +82,7 @@ class OverlayView(context: Context) : FrameLayout(context) {
             gravity = Gravity.CENTER
             visibility = VISIBLE
             setPadding(0, 0, 0, 0)
-            letterSpacing = 0.08f
+            letterSpacing = NativeOverlayVisualTokens.LABEL_LETTER_SPACING
             contentDescription = "CommandGlows overlay. Tap to start dictation. Drag to move."
             elevation = dpToPx(8f).toFloat()
         }

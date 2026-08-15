@@ -4,6 +4,39 @@ import android.graphics.Color
 import org.json.JSONObject
 import kotlin.math.roundToInt
 
+/**
+ * Native-only visual roles that are not part of the cross-surface generated
+ * adapter. Keeping them named here preserves the IME's independent startup
+ * and the exact v1 preset values without scattering rendering literals.
+ */
+internal object NativeImeVisualTokens {
+    const val LIGHT_PRIVATE_BACKGROUND: Int = -595742
+    const val LIGHT_DISABLED_KEY: Int = -2696745
+    const val LIGHT_DISABLED_TEXT: Int = -8682882
+
+    const val DARK_BACKGROUND: Int = -15591403
+    const val DARK_PRIVATE_BACKGROUND: Int = -14017509
+    const val DARK_KEY: Int = -14472409
+    const val DARK_SPECIAL_KEY: Int = -13748173
+    const val DARK_ACTIVE_KEY: Int = -13192316
+    const val DARK_PRESSED_KEY: Int = -12365237
+    const val DARK_DISABLED_KEY: Int = -14801887
+    const val DARK_TEXT: Int = -1314066
+    const val DARK_ACTIVE_TEXT: Int = -16247793
+    const val DARK_DISABLED_TEXT: Int = -9668751
+    const val DARK_SECONDARY_TEXT: Int = -5720658
+    const val DARK_STATUS_TEXT: Int = -3352110
+
+    const val STATUS_ERROR: Int = -3919812
+    const val DEBUG_STROKE: Int = -2613216
+    const val DEBUG_TEXT: Int = -6285288
+    const val PINNED_BADGE_STAR: Int = -10163
+    const val VOICE_RECORDING: Int = -1364160
+
+    const val GLASS_KEY_RADIUS: Float = 14f
+    const val PIXEL_KEY_RADIUS: Float = 5f
+}
+
 data class KeyboardThemePreset(
     val id: String,
     val name: String,
@@ -112,7 +145,7 @@ object KeyboardThemePresets {
                     cornerTextColor = Color.parseColor("#4F7C6C"),
                     statusTextColor = Color.parseColor("#254C3F"),
                     borderColor = 0x80FFFFFF.toInt(),
-                    keyRadius = 14f,
+                    keyRadius = NativeImeVisualTokens.GLASS_KEY_RADIUS,
                     shadowBlur = 9f,
                 )
             SUNSET_GRADIENT ->
@@ -176,7 +209,7 @@ object KeyboardThemePresets {
                     statusTextColor = Color.parseColor("#1A3150"),
                     borderColor = Color.parseColor("#15213A"),
                     borderWidth = 1.5f,
-                    keyRadius = 5f,
+                    keyRadius = NativeImeVisualTokens.PIXEL_KEY_RADIUS,
                     shadowBlur = 1f,
                     pressEffect = "confettiLite",
                 )
@@ -207,15 +240,15 @@ object KeyboardThemePresets {
             SYSTEM -> KeyboardThemeConfig()
             COMMANDGLOWS ->
                 base.copy(
-                    backgroundStartColor = Color.parseColor("#121815"),
-                    backgroundEndColor = Color.parseColor("#121815"),
-                    keyColor = Color.parseColor("#232B27"),
-                    specialKeyColor = Color.parseColor("#2E3833"),
-                    activeKeyColor = Color.parseColor("#36B384"),
-                    pressedKeyColor = Color.parseColor("#43524B"),
-                    textColor = Color.parseColor("#EBF2EE"),
+                    backgroundStartColor = NativeImeVisualTokens.DARK_BACKGROUND,
+                    backgroundEndColor = NativeImeVisualTokens.DARK_BACKGROUND,
+                    keyColor = NativeImeVisualTokens.DARK_KEY,
+                    specialKeyColor = NativeImeVisualTokens.DARK_SPECIAL_KEY,
+                    activeKeyColor = NativeImeVisualTokens.DARK_ACTIVE_KEY,
+                    pressedKeyColor = NativeImeVisualTokens.DARK_PRESSED_KEY,
+                    textColor = NativeImeVisualTokens.DARK_TEXT,
                     cornerTextColor = Color.parseColor("#B7C8BF"),
-                    statusTextColor = Color.parseColor("#CCD9D2"),
+                    statusTextColor = NativeImeVisualTokens.DARK_STATUS_TEXT,
                     borderColor = Color.parseColor("#516158"),
                     shadowColor = 0x66000000,
                 )
@@ -233,7 +266,7 @@ object KeyboardThemePresets {
                     cornerTextColor = Color.parseColor("#A7D8C8"),
                     statusTextColor = Color.parseColor("#C8F5E6"),
                     borderColor = 0x6635E0AC,
-                    keyRadius = 14f,
+                    keyRadius = NativeImeVisualTokens.GLASS_KEY_RADIUS,
                     shadowColor = 0x66000000,
                     shadowBlur = 9f,
                 )
@@ -283,7 +316,7 @@ object KeyboardThemePresets {
                     statusTextColor = Color.parseColor("#D4F1FF"),
                     borderColor = Color.parseColor("#FFBFE2"),
                     borderWidth = 1.5f,
-                    keyRadius = 5f,
+                    keyRadius = NativeImeVisualTokens.PIXEL_KEY_RADIUS,
                     shadowColor = 0x66000000,
                     shadowBlur = 1f,
                     pressEffect = "confettiLite",
@@ -338,36 +371,36 @@ object KeyboardThemePresets {
 data class KeyboardThemeConfig(
     val version: Int = 1,
     val presetId: String = "system",
-    val backgroundStartColor: Int = Color.parseColor("#EEF1EE"),
-    val backgroundEndColor: Int = Color.parseColor("#EEF1EE"),
+    val backgroundStartColor: Int = KeyboardDesignSystemMapping.THEME_V1_BACKGROUND,
+    val backgroundEndColor: Int = KeyboardDesignSystemMapping.THEME_V1_BACKGROUND,
     val useGradient: Boolean = false,
     val gradientStyle: String = "linear",
     val useImage: Boolean = false,
     val backgroundImagePath: String? = null,
-    val keyboardOpacity: Float = 1f,
-    val keyColor: Int = Color.WHITE,
-    val specialKeyColor: Int = Color.parseColor("#E0E6E3"),
-    val activeKeyColor: Int = Color.parseColor("#17795D"),
-    val pressedKeyColor: Int = Color.parseColor("#CADAD3"),
-    val pressHighlightDurationMs: Int = 170,
-    val textColor: Int = Color.parseColor("#1D2320"),
-    val cornerTextColor: Int = Color.parseColor("#5C6762"),
-    val cornerTextOpacity: Float = 0.85f,
-    val statusTextColor: Int = Color.parseColor("#333D38"),
-    val borderColor: Int = Color.TRANSPARENT,
-    val borderWidth: Float = 0f,
+    val keyboardOpacity: Float = KeyboardDesignSystemMapping.THEME_V1_KEYBOARD_OPACITY,
+    val keyColor: Int = KeyboardDesignSystemMapping.THEME_V1_KEY,
+    val specialKeyColor: Int = KeyboardDesignSystemMapping.THEME_V1_SPECIAL_KEY,
+    val activeKeyColor: Int = KeyboardDesignSystemMapping.THEME_V1_ACTIVE_KEY,
+    val pressedKeyColor: Int = KeyboardDesignSystemMapping.THEME_V1_PRESSED_KEY,
+    val pressHighlightDurationMs: Int = KeyboardDesignSystemMapping.THEME_V1_PRESS_DURATION_MS,
+    val textColor: Int = KeyboardDesignSystemMapping.THEME_V1_TEXT,
+    val cornerTextColor: Int = KeyboardDesignSystemMapping.THEME_V1_CORNER_TEXT,
+    val cornerTextOpacity: Float = KeyboardDesignSystemMapping.THEME_V1_CORNER_TEXT_OPACITY,
+    val statusTextColor: Int = KeyboardDesignSystemMapping.THEME_V1_STATUS_TEXT,
+    val borderColor: Int = KeyboardDesignSystemMapping.THEME_V1_BORDER,
+    val borderWidth: Float = KeyboardDesignSystemMapping.THEME_V1_BORDER_WIDTH,
     val keyReliefEnabled: Boolean = false,
-    val keyReliefDepth: Float = 2f,
-    val keyRadius: Float = 8f,
-    val keyHorizontalGap: Float = 4f,
-    val rowVerticalGap: Float = 4f,
+    val keyReliefDepth: Float = KeyboardDesignSystemMapping.THEME_V1_KEY_RELIEF_DEPTH,
+    val keyRadius: Float = KeyboardDesignSystemMapping.THEME_V1_KEY_RADIUS,
+    val keyHorizontalGap: Float = KeyboardDesignSystemMapping.THEME_V1_GRID_GAP,
+    val rowVerticalGap: Float = KeyboardDesignSystemMapping.THEME_V1_GRID_GAP,
     val keyWidthScale: Float = 1f,
-    val shadowColor: Int = 0x33000000,
-    val shadowBlur: Float = 4f,
-    val shadowOffsetY: Float = 1f,
+    val shadowColor: Int = KeyboardDesignSystemMapping.THEME_V1_SHADOW,
+    val shadowBlur: Float = KeyboardDesignSystemMapping.THEME_V1_SHADOW_BLUR,
+    val shadowOffsetY: Float = KeyboardDesignSystemMapping.THEME_V1_SHADOW_OFFSET_Y,
     val pressEffect: String = "none",
-    val effectIntensity: Float = 0.35f,
-    val effectDurationMs: Int = 170,
+    val effectIntensity: Float = KeyboardDesignSystemMapping.THEME_V1_EFFECT_INTENSITY,
+    val effectDurationMs: Int = KeyboardDesignSystemMapping.THEME_V1_PRESS_DURATION_MS,
     val effectEasing: String = "easeOut",
 ) {
     fun toMap(): Map<String, Any?> {
@@ -484,35 +517,35 @@ data class KeyboardThemeConfig(
                     mapOf(
                         "version" to json.optInt("version", 1),
                         "presetId" to json.optString("presetId", "system"),
-                        "backgroundStartColor" to json.optInt("backgroundStartColor", Color.parseColor("#EEF1EE")),
-                        "backgroundEndColor" to json.optInt("backgroundEndColor", Color.parseColor("#EEF1EE")),
+                        "backgroundStartColor" to json.optInt("backgroundStartColor", KeyboardDesignSystemMapping.THEME_V1_BACKGROUND),
+                        "backgroundEndColor" to json.optInt("backgroundEndColor", KeyboardDesignSystemMapping.THEME_V1_BACKGROUND),
                         "useGradient" to json.optBoolean("useGradient", false),
                         "gradientStyle" to json.optString("gradientStyle", "linear"),
                         "useImage" to json.optBoolean("useImage", false),
                         "backgroundImagePath" to json.optString("backgroundImagePath", ""),
-                        "keyboardOpacity" to json.optDouble("keyboardOpacity", 1.0),
-                        "keyColor" to json.optInt("keyColor", Color.WHITE),
-                        "specialKeyColor" to json.optInt("specialKeyColor", Color.parseColor("#E0E6E3")),
-                        "activeKeyColor" to json.optInt("activeKeyColor", Color.parseColor("#17795D")),
-                        "pressedKeyColor" to json.optInt("pressedKeyColor", Color.parseColor("#CADAD3")),
-                        "pressHighlightDurationMs" to json.optInt("pressHighlightDurationMs", 170),
-                        "textColor" to json.optInt("textColor", Color.parseColor("#1D2320")),
-                        "cornerTextColor" to json.optInt("cornerTextColor", Color.parseColor("#5C6762")),
-                        "cornerTextOpacity" to json.optDouble("cornerTextOpacity", 0.85),
-                        "statusTextColor" to json.optInt("statusTextColor", Color.parseColor("#333D38")),
-                        "borderColor" to json.optInt("borderColor", Color.TRANSPARENT),
-                        "borderWidth" to json.optDouble("borderWidth", 0.0),
+                        "keyboardOpacity" to json.optDouble("keyboardOpacity", KeyboardDesignSystemMapping.THEME_V1_KEYBOARD_OPACITY.toDouble()),
+                        "keyColor" to json.optInt("keyColor", KeyboardDesignSystemMapping.THEME_V1_KEY),
+                        "specialKeyColor" to json.optInt("specialKeyColor", KeyboardDesignSystemMapping.THEME_V1_SPECIAL_KEY),
+                        "activeKeyColor" to json.optInt("activeKeyColor", KeyboardDesignSystemMapping.THEME_V1_ACTIVE_KEY),
+                        "pressedKeyColor" to json.optInt("pressedKeyColor", KeyboardDesignSystemMapping.THEME_V1_PRESSED_KEY),
+                        "pressHighlightDurationMs" to json.optInt("pressHighlightDurationMs", KeyboardDesignSystemMapping.THEME_V1_PRESS_DURATION_MS),
+                        "textColor" to json.optInt("textColor", KeyboardDesignSystemMapping.THEME_V1_TEXT),
+                        "cornerTextColor" to json.optInt("cornerTextColor", KeyboardDesignSystemMapping.THEME_V1_CORNER_TEXT),
+                        "cornerTextOpacity" to json.optDouble("cornerTextOpacity", KeyboardDesignSystemMapping.THEME_V1_CORNER_TEXT_OPACITY.toDouble()),
+                        "statusTextColor" to json.optInt("statusTextColor", KeyboardDesignSystemMapping.THEME_V1_STATUS_TEXT),
+                        "borderColor" to json.optInt("borderColor", KeyboardDesignSystemMapping.THEME_V1_BORDER),
+                        "borderWidth" to json.optDouble("borderWidth", KeyboardDesignSystemMapping.THEME_V1_BORDER_WIDTH.toDouble()),
                         "keyReliefEnabled" to json.optBoolean("keyReliefEnabled", false),
-                        "keyReliefDepth" to json.optDouble("keyReliefDepth", 2.0),
-                        "keyRadius" to json.optDouble("keyRadius", 8.0),
-                        "keyHorizontalGap" to json.optDouble("keyHorizontalGap", 4.0),
-                        "rowVerticalGap" to json.optDouble("rowVerticalGap", 4.0),
-                        "shadowColor" to json.optInt("shadowColor", 0x33000000),
-                        "shadowBlur" to json.optDouble("shadowBlur", 4.0),
-                        "shadowOffsetY" to json.optDouble("shadowOffsetY", 1.0),
+                        "keyReliefDepth" to json.optDouble("keyReliefDepth", KeyboardDesignSystemMapping.THEME_V1_KEY_RELIEF_DEPTH.toDouble()),
+                        "keyRadius" to json.optDouble("keyRadius", KeyboardDesignSystemMapping.THEME_V1_KEY_RADIUS.toDouble()),
+                        "keyHorizontalGap" to json.optDouble("keyHorizontalGap", KeyboardDesignSystemMapping.THEME_V1_GRID_GAP.toDouble()),
+                        "rowVerticalGap" to json.optDouble("rowVerticalGap", KeyboardDesignSystemMapping.THEME_V1_GRID_GAP.toDouble()),
+                        "shadowColor" to json.optInt("shadowColor", KeyboardDesignSystemMapping.THEME_V1_SHADOW),
+                        "shadowBlur" to json.optDouble("shadowBlur", KeyboardDesignSystemMapping.THEME_V1_SHADOW_BLUR.toDouble()),
+                        "shadowOffsetY" to json.optDouble("shadowOffsetY", KeyboardDesignSystemMapping.THEME_V1_SHADOW_OFFSET_Y.toDouble()),
                         "pressEffect" to json.optString("pressEffect", "none"),
-                        "effectIntensity" to json.optDouble("effectIntensity", 0.35),
-                        "effectDurationMs" to json.optInt("effectDurationMs", 170),
+                        "effectIntensity" to json.optDouble("effectIntensity", KeyboardDesignSystemMapping.THEME_V1_EFFECT_INTENSITY.toDouble()),
+                        "effectDurationMs" to json.optInt("effectDurationMs", KeyboardDesignSystemMapping.THEME_V1_PRESS_DURATION_MS),
                         "effectEasing" to json.optString("effectEasing", "easeOut"),
                     ),
                 )
@@ -524,23 +557,23 @@ data class KeyboardThemeConfig(
                 KeyboardThemeConfig(
                     version = (raw["version"] as? Number)?.toInt() ?: 1,
                     presetId = (raw["presetId"] as? String)?.ifBlank { "system" } ?: "system",
-                    backgroundStartColor = (raw["backgroundStartColor"] as? Number)?.toInt() ?: Color.parseColor("#EEF1EE"),
-                    backgroundEndColor = (raw["backgroundEndColor"] as? Number)?.toInt() ?: Color.parseColor("#EEF1EE"),
+                    backgroundStartColor = (raw["backgroundStartColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_BACKGROUND,
+                    backgroundEndColor = (raw["backgroundEndColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_BACKGROUND,
                     useGradient = raw["useGradient"] as? Boolean ?: false,
                     gradientStyle = (raw["gradientStyle"] as? String)?.ifBlank { "linear" } ?: "linear",
                     useImage = raw["useImage"] as? Boolean ?: false,
                     backgroundImagePath = (raw["backgroundImagePath"] as? String)?.ifBlank { null },
                     keyboardOpacity = (raw["keyboardOpacity"] as? Number)?.toFloat() ?: 1f,
-                    keyColor = (raw["keyColor"] as? Number)?.toInt() ?: Color.WHITE,
-                    specialKeyColor = (raw["specialKeyColor"] as? Number)?.toInt() ?: Color.parseColor("#E0E6E3"),
-                    activeKeyColor = (raw["activeKeyColor"] as? Number)?.toInt() ?: Color.parseColor("#17795D"),
-                    pressedKeyColor = (raw["pressedKeyColor"] as? Number)?.toInt() ?: Color.parseColor("#CADAD3"),
-                    pressHighlightDurationMs = (raw["pressHighlightDurationMs"] as? Number)?.toInt() ?: 170,
-                    textColor = (raw["textColor"] as? Number)?.toInt() ?: Color.parseColor("#1D2320"),
-                    cornerTextColor = (raw["cornerTextColor"] as? Number)?.toInt() ?: Color.parseColor("#5C6762"),
+                    keyColor = (raw["keyColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_KEY,
+                    specialKeyColor = (raw["specialKeyColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_SPECIAL_KEY,
+                    activeKeyColor = (raw["activeKeyColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_ACTIVE_KEY,
+                    pressedKeyColor = (raw["pressedKeyColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_PRESSED_KEY,
+                    pressHighlightDurationMs = (raw["pressHighlightDurationMs"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_PRESS_DURATION_MS,
+                    textColor = (raw["textColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_TEXT,
+                    cornerTextColor = (raw["cornerTextColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_CORNER_TEXT,
                     cornerTextOpacity = (raw["cornerTextOpacity"] as? Number)?.toFloat() ?: 0.85f,
-                    statusTextColor = (raw["statusTextColor"] as? Number)?.toInt() ?: Color.parseColor("#333D38"),
-                    borderColor = (raw["borderColor"] as? Number)?.toInt() ?: Color.TRANSPARENT,
+                    statusTextColor = (raw["statusTextColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_STATUS_TEXT,
+                    borderColor = (raw["borderColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_BORDER,
                     borderWidth = (raw["borderWidth"] as? Number)?.toFloat() ?: 0f,
                     keyReliefEnabled = raw["keyReliefEnabled"] as? Boolean ?: false,
                     keyReliefDepth = (raw["keyReliefDepth"] as? Number)?.toFloat() ?: 2f,
@@ -548,12 +581,12 @@ data class KeyboardThemeConfig(
                     keyHorizontalGap = (raw["keyHorizontalGap"] as? Number)?.toFloat() ?: 4f,
                     rowVerticalGap = (raw["rowVerticalGap"] as? Number)?.toFloat() ?: 4f,
                     keyWidthScale = 1f,
-                    shadowColor = (raw["shadowColor"] as? Number)?.toInt() ?: 0x33000000,
+                    shadowColor = (raw["shadowColor"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_SHADOW,
                     shadowBlur = (raw["shadowBlur"] as? Number)?.toFloat() ?: 4f,
                     shadowOffsetY = (raw["shadowOffsetY"] as? Number)?.toFloat() ?: 1f,
                     pressEffect = (raw["pressEffect"] as? String)?.ifBlank { "none" } ?: "none",
                     effectIntensity = (raw["effectIntensity"] as? Number)?.toFloat() ?: 0.35f,
-                    effectDurationMs = (raw["effectDurationMs"] as? Number)?.toInt() ?: 170,
+                    effectDurationMs = (raw["effectDurationMs"] as? Number)?.toInt() ?: KeyboardDesignSystemMapping.THEME_V1_PRESS_DURATION_MS,
                     effectEasing = (raw["effectEasing"] as? String)?.ifBlank { "easeOut" } ?: "easeOut",
                 )
             return config.validated()

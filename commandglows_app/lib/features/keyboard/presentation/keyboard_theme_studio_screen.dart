@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/platform/android_keyboard_bridge.dart';
 import '../../../core/platform/platform_capabilities.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/commandglows_theme_tokens.dart';
 import '../../../core/widgets/app_components.dart';
 import '../application/keyboard_sync_providers.dart';
 import '../domain/keyboard_models.dart';
@@ -2061,7 +2062,7 @@ class _HazardBorderPainter extends CustomPainter {
       ..isAntiAlias = true
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
-      ..color = const Color(0xFFFFD400);
+      ..color = CommandGlowsThemeTokens.keyboardStudioHazard;
     canvas.drawRRect(clip.deflate(1.5), paint);
     paint
       ..style = PaintingStyle.stroke
@@ -2265,8 +2266,8 @@ class _ThemePinnedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseColor = _relativeLuminance(keyColor) > .55
-        ? const Color(0xEB181C20)
-        : const Color(0xEBFFFFFF);
+        ? CommandGlowsThemeTokens.keyboardStudioPinnedOnLight
+        : CommandGlowsThemeTokens.keyboardStudioPinnedOnDark;
     final borderColor = _relativeLuminance(keyColor) > .55
         ? Colors.white
         : Colors.black;
@@ -2328,7 +2329,7 @@ class _PinnedBadgePainter extends CustomPainter {
 
   Color _accentColorForPreset() {
     return presetId == KeyboardThemePresetCatalog.midnightAurora
-        ? const Color(0xFFFFD84D)
+        ? CommandGlowsThemeTokens.keyboardStudioAuroraAccent
         : accentColor;
   }
 
@@ -2719,7 +2720,9 @@ class _PreviewPressEffectPainter extends CustomPainter {
     final fillPaint = Paint()
       ..isAntiAlias = true
       ..style = PaintingStyle.fill
-      ..color = const Color(0xFF1E2421).withValues(alpha: .94);
+      ..color = CommandGlowsThemeTokens.keyboardStudioEffectSurface.withValues(
+        alpha: .94,
+      );
     canvas.drawOval(
       Rect.fromLTRB(-size * .42, -size * .52, size * .42, size * .52),
       fillPaint,

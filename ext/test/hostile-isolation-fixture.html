@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CMDglows hostile host fixture</title>
+    <style>
+      :root {
+        --cg-color-brand-website: yellow;
+        --commandglows-palette-color-surface: hotpink;
+      }
+
+      *,
+      dialog,
+      button,
+      textarea,
+      select {
+        box-sizing: content-box !important;
+        color: lime !important;
+        background: yellow !important;
+        border-radius: 0 !important;
+        font-family: cursive !important;
+      }
+
+      [data-commandglows-host] {
+        position: static !important;
+        inset: auto !important;
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        z-index: calc(0 - 1) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="hostile-message">Message</label>
+    <textarea id="hostile-message">Selected text</textarea>
+    <p>This fixture intentionally attacks inherited styles, custom properties, and host visibility.</p>
+  </body>
+</html>

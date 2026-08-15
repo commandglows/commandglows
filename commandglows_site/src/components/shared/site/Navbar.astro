@@ -3,6 +3,7 @@ import ThemePicker from '@/components/ui/ThemePicker.astro'
 import NavLink from '@components/ui/links/NavLink.astro'
 import TextLogo from '@components/ui/TextLogo.astro'
 import { getLangFromUrl, useTranslations } from '@/utils/i18n'
+import AuthNavAction from './AuthNavAction'
 
 interface NavItem {
   label: string
@@ -89,9 +90,8 @@ function getTranslatedPath(path: string, targetLang: string): string {
 const altLangUrl = getTranslatedPath(Astro.url.pathname, altLang)
 
 const signInLabel = lang === 'fr' ? 'Connexion' : 'Sign In'
-const ctaLabel = signInLabel
+const signOutLabel = lang === 'fr' ? 'Déconnexion' : 'Sign Out'
 const signInUrl = lang === 'fr' ? '/fr/signin' : '/signin'
-const ctaUrl = signInUrl
 const menuLabel = lang === 'fr' ? 'Ouvrir le menu' : 'Open menu'
 const closeMenuLabel = lang === 'fr' ? 'Fermer le menu' : 'Close menu'
 const darkModeLabel = lang === 'fr' ? 'Mode sombre' : 'Dark mode'
@@ -106,7 +106,7 @@ const navShellClass = forceDark
   : 'relative flex items-center justify-between rounded-full border border-navbar-border/60 bg-navbar-bg/80 px-4 py-3 shadow-sm backdrop-blur-md dark:border-navbar-border dark:bg-navbar-bg dark:shadow-none'
 
 const navLinkClass =
-  'no-hover-animation relative rounded-full px-2 py-1.5 text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 md:text-sm'
+  'no-hover-animation relative inline-flex min-h-11 items-center rounded-full px-2 py-1.5 text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring md:text-sm'
 const navLinkActiveClass = forceDark
   ? 'text-navbar-textPrimary'
   : 'text-navbar-textPrimary dark:text-navbar-textPrimary'
@@ -115,18 +115,26 @@ const navLinkInactiveClass = forceDark
   : 'text-navbar-textSecondary hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:hover:text-navbar-textPrimary'
 
 const langLinkClass = forceDark
-  ? 'no-hover-animation rounded-full px-2.5 py-1.5 text-xs font-semibold text-navbar-textTertiary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary'
-  : 'no-hover-animation rounded-full px-2.5 py-1.5 text-xs font-semibold text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textTertiary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary'
+  ? 'no-hover-animation inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-2.5 py-1.5 text-xs font-semibold text-navbar-textTertiary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring'
+  : 'no-hover-animation inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-2.5 py-1.5 text-xs font-semibold text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring dark:text-navbar-textTertiary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary'
 
 const ctaButtonClass = forceDark
-  ? 'shimmer-btn rounded-full bg-navbar-cta-text px-3 py-1.5 text-xs font-medium text-navbar-cta-bg md:text-sm hover:bg-navbar-cta-bg-hover'
-  : 'shimmer-btn rounded-full bg-navbar-cta-bg px-3 py-1.5 text-xs font-medium text-navbar-cta-text md:text-sm hover:bg-navbar-cta-bg-hover'
+  ? 'shimmer-btn inline-flex min-h-11 items-center rounded-full bg-navbar-cta-text px-3 py-1.5 text-xs font-medium text-navbar-cta-bg hover:bg-navbar-cta-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring md:text-sm'
+  : 'shimmer-btn inline-flex min-h-11 items-center rounded-full bg-navbar-cta-bg px-3 py-1.5 text-xs font-medium text-navbar-cta-text hover:bg-navbar-cta-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring md:text-sm'
+const mobileCtaButtonClass =
+  'shimmer-btn bg-navbar-cta-bg text-navbar-cta-text hover:bg-navbar-cta-bg-hover inline-flex min-h-11 w-full items-center justify-center rounded-full px-4 py-2.5 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring'
 ---
 
 <header
   class="navbar-header fixed inset-x-0 top-4 z-50 mx-auto box-border w-full px-4"
 >
-  <nav class:list={[navShellClass, 'box-border w-full min-w-0', !forceDark && 'navbar-shell-glass']}>
+  <nav
+    class:list={[
+      navShellClass,
+      'box-border w-full min-w-0',
+      !forceDark && 'navbar-shell-glass',
+    ]}
+  >
     <!-- The landing layout has no ClientRouter; keep this layered logo out of a cross-layout transition. -->
     <a
       href={homeUrl}
@@ -137,12 +145,14 @@ const ctaButtonClass = forceDark
     </a>
 
     <p
-      class="navbar-mobile-tagline mx-4 hidden flex-1 text-center font-semibold uppercase tracking-wider text-navbar-textSecondary max-md:block"
+      class="navbar-mobile-tagline text-navbar-textSecondary mx-4 hidden flex-1 text-center font-semibold tracking-wider uppercase max-md:block"
     >
       {mobileTagline}
     </p>
 
-    <div class="hidden items-center gap-1 md:flex md:min-w-0 md:flex-1 md:overflow-x-auto md:justify-start md:pl-6">
+    <div
+      class="hidden items-center gap-1 md:flex md:min-w-0 md:flex-1 md:justify-start md:overflow-x-auto md:pl-6"
+    >
       {
         navItems.map((item) => (
           <NavLink
@@ -156,17 +166,24 @@ const ctaButtonClass = forceDark
       }
     </div>
 
-    <div class="hidden items-center gap-1 md:flex md:ml-auto">
+    <div class="hidden items-center gap-1 md:ml-auto md:flex">
       <a href={altLangUrl} class={langLinkClass}>
         {altLangLabel}
       </a>
       {showThemePicker && !forceDark && <ThemePicker />}
-      <a href={ctaUrl} class={ctaButtonClass}>{ctaLabel}</a>
+      <AuthNavAction
+        client:only="react"
+        className={ctaButtonClass}
+        homeUrl={homeUrl}
+        signInLabel={signInLabel}
+        signInUrl={signInUrl}
+        signOutLabel={signOutLabel}
+      />
     </div>
 
     <details class="mobile-menu relative md:hidden">
       <summary
-        class="mobile-menu-toggle flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full bg-navbar-bg-hover/80 text-navbar-textQuaternary transition-colors hover:bg-navbar-bg-hover hover:text-navbar-textPrimary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--navbar-ring)] dark:bg-navbar-bg-hover dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary dark:focus-visible:outline-[var(--navbar-ring)]"
+        class="mobile-menu-toggle bg-navbar-bg-hover/80 text-navbar-textQuaternary hover:bg-navbar-bg-hover hover:text-navbar-textPrimary focus-visible:outline-navbar-ring dark:bg-navbar-bg-hover dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary dark:focus-visible:outline-navbar-ring flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
         aria-label={menuLabel}
         aria-controls="mobile-navigation-menu"
         aria-expanded="false"
@@ -174,17 +191,28 @@ const ctaButtonClass = forceDark
         data-close-label={closeMenuLabel}
       >
         <span class="sr-only">{menuLabel}</span>
-        <svg class="hamburger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="4" x2="20" y1="6" y2="6"/>
-          <line x1="4" x2="20" y1="12" y2="12"/>
-          <line x1="4" x2="20" y1="18" y2="18"/>
+        <svg
+          class="hamburger-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="4" x2="20" y1="6" y2="6"></line>
+          <line x1="4" x2="20" y1="12" y2="12"></line>
+          <line x1="4" x2="20" y1="18" y2="18"></line>
         </svg>
       </summary>
 
       <div
         id="mobile-navigation-menu"
         class:list={[
-          'mobile-menu-panel navbar-mobile-menu-panel absolute right-0 top-full border shadow-2xl',
+          'mobile-menu-panel navbar-mobile-menu-panel absolute top-full right-0 border shadow-2xl',
           forceDark
             ? 'border-navbar-drawer-border bg-navbar-force-drawer-bg'
             : 'navbar-drawer-glass border-navbar-drawer-border/60 dark:border-navbar-drawer-border',
@@ -193,19 +221,21 @@ const ctaButtonClass = forceDark
         <div class="mobile-menu-list flex flex-col">
           {
             navItems.map((item) => (
-            <NavLink
-              url={item.href}
-              name={item.label}
-              class="mobile-menu-item rounded-lg px-4 py-3.5 text-base font-semibold text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
-              activeClass={
-                forceDark ? 'text-navbar-textPrimary' : 'text-navbar-textPrimary dark:text-navbar-textPrimary'
-              }
-              inactiveClass={
-                forceDark
-                  ? 'text-navbar-textSecondary'
-                  : 'text-navbar-textQuaternary dark:text-navbar-textSecondary'
-              }
-            />
+              <NavLink
+                url={item.href}
+                name={item.label}
+                class="mobile-menu-item text-navbar-textQuaternary hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary rounded-lg px-4 py-3.5 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+                activeClass={
+                  forceDark
+                    ? 'text-navbar-textPrimary'
+                    : 'text-navbar-textPrimary dark:text-navbar-textPrimary'
+                }
+                inactiveClass={
+                  forceDark
+                    ? 'text-navbar-textSecondary'
+                    : 'text-navbar-textQuaternary dark:text-navbar-textSecondary'
+                }
+              />
             ))
           }
           <hr class="mobile-menu-divider border-navbar-drawer-border" />
@@ -214,7 +244,7 @@ const ctaButtonClass = forceDark
           >
             <a
               href={altLangUrl}
-              class="rounded-lg px-2 py-3 text-center text-sm font-bold text-navbar-textTertiary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textTertiary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+              class="text-navbar-textTertiary hover:bg-navbar-bg-hover hover:text-navbar-textPrimary dark:text-navbar-textTertiary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary rounded-lg px-2 py-3 text-center text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
             >
               {altLangLabel}
             </a>
@@ -225,42 +255,63 @@ const ctaButtonClass = forceDark
                     type="button"
                     data-hs-theme-click-value="dark"
                     aria-label={darkModeLabel}
-                    class="flex h-10 w-10 items-center justify-center rounded-lg text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm hs-dark-mode-active:hidden dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+                    class="text-navbar-textQuaternary hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hs-dark-mode-active:hidden dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
                   >
-                    <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                    <svg
+                      class="h-5 w-5"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
                     </svg>
                   </button>
                   <button
                     type="button"
                     data-hs-theme-click-value="light"
                     aria-label={lightModeLabel}
-                    class="hidden h-10 w-10 items-center justify-center rounded-lg text-navbar-textQuaternary transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hover:shadow-sm hs-dark-mode-active:flex dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary"
+                    class="text-navbar-textQuaternary hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hs-dark-mode-active:flex dark:text-navbar-textSecondary dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary hidden h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
                   >
-                    <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="4"></circle>
-                      <path d="M12 8a2 2 0 1 0 4 4"></path>
-                      <path d="M12 2v2"></path>
-                      <path d="M12 20v2"></path>
-                      <path d="m4.93 4.93 1.41 1.41"></path>
-                      <path d="m17.66 17.66 1.41 1.41"></path>
-                      <path d="M2 12h2"></path>
-                      <path d="M20 12h2"></path>
-                      <path d="m6.34 17.66-1.41 1.41"></path>
-                      <path d="m19.07 4.93-1.41 1.41"></path>
+                    <svg
+                      class="h-5 w-5"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 8a2 2 0 1 0 4 4" />
+                      <path d="M12 2v2" />
+                      <path d="M12 20v2" />
+                      <path d="m4.93 4.93 1.41 1.41" />
+                      <path d="m17.66 17.66 1.41 1.41" />
+                      <path d="M2 12h2" />
+                      <path d="M20 12h2" />
+                      <path d="m6.34 17.66-1.41 1.41" />
+                      <path d="m19.07 4.93-1.41 1.41" />
                     </svg>
                   </button>
                 </div>
               )
             }
           </div>
-          <a href={ctaUrl}>
-            <span
-              class="shimmer-btn inline-flex w-full items-center justify-center rounded-full bg-navbar-cta-bg px-4 py-2.5 text-base font-semibold text-navbar-cta-text transition-all duration-200 hover:-translate-y-0.5 hover:bg-navbar-cta-bg-hover"
-            >
-              {ctaLabel}
-            </span>
-          </a>
+          <AuthNavAction
+            client:only="react"
+            className={mobileCtaButtonClass}
+            homeUrl={homeUrl}
+            signInLabel={signInLabel}
+            signInUrl={signInUrl}
+            signOutLabel={signOutLabel}
+          />
         </div>
       </div>
     </details>
@@ -343,7 +394,10 @@ const ctaButtonClass = forceDark
   }
 
   .mobile-menu > #mobile-navigation-menu {
-    width: min(var(--navbar-dropdown-min-width), calc(100vw - var(--navbar-mobile-gutter)));
+    width: min(
+      var(--navbar-dropdown-min-width),
+      calc(100vw - var(--navbar-mobile-gutter))
+    );
     min-width: 0;
   }
 

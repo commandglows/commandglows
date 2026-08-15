@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:commandglows_app/core/theme/commandglows_theme_tokens.dart';
 
 enum KeyboardPrivacyMode {
   auto,
@@ -669,23 +670,24 @@ class KeyboardThemeConfig {
     return const KeyboardThemeConfig(
       version: 1,
       presetId: KeyboardThemePresetCatalog.system,
-      backgroundStartColor: 0xFFEEF1EE,
-      backgroundEndColor: 0xFFEEF1EE,
+      backgroundStartColor: CommandGlowsThemeTokens.keyboardThemeV1Background,
+      backgroundEndColor: CommandGlowsThemeTokens.keyboardThemeV1Background,
       useGradient: false,
       gradientStyle: KeyboardThemeGradientStyle.linear,
       useImage: false,
       backgroundImagePath: null,
       keyboardOpacity: 1,
-      keyColor: 0xFFFFFFFF,
-      specialKeyColor: 0xFFE0E6E3,
-      activeKeyColor: 0xFF17795D,
-      pressedKeyColor: 0xFFCADAD3,
-      pressHighlightDurationMs: 170,
-      textColor: 0xFF1D2320,
-      cornerTextColor: 0xFF5C6762,
+      keyColor: CommandGlowsThemeTokens.keyboardThemeV1Key,
+      specialKeyColor: CommandGlowsThemeTokens.keyboardThemeV1SpecialKey,
+      activeKeyColor: CommandGlowsThemeTokens.keyboardThemeV1ActiveKey,
+      pressedKeyColor: CommandGlowsThemeTokens.keyboardThemeV1PressedKey,
+      pressHighlightDurationMs:
+          CommandGlowsThemeTokens.keyboardThemeV1PressDurationMs,
+      textColor: CommandGlowsThemeTokens.keyboardThemeV1Text,
+      cornerTextColor: CommandGlowsThemeTokens.keyboardThemeV1CornerText,
       cornerTextOpacity: 0.85,
-      statusTextColor: 0xFF333D38,
-      borderColor: 0x00000000,
+      statusTextColor: CommandGlowsThemeTokens.keyboardThemeV1StatusText,
+      borderColor: CommandGlowsThemeTokens.keyboardThemeV1Border,
       borderWidth: 0,
       keyReliefEnabled: false,
       keyReliefDepth: 2,
@@ -693,12 +695,12 @@ class KeyboardThemeConfig {
       keyHorizontalGap: 4,
       rowVerticalGap: 4,
       keyWidthScale: 1,
-      shadowColor: 0x33000000,
+      shadowColor: CommandGlowsThemeTokens.keyboardThemeV1Shadow,
       shadowBlur: 4,
       shadowOffsetY: 1,
       pressEffect: KeyboardThemePressEffect.none,
       effectIntensity: 0.35,
-      effectDurationMs: 170,
+      effectDurationMs: CommandGlowsThemeTokens.keyboardThemeV1PressDurationMs,
       effectEasing: KeyboardThemeEffectEasing.easeOut,
     );
   }

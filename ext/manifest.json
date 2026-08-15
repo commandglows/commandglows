@@ -4,6 +4,9 @@
   "description": "Capture, transform and insert text where you write.",
   "version": "0.1.0",
   "permissions": ["activeTab", "scripting", "storage", "contextMenus"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; style-src 'self'"
+  },
   "background": {
     "service_worker": "src/service-worker.js",
     "type": "module"

@@ -1,0 +1,322 @@
+{
+  "$id": "https://commandglows.local/design-system/tokens.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "./tokens.schema.json"
+    },
+    "adapters": {
+      "additionalProperties": {
+        "$ref": "#/$defs/adapter"
+      },
+      "minProperties": 1,
+      "type": "object"
+    },
+    "description": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "layers": {
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "additionalProperties": {
+            "$ref": "#/$defs/componentToken"
+          },
+          "type": "object"
+        },
+        "primitive": {
+          "additionalProperties": {
+            "$ref": "#/$defs/primitiveToken"
+          },
+          "type": "object"
+        },
+        "semantic": {
+          "additionalProperties": {
+            "$ref": "#/$defs/semanticToken"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "primitive",
+        "semantic",
+        "component"
+      ],
+      "type": "object"
+    },
+    "manifestVersion": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    },
+    "product": {
+      "const": "CommandGlows"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "consumerContracts": {
+          "items": {
+            "$ref": "#/$defs/consumerContract"
+          },
+          "type": "array"
+        },
+        "immutableBaselines": {
+          "items": {
+            "$ref": "#/$defs/immutableBaseline"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "immutableBaselines",
+        "consumerContracts"
+      ],
+      "type": "object"
+    },
+    "registries": {
+      "additionalProperties": false,
+      "properties": {
+        "adaptations": {
+          "pattern": "^[a-z0-9][a-z0-9._/-]*\\.json$",
+          "type": "string"
+        },
+        "deprecations": {
+          "pattern": "^[a-z0-9][a-z0-9._/-]*\\.json$",
+          "type": "string"
+        },
+        "exceptions": {
+          "pattern": "^[a-z0-9][a-z0-9._/-]*\\.json$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "adaptations",
+        "exceptions",
+        "deprecations"
+      ],
+      "type": "object"
+    },
+    "status": {
+      "enum": [
+        "foundation",
+        "active",
+        "deprecated"
+      ]
+    }
+  },
+  "required": [
+    "$schema",
+    "manifestVersion",
+    "product",
+    "status",
+    "description",
+    "layers",
+    "registries",
+    "adapters",
+    "provenance"
+  ],
+  "title": "CommandGlows design token manifest",
+  "type": "object",
+  "$defs": {
+    "adapter": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "enum": [
+            "resolved-json",
+            "css",
+            "dart",
+            "kotlin",
+            "typescript",
+            "extension-css"
+          ]
+        },
+        "output": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._/-]*$",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "planned",
+            "deprecated"
+          ]
+        },
+        "tokens": {
+          "items": {
+            "pattern": "^(?:primitive|semantic|component)\\.[a-z][a-z0-9]*(?:\\.[a-z0-9]+)+$",
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "format",
+        "output",
+        "status",
+        "tokens"
+      ],
+      "type": "object"
+    },
+    "componentToken": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/tokenType"
+        },
+        "value": {
+          "$ref": "#/$defs/reference"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "type": "object"
+    },
+    "primitiveToken": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/tokenType"
+        },
+        "value": {}
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "type": "object"
+    },
+    "consumerContract": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._/-]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "immutableBaseline": {
+      "additionalProperties": false,
+      "properties": {
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "source": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._/-]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "reference": {
+      "pattern": "^\\{(?:primitive|semantic|component)\\.[a-z][a-z0-9]*(?:\\.[a-z0-9]+)+\\}$",
+      "type": "string"
+    },
+    "semanticToken": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "active"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "legacy-unexplained"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "reason",
+              "legacySources"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "legacySources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 2,
+          "type": "array"
+        },
+        "reason": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "legacy-unexplained",
+            "deprecated"
+          ]
+        },
+        "type": {
+          "$ref": "#/$defs/tokenType"
+        },
+        "value": {
+          "$ref": "#/$defs/reference"
+        }
+      },
+      "required": [
+        "type",
+        "status"
+      ],
+      "type": "object"
+    },
+    "tokenType": {
+      "enum": [
+        "color",
+        "dimension",
+        "duration",
+        "number",
+        "fontFamily",
+        "cubicBezier",
+        "string"
+      ]
+    }
+  }
+}

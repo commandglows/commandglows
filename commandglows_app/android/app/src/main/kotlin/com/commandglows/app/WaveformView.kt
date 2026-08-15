@@ -2,7 +2,6 @@ package com.commandglows.app
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.TypedValue
 import android.view.View
@@ -18,9 +17,9 @@ class WaveformView(context: Context) : View(context) {
     private val maxBarHeight = dpToPx(28f).toFloat()
     private val cornerRadius = barWidth / 2f
 
-    private val accentColor = Color.parseColor("#22d3ee")
-    private val pausedColor = Color.parseColor("#f59e0b")
-    private val processingColor = Color.parseColor("#818cf8")
+    private val accentColor = NativeOverlayVisualTokens.ACCENT
+    private val pausedColor = NativeOverlayVisualTokens.PAUSED
+    private val processingColor = NativeOverlayVisualTokens.PROCESSING
 
     private val paint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply {

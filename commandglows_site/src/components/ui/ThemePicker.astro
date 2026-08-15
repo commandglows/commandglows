@@ -1,140 +1,140 @@
 <!-- Dark Theme Toggle Button -->
 <button
-	type="button"
-	aria-label="Basculer vers le thème sombre"
-	class="flex h-9 w-9 items-center justify-center rounded-full font-medium text-navbar-textQuaternary outline-none ring-navbar-ring-tone transition duration-300 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hs-dark-mode-active:hidden dark:text-navbar-text-emphasis-dark dark:ring-navbar-ring-tone-dark dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary dark:focus:outline-none"
-	data-hs-theme-click-value="dark"
+  type="button"
+  aria-label="Basculer vers le thème sombre"
+  class="text-navbar-textQuaternary ring-navbar-ring-tone hover:bg-navbar-bg-hover hover:text-navbar-textPrimary focus-visible:outline-navbar-ring hs-dark-mode-active:hidden dark:text-navbar-text-emphasis-dark dark:ring-navbar-ring-tone-dark dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary dark:focus-visible:outline-navbar-ring flex h-11 w-11 items-center justify-center rounded-full font-medium transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2"
+  data-hs-theme-click-value="dark"
 >
-	<svg
-		class="h-5 w-5 flex-shrink-0"
-		width="24"
-		height="24"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="2"
-		stroke-linecap="round"
-		stroke-linejoin="round"
-	>
-		<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-	</svg>
+  <svg
+    class="h-5 w-5 flex-shrink-0"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+  </svg>
 </button>
 
 <!-- Light Theme Toggle Button -->
 <button
-	type="button"
-	aria-label="Basculer vers le thème clair"
-	class="hidden h-9 w-9 items-center justify-center rounded-full font-medium text-navbar-textQuaternary outline-none ring-navbar-ring-tone transition duration-300 hover:bg-navbar-bg-hover hover:text-navbar-textPrimary hs-dark-mode-active:flex dark:text-navbar-text-emphasis-dark dark:ring-navbar-ring-tone-dark dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary dark:focus:outline-none"
-	data-hs-theme-click-value="light"
+  type="button"
+  aria-label="Basculer vers le thème clair"
+  class="text-navbar-textQuaternary ring-navbar-ring-tone hover:bg-navbar-bg-hover hover:text-navbar-textPrimary focus-visible:outline-navbar-ring hs-dark-mode-active:flex dark:text-navbar-text-emphasis-dark dark:ring-navbar-ring-tone-dark dark:hover:bg-navbar-bg-hover dark:hover:text-navbar-textPrimary dark:focus-visible:outline-navbar-ring hidden h-11 w-11 items-center justify-center rounded-full font-medium transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2"
+  data-hs-theme-click-value="light"
 >
-	<svg
-		class="h-5 w-5 flex-shrink-0"
-		width="24"
-		height="24"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="2"
-		stroke-linecap="round"
-		stroke-linejoin="round"
-	>
-		<circle cx="12" cy="12" r="4"></circle>
-		<path d="M12 8a2 2 0 1 0 4 4"></path>
-		<path d="M12 2v2"></path>
-		<path d="M12 20v2"></path>
-		<path d="m4.93 4.93 1.41 1.41"></path>
-		<path d="m17.66 17.66 1.41 1.41"></path>
-		<path d="M2 12h2"></path>
-		<path d="M20 12h2"></path>
-		<path d="m6.34 17.66-1.41 1.41"></path>
-		<path d="m19.07 4.93-1.41 1.41"></path>
-	</svg>
+  <svg
+    class="h-5 w-5 flex-shrink-0"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 8a2 2 0 1 0 4 4"></path>
+    <path d="M12 2v2"></path>
+    <path d="M12 20v2"></path>
+    <path d="m4.93 4.93 1.41 1.41"></path>
+    <path d="m17.66 17.66 1.41 1.41"></path>
+    <path d="M2 12h2"></path>
+    <path d="M20 12h2"></path>
+    <path d="m6.34 17.66-1.41 1.41"></path>
+    <path d="m19.07 4.93-1.41 1.41"></path>
+  </svg>
 </button>
 
 <script>
-	// Définition du type Theme
-	type Theme = 'light' | 'dark'
+  // Définition du type Theme
+  type Theme = 'light' | 'dark'
 
-	const THEME_SELECTOR = '[data-hs-theme-click-value]'
-	let systemThemeListenerBound = false
+  const THEME_SELECTOR = '[data-hs-theme-click-value]'
+  let systemThemeListenerBound = false
 
-	// Fonction pour appliquer le thème
-	function applyTheme(theme: Theme) {
-		const root = document.documentElement
+  // Fonction pour appliquer le thème
+  function applyTheme(theme: Theme) {
+    const root = document.documentElement
 
-		// Supprimer toutes les classes de thème
-		root.classList.remove('dark', 'light')
+    // Supprimer toutes les classes de thème
+    root.classList.remove('dark', 'light')
 
-		// Appliquer le nouveau thème
-		root.classList.add(theme)
+    // Appliquer le nouveau thème
+    root.classList.add(theme)
 
-		// Mettre à jour l'attribut data-theme pour le thème global
-		root.setAttribute('data-theme', theme)
+    // Mettre à jour l'attribut data-theme pour le thème global
+    root.setAttribute('data-theme', theme)
 
-		// Theme changes can happen while the pointer is over the navbar. Clear
-		// the transient 3D pointer transforms so the logo returns to its stable
-		// initial size/position instead of appearing to resize on toggle.
-		document.querySelectorAll<HTMLElement>('.text-logo').forEach((logo) => {
-			logo.style.transform = ''
-			logo.querySelector<HTMLElement>('.text')?.style.removeProperty('transform')
-			logo.querySelector<HTMLElement>('.glow-effect')?.style.removeProperty('transform')
-		})
+    // Theme changes can happen while the pointer is over the navbar. Clear
+    // the transient 3D pointer transforms so the logo returns to its stable
+    // initial size/position instead of appearing to resize on toggle.
+    document.querySelectorAll<HTMLElement>('.text-logo').forEach((logo) => {
+      logo.style.transform = ''
+      logo
+        .querySelector<HTMLElement>('.text')
+        ?.style.removeProperty('transform')
+      logo
+        .querySelector<HTMLElement>('.glow-effect')
+        ?.style.removeProperty('transform')
+    })
 
-		// Sauvegarder le thème
-		localStorage.setItem('hs_theme', theme)
+    // Sauvegarder le thème
+    localStorage.setItem('hs_theme', theme)
 
-		// Mettre à jour les boutons
-		document
-			.querySelectorAll(THEME_SELECTOR)
-			.forEach((button) => {
-				const buttonTheme = button.getAttribute(
-					'data-hs-theme-click-value'
-				) as Theme
-				if (buttonTheme === theme) {
-					button.classList.add('hidden')
-				} else {
-					button.classList.remove('hidden')
-				}
-			})
+    // Mettre à jour les boutons
+    document.querySelectorAll(THEME_SELECTOR).forEach((button) => {
+      const buttonTheme = button.getAttribute(
+        'data-hs-theme-click-value'
+      ) as Theme
+      if (buttonTheme === theme) {
+        button.classList.add('hidden')
+      } else {
+        button.classList.remove('hidden')
+      }
+    })
+  }
 
-	}
+  function initThemePicker() {
+    const savedTheme = localStorage.getItem('hs_theme') as Theme | null
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+      .matches
+      ? 'dark'
+      : 'light'
+    const theme = savedTheme || systemTheme
 
-	function initThemePicker() {
-		const savedTheme = localStorage.getItem('hs_theme') as Theme | null
-		const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-			.matches
-			? 'dark'
-			: 'light'
-		const theme = savedTheme || systemTheme
+    applyTheme(theme)
 
-		applyTheme(theme)
+    document.querySelectorAll(THEME_SELECTOR).forEach((button) => {
+      if ((button as HTMLElement).dataset.themeBound === 'true') return
 
-		document.querySelectorAll(THEME_SELECTOR).forEach((button) => {
-			if ((button as HTMLElement).dataset.themeBound === 'true') return
+      button.addEventListener('click', () => {
+        const newTheme = button.getAttribute(
+          'data-hs-theme-click-value'
+        ) as Theme
+        applyTheme(newTheme)
+      })
+      ;(button as HTMLElement).dataset.themeBound = 'true'
+    })
 
-			button.addEventListener('click', () => {
-				const newTheme = button.getAttribute(
-					'data-hs-theme-click-value'
-				) as Theme
-				applyTheme(newTheme)
-			})
+    if (!systemThemeListenerBound) {
+      window
+        .matchMedia('(prefers-color-scheme: dark)')
+        .addEventListener('change', (e) => {
+          if (!localStorage.getItem('hs_theme')) {
+            applyTheme(e.matches ? 'dark' : 'light')
+          }
+        })
+      systemThemeListenerBound = true
+    }
+  }
 
-			;(button as HTMLElement).dataset.themeBound = 'true'
-		})
-
-		if (!systemThemeListenerBound) {
-			window
-				.matchMedia('(prefers-color-scheme: dark)')
-				.addEventListener('change', (e) => {
-					if (!localStorage.getItem('hs_theme')) {
-						applyTheme(e.matches ? 'dark' : 'light')
-					}
-				})
-			systemThemeListenerBound = true
-		}
-	}
-
-	// Initialisation au chargement de la page
-	initThemePicker()
-	document.addEventListener('astro:page-load', initThemePicker)
+  // Initialisation au chargement de la page
+  initThemePicker()
+  document.addEventListener('astro:page-load', initThemePicker)
 </script>

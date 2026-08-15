@@ -1,0 +1,2076 @@
+{
+  "schema_version": "1.0",
+  "baseline_date_utc": "2026-08-14",
+  "appearance_contract": "Preserve current resolved values, serialized theme data, and rendered appearance; this inventory changes no consumer.",
+  "surfaces": [
+    {
+      "id": "site",
+      "authority_sources": [
+        "commandglows_site/src/assets/styles/global.css",
+        "commandglows_site/tailwind.config.mjs"
+      ],
+      "modes": [
+        "light",
+        "dark",
+        "data-theme overrides",
+        "landing-scoped light/dark"
+      ],
+      "fonts": [
+        "Audiowide",
+        "Space Grotesk",
+        "Manrope",
+        "ui-monospace fallback stack"
+      ],
+      "inventory": {
+        "css_custom_properties": 593,
+        "css_declarations": 887
+      }
+    },
+    {
+      "id": "flutter",
+      "authority_sources": [
+        "commandglows_app/lib/core/theme/commandglows_theme_tokens.dart",
+        "commandglows_app/lib/core/theme/app_theme.dart"
+      ],
+      "modes": [
+        "ThemeData light",
+        "ThemeData dark",
+        "Material high-contrast/dynamic-type inputs"
+      ],
+      "fonts": [
+        "Manrope",
+        "Cal Sans",
+        "ui-monospace",
+        "system fallbacks"
+      ],
+      "declared_constants": [
+        {
+          "name": "fontSans",
+          "declared_type": null,
+          "raw_value": "'Manrope'",
+          "role_family": "typography",
+          "line": 10
+        },
+        {
+          "name": "fontDisplay",
+          "declared_type": null,
+          "raw_value": "'Cal Sans'",
+          "role_family": "typography",
+          "line": 11
+        },
+        {
+          "name": "fontMonospace",
+          "declared_type": null,
+          "raw_value": "'ui-monospace'",
+          "role_family": "typography",
+          "line": 12
+        },
+        {
+          "name": "black",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF000000)",
+          "role_family": "color",
+          "line": 23
+        },
+        {
+          "name": "white",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFFFFFF)",
+          "role_family": "color",
+          "line": 24
+        },
+        {
+          "name": "siteBackground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF262626)",
+          "role_family": "color",
+          "line": 25
+        },
+        {
+          "name": "siteForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFCFCFC)",
+          "role_family": "color",
+          "line": 26
+        },
+        {
+          "name": "siteCard",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF2D2D2D)",
+          "role_family": "color",
+          "line": 27
+        },
+        {
+          "name": "siteCardForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFCFCFC)",
+          "role_family": "color",
+          "line": 28
+        },
+        {
+          "name": "sitePopover",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF262626)",
+          "role_family": "color",
+          "line": 29
+        },
+        {
+          "name": "sitePopoverForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFCFCFC)",
+          "role_family": "color",
+          "line": 30
+        },
+        {
+          "name": "sitePrimary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFCFCFC)",
+          "role_family": "color",
+          "line": 31
+        },
+        {
+          "name": "sitePrimaryForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF343A40)",
+          "role_family": "color",
+          "line": 32
+        },
+        {
+          "name": "siteSecondary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF444444)",
+          "role_family": "color",
+          "line": 33
+        },
+        {
+          "name": "siteSecondaryForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFCFCFC)",
+          "role_family": "color",
+          "line": 34
+        },
+        {
+          "name": "siteMuted",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF444444)",
+          "role_family": "color",
+          "line": 35
+        },
+        {
+          "name": "siteMutedForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFB4B4B4)",
+          "role_family": "color",
+          "line": 36
+        },
+        {
+          "name": "siteAccent",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF444444)",
+          "role_family": "color",
+          "line": 37
+        },
+        {
+          "name": "siteAccentForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFCFCFC)",
+          "role_family": "color",
+          "line": 38
+        },
+        {
+          "name": "siteDestructive",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFB91C1C)",
+          "role_family": "color",
+          "line": 39
+        },
+        {
+          "name": "siteDestructiveForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFFE8E6)",
+          "role_family": "color",
+          "line": 40
+        },
+        {
+          "name": "siteText",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF0F172A)",
+          "role_family": "color",
+          "line": 41
+        },
+        {
+          "name": "siteBorder",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF3D3D3D)",
+          "role_family": "color",
+          "line": 42
+        },
+        {
+          "name": "siteInput",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF444444)",
+          "role_family": "color",
+          "line": 43
+        },
+        {
+          "name": "siteRing",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF6F747F)",
+          "role_family": "color",
+          "line": 44
+        },
+        {
+          "name": "siteScrim",
+          "declared_type": "Color",
+          "raw_value": "Color(0x66000000)",
+          "role_family": "color",
+          "line": 45
+        },
+        {
+          "name": "siteCodeText",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFE2E8F0)",
+          "role_family": "color",
+          "line": 46
+        },
+        {
+          "name": "siteBadgeBg",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF27272A)",
+          "role_family": "color",
+          "line": 47
+        },
+        {
+          "name": "siteBadgeText",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFF4F4F5)",
+          "role_family": "color",
+          "line": 48
+        },
+        {
+          "name": "siteTextOnDarkMuted",
+          "declared_type": "Color",
+          "raw_value": "Color(0xB3FFFFFF)",
+          "role_family": "color",
+          "line": 49
+        },
+        {
+          "name": "siteBorderSubtle",
+          "declared_type": "Color",
+          "raw_value": "Color(0x0D000000)",
+          "role_family": "color",
+          "line": 50
+        },
+        {
+          "name": "siteBorderDarkSubtle",
+          "declared_type": "Color",
+          "raw_value": "Color(0x1AFFFFFF)",
+          "role_family": "color",
+          "line": 51
+        },
+        {
+          "name": "siteWhiteSubtle",
+          "declared_type": "Color",
+          "raw_value": "Color(0x1AFFFFFF)",
+          "role_family": "color",
+          "line": 52
+        },
+        {
+          "name": "themeLightPrimary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF2FAE75)",
+          "role_family": "color",
+          "line": 55
+        },
+        {
+          "name": "themeLightOnPrimary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFFFFFF)",
+          "role_family": "color",
+          "line": 56
+        },
+        {
+          "name": "themeLightPrimaryContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFE8F3EC)",
+          "role_family": "color",
+          "line": 57
+        },
+        {
+          "name": "themeLightOnPrimaryContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF1C3929)",
+          "role_family": "color",
+          "line": 58
+        },
+        {
+          "name": "themeLightSecondary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF4F5B55)",
+          "role_family": "color",
+          "line": 59
+        },
+        {
+          "name": "themeLightOnSecondary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFFFFFF)",
+          "role_family": "color",
+          "line": 60
+        },
+        {
+          "name": "themeLightSecondaryContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFE7E4DA)",
+          "role_family": "color",
+          "line": 61
+        },
+        {
+          "name": "themeLightOnSecondaryContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF2A342E)",
+          "role_family": "color",
+          "line": 62
+        },
+        {
+          "name": "themeLightSurface",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFF2F1EC)",
+          "role_family": "color",
+          "line": 63
+        },
+        {
+          "name": "themeLightOnSurface",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF20211F)",
+          "role_family": "color",
+          "line": 64
+        },
+        {
+          "name": "themeLightSurfaceContainerLowest",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFE9E5D8)",
+          "role_family": "color",
+          "line": 65
+        },
+        {
+          "name": "themeLightSurfaceContainerLow",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFF8F7F3)",
+          "role_family": "color",
+          "line": 66
+        },
+        {
+          "name": "themeLightSurfaceContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFFFFFF)",
+          "role_family": "color",
+          "line": 67
+        },
+        {
+          "name": "themeLightSurfaceContainerHighest",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFD9D4CA)",
+          "role_family": "color",
+          "line": 68
+        },
+        {
+          "name": "themeLightOutline",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFC6C0B2)",
+          "role_family": "color",
+          "line": 69
+        },
+        {
+          "name": "themeLightOutlineVariant",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFDDD6C8)",
+          "role_family": "color",
+          "line": 70
+        },
+        {
+          "name": "themeDarkPrimary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF36B384)",
+          "role_family": "color",
+          "line": 71
+        },
+        {
+          "name": "themeDarkOnPrimary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF09130F)",
+          "role_family": "color",
+          "line": 72
+        },
+        {
+          "name": "themeDarkPrimaryContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF24312A)",
+          "role_family": "color",
+          "line": 73
+        },
+        {
+          "name": "themeDarkOnPrimaryContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFD4F7E5)",
+          "role_family": "color",
+          "line": 74
+        },
+        {
+          "name": "themeDarkSecondary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF5B6A60)",
+          "role_family": "color",
+          "line": 75
+        },
+        {
+          "name": "themeDarkOnSecondary",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFE7F3EB)",
+          "role_family": "color",
+          "line": 76
+        },
+        {
+          "name": "themeDarkSecondaryContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF1F2924)",
+          "role_family": "color",
+          "line": 77
+        },
+        {
+          "name": "themeDarkOnSecondaryContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFDBF4E3)",
+          "role_family": "color",
+          "line": 78
+        },
+        {
+          "name": "themeDarkSurface",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF121815)",
+          "role_family": "color",
+          "line": 79
+        },
+        {
+          "name": "themeDarkOnSurface",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFF1F5F9)",
+          "role_family": "color",
+          "line": 80
+        },
+        {
+          "name": "themeDarkSurfaceContainerLowest",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF0A0F0C)",
+          "role_family": "color",
+          "line": 81
+        },
+        {
+          "name": "themeDarkSurfaceContainerLow",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF151B18)",
+          "role_family": "color",
+          "line": 82
+        },
+        {
+          "name": "themeDarkSurfaceContainer",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF1E2724)",
+          "role_family": "color",
+          "line": 83
+        },
+        {
+          "name": "themeDarkSurfaceContainerHighest",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF2A3330)",
+          "role_family": "color",
+          "line": 84
+        },
+        {
+          "name": "themeDarkOutline",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF52635A)",
+          "role_family": "color",
+          "line": 85
+        },
+        {
+          "name": "themeDarkOutlineVariant",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF3A4840)",
+          "role_family": "color",
+          "line": 86
+        },
+        {
+          "name": "themeGradientDarkMid",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF1F1F1F)",
+          "role_family": "color",
+          "line": 87
+        },
+        {
+          "name": "themeGradientLightMid",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFEDEBE3)",
+          "role_family": "color",
+          "line": 89
+        },
+        {
+          "name": "themeRadiusMd",
+          "declared_type": "double",
+          "raw_value": "10.0",
+          "role_family": "geometry",
+          "line": 90
+        },
+        {
+          "name": "themeRadiusPill",
+          "declared_type": "double",
+          "raw_value": "9999.0",
+          "role_family": "geometry",
+          "line": 91
+        },
+        {
+          "name": "typographyLg",
+          "declared_type": "double",
+          "raw_value": "17.0",
+          "role_family": "typography",
+          "line": 94
+        },
+        {
+          "name": "typographyH3",
+          "declared_type": "double",
+          "raw_value": "22.0",
+          "role_family": "typography",
+          "line": 95
+        },
+        {
+          "name": "typographyH2",
+          "declared_type": "double",
+          "raw_value": "28.0",
+          "role_family": "typography",
+          "line": 96
+        },
+        {
+          "name": "typographyH1",
+          "declared_type": "double",
+          "raw_value": "34.0",
+          "role_family": "typography",
+          "line": 97
+        },
+        {
+          "name": "appLightBackground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFF4F3EE)",
+          "role_family": "color",
+          "line": 100
+        },
+        {
+          "name": "appLightSurface",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFAFAF7)",
+          "role_family": "color",
+          "line": 101
+        },
+        {
+          "name": "appLightCard",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFFFFFF)",
+          "role_family": "color",
+          "line": 102
+        },
+        {
+          "name": "appLightMuted",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFE7E5DE)",
+          "role_family": "color",
+          "line": 103
+        },
+        {
+          "name": "appLightMutedForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF5F5F5A)",
+          "role_family": "color",
+          "line": 104
+        },
+        {
+          "name": "appLightBorder",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFD8D5CC)",
+          "role_family": "color",
+          "line": 105
+        },
+        {
+          "name": "appLightBorderSubtle",
+          "declared_type": "Color",
+          "raw_value": "Color(0x1A262626)",
+          "role_family": "color",
+          "line": 106
+        },
+        {
+          "name": "appLightText",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF171717)",
+          "role_family": "color",
+          "line": 107
+        },
+        {
+          "name": "appLightInput",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFFFFFF)",
+          "role_family": "color",
+          "line": 108
+        },
+        {
+          "name": "appActionLight",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF262626)",
+          "role_family": "color",
+          "line": 112
+        },
+        {
+          "name": "appActionOnLight",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFCFCFC)",
+          "role_family": "color",
+          "line": 113
+        },
+        {
+          "name": "appActionDark",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFFCFCFC)",
+          "role_family": "color",
+          "line": 114
+        },
+        {
+          "name": "appActionOnDark",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF343A40)",
+          "role_family": "color",
+          "line": 115
+        },
+        {
+          "name": "siteRadius",
+          "declared_type": "double",
+          "raw_value": "16.0",
+          "role_family": "geometry",
+          "line": 118
+        },
+        {
+          "name": "siteRadiusSm",
+          "declared_type": "double",
+          "raw_value": "siteRadius - 4.0",
+          "role_family": "geometry",
+          "line": 119
+        },
+        {
+          "name": "siteRadiusMd",
+          "declared_type": "double",
+          "raw_value": "siteRadius - 2.0",
+          "role_family": "geometry",
+          "line": 120
+        },
+        {
+          "name": "siteRadiusLg",
+          "declared_type": "double",
+          "raw_value": "siteRadius",
+          "role_family": "geometry",
+          "line": 121
+        },
+        {
+          "name": "siteRadiusXl",
+          "declared_type": "double",
+          "raw_value": "siteRadius + 4.0",
+          "role_family": "geometry",
+          "line": 122
+        },
+        {
+          "name": "siteRadius2xl",
+          "declared_type": "double",
+          "raw_value": "siteRadius + 8.0",
+          "role_family": "geometry",
+          "line": 123
+        },
+        {
+          "name": "typographyXs",
+          "declared_type": "double",
+          "raw_value": "12.0",
+          "role_family": "typography",
+          "line": 126
+        },
+        {
+          "name": "typographySm",
+          "declared_type": "double",
+          "raw_value": "14.0",
+          "role_family": "typography",
+          "line": 127
+        },
+        {
+          "name": "typographyBase",
+          "declared_type": "double",
+          "raw_value": "16.0",
+          "role_family": "typography",
+          "line": 128
+        },
+        {
+          "name": "typographyMd",
+          "declared_type": "double",
+          "raw_value": "20.0",
+          "role_family": "typography",
+          "line": 129
+        },
+        {
+          "name": "typographyDisplayLg",
+          "declared_type": "double",
+          "raw_value": "24.0",
+          "role_family": "typography",
+          "line": 130
+        },
+        {
+          "name": "typographyXl",
+          "declared_type": "double",
+          "raw_value": "32.0",
+          "role_family": "typography",
+          "line": 131
+        },
+        {
+          "name": "typographyXxl",
+          "declared_type": "double",
+          "raw_value": "40.0",
+          "role_family": "typography",
+          "line": 132
+        },
+        {
+          "name": "lineHeightTight",
+          "declared_type": "double",
+          "raw_value": "1.2",
+          "role_family": "typography",
+          "line": 133
+        },
+        {
+          "name": "lineHeightSnug",
+          "declared_type": "double",
+          "raw_value": "1.3",
+          "role_family": "typography",
+          "line": 134
+        },
+        {
+          "name": "lineHeightNormal",
+          "declared_type": "double",
+          "raw_value": "1.6",
+          "role_family": "typography",
+          "line": 135
+        },
+        {
+          "name": "trackingWide",
+          "declared_type": "double",
+          "raw_value": "0.04",
+          "role_family": "typography",
+          "line": 136
+        },
+        {
+          "name": "trackingWider",
+          "declared_type": "double",
+          "raw_value": "0.08",
+          "role_family": "typography",
+          "line": 137
+        },
+        {
+          "name": "spacing1",
+          "declared_type": "double",
+          "raw_value": "4.0",
+          "role_family": "spacing",
+          "line": 140
+        },
+        {
+          "name": "spacing2",
+          "declared_type": "double",
+          "raw_value": "8.0",
+          "role_family": "spacing",
+          "line": 141
+        },
+        {
+          "name": "spacing3",
+          "declared_type": "double",
+          "raw_value": "12.0",
+          "role_family": "spacing",
+          "line": 142
+        },
+        {
+          "name": "spacing4",
+          "declared_type": "double",
+          "raw_value": "16.0",
+          "role_family": "spacing",
+          "line": 143
+        },
+        {
+          "name": "spacing5",
+          "declared_type": "double",
+          "raw_value": "20.0",
+          "role_family": "spacing",
+          "line": 144
+        },
+        {
+          "name": "spacing6",
+          "declared_type": "double",
+          "raw_value": "24.0",
+          "role_family": "spacing",
+          "line": 145
+        },
+        {
+          "name": "spacing8",
+          "declared_type": "double",
+          "raw_value": "32.0",
+          "role_family": "spacing",
+          "line": 146
+        },
+        {
+          "name": "spacing10",
+          "declared_type": "double",
+          "raw_value": "40.0",
+          "role_family": "spacing",
+          "line": 147
+        },
+        {
+          "name": "spacing12",
+          "declared_type": "double",
+          "raw_value": "48.0",
+          "role_family": "spacing",
+          "line": 148
+        },
+        {
+          "name": "spacing16",
+          "declared_type": "double",
+          "raw_value": "64.0",
+          "role_family": "spacing",
+          "line": 149
+        },
+        {
+          "name": "spacing20",
+          "declared_type": "double",
+          "raw_value": "80.0",
+          "role_family": "spacing",
+          "line": 150
+        },
+        {
+          "name": "spacing24",
+          "declared_type": "double",
+          "raw_value": "96.0",
+          "role_family": "spacing",
+          "line": 151
+        },
+        {
+          "name": "navRailBreakpoint",
+          "declared_type": "double",
+          "raw_value": "720.0",
+          "role_family": "geometry",
+          "line": 154
+        },
+        {
+          "name": "navRailExtendedBreakpoint",
+          "declared_type": "double",
+          "raw_value": "980.0",
+          "role_family": "geometry",
+          "line": 155
+        },
+        {
+          "name": "keyboardPreviewFrameMaxWidth",
+          "declared_type": "double",
+          "raw_value": "760.0",
+          "role_family": "geometry",
+          "line": 156
+        },
+        {
+          "name": "keyboardPreviewDropdownWidth",
+          "declared_type": "double",
+          "raw_value": "220.0",
+          "role_family": "geometry",
+          "line": 157
+        },
+        {
+          "name": "settingsFeatureCardWidth",
+          "declared_type": "double",
+          "raw_value": "240.0",
+          "role_family": "geometry",
+          "line": 158
+        },
+        {
+          "name": "actionRailMinWidthLarge",
+          "declared_type": "double",
+          "raw_value": "230.0",
+          "role_family": "geometry",
+          "line": 159
+        },
+        {
+          "name": "actionRailMinWidthSmall",
+          "declared_type": "double",
+          "raw_value": "130.0",
+          "role_family": "geometry",
+          "line": 160
+        },
+        {
+          "name": "customActionChipWidth",
+          "declared_type": "double",
+          "raw_value": "210.0",
+          "role_family": "geometry",
+          "line": 161
+        },
+        {
+          "name": "keyboardPreviewStatusHeight",
+          "declared_type": "double",
+          "raw_value": "30.0",
+          "role_family": "geometry",
+          "line": 162
+        },
+        {
+          "name": "authFormMaxWidth",
+          "declared_type": "double",
+          "raw_value": "460.0",
+          "role_family": "geometry",
+          "line": 163
+        },
+        {
+          "name": "authGateLoadingCardWidth",
+          "declared_type": "double",
+          "raw_value": "420.0",
+          "role_family": "geometry",
+          "line": 164
+        },
+        {
+          "name": "authGateErrorCardWidth",
+          "declared_type": "double",
+          "raw_value": "480.0",
+          "role_family": "geometry",
+          "line": 165
+        },
+        {
+          "name": "authWebSignInButtonHeight",
+          "declared_type": "double",
+          "raw_value": "44.0",
+          "role_family": "geometry",
+          "line": 166
+        },
+        {
+          "name": "authWebSignInButtonMinWidth",
+          "declared_type": "double",
+          "raw_value": "240.0",
+          "role_family": "geometry",
+          "line": 167
+        },
+        {
+          "name": "authWebSignInButtonMaxWidth",
+          "declared_type": "double",
+          "raw_value": "400.0",
+          "role_family": "geometry",
+          "line": 168
+        },
+        {
+          "name": "authWebSignInButtonDisabledAlpha",
+          "declared_type": "double",
+          "raw_value": "0.55",
+          "role_family": "other",
+          "line": 169
+        },
+        {
+          "name": "keyboardPreviewControlHeight",
+          "declared_type": "double",
+          "raw_value": "48.0",
+          "role_family": "geometry",
+          "line": 170
+        },
+        {
+          "name": "keyboardPreviewRowHeightTall",
+          "declared_type": "double",
+          "raw_value": "48.0",
+          "role_family": "geometry",
+          "line": 171
+        },
+        {
+          "name": "keyboardPreviewRowHeight",
+          "declared_type": "double",
+          "raw_value": "46.0",
+          "role_family": "geometry",
+          "line": 172
+        },
+        {
+          "name": "keyboardPreviewRowHeightCompact",
+          "declared_type": "double",
+          "raw_value": "40.0",
+          "role_family": "geometry",
+          "line": 173
+        },
+        {
+          "name": "keyboardPreviewRowHeightMini",
+          "declared_type": "double",
+          "raw_value": "40.0",
+          "role_family": "geometry",
+          "line": 174
+        },
+        {
+          "name": "keyboardKeyBorderWidth",
+          "declared_type": "double",
+          "raw_value": "1.0",
+          "role_family": "geometry",
+          "line": 175
+        },
+        {
+          "name": "keyboardKeyDebugBorderWidth",
+          "declared_type": "double",
+          "raw_value": "1.3",
+          "role_family": "geometry",
+          "line": 176
+        },
+        {
+          "name": "keyboardCornerLabelPadding",
+          "declared_type": "double",
+          "raw_value": "4.0",
+          "role_family": "geometry",
+          "line": 177
+        },
+        {
+          "name": "keyboardWeightScale",
+          "declared_type": "double",
+          "raw_value": "100.0",
+          "role_family": "other",
+          "line": 178
+        },
+        {
+          "name": "keyboardSyncDialogWidth",
+          "declared_type": "double",
+          "raw_value": "540.0",
+          "role_family": "geometry",
+          "line": 179
+        },
+        {
+          "name": "keyboardCornerPresetDropdownWidth",
+          "declared_type": "double",
+          "raw_value": "280.0",
+          "role_family": "geometry",
+          "line": 180
+        },
+        {
+          "name": "keyboardPreviewPinnedBadgeInset",
+          "declared_type": "double",
+          "raw_value": "3.0",
+          "role_family": "other",
+          "line": 181
+        },
+        {
+          "name": "appAnimationFast",
+          "declared_type": "double",
+          "raw_value": "0.22",
+          "role_family": "motion",
+          "line": 184
+        },
+        {
+          "name": "appAnimationBase",
+          "declared_type": "double",
+          "raw_value": "1.0",
+          "role_family": "motion",
+          "line": 185
+        },
+        {
+          "name": "overlaySizeDivisions",
+          "declared_type": "int",
+          "raw_value": "6",
+          "role_family": "geometry",
+          "line": 186
+        },
+        {
+          "name": "overlayOpacityDivisions",
+          "declared_type": "int",
+          "raw_value": "5",
+          "role_family": "other",
+          "line": 187
+        },
+        {
+          "name": "overlayBubbleSizeMin",
+          "declared_type": "double",
+          "raw_value": "0.8",
+          "role_family": "geometry",
+          "line": 188
+        },
+        {
+          "name": "overlayBubbleSizeMax",
+          "declared_type": "double",
+          "raw_value": "1.4",
+          "role_family": "geometry",
+          "line": 189
+        },
+        {
+          "name": "overlayBubbleOpacityMin",
+          "declared_type": "double",
+          "raw_value": "0.5",
+          "role_family": "other",
+          "line": 190
+        },
+        {
+          "name": "overlayBubbleOpacityMax",
+          "declared_type": "double",
+          "raw_value": "1.0",
+          "role_family": "other",
+          "line": 191
+        },
+        {
+          "name": "overlayBubbleDefaultSize",
+          "declared_type": "double",
+          "raw_value": "1.0",
+          "role_family": "geometry",
+          "line": 192
+        },
+        {
+          "name": "overlayBubbleDefaultOpacity",
+          "declared_type": "double",
+          "raw_value": "0.9",
+          "role_family": "other",
+          "line": 193
+        },
+        {
+          "name": "surfaceSubtleAlpha",
+          "declared_type": "double",
+          "raw_value": "0.72",
+          "role_family": "other",
+          "line": 196
+        },
+        {
+          "name": "textFieldFillAlpha",
+          "declared_type": "double",
+          "raw_value": "0.72",
+          "role_family": "other",
+          "line": 197
+        },
+        {
+          "name": "cardShadowAlpha",
+          "declared_type": "double",
+          "raw_value": "0.18",
+          "role_family": "elevation",
+          "line": 198
+        },
+        {
+          "name": "darkCardShadowAlpha",
+          "declared_type": "double",
+          "raw_value": "0.42",
+          "role_family": "elevation",
+          "line": 199
+        },
+        {
+          "name": "textFieldBorderWidth",
+          "declared_type": "double",
+          "raw_value": "1.5",
+          "role_family": "geometry",
+          "line": 200
+        },
+        {
+          "name": "cardElevationLight",
+          "declared_type": "double",
+          "raw_value": "2.0",
+          "role_family": "elevation",
+          "line": 201
+        },
+        {
+          "name": "cardElevationDark",
+          "declared_type": "double",
+          "raw_value": "8.0",
+          "role_family": "elevation",
+          "line": 202
+        },
+        {
+          "name": "appBarElevation",
+          "declared_type": "double",
+          "raw_value": "0.0",
+          "role_family": "elevation",
+          "line": 203
+        },
+        {
+          "name": "dividerThickness",
+          "declared_type": "double",
+          "raw_value": "1.0",
+          "role_family": "other",
+          "line": 204
+        },
+        {
+          "name": "elevationOverlay",
+          "declared_type": "double",
+          "raw_value": "18.0",
+          "role_family": "elevation",
+          "line": 205
+        },
+        {
+          "name": "themeRadiusXxl",
+          "declared_type": "double",
+          "raw_value": "28.0",
+          "role_family": "geometry",
+          "line": 206
+        },
+        {
+          "name": "appShellBottomNavIconBoxSize",
+          "declared_type": "double",
+          "raw_value": "32.0",
+          "role_family": "geometry",
+          "line": 209
+        },
+        {
+          "name": "appShellBottomNavSparkBadgeTop",
+          "declared_type": "double",
+          "raw_value": "3.0",
+          "role_family": "other",
+          "line": 210
+        },
+        {
+          "name": "appShellBottomNavSparkBadgeRight",
+          "declared_type": "double",
+          "raw_value": "4.0",
+          "role_family": "other",
+          "line": 211
+        },
+        {
+          "name": "appShellBottomNavSparkBorderWidth",
+          "declared_type": "double",
+          "raw_value": "1.2",
+          "role_family": "geometry",
+          "line": 212
+        },
+        {
+          "name": "appShellUtilityIconBoxSize",
+          "declared_type": "double",
+          "raw_value": "24.0",
+          "role_family": "geometry",
+          "line": 213
+        },
+        {
+          "name": "appShellOnboardingDotSize",
+          "declared_type": "double",
+          "raw_value": "28.0",
+          "role_family": "geometry",
+          "line": 214
+        },
+        {
+          "name": "appShellOnboardingDotIconSize",
+          "declared_type": "double",
+          "raw_value": "14.0",
+          "role_family": "geometry",
+          "line": 215
+        },
+        {
+          "name": "settingsThemePreviewLabelFontSize",
+          "declared_type": "double",
+          "raw_value": "11.0",
+          "role_family": "geometry",
+          "line": 216
+        },
+        {
+          "name": "settingsThemePreviewSwatchHeight",
+          "declared_type": "double",
+          "raw_value": "22.0",
+          "role_family": "geometry",
+          "line": 217
+        },
+        {
+          "name": "settingsDiagnosticLogLineHeight",
+          "declared_type": "double",
+          "raw_value": "1.35",
+          "role_family": "geometry",
+          "line": 218
+        },
+        {
+          "name": "voiceRecordingSurfaceWidth",
+          "declared_type": "double",
+          "raw_value": "22.0",
+          "role_family": "geometry",
+          "line": 219
+        },
+        {
+          "name": "voiceRecordingSurfaceHeight",
+          "declared_type": "double",
+          "raw_value": "18.0",
+          "role_family": "geometry",
+          "line": 220
+        },
+        {
+          "name": "voiceRecordingBarWidth",
+          "declared_type": "double",
+          "raw_value": "3.0",
+          "role_family": "geometry",
+          "line": 221
+        },
+        {
+          "name": "voiceRecordingBarHeightBase",
+          "declared_type": "double",
+          "raw_value": "6.0",
+          "role_family": "geometry",
+          "line": 222
+        },
+        {
+          "name": "voiceRecordingBarHeightRange",
+          "declared_type": "double",
+          "raw_value": "10.0",
+          "role_family": "geometry",
+          "line": 223
+        },
+        {
+          "name": "voiceRecordingSurfaceRadius",
+          "declared_type": "double",
+          "raw_value": "28.0",
+          "role_family": "geometry",
+          "line": 224
+        },
+        {
+          "name": "motionInstant",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 120)",
+          "role_family": "motion",
+          "line": 227
+        },
+        {
+          "name": "motionMicro",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 80)",
+          "role_family": "motion",
+          "line": 228
+        },
+        {
+          "name": "motionFast",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 150)",
+          "role_family": "motion",
+          "line": 229
+        },
+        {
+          "name": "motionBase",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 200)",
+          "role_family": "motion",
+          "line": 230
+        },
+        {
+          "name": "motionSlow",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 300)",
+          "role_family": "motion",
+          "line": 231
+        },
+        {
+          "name": "motionLong",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 800)",
+          "role_family": "motion",
+          "line": 232
+        },
+        {
+          "name": "motionNavSelected",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 280)",
+          "role_family": "motion",
+          "line": 233
+        },
+        {
+          "name": "motionNavUnselected",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 160)",
+          "role_family": "motion",
+          "line": 234
+        },
+        {
+          "name": "motionVoiceAction",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 180)",
+          "role_family": "motion",
+          "line": 235
+        },
+        {
+          "name": "motionVoiceBar",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 90)",
+          "role_family": "motion",
+          "line": 236
+        },
+        {
+          "name": "motionOnboardingPulse",
+          "declared_type": "Duration",
+          "raw_value": "Duration(milliseconds: 550)",
+          "role_family": "motion",
+          "line": 237
+        },
+        {
+          "name": "motionStandard",
+          "declared_type": "Cubic",
+          "raw_value": "Cubic(0.22, 1, 0.36, 1)",
+          "role_family": "motion",
+          "line": 238
+        },
+        {
+          "name": "motionSpring",
+          "declared_type": "Cubic",
+          "raw_value": "Cubic(0.34, 1.56, 0.64, 1)",
+          "role_family": "motion",
+          "line": 239
+        },
+        {
+          "name": "brandPrimary",
+          "declared_type": "Color",
+          "raw_value": "appActionLight",
+          "role_family": "other",
+          "line": 242
+        },
+        {
+          "name": "brandPrimaryDark",
+          "declared_type": "Color",
+          "raw_value": "appActionDark",
+          "role_family": "other",
+          "line": 243
+        },
+        {
+          "name": "brandSecondary",
+          "declared_type": "Color",
+          "raw_value": "siteSecondary",
+          "role_family": "other",
+          "line": 244
+        },
+        {
+          "name": "brandSuccess",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF16A34A)",
+          "role_family": "color",
+          "line": 245
+        },
+        {
+          "name": "brandWarning",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFD97706)",
+          "role_family": "color",
+          "line": 246
+        },
+        {
+          "name": "brandDanger",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFDC2626)",
+          "role_family": "color",
+          "line": 247
+        },
+        {
+          "name": "brandDangerLight",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFF87171)",
+          "role_family": "color",
+          "line": 248
+        },
+        {
+          "name": "brandInfo",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF3B82F6)",
+          "role_family": "color",
+          "line": 249
+        },
+        {
+          "name": "lightGray",
+          "declared_type": "Color",
+          "raw_value": "appLightMuted",
+          "role_family": "other",
+          "line": 250
+        },
+        {
+          "name": "surfaceSunken",
+          "declared_type": "Color",
+          "raw_value": "appLightBackground",
+          "role_family": "other",
+          "line": 251
+        },
+        {
+          "name": "surfaceRaised",
+          "declared_type": "Color",
+          "raw_value": "appLightCard",
+          "role_family": "other",
+          "line": 252
+        },
+        {
+          "name": "surfaceSunkenDark",
+          "declared_type": "Color",
+          "raw_value": "siteBackground",
+          "role_family": "other",
+          "line": 253
+        },
+        {
+          "name": "surfaceRaisedDark",
+          "declared_type": "Color",
+          "raw_value": "siteCard",
+          "role_family": "other",
+          "line": 254
+        },
+        {
+          "name": "surfaceOverlayDark",
+          "declared_type": "Color",
+          "raw_value": "siteSecondary",
+          "role_family": "other",
+          "line": 255
+        },
+        {
+          "name": "shadowSoft",
+          "declared_type": "Color",
+          "raw_value": "Color(0x1F000000)",
+          "role_family": "color",
+          "line": 258
+        },
+        {
+          "name": "shadowCard",
+          "declared_type": "Color",
+          "raw_value": "Color(0x33000000)",
+          "role_family": "color",
+          "line": 259
+        },
+        {
+          "name": "shadowCardHover",
+          "declared_type": "Color",
+          "raw_value": "Color(0x40000000)",
+          "role_family": "color",
+          "line": 260
+        },
+        {
+          "name": "shadowCardLarge",
+          "declared_type": "Color",
+          "raw_value": "Color(0x4D000000)",
+          "role_family": "color",
+          "line": 261
+        },
+        {
+          "name": "shadowPrimary",
+          "declared_type": "Color",
+          "raw_value": "Color(0x40000000)",
+          "role_family": "color",
+          "line": 262
+        },
+        {
+          "name": "keyboardPrivateFrame",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFF6E8E2)",
+          "role_family": "color",
+          "line": 265
+        },
+        {
+          "name": "keyboardDefaultFrame",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFEEF1EE)",
+          "role_family": "color",
+          "line": 266
+        },
+        {
+          "name": "keyboardStatusText",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF333D38)",
+          "role_family": "color",
+          "line": 267
+        },
+        {
+          "name": "keyboardKeyActive",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF17795D)",
+          "role_family": "color",
+          "line": 268
+        },
+        {
+          "name": "keyboardKeySpecial",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFE0E6E3)",
+          "role_family": "color",
+          "line": 269
+        },
+        {
+          "name": "keyboardKeyDisabled",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFFD6D9D7)",
+          "role_family": "color",
+          "line": 270
+        },
+        {
+          "name": "keyboardKeyForeground",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF1D2320)",
+          "role_family": "color",
+          "line": 271
+        },
+        {
+          "name": "keyboardCornerLabel",
+          "declared_type": "Color",
+          "raw_value": "Color(0xFF5C6762)",
+          "role_family": "color",
+          "line": 272
+        }
+      ]
+    },
+    {
+      "id": "android-ime",
+      "authority_sources": [
+        "commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/KeyboardThemeModels.kt"
+      ],
+      "modes": [
+        "system",
+        "catalog light/dark",
+        "user-authored v1 theme"
+      ],
+      "theme_fields": [
+        {
+          "name": "version",
+          "declared_type": "Int",
+          "raw_default": "1",
+          "role_family": "data-or-behavior",
+          "line": 339
+        },
+        {
+          "name": "presetId",
+          "declared_type": "String",
+          "raw_default": "\"system\"",
+          "role_family": "data-or-behavior",
+          "line": 340
+        },
+        {
+          "name": "backgroundStartColor",
+          "declared_type": "Int",
+          "raw_default": "Color.parseColor(\"#EEF1EE\")",
+          "role_family": "color",
+          "line": 341
+        },
+        {
+          "name": "backgroundEndColor",
+          "declared_type": "Int",
+          "raw_default": "Color.parseColor(\"#EEF1EE\")",
+          "role_family": "color",
+          "line": 342
+        },
+        {
+          "name": "useGradient",
+          "declared_type": "Boolean",
+          "raw_default": "false",
+          "role_family": "data-or-behavior",
+          "line": 343
+        },
+        {
+          "name": "gradientStyle",
+          "declared_type": "String",
+          "raw_default": "\"linear\"",
+          "role_family": "data-or-behavior",
+          "line": 344
+        },
+        {
+          "name": "useImage",
+          "declared_type": "Boolean",
+          "raw_default": "false",
+          "role_family": "data-or-behavior",
+          "line": 345
+        },
+        {
+          "name": "backgroundImagePath",
+          "declared_type": "String?",
+          "raw_default": "null",
+          "role_family": "data-or-behavior",
+          "line": 346
+        },
+        {
+          "name": "keyboardOpacity",
+          "declared_type": "Float",
+          "raw_default": "1f",
+          "role_family": "opacity",
+          "line": 347
+        },
+        {
+          "name": "keyColor",
+          "declared_type": "Int",
+          "raw_default": "Color.WHITE",
+          "role_family": "color",
+          "line": 348
+        },
+        {
+          "name": "specialKeyColor",
+          "declared_type": "Int",
+          "raw_default": "Color.parseColor(\"#E0E6E3\")",
+          "role_family": "color",
+          "line": 349
+        },
+        {
+          "name": "activeKeyColor",
+          "declared_type": "Int",
+          "raw_default": "Color.parseColor(\"#17795D\")",
+          "role_family": "color",
+          "line": 350
+        },
+        {
+          "name": "pressedKeyColor",
+          "declared_type": "Int",
+          "raw_default": "Color.parseColor(\"#CADAD3\")",
+          "role_family": "color",
+          "line": 351
+        },
+        {
+          "name": "pressHighlightDurationMs",
+          "declared_type": "Int",
+          "raw_default": "170",
+          "role_family": "motion",
+          "line": 352
+        },
+        {
+          "name": "textColor",
+          "declared_type": "Int",
+          "raw_default": "Color.parseColor(\"#1D2320\")",
+          "role_family": "color",
+          "line": 353
+        },
+        {
+          "name": "cornerTextColor",
+          "declared_type": "Int",
+          "raw_default": "Color.parseColor(\"#5C6762\")",
+          "role_family": "color",
+          "line": 354
+        },
+        {
+          "name": "cornerTextOpacity",
+          "declared_type": "Float",
+          "raw_default": "0.85f",
+          "role_family": "opacity",
+          "line": 355
+        },
+        {
+          "name": "statusTextColor",
+          "declared_type": "Int",
+          "raw_default": "Color.parseColor(\"#333D38\")",
+          "role_family": "color",
+          "line": 356
+        },
+        {
+          "name": "borderColor",
+          "declared_type": "Int",
+          "raw_default": "Color.TRANSPARENT",
+          "role_family": "color",
+          "line": 357
+        },
+        {
+          "name": "borderWidth",
+          "declared_type": "Float",
+          "raw_default": "0f",
+          "role_family": "geometry",
+          "line": 358
+        },
+        {
+          "name": "keyReliefEnabled",
+          "declared_type": "Boolean",
+          "raw_default": "false",
+          "role_family": "data-or-behavior",
+          "line": 359
+        },
+        {
+          "name": "keyReliefDepth",
+          "declared_type": "Float",
+          "raw_default": "2f",
+          "role_family": "geometry",
+          "line": 360
+        },
+        {
+          "name": "keyRadius",
+          "declared_type": "Float",
+          "raw_default": "8f",
+          "role_family": "geometry",
+          "line": 361
+        },
+        {
+          "name": "keyHorizontalGap",
+          "declared_type": "Float",
+          "raw_default": "4f",
+          "role_family": "geometry",
+          "line": 362
+        },
+        {
+          "name": "rowVerticalGap",
+          "declared_type": "Float",
+          "raw_default": "4f",
+          "role_family": "geometry",
+          "line": 363
+        },
+        {
+          "name": "keyWidthScale",
+          "declared_type": "Float",
+          "raw_default": "1f",
+          "role_family": "geometry",
+          "line": 364
+        },
+        {
+          "name": "shadowColor",
+          "declared_type": "Int",
+          "raw_default": "0x33000000",
+          "role_family": "color",
+          "line": 365
+        },
+        {
+          "name": "shadowBlur",
+          "declared_type": "Float",
+          "raw_default": "4f",
+          "role_family": "geometry",
+          "line": 366
+        },
+        {
+          "name": "shadowOffsetY",
+          "declared_type": "Float",
+          "raw_default": "1f",
+          "role_family": "geometry",
+          "line": 367
+        },
+        {
+          "name": "pressEffect",
+          "declared_type": "String",
+          "raw_default": "\"none\"",
+          "role_family": "motion",
+          "line": 368
+        },
+        {
+          "name": "effectIntensity",
+          "declared_type": "Float",
+          "raw_default": "0.35f",
+          "role_family": "motion",
+          "line": 369
+        },
+        {
+          "name": "effectDurationMs",
+          "declared_type": "Int",
+          "raw_default": "170",
+          "role_family": "motion",
+          "line": 370
+        },
+        {
+          "name": "effectEasing",
+          "declared_type": "String",
+          "raw_default": "\"easeOut\"",
+          "role_family": "motion",
+          "line": 371
+        }
+      ],
+      "data_invariants": [
+        "theme JSON version 1",
+        "preset IDs",
+        "user colors/images",
+        "IME independence from Flutter runtime"
+      ]
+    },
+    {
+      "id": "email",
+      "authority_sources": [
+        "commandglows_site/src/theme/newsletter-email-theme.ts"
+      ],
+      "delivery_constraints": [
+        "resolved inline values",
+        "no CSS custom-property dependency",
+        "no JavaScript",
+        "remote fonts not required"
+      ],
+      "roles": [
+        {
+          "constants": [
+            {
+              "name": "NEWSLETTER_ACCENT",
+              "raw_value": "'#ff00c8'",
+              "line": 6
+            },
+            {
+              "name": "NEWSLETTER_TEXT",
+              "raw_value": "'#171717'",
+              "line": 7
+            },
+            {
+              "name": "NEWSLETTER_MUTED",
+              "raw_value": "'#525252'",
+              "line": 8
+            },
+            {
+              "name": "NEWSLETTER_SUBTLE",
+              "raw_value": "'#737373'",
+              "line": 9
+            },
+            {
+              "name": "NEWSLETTER_DIVIDER",
+              "raw_value": "'#e5e5e5'",
+              "line": 10
+            },
+            {
+              "name": "NEWSLETTER_SURFACE",
+              "raw_value": "SITE_VISUAL_TOKENS.themeMeta.manifestBackground",
+              "line": 11
+            },
+            {
+              "name": "NEWSLETTER_FOREGROUND",
+              "raw_value": "SITE_VISUAL_TOKENS.themeMeta.manifestTheme",
+              "line": 12
+            },
+            {
+              "name": "NEWSLETTER_PRIMARY",
+              "raw_value": "SITE_VISUAL_TOKENS.themeMeta.website",
+              "line": 13
+            },
+            {
+              "name": "NEWSLETTER_EMAIL_STYLES",
+              "raw_value": "{\n  shell: {\n    'font-family': 'sans-serif',\n    'max-width': 600,\n    margin: '0 auto',\n    color: NEWSLETTER_TEXT,\n  },\n  heading: {\n    color: NEWSLETTER_TEXT,\n    'font-size': 28,\n    'line-height': '1.2',\n    'margin-bottom': 16,\n  },\n  paragraph: {\n    'font-size': 16,\n    'line-height': '1.6',\n    margin: '0 0 16px',\n  },\n  body: {\n    'font-size': 16,\n    'line-height': '1.6',\n    margin: '0 0 24px',\n  },\n  ctaRow: {\n    margin: '0 0 24px',\n  },\n  button: {\n    display: 'inline-block',\n    'background-color': NEWSLETTER_PRIMARY,\n    color: NEWSLETTER_FOREGROUND,\n    'text-decoration': 'none',\n    padding: '12px 18px',\n    'border-radius': 10,\n    'font-weight': '600',\n  },\n  footer: {\n    'font-size': 14,\n    'line-height': '1.6',\n    color: NEWSLETTER_MUTED,\n    margin: '0 0 24px',\n  },\n  divider: {\n    border: 'none',\n    'border-top': `1px solid ${NEWSLETTER_DIVIDER}`,\n    margin: '20px 0',\n  },\n  link: {\n    color: NEWSLETTER_SUBTLE,\n  },\n  smallNote: {\n    'font-size': 12,\n    color: NEWSLETTER_SUBTLE,\n    margin: '0',\n  },\n  page: {\n    'font-family': 'sans-serif',\n    display: 'flex',\n    'align-items': 'center',\n    'justify-content': 'center',\n    'min-height': '100vh',\n    margin: '0',\n    padding: '2rem',\n    background: NEWSLETTER_FOREGROUND,\n  },\n  pageShell: {\n    'text-align': 'center',\n    color: NEWSLETTER_SURFACE,\n  },\n  pageHeading: {\n    margin: '0 0 16px',\n  },\n  pageBody: {\n    color: '#999999',\n    margin: '0 0 24px',\n  },\n  pageLink: {\n    color: NEWSLETTER_ACCENT,\n  },\n} as const",
+              "line": 24
+            }
+          ],
+          "inline_style_roles": [
+            "shell",
+            "heading",
+            "paragraph",
+            "body",
+            "ctaRow",
+            "button",
+            "footer",
+            "divider",
+            "link",
+            "smallNote",
+            "page",
+            "pageShell",
+            "pageHeading",
+            "pageBody",
+            "pageLink"
+          ]
+        }
+      ],
+      "prototype_sources": [
+        "commandglows_site/idees/emails/basic-email.tsx",
+        "commandglows_site/idees/emails/weekly-signups.tsx"
+      ]
+    },
+    {
+      "id": "extension",
+      "authority_sources": [],
+      "sources": [
+        "ext/src/popup.html",
+        "ext/src/content-script.js"
+      ],
+      "current_state": {
+        "popup_stylesheets": 0,
+        "popup_style_blocks": 0,
+        "injected_shadow_roots": 0,
+        "injected_dialogs": 1
+      },
+      "finding": "No CommandGlows token adapter or style authority; popup and injected dialog use browser-native presentation."
+    }
+  ],
+  "exceptions": [
+    {
+      "id": "keyboard-theme-studio-fixtures",
+      "surface": "flutter",
+      "scope": "keyboard_theme_studio_screen.dart",
+      "reason": "User/preset palette preview fixtures are explicitly temporary in current authority.",
+      "status": "legacy-documented"
+    },
+    {
+      "id": "user-authored-keyboard-theme",
+      "surface": "android-ime",
+      "scope": "KeyboardThemeConfig v1",
+      "reason": "Persisted user colors/images are data, not global brand tokens.",
+      "status": "platform-data-invariant"
+    },
+    {
+      "id": "email-inline-values",
+      "surface": "email",
+      "scope": "delivered HTML",
+      "reason": "Email clients require resolved client-safe inline values.",
+      "status": "platform-required"
+    },
+    {
+      "id": "generated-vercel-output",
+      "surface": "site",
+      "scope": "commandglows_site/.vercel/output",
+      "reason": "Generated build output is non-authoritative and excluded.",
+      "status": "generated-exclusion"
+    }
+  ],
+  "legacy_mappings": [
+    {
+      "role": "surface/background",
+      "sources": [
+        "site CSS semantic variables",
+        "Flutter ColorScheme",
+        "Kotlin KeyboardThemeConfig",
+        "email inline theme"
+      ],
+      "status": "legacy-unexplained",
+      "reason": "Parallel sources exist; equal meaning/value has not yet been proven."
+    },
+    {
+      "role": "text/foreground",
+      "sources": [
+        "site CSS semantic variables",
+        "Flutter ColorScheme",
+        "Kotlin textColor/statusTextColor",
+        "email text constants"
+      ],
+      "status": "legacy-unexplained",
+      "reason": "Role granularity and resolved parity are not yet registered."
+    },
+    {
+      "role": "action/primary",
+      "sources": [
+        "site primary/brand variables",
+        "Flutter appAction/theme primary",
+        "Kotlin activeKeyColor",
+        "email NEWSLETTER_PRIMARY"
+      ],
+      "status": "legacy-unexplained",
+      "reason": "Different product/platform meanings must not be unified by color coincidence."
+    },
+    {
+      "role": "type/body",
+      "sources": [
+        "site Manrope/Space Grotesk roles",
+        "Flutter Manrope",
+        "email sans-serif",
+        "extension browser default"
+      ],
+      "status": "legacy-unexplained",
+      "reason": "Fallback and delivery constraints require an explicit adaptation decision."
+    },
+    {
+      "role": "radius/control",
+      "sources": [
+        "site radius/component variables",
+        "Flutter radii",
+        "Kotlin keyRadius",
+        "email button radius",
+        "extension browser default"
+      ],
+      "status": "legacy-unexplained",
+      "reason": "Density and client constraints differ; no canonical semantic mapping exists."
+    },
+    {
+      "role": "motion/feedback",
+      "sources": [
+        "site animations",
+        "Flutter durations",
+        "Kotlin press durations/effects"
+      ],
+      "status": "legacy-unexplained",
+      "reason": "Behavioral equivalence and reduced-motion mapping are not yet proven."
+    }
+  ],
+  "scanner_perimeter_baseline": {
+    "files_scanned": 484,
+    "findings": 7,
+    "result": "drift candidates found",
+    "coverage_note": "Current scanner result is evidence, not proof of Kotlin/XML/generated/resolved-value coverage.",
+    "finding_groups": [
+      {
+        "source": "commandglows_site/src/assets/styles/global.css",
+        "count": 3,
+        "kind": "hardcoded CSS dimension"
+      },
+      {
+        "source": "commandglows_site/idees/emails/basic-email.tsx",
+        "count": 2,
+        "kind": "hardcoded style value"
+      },
+      {
+        "source": "commandglows_site/idees/emails/weekly-signups.tsx",
+        "count": 2,
+        "kind": "hardcoded style value"
+      }
+    ]
+  },
+  "source_checksums": {
+    "commandglows_site/src/assets/styles/global.css": "3e672ebd50f6237bf34a5bb7433bef46199a20e213917b7a12cd7a6def0d3005",
+    "commandglows_app/lib/core/theme/commandglows_theme_tokens.dart": "e7930c6c00f8371b9ef4bb2a5391a32e6ca2669d78ccc9404872285f1b71bf64",
+    "commandglows_app/lib/core/theme/app_theme.dart": "df5fecd753d5a552ece40ec3caaf13430df2cd6203acb75fa971d937e7a9735d",
+    "commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/KeyboardThemeModels.kt": "a214e9e5a57e1a1ee01d6751847a5f0555980f2c7f6f47d956c748a8b8a4c5af",
+    "commandglows_site/src/theme/newsletter-email-theme.ts": "bdb8a412469f63c65bd718f0b95f5639181f2ae80eb405b6b836d1152045acc7",
+    "ext/src/popup.html": "32662190db49e8a114131cabdded9f53f63750382401cb0f1dd8400c54f85a2e",
+    "ext/src/content-script.js": "f816c2b1bcfeb035de6ec62c0df9bf858d006b0649263b103d431eac15ef6b50"
+  }
+}

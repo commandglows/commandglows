@@ -2,7 +2,6 @@ package expo.modules.floatingoverlay
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.TypedValue
 import android.view.View
@@ -18,11 +17,8 @@ class WaveformView(context: Context) : View(context) {
     private val maxBarHeight = dpToPx(28f).toFloat()
     private val cornerRadius = barWidth / 2f
 
-    private val accentColor = Color.parseColor("#22d3ee")
-    private val processingColor = Color.parseColor("#818cf8")
-
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = accentColor
+        color = FloatingOverlayDesignTokens.ACCENT_COLOR_ARGB
         style = Paint.Style.FILL
     }
 
@@ -38,10 +34,10 @@ class WaveformView(context: Context) : View(context) {
     fun setProcessing(processing: Boolean) {
         isProcessing = processing
         if (processing) {
-            paint.color = processingColor
+            paint.color = FloatingOverlayDesignTokens.PROCESSING_COLOR_ARGB
             animateProcessing()
         } else {
-            paint.color = accentColor
+            paint.color = FloatingOverlayDesignTokens.ACCENT_COLOR_ARGB
         }
         invalidate()
     }

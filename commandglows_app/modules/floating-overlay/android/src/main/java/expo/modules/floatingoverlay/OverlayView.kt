@@ -2,7 +2,6 @@ package expo.modules.floatingoverlay
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.os.Handler
@@ -15,6 +14,23 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import kotlin.math.roundToInt
+
+/**
+ * Native colors owned by the standalone floating-overlay module.
+ *
+ * Signed ARGB integers keep this package independent from the host app while
+ * preserving the exact opaque colors expected by Android drawables.
+ */
+internal object FloatingOverlayDesignTokens {
+    const val PRIMARY_COLOR_ARGB: Int = -10262799
+    const val DANGER_COLOR_ARGB: Int = -1096636
+    const val SUCCESS_COLOR_ARGB: Int = -14498466
+    const val ACCENT_COLOR_ARGB: Int = -14494738
+    const val SURFACE_COLOR_ARGB: Int = -14800581
+    const val DANGER_CONTAINER_COLOR_ARGB: Int = -8446691
+    const val SUCCESS_CONTAINER_COLOR_ARGB: Int = -15445203
+    const val PROCESSING_COLOR_ARGB: Int = -8286984
+}
 
 class OverlayView(context: Context) : FrameLayout(context) {
 
@@ -34,13 +50,6 @@ class OverlayView(context: Context) : FrameLayout(context) {
     private val buttonSize = dpToPx(32f)
     private val cornerRadius = dpToPx(24f)
 
-    // Colors
-    private val primaryColor = Color.parseColor("#6366f1")   // Indigo
-    private val dangerColor = Color.parseColor("#ef4444")     // Red
-    private val successColor = Color.parseColor("#22c55e")    // Green
-    private val accentColor = Color.parseColor("#22d3ee")     // Cyan
-    private val surfaceColor = Color.parseColor("#1e293b")    // Dark surface
-
     // Child views
     private val fabView: TextView
     private val expandedContainer: LinearLayout
@@ -57,7 +66,7 @@ class OverlayView(context: Context) : FrameLayout(context) {
             gravity = Gravity.CENTER
             visibility = VISIBLE
         }
-        fabView.setBackgroundDrawable(CircleDrawable(primaryColor))
+        fabView.setBackgroundDrawable(CircleDrawable(FloatingOverlayDesignTokens.PRIMARY_COLOR_ARGB))
         addView(fabView)
 
         // Expanded container (recording state)
@@ -67,7 +76,9 @@ class OverlayView(context: Context) : FrameLayout(context) {
             setPadding(dpToPx(8f), dpToPx(8f), dpToPx(8f), dpToPx(8f))
             visibility = GONE
         }
-        expandedContainer.setBackgroundDrawable(RoundRectDrawable(surfaceColor, cornerRadius.toFloat()))
+        expandedContainer.setBackgroundDrawable(
+            RoundRectDrawable(FloatingOverlayDesignTokens.SURFACE_COLOR_ARGB, cornerRadius.toFloat())
+        )
 
         // Cancel button (X)
         cancelButton = TextView(context).apply {
@@ -76,9 +87,11 @@ class OverlayView(context: Context) : FrameLayout(context) {
             }
             text = "✕"
             textSize = 18f
-            setTextColor(dangerColor)
+            setTextColor(FloatingOverlayDesignTokens.DANGER_COLOR_ARGB)
             gravity = Gravity.CENTER
-            setBackgroundDrawable(CircleDrawable(Color.parseColor("#7f1d1d")))
+            setBackgroundDrawable(
+                CircleDrawable(FloatingOverlayDesignTokens.DANGER_CONTAINER_COLOR_ARGB)
+            )
             setOnClickListener {
                 onRecordCancel?.invoke()
             }
@@ -98,9 +111,11 @@ class OverlayView(context: Context) : FrameLayout(context) {
             }
             text = "✓"
             textSize = 18f
-            setTextColor(successColor)
+            setTextColor(FloatingOverlayDesignTokens.SUCCESS_COLOR_ARGB)
             gravity = Gravity.CENTER
-            setBackgroundDrawable(CircleDrawable(Color.parseColor("#14532d")))
+            setBackgroundDrawable(
+                CircleDrawable(FloatingOverlayDesignTokens.SUCCESS_CONTAINER_COLOR_ARGB)
+            )
             setOnClickListener {
                 onRecordStop?.invoke()
             }
@@ -122,7 +137,9 @@ class OverlayView(context: Context) : FrameLayout(context) {
         when (state) {
             "collapsed" -> {
                 fabView.visibility = VISIBLE
-                fabView.setBackgroundDrawable(CircleDrawable(primaryColor))
+                fabView.setBackgroundDrawable(
+                    CircleDrawable(FloatingOverlayDesignTokens.PRIMARY_COLOR_ARGB)
+                )
                 expandedContainer.visibility = GONE
                 layoutParams?.width = fabSize
                 layoutParams?.height = fabSize
@@ -144,7 +161,9 @@ class OverlayView(context: Context) : FrameLayout(context) {
             }
             "result" -> {
                 fabView.visibility = VISIBLE
-                fabView.setBackgroundDrawable(CircleDrawable(successColor))
+                fabView.setBackgroundDrawable(
+                    CircleDrawable(FloatingOverlayDesignTokens.SUCCESS_COLOR_ARGB)
+                )
                 expandedContainer.visibility = GONE
                 layoutParams?.width = fabSize
                 layoutParams?.height = fabSize

@@ -1,198 +1,100 @@
 # CommandGlows Design Specification
 
-## Brand Overview
+This document describes how the CommandGlows identity is expressed on the
+Astro site. It is contributor guidance, not a token authority. The canonical
+cross-surface contract is
+[`shipglows_data/technical/design-system-authority.md`](../../shipglows_data/technical/design-system-authority.md),
+and the platform-neutral token source is [`design-system/tokens.json`](../../design-system/tokens.json).
 
-**CommandGlows** is a productivity ecosystem offering tools and training designed for Windows workflows. The brand targets entrepreneurs, freelancers, and professionals seeking to transform their digital productivity, with a unique perspective from a neurodivergent founder.
+## Shared identity
 
----
+CommandGlows is a productivity ecosystem for Windows workflows. Its identity
+combines a high-contrast, clarity-first interface with the multicolor logo
+gradient. The logo colors are brand primitives, not the only colors permitted
+in the product. Neutral surfaces, readable text, status colors, focus colors,
+scrims, and platform-safe fallbacks are semantic roles with their own contrast
+and interaction responsibilities.
 
-## Design System Reference
+The shared identity contract covers role meaning, hierarchy, state, and
+accessibility. It does not require every platform to use the same physical font,
+density, radius, or delivery mechanism.
 
-### Brand Colors
+## Site adaptation
 
-**Rainbow Gradient (Primary Brand Colors)**
+The site currently maps its body, display, and logo roles to the bundled or
+declared site fonts in `src/assets/styles/global.css`. Those role mappings may
+differ from Flutter, Android IME, email, or extension fallbacks when the
+adaptation registry records the reason and proof. Do not replace them with the
+Tailwind or browser default font stack by convenience.
 
-These are the ONLY colors used in the CommandGlows brand, taken directly from the logo gradient.
+Site colors, typography, spacing, radii, shadows, motion, focus treatments, and
+responsive dimensions resolve through generated semantic variables, classified
+site variables, or named component variables. The Tailwind configuration is a
+thin adapter; generic palette names and raw values must not become a second
+authority.
 
-| Color Name | Hex Value | RGB | Usage |
-|------------|-----------|-----|-------|
-| **Red** | `#ff0033` | rgb(255, 0, 51) | Gradient start, accents, CTAs |
-| **Magenta** | `#ff00c8` | rgb(255, 0, 200) | Primary accent, links, highlights |
-| **Yellow** | `#ffe500` | rgb(255, 229, 0) | Secondary accent, highlights |
-| **Green** | `#00ff44` | rgb(0, 255, 68) | Tertiary accent, success states |
-| **Cyan** | `#00c8ff` | rgb(0, 200, 255) | Quaternary accent, info states |
+The signature gradient is appropriate for the logo and selected branded
+accents. It is not the default for every call to action, status, or focus state.
+Choose the semantic role required by the component and verify text contrast in
+light and dark modes.
 
-**Neutral Colors**
+## Token layers
 
-Used only for backgrounds, text, and subtle UI elements:
-- Grays (Tailwind gray scale)
-- Neutrals (Tailwind neutral scale)
-- Zinc (for box-shadow only)
+The allowed dependency direction is:
 
-### Brand Gradient
-
-The signature rainbow gradient is used throughout the site:
-- Logo text effect
-- Link hover animations
-- Button backgrounds
-- Accent decorations
-- Page overlays
-
-```css
-/* 45-degree gradient */
-linear-gradient(45deg, #ff0033, #ff00c8, #ffe500, #00ff44, #00c8ff, #ff0033)
-
-/* Horizontal gradient (for underlines) */
-linear-gradient(90deg, #ff0033, #ff00c8, #ffe500, #00ff44, #00c8ff, #ff0033)
+```text
+primitive -> semantic -> component -> consumer
 ```
 
-### Glass Effect (Glassmorphism)
+- Primitives store typed raw values in the canonical manifest.
+- Semantic roles express stable product meaning and form the cross-surface
+  identity contract.
+- Component tokens compose semantic roles without creating new raw-value
+  authorities.
+- Page/prototype variables remain classified local consumers or documented
+  exceptions; numerical equality does not make them shared roles.
 
-Used for navbar and card components:
-```css
-backdrop-blur-md
-bg-neutral-800/80 (dark mode)
-bg-white/80 (light mode)
+## Contributor rules
+
+1. Start with an existing semantic or component role.
+2. If no role fits, update the canonical manifest and registries before adding a
+   consumer value.
+3. Regenerate the owning adapter; never hand-edit a generated file.
+4. Keep platform differences in `design-system/adaptations.json` and literal
+   exceptions in `design-system/exceptions.json`, with owner, proof, and a
+   review or removal condition.
+5. Use arbitrary Tailwind utilities only for a documented, scoped exception.
+   Prefer semantic aliases or named component variables for production UI.
+6. A component-local CSS custom property is acceptable when it composes
+   canonical roles or represents standard intrinsic geometry; it must not hide a
+   new primitive palette, type scale, spacing scale, or motion system.
+
+Examples such as `rounded-[36px]`, raw hex colors, system-font shortcuts, and
+generic Tailwind palette utilities are not design guidance.
+
+## Accessibility and responsive behavior
+
+- Preserve visible focus, logical keyboard order, reduced-motion behavior, and
+  semantic HTML.
+- Meet WCAG 2.2 AA contrast and target requirements for the supported states.
+- Test representative mobile, tablet, and desktop widths in light and dark
+  modes. Responsive values come from named breakpoints or layout roles rather
+  than one-off viewport guesses.
+- Do not replace maintained interaction behavior with a styled bespoke control.
+
+## Validation
+
+From the repository root:
+
+```powershell
+uv run python tools/design_system/generate_tokens.py --validate-only
+uv run python -m unittest discover -s tools/design_system/tests -v
+uv run python tools/design_system/project_drift_guard.py --format markdown
+uv run python tools/design_system/generate_tokens.py --check
 ```
 
----
-
-## Typography Scale
-
-### Font Families
-
-- **Logo**: `Audiowide` (custom font)
-- **Body**: System fonts (Tailwind default)
-
-### Responsive Typography Scale
-
-| Element | Mobile | Tablet | Desktop |
-|---------|--------|--------|---------|
-| H1 (Hero) | `text-3xl` (30px) | `text-5xl` (48px) | `text-6xl` (60px) |
-| H2 (Section) | `text-2xl` (24px) | `text-3xl` (30px) | `text-4xl` (36px) |
-| H3 (Card) | `text-lg` (18px) | `text-xl` (20px) | `text-2xl` (24px) |
-| Body | `text-base` (16px) | `text-lg` (18px) | `text-lg` (18px) |
-| Small | `text-sm` (14px) | `text-sm` (14px) | `text-base` (16px) |
-
----
-
-## Spacing System
-
-### Current Issues (Mobile)
-- Excessive padding on sections causing wide empty spaces
-- Section gaps too large on mobile
-- Footer columns too spread out
-
-### Recommended Spacing
-
-| Section | Mobile Padding | Tablet Padding | Desktop Padding |
-|---------|----------------|----------------|-----------------|
-| Navbar | `px-3 py-2` | `px-4 py-3` | `px-6 py-4` |
-| Hero | `px-4 py-8` | `px-6 py-12` | `px-8 py-14` |
-| Content Sections | `px-4 py-8` | `px-6 py-10` | `px-8 py-14` |
-| Footer | `px-4 py-8` | `px-6 py-10` | `px-16 py-20` |
-
-### Section Gaps
-
-| Breakpoint | Between Sections |
-|------------|------------------|
-| Mobile | `gap-8` or `py-8` |
-| Tablet | `gap-10` or `py-10` |
-| Desktop | `gap-14` or `py-14` |
-
----
-
-## Component Styles
-
-### Buttons
-
-**Primary CTA**
-- Background: Rainbow gradient or solid magenta `#ff00c8`
-- Hover: Shift gradient or brighten to yellow `#ffe500`
-- Text: White or black (depending on contrast)
-- Border-radius: `rounded-xl`
-- Padding: `px-6 py-3` (mobile) / `px-8 py-3` (desktop)
-
-**Secondary CTA**
-- Background: Transparent with rainbow gradient border
-- Border: `2px solid` with gradient
-- Hover: Fill with subtle gradient
-- Border-radius: `rounded-xl`
-- Padding: `px-6 py-3`
-
-### Cards
-
-**Pricing Cards**
-- Free tier: Dark background with subtle rainbow gradient border
-- Pro tier: Rainbow gradient background with shadow
-
-### Navbar
-- Glass effect with blur
-- Sticky positioning
-- Rounded corners: `rounded-[36px]`
-
----
-
-## Visual Effects
-
-### Rainbow Gradient Animation
-Applied to links and logo:
-```css
-@keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-```
-
-### 3D Text Effect (Logo)
-- Multi-layer text with shadows
-- Mouse-follow parallax effect
-- Glow effect behind text
-
-### Decorative Elements
-- Floating SVG icons (cubes, circles)
-- Gradient blur decorations
-- Subtle shadows and depth
-
----
-
-## Mobile Optimization Priorities
-
-1. **Reduce section padding** - Switch from `py-14` to `py-8` on mobile
-2. **Compact navbar** - Smaller logo, tighter spacing
-3. **Responsive grid** - Stack elements vertically with proper spacing
-4. **Font size optimization** - Ensure readability without excessive scaling
-5. **Button sizing** - Full-width on mobile, inline on desktop
-6. **Footer layout** - Single column on mobile, multi-column on tablet+
-
----
-
-## Accessibility Considerations
-
-- Color contrast ratios meeting WCAG AA standards
-- Focus states with visible ring outlines
-- Reduced motion preferences respected
-- Semantic HTML structure
-- Proper heading hierarchy
-
----
-
-## Implementation Notes
-
-### Files to Update
-1. `src/layouts/MainLayout.astro` - Container padding
-2. `src/components/sections/landing/HeroSection.astro` - Hero spacing
-3. `src/components/sections/navbar&footer/Navbar.astro` - Mobile navbar
-4. `src/components/sections/navbar&footer/FooterSection.astro` - Footer layout
-5. `src/components/sections/features/*.astro` - Section spacing
-6. `src/components/sections/pricing/PricingSection.astro` - Card spacing
-7. `src/components/sections/misc/FAQ.astro` - Accordion padding
-8. `src/assets/styles/global.css` - Global spacing utilities
-
-### Testing Checklist
-- [ ] iPhone SE (375px)
-- [ ] iPhone 12/13 (390px)
-- [ ] iPad (768px)
-- [ ] Desktop (1280px+)
-- [ ] Dark mode on all breakpoints
+The project guard scans Dart, Kotlin, Android XML, CSS, Astro, TypeScript,
+JavaScript, HTML, email sources, and extension sources. Exact generated paths
+are delegated to the generator's provenance and stale-output check. A green
+source scan does not prove rendered parity; site changes still require build,
+browser, accessibility, and responsive evidence proportional to the claim.

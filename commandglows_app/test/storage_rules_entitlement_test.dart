@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('Storage rules require owner-scoped suite access for theme assets', () {
-    final rules = File('storage.rules').readAsStringSync();
+    final rules = File(
+      'storage.rules',
+    ).readAsStringSync().replaceAll('\r\n', '\n');
 
     expect(rules, contains("service firebase.storage"));
     expect(rules, contains("match /users/{uid}/keyboard_theme_assets/{assetId}"));

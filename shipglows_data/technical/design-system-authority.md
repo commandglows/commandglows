@@ -1,101 +1,176 @@
 ---
 artifact: design_system_authority
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "2.2.0"
 project: "CommandGlows"
 created: "2026-06-11"
-updated: "2026-06-11"
-status: "draft"
-source_skill: "300-sf-docs"
+updated: "2026-08-14"
+status: active
+source_skill: 006-sg-design
 scope: "design-system-authority"
 owner: "Diane"
-confidence: "high"
-risk_level: "high"
-security_impact: "no"
-docs_impact: "yes"
+confidence: high
+risk_level: high
+security_impact: yes
+docs_impact: yes
 content_surfaces:
   - "commandglows_app"
+  - "commandglows_app/android IME"
   - "commandglows_site"
+  - "commandglows_site emails"
+  - "ext"
 linked_systems:
-  - "commandglows_app/lib/core/theme/commandglows_theme_tokens.dart"
-  - "commandglows_app/lib/core/theme/app_theme.dart"
-  - "commandglows_site/src/assets/styles/global.css"
-  - "commandglows_site/tailwind.config.mjs"
+  - "design-system/tokens.json"
+  - "design-system/tokens.schema.json"
+  - "design-system/adaptations.json"
+  - "design-system/exceptions.json"
+  - "design-system/deprecations.json"
+  - "tools/design_system/generate_tokens.py"
+  - "tools/design_system/project_drift_guard.py"
+  - "tools/design_system/project_drift_policy.json"
 depends_on:
-  - artifact: "shipglows_data/technical/guidelines.md"
-    artifact_version: "1.0.1"
-    required_status: "reviewed"
-  - artifact: "shipglows_data/technical/architecture.md"
-    artifact_version: "1.1.0"
-    required_status: "reviewed"
+  - artifact: "shipglows_data/workflow/specs/commandglows-cross-surface-design-system-unification.md"
+    artifact_version: "1.4.0"
+    required_status: ready
 supersedes: []
 evidence:
-  - "Code scan: `commandglows_app/lib/core/theme/commandglows_theme_tokens.dart` and `commandglows_app/lib/core/theme/app_theme.dart` are explicit theme token layers."
-  - "Site scan: `commandglows_site/src/assets/styles/global.css` and `commandglows_site/tailwind.config.mjs` are the visual token entry points."
-  - "Cross-project design token audit baseline: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --format markdown --warn-only --max-findings 5000` from project root."
-next_step: "run 503-sf-audit-design-tokens commandglows"
+  - "F0 froze 593 site properties, five surface inventories, source checksums, and six initially ambiguous historical role groups."
+  - "Manifest 1.3.0 and registry 1.2.0 classify the active matrix: 33 roles resolve equally on all surfaces and the body-font role differs only through three reviewed delivery adaptations."
+  - "All six registered adapters are active, generated atomically, and clean under --all --check."
+  - "The project drift guard covers Dart, Kotlin, Android XML, CSS, Astro, TypeScript/JavaScript, HTML, email, and extension sources without path-name exemptions."
+  - "Local I1 source enforcement passes at 445 files / 0 findings for the project guard and 313 files / 0 findings for the independent broad scanner."
+next_step: "Collect the remaining site/browser accessibility, email-client, Flutter 3.41.7, Android CI, and physical IME proof before verification or closure."
 ---
 
-# CMDglows Design-System Authority
+# CommandGlows design-system authority
 
-## 1) Canonical token sources
+## Canonical ownership
 
-### App (Flutter)
-- **Primary source**: `commandglows_app/lib/core/theme/commandglows_theme_tokens.dart`
-- **Public wordmark**: `CMDglows`; `CommandGlows` remains the legal and technical identity.
-- **Theme mapping**: `commandglows_app/lib/core/theme/app_theme.dart`
+`design-system/tokens.json` is the sole platform-neutral authority. Its schema
+is `design-system/tokens.schema.json`. Reviewed cross-surface differences,
+literal exceptions, and compatibility/deprecation lifecycles live in the three
+adjacent registries named by the manifest.
 
-### Site (Astro + Tailwind)
-- **Primary source**: `commandglows_site/src/assets/styles/global.css`
-- **Theme adapter**: `commandglows_site/tailwind.config.mjs`
+The contract has one direction:
 
-## 2) Authoritative rule
+```text
+primitive -> semantic -> component -> platform consumer
+```
 
-Any change introducing or modifying **colors, typography, spacing, radii, shadows, motion, or layout tokens** must go through one of the four files above first.
+- `primitive` stores typed raw values and cannot reference another token.
+- `semantic` assigns stable product meaning and may reference only a primitive.
+- `component` composes semantic or acyclic component roles; it cannot become a
+  second primitive authority.
+- Only semantic roles form the cross-surface identity contract.
 
-- App screens/components must prefer `CommandGlowsThemeTokens`, then `ThemeData` extensions from `app_theme.dart`.
-- Site components must prefer `var(--*)` tokens and Tailwind config aliases.
-- New visual values in non-authoritative files are only valid when:
-  1. the value is clearly non-visual (e.g. business logic), or
-  2. there is an explicit, temporary exception approved in the linked spec.
+Existing CSS, Dart, Kotlin, email, and extension files remain migration inputs,
+not peer authorities. Platform-native theme APIs continue to own native
+behavior, accessibility semantics, adaptive layout, and interaction state.
 
-## 3) Required token map
+## Active platform adapters
 
-### App tokens
-- Colors: `CommandGlowsThemeTokens.*`
-- Typography: `CommandGlowsThemeTokens.typography*`, `AppTypography.*`
-- Spacing: `CommandGlowsThemeTokens.spacing*`, `AppSpacing.*`
-- Motion: `CommandGlowsThemeTokens.motion*`, `AppDuration*`
-- Shadows: `CommandGlowsThemeTokens.shadow*`
+The platform-neutral resolved matrix and all five platform adapters are active,
+checked-in, digest-bearing outputs of `tools/design_system/generate_tokens.py`.
+Their bridge/theme consumers are native integration points, not peer token
+authorities.
 
-### Site tokens
-- Palette: `--brand-*`, `--font-*`, `--radius` in `global.css`
-- Mode tokens: `--border`, `--input`, `--ring`, `--background`, `--foreground` in `global.css`
-- Tailwind aliases in `tailwind.config.mjs` (extended with the same variables)
+| Surface | Active mapping/consumer | Manifest-owned generated target | Native responsibility |
+| --- | --- | --- | --- |
+| Site | `commandglows_site/src/assets/styles/global.css`, `commandglows_site/tailwind.config.mjs` | `commandglows_site/src/assets/styles/generated/commandglows-tokens.css` | Astro/Tailwind composition, responsive layout, browser interaction |
+| Flutter | `commandglows_app/lib/core/theme/commandglows_theme_tokens.dart`, `app_theme.dart` | `commandglows_app/lib/core/theme/generated/commandglows_tokens.g.dart` | `ThemeData`, dynamic type, high contrast, reduced motion, adaptive/safe-area behavior |
+| Android IME | `KeyboardDesignSystemMapping.kt` and native theme consumers | `commandglows_app/android/app/src/main/kotlin/com/commandglows/app/ime/generated/CommandGlowsTokens.kt` | independent IME startup, touch geometry, press/focus feedback, stored-theme compatibility |
+| Email | `commandglows_site/src/theme/newsletter-email-theme.ts` | `commandglows_site/src/theme/generated/email-tokens.ts` | resolved inline/client-safe styles, images-off readability, plain-text equivalence |
+| Extension | `ext/src/design-system-mapping.js` | `ext/src/generated/commandglows-tokens.css` | CSP-safe local styles, popup document scope, closed-Shadow-Root host isolation |
 
-## 4) Enforcement guardrails (mandatory)
+The site, app, IME, email, and extension share semantic role meaning. The active
+resolved matrix contains 34 roles: 33 resolve identically across all five
+surfaces. Only `semantic.typography.body.family` differs: site and Android IME
+retain canonical Manrope resolution, Flutter uses bundled Inter, email uses a
+client-safe `sans-serif` stack, and the extension uses a local system stack.
+The three differences are reviewed adaptations with owner, proof, rationale,
+and review condition in `adaptations.json`.
 
-1. No ad-hoc `Color(0x...)`, hex (`#rrggbb`), `rgb(...)`, `oklch(...)`, or literal px/rem/em in UI code.
-2. No arbitrary Tailwind visual utilities (ex. `max-w-[85rem]`, `min-h-[60vh]`) for production UI.
-3. No inline style objects for visual output in production components (`style=...`) unless tokenized via local variables.
-4. Motion constants (`duration`, `cubic-bezier`, animation timing) must be tokenized.
-5. No component-level `if (isDark)`, `if (isLight)` visual branches; switch only at token/theme layer.
+The five non-typographic legacy groups from F0 are no longer active unresolved
+state; their relevant shared meanings are represented by equal resolved roles.
+The immutable F0 files retain the original evidence for audit provenance only.
+The former 63-finding native inventory is resolved: 63 app/native and 9
+historical floating-overlay findings were remediated, and both enforcement
+scans now report zero findings. User-authored keyboard palettes and imported
+content themes remain data, not shared brand roles.
 
-## 5) Temporary exceptions
+## Adaptations, exceptions, and deprecations
 
-- `commandglows_app/lib/features/keyboard/presentation/keyboard_theme_studio_screen.dart` contains hard-coded palette preview fixtures and is excluded only until a follow-up migration task.
-- `commandglows_site/.vercel/output/**` is generated output, non-authoritative, and must not drive design decisions.
-- Legacy SVG source assets that hardcode brand colors are allowed only when wrapped under shared brand symbol components.
+An intentional platform adaptation must name the active semantic role,
+surface, resolved value, rationale, owner, proof, and review or removal
+condition. Equal names with different values are otherwise a parity failure.
 
-## 6) Change process
+A literal exception must be platform/API/protocol- or user-data-required and
+must name its scope, reason, proof, owner, and review/removal condition. The
+initial exceptions preserve user-authored keyboard theme v1 data, email-safe
+inline delivery, the temporary Theme Studio fixture perimeter, and generated
+build-output exclusion.
 
-For every style-related commit:
-1. Update token source first.
-2. Consume token through a shared abstraction (`CommandGlowsThemeTokens` or CSS variables/Tailwind alias).
-3. Run token drift check with generated output excluded from the evidence set.
+`tools/design_system/project_drift_policy.json` is a scanner policy, not a
+fourth registry. Its exact-path allowlist requires a reason, owner, and review
+or removal condition. It may classify a transitional source mapping, source
+artwork, or user/content data, but it cannot authorize a new token, adaptation,
+or product exception. Substring-based exclusions such as “any path containing
+theme/token/color” are forbidden because they hide drift in consumer files.
 
-## 7) Acceptance criteria
+Compatibility aliases require a consumer count, target role, owner, and
+removal condition. Empty registries are explicit; contributors must not infer
+unrecorded aliases or adaptations.
 
-- No new hard-coded visual literals are introduced in production component code.
-- New UI changes are traceable to one of the canonical token files.
-- Any direct visual exception is documented in this artifact before merge.
+## Generation and checked-in ownership
+
+`tools/design_system/generate_tokens.py` validates references, types, layers,
+cycles, registry fields, safe relative paths, and parity observations before it
+renders any output. It uses stable ordering, UTF-8, LF endings, staged writes,
+and rollback of already replaced files on an I/O failure.
+
+`--platform <surface>` scopes a run to one target. `--all` selects all targets
+and requires `--allow-platform-writes` for a write transaction. Only the final
+integration batch may use that guard against checked-in platform outputs.
+Generated adapters carry manifest 1.3.0 provenance and the canonical bundle
+digest and must never be hand-edited.
+
+The project drift guard derives generated output paths from `tokens.json` and
+excludes only those exact files from literal scanning. Provenance and stale
+content remain the existing generator's responsibility; a nearby file or a file
+merely named `generated`, `theme`, or `tokens` is still scanned.
+
+## Required commands
+
+```powershell
+uv run python tools/design_system/generate_tokens.py --validate-only
+uv run python -m unittest discover -s tools/design_system/tests -v
+uv run python tools/design_system/project_drift_guard.py --format markdown
+uv run python tools/design_system/project_drift_guard.py --changed --format markdown
+uv run python tools/design_system/generate_tokens.py --all --check
+uv run python tools/design_system/generate_tokens.py --all --dry-run
+```
+
+The CI token gate runs manifest/generator validation. The project guard provides
+the language/perimeter enforcement missing from the broader ShipGlows syntax
+scanner; the broader scan remains additional independent evidence. Current
+local baselines are 445 files / 0 findings for the project guard and 313 files /
+0 findings for the broad scanner. A green syntax scan does not prove rendered
+parity or accessibility.
+
+## Change rule
+
+Every new or changed color, opacity, typography, spacing, dimension, inset,
+radius, border, shadow, elevation, overlay, motion, breakpoint, density, or
+touch-target decision must trace to this manifest, an approved platform
+adaptation, or a documented exception. Consumers use generated/platform-native
+adapters and cannot introduce a parallel raw authority.
+
+Every remaining raw-literal exception must be recorded in the canonical
+exception registry when it changes product behavior, or in the exact scanner
+policy when it is only an enforcement classification. Both require scope,
+reason, owner, proof where applicable, and a review/removal condition. An
+unexplained scanner finding blocks a zero-drift claim.
+
+No cross-surface parity, accessibility, or visual non-regression claim is valid
+until its scenario in the chantier checklist has passed with the required
+platform or rendered proof.

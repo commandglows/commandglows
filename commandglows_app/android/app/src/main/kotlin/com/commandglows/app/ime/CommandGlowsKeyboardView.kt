@@ -64,34 +64,34 @@ private data class NativeKeyboardColors(
     companion object {
         val Light =
             NativeKeyboardColors(
-                background = Color.rgb(238, 241, 238),
-                privateBackground = Color.rgb(246, 232, 226),
-                key = Color.WHITE,
-                specialKey = Color.rgb(224, 230, 227),
-                activeKey = Color.rgb(23, 121, 93),
-                pressedKey = Color.rgb(202, 218, 211),
-                disabledKey = Color.rgb(214, 217, 215),
-                text = Color.rgb(29, 35, 32),
+                background = KeyboardDesignSystemMapping.THEME_V1_BACKGROUND,
+                privateBackground = NativeImeVisualTokens.LIGHT_PRIVATE_BACKGROUND,
+                key = KeyboardDesignSystemMapping.THEME_V1_KEY,
+                specialKey = KeyboardDesignSystemMapping.THEME_V1_SPECIAL_KEY,
+                activeKey = KeyboardDesignSystemMapping.THEME_V1_ACTIVE_KEY,
+                pressedKey = KeyboardDesignSystemMapping.THEME_V1_PRESSED_KEY,
+                disabledKey = NativeImeVisualTokens.LIGHT_DISABLED_KEY,
+                text = KeyboardDesignSystemMapping.THEME_V1_TEXT,
                 activeText = Color.WHITE,
-                disabledText = Color.rgb(123, 130, 126),
-                secondaryText = Color.rgb(92, 103, 98),
-                statusText = Color.rgb(51, 61, 56),
+                disabledText = NativeImeVisualTokens.LIGHT_DISABLED_TEXT,
+                secondaryText = KeyboardDesignSystemMapping.THEME_V1_CORNER_TEXT,
+                statusText = KeyboardDesignSystemMapping.THEME_V1_STATUS_TEXT,
             )
 
         val Dark =
             NativeKeyboardColors(
-                background = Color.rgb(18, 24, 21),
-                privateBackground = Color.rgb(42, 28, 27),
-                key = Color.rgb(35, 43, 39),
-                specialKey = Color.rgb(46, 56, 51),
-                activeKey = Color.rgb(54, 179, 132),
-                pressedKey = Color.rgb(67, 82, 75),
-                disabledKey = Color.rgb(30, 36, 33),
-                text = Color.rgb(235, 242, 238),
-                activeText = Color.rgb(8, 20, 15),
-                disabledText = Color.rgb(108, 119, 113),
-                secondaryText = Color.rgb(168, 181, 174),
-                statusText = Color.rgb(204, 217, 210),
+                background = NativeImeVisualTokens.DARK_BACKGROUND,
+                privateBackground = NativeImeVisualTokens.DARK_PRIVATE_BACKGROUND,
+                key = NativeImeVisualTokens.DARK_KEY,
+                specialKey = NativeImeVisualTokens.DARK_SPECIAL_KEY,
+                activeKey = NativeImeVisualTokens.DARK_ACTIVE_KEY,
+                pressedKey = NativeImeVisualTokens.DARK_PRESSED_KEY,
+                disabledKey = NativeImeVisualTokens.DARK_DISABLED_KEY,
+                text = NativeImeVisualTokens.DARK_TEXT,
+                activeText = NativeImeVisualTokens.DARK_ACTIVE_TEXT,
+                disabledText = NativeImeVisualTokens.DARK_DISABLED_TEXT,
+                secondaryText = NativeImeVisualTokens.DARK_SECONDARY_TEXT,
+                statusText = NativeImeVisualTokens.DARK_STATUS_TEXT,
             )
     }
 }
@@ -508,11 +508,11 @@ class CommandGlowsKeyboardView(
         style = Paint.Style.FILL
     }
     private val pinnedBadgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(255, 255, 255)
+        color = Color.WHITE
         style = Paint.Style.FILL
     }
     private val pinnedBadgeAccentPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(23, 121, 93)
+        color = KeyboardDesignSystemMapping.THEME_V1_ACTIVE_KEY
         style = Paint.Style.FILL
     }
     private val voicePulsePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -542,7 +542,7 @@ class CommandGlowsKeyboardView(
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
     private val debugStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(216, 32, 32)
+        color = NativeImeVisualTokens.DEBUG_STROKE
         style = Paint.Style.STROKE
         strokeWidth = dp(1f)
     }
@@ -552,7 +552,7 @@ class CommandGlowsKeyboardView(
         strokeWidth = dp(1f)
     }
     private val debugTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(160, 24, 24)
+        color = NativeImeVisualTokens.DEBUG_TEXT
         textAlign = Paint.Align.LEFT
         typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
     }
@@ -968,7 +968,7 @@ class CommandGlowsKeyboardView(
         statusText = message
         statusPaint.color =
             if (isError) {
-                Color.rgb(196, 48, 60)
+                NativeImeVisualTokens.STATUS_ERROR
             } else {
                 resolvedStatusTextColor
             }
@@ -3649,7 +3649,7 @@ class CommandGlowsKeyboardView(
                 }
                 keyboardLayerColor(activeTextColor, KEYBOARD_TEXT_OPACITY_BOOST)
             } else if (voicePermissionRequired && key.action == KeyboardKeyAction.Voice) {
-                Color.rgb(196, 48, 60)
+                NativeImeVisualTokens.STATUS_ERROR
             } else if (key.enabled) {
                 resolvedTextColor
             } else {
@@ -4405,7 +4405,7 @@ class CommandGlowsKeyboardView(
     }
 
     private fun midnightStarBadgeColor(): Int {
-        return Color.rgb(255, 216, 77)
+        return NativeImeVisualTokens.PINNED_BADGE_STAR
     }
 
     private fun drawVoiceRecordingIndicator(
@@ -4413,7 +4413,7 @@ class CommandGlowsKeyboardView(
         rect: RectF,
     ) {
         val phase = (SystemClock.uptimeMillis() % 1100L).toFloat() / 1100f
-        val red = Color.rgb(235, 47, 64)
+        val red = NativeImeVisualTokens.VOICE_RECORDING
         val centerRadius = min(rect.width(), rect.height()) * (0.24f + 0.08f * phase)
         voicePulsePaint.style = Paint.Style.FILL
         voicePulsePaint.color = Color.argb((82 * (1f - phase)).toInt().coerceIn(0, 82), Color.red(red), Color.green(red), Color.blue(red))

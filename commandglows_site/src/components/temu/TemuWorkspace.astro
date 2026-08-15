@@ -27,12 +27,12 @@ const placeholder = 'https://www.temu.com/...'
     <div class="relative border-b border-neutral-200 px-6 py-8 dark:border-zinc-800 sm:px-8">
       <div class="absolute inset-0 temu-radial-bg"></div>
       <div class="relative flex flex-col gap-4">
-        <span class="w-fit rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-neutral-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+        <span class="w-fit rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-temu-badge text-neutral-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
           Temu -> Vinted
         </span>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div class="max-w-3xl">
-            <h1 class="font-[var(--font-display)] text-4xl font-bold tracking-tight text-neutral-950 dark:text-white sm:text-5xl">
+            <h1 class="font-display text-4xl font-bold tracking-tight text-neutral-950 dark:text-white sm:text-5xl">
               {title}
             </h1>
 
@@ -110,7 +110,7 @@ const placeholder = 'https://www.temu.com/...'
         <div class="rounded-temu-lg border border-neutral-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950/80">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-500">
+              <p class="text-xs font-semibold uppercase tracking-temu-eyebrow text-neutral-500 dark:text-zinc-500">
                 {lang === 'fr' ? 'Description source' : 'Source description'}
               </p>
               <h2 class="mt-2 text-xl font-semibold text-neutral-950 dark:text-white">
@@ -137,7 +137,7 @@ const placeholder = 'https://www.temu.com/...'
         <div class="rounded-temu-lg border border-neutral-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950/80">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-500">
+              <p class="text-xs font-semibold uppercase tracking-temu-eyebrow text-neutral-500 dark:text-zinc-500">
                 {lang === 'fr' ? 'Annonce de revente' : 'Resale listing'}
               </p>
               <h2 class="mt-2 text-xl font-semibold text-neutral-950 dark:text-white">
@@ -165,7 +165,7 @@ const placeholder = 'https://www.temu.com/...'
           </div>
           <div class="mt-4 grid gap-4">
             <div class="rounded-temu-md border border-neutral-200 bg-neutral-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <p class="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-500">
+              <p class="text-xs uppercase tracking-eyebrow text-neutral-500 dark:text-zinc-500">
                 {lang === 'fr' ? "Titre d'annonce" : 'Listing title'}
               </p>
               <p id="ai-listing-title" class="mt-2 text-base font-semibold text-neutral-900 dark:text-white"></p>
@@ -177,7 +177,7 @@ const placeholder = 'https://www.temu.com/...'
               class="w-full rounded-temu-md border border-neutral-200 bg-neutral-50 px-4 py-4 text-sm leading-7 text-neutral-800 outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
             ></textarea>
             <div class="rounded-temu-md border border-neutral-200 bg-neutral-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <p class="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-500">
+              <p class="text-xs uppercase tracking-eyebrow text-neutral-500 dark:text-zinc-500">
                 {lang === 'fr' ? 'Points forts' : 'Selling points'}
               </p>
               <ul id="ai-selling-points" class="mt-3 list-disc space-y-2 pl-5 text-sm text-neutral-800 dark:text-zinc-100"></ul>
@@ -190,7 +190,7 @@ const placeholder = 'https://www.temu.com/...'
         <div class="rounded-temu-lg border border-neutral-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950/80">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-500">
+              <p class="text-xs font-semibold uppercase tracking-temu-eyebrow text-neutral-500 dark:text-zinc-500">
                 {lang === 'fr' ? 'Photos' : 'Photos'}
               </p>
               <h2 class="mt-2 text-xl font-semibold text-neutral-950 dark:text-white">
@@ -209,15 +209,15 @@ const placeholder = 'https://www.temu.com/...'
           <div class="mt-4 grid gap-4">
             <dl class="grid grid-cols-1 gap-3 rounded-temu-md border border-neutral-200 bg-neutral-50 p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-2">
               <div>
-                <dt class="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-500">{lang === 'fr' ? 'Titre' : 'Title'}</dt>
+                <dt class="text-xs uppercase tracking-eyebrow text-neutral-500 dark:text-zinc-500">{lang === 'fr' ? 'Titre' : 'Title'}</dt>
                 <dd id="temu-title" class="mt-1 font-medium text-neutral-900 dark:text-white"></dd>
               </div>
               <div>
-                <dt class="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-500">{lang === 'fr' ? 'Nombre d’images' : 'Image count'}</dt>
+                <dt class="text-xs uppercase tracking-eyebrow text-neutral-500 dark:text-zinc-500">{lang === 'fr' ? 'Nombre d’images' : 'Image count'}</dt>
                 <dd id="temu-count" class="mt-1 font-medium text-neutral-900 dark:text-white">0</dd>
               </div>
               <div class="sm:col-span-2">
-                <dt class="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-500">{lang === 'fr' ? 'URL source' : 'Source URL'}</dt>
+                <dt class="text-xs uppercase tracking-eyebrow text-neutral-500 dark:text-zinc-500">{lang === 'fr' ? 'URL source' : 'Source URL'}</dt>
                 <dd class="mt-1 break-all">
                   <a id="temu-source" href="#" target="_blank" rel="noreferrer" class="font-medium text-neutral-900 underline decoration-neutral-300 underline-offset-4 dark:text-white dark:decoration-zinc-700"></a>
                 </dd>
@@ -230,7 +230,7 @@ const placeholder = 'https://www.temu.com/...'
         <div class="rounded-temu-lg border border-neutral-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950/80">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-500">
+              <p class="text-xs font-semibold uppercase tracking-temu-eyebrow text-neutral-500 dark:text-zinc-500">
                 {lang === 'fr' ? 'Images traduites' : 'Translated images'}
               </p>
               <h2 class="mt-2 text-xl font-semibold text-neutral-950 dark:text-white">

@@ -4,8 +4,43 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.json.JSONArray
+import org.json.JSONObject
 
 class KeyboardThemeModelsTest {
+    @Test
+    fun `shared fixture freezes native mappings preset ids and v1 json`() {
+        val fixture = loadDesignSystemFixture()
+        val frozenPresetIds = fixture.getJSONArray("presetIds").toStringList()
+
+        assertEquals(frozenPresetIds, KeyboardThemePresets.all.map { it.id })
+        assertEquals(
+            KeyboardDesignSystemMapping.THEME_V1_ACTIVE_KEY,
+            KeyboardThemeConfig().activeKeyColor,
+        )
+
+        val frozenTheme = fixture.getJSONObject("themeV1")
+        val parsed = KeyboardThemeConfig.fromJson(frozenTheme.toString())
+        val roundTrip = JSONObject(parsed.toJson())
+        assertEquals(frozenTheme.toCanonicalMap(), roundTrip.toCanonicalMap())
+    }
+
+    @Test
+    fun `shared fixture retains cloud revisions checksums and theme payloads`() {
+        val fixture = loadDesignSystemFixture()
+
+        for (name in listOf("syncV1", "syncV2")) {
+            val frozen = fixture.getJSONObject(name)
+            val before = frozen.toCanonicalMap()
+            val after = JSONObject(frozen.toString()).toCanonicalMap()
+
+            assertEquals(before, after)
+            assertTrue(frozen.getInt("profileRevision") > frozen.getInt("baseCloudRevision"))
+            assertEquals(64, frozen.getString("checksum").length)
+            assertTrue(frozen.getJSONObject("payload").has("themeConfig"))
+        }
+    }
+
     @Test
     fun `falls back from corrupt json`() {
         val config = KeyboardThemeConfig.fromJson("{not-json")
@@ -166,3 +201,30 @@ class KeyboardThemeModelsTest {
         assertEquals(8, effects.activeCountForTest())
     }
 }
+
+private fun loadDesignSystemFixture(): JSONObject {
+    val stream =
+        checkNotNull(
+            KeyboardThemeModelsTest::class.java.classLoader
+                ?.getResourceAsStream("fixtures/design_system_app_native_v1.json"),
+        )
+    return stream.bufferedReader(Charsets.UTF_8).use { JSONObject(it.readText()) }
+}
+
+private fun JSONArray.toStringList(): List<String> =
+    (0 until length()).map { index -> getString(index) }
+
+private fun JSONObject.toCanonicalMap(): Map<String, Any?> =
+    keys().asSequence().sorted().associateWith { key -> get(key).toCanonicalValue() }
+
+private fun JSONArray.toCanonicalList(): List<Any?> =
+    (0 until length()).map { index -> get(index).toCanonicalValue() }
+
+private fun Any?.toCanonicalValue(): Any? =
+    when (this) {
+        is JSONObject -> toCanonicalMap()
+        is JSONArray -> toCanonicalList()
+        is Number -> toDouble()
+        JSONObject.NULL -> null
+        else -> this
+    }

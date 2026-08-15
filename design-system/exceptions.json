@@ -1,0 +1,41 @@
+{
+  "exceptions": [
+    {
+      "id": "keyboard-theme-studio-fixtures",
+      "owner": "CommandGlows app design-system owner",
+      "proof": "F0 source inventory and the existing authority declaration",
+      "reason": "Preset and user palette previews are migration inputs, not shared brand tokens.",
+      "reviewOrRemovalCondition": "Remove after DS-PRESET-001 proves generated defaults and stored-theme compatibility.",
+      "scope": "commandglows_app/lib/features/keyboard/presentation/keyboard_theme_studio_screen.dart",
+      "surface": "flutter"
+    },
+    {
+      "id": "user-authored-keyboard-theme-v1",
+      "owner": "CommandGlows app and IME owners",
+      "proof": "DS-PRESET-001 frozen round-trip fixtures are required before migration",
+      "reason": "Persisted user colors and images are user data and must not be rewritten as global brand tokens.",
+      "reviewOrRemovalCondition": "Permanent while KeyboardThemeConfig v1 data remains supported; review on any explicit data-schema migration.",
+      "scope": "KeyboardThemeConfig v1, preset IDs, SharedPreferences and cloud-sync payloads",
+      "surface": "android-ime"
+    },
+    {
+      "id": "email-resolved-inline-values",
+      "owner": "CommandGlows email owner",
+      "proof": "DS-EMAIL-001 HTML and plain-text rendering proof",
+      "reason": "Delivered email must use resolved client-safe inline values and cannot depend on CSS custom properties.",
+      "reviewOrRemovalCondition": "Permanent platform constraint; review when the supported email-client matrix changes.",
+      "scope": "delivered newsletter HTML",
+      "surface": "email"
+    },
+    {
+      "id": "generated-build-output",
+      "owner": "CommandGlows site owner",
+      "proof": "F0 inventory excludes generated dependency and build output",
+      "reason": "Build output is non-authoritative and must not drive design decisions or drift evidence.",
+      "reviewOrRemovalCondition": "Permanent generated-output exclusion; review if the build output becomes a published source artifact.",
+      "scope": "commandglows_site/.vercel/output/**",
+      "surface": "site"
+    }
+  ],
+  "registryVersion": "1.0.0"
+}

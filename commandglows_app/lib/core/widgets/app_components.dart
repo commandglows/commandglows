@@ -235,7 +235,7 @@ class AppSyncStatus {
       AppSyncStatusKind.saving => colorScheme.secondary,
       AppSyncStatusKind.syncing => colorScheme.secondary,
       AppSyncStatusKind.pending => AppColors.warning,
-      AppSyncStatusKind.localOnly => AppColors.info,
+      AppSyncStatusKind.localOnly => AppColors.localOnlyCompatibility,
       AppSyncStatusKind.error ||
       AppSyncStatusKind.conflict => colorScheme.error,
       AppSyncStatusKind.idle => colorScheme.outline,

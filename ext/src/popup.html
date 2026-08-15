@@ -4,49 +4,73 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>CMDglows</title>
+    <link rel="stylesheet" href="generated/commandglows-tokens.css">
   </head>
-  <body>
-    <main>
-      <h1>CMDglows</h1>
-      <p>Use the preferred shortcut or open CMDglows in the active field.</p>
-      <button id="open" type="button">Open in active field</button>
-      <p id="status" role="status" aria-live="polite"></p>
-      <hr>
-      <h2>Snippets</h2>
-      <form id="snippet-form">
-        <label>Trigger <input id="trigger" required></label>
-        <label>Content <textarea id="content" required></textarea></label>
-        <button type="submit">Save snippet</button>
-      </form>
-      <ul id="snippets"></ul>
-      <h2>Dictionary</h2>
-      <form id="dictionary-form">
-        <label>Replace <input id="dictionary-source" required></label>
-        <label>With <input id="dictionary-replacement" required></label>
-        <button type="submit">Save dictionary entry</button>
-      </form>
-      <ul id="dictionary"></ul>
-      <h2>Custom actions</h2>
-      <form id="action-form">
-        <label>Label <input id="action-label" required></label>
-        <label>Kind
-          <select id="action-kind">
+  <body class="commandglows-popup">
+    <main class="commandglows-popup__main">
+      <header class="commandglows-popup__header">
+        <h1 class="commandglows-popup__title">CMDglows</h1>
+        <p class="commandglows-popup__copy">Use the preferred shortcut or open CMDglows in the active field.</p>
+      </header>
+      <button class="commandglows-popup__button commandglows-popup__button--primary" id="open" type="button">Open in active field</button>
+      <p class="commandglows-popup__status" id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+
+      <section class="commandglows-popup__section" aria-labelledby="snippets-heading">
+        <h2 class="commandglows-popup__heading" id="snippets-heading">Snippets</h2>
+        <form class="commandglows-popup__form" id="snippet-form">
+          <label class="commandglows-popup__field" for="trigger">Trigger</label>
+          <input class="commandglows-popup__input" id="trigger" required>
+          <label class="commandglows-popup__field" for="content">Content</label>
+          <textarea class="commandglows-popup__input commandglows-popup__input--multiline" id="content" required></textarea>
+          <button class="commandglows-popup__button" type="submit">Save snippet</button>
+        </form>
+        <ul class="commandglows-popup__list" id="snippets" aria-label="Saved snippets"></ul>
+      </section>
+
+      <section class="commandglows-popup__section" aria-labelledby="dictionary-heading">
+        <h2 class="commandglows-popup__heading" id="dictionary-heading">Dictionary</h2>
+        <form class="commandglows-popup__form" id="dictionary-form">
+          <label class="commandglows-popup__field" for="dictionary-source">Replace</label>
+          <input class="commandglows-popup__input" id="dictionary-source" required>
+          <label class="commandglows-popup__field" for="dictionary-replacement">With</label>
+          <input class="commandglows-popup__input" id="dictionary-replacement" required>
+          <button class="commandglows-popup__button" type="submit">Save dictionary entry</button>
+        </form>
+        <ul class="commandglows-popup__list" id="dictionary" aria-label="Dictionary entries"></ul>
+      </section>
+
+      <section class="commandglows-popup__section" aria-labelledby="actions-heading">
+        <h2 class="commandglows-popup__heading" id="actions-heading">Custom actions</h2>
+        <form class="commandglows-popup__form" id="action-form">
+          <label class="commandglows-popup__field" for="action-label">Label</label>
+          <input class="commandglows-popup__input" id="action-label" required>
+          <label class="commandglows-popup__field" for="action-kind">Kind</label>
+          <select class="commandglows-popup__select" id="action-kind">
             <option value="insert_text">Insert text</option>
             <option value="transform">Transform</option>
           </select>
-        </label>
-        <label>Value <input id="action-value" required></label>
-        <button type="submit">Save custom action</button>
-      </form>
-      <p>Transform values: <code>clean-whitespace</code> or <code>sentence-case</code>.</p>
-      <ul id="actions"></ul>
-      <h2>Recent insertions</h2>
-      <ul id="history"></ul>
-      <h2>Local backup</h2>
-      <button id="export-backup" type="button">Export backup</button>
-      <label>Restore backup <input id="restore-backup" type="file" accept="application/json"></label>
-      <p id="sync-status"></p>
+          <label class="commandglows-popup__field" for="action-value">Value</label>
+          <input class="commandglows-popup__input" id="action-value" required aria-describedby="action-hint">
+          <p class="commandglows-popup__hint" id="action-hint">Transform values: <code>clean-whitespace</code> or <code>sentence-case</code>.</p>
+          <button class="commandglows-popup__button" type="submit">Save custom action</button>
+        </form>
+        <ul class="commandglows-popup__list" id="actions" aria-label="Custom actions"></ul>
+      </section>
+
+      <section class="commandglows-popup__section" aria-labelledby="history-heading">
+        <h2 class="commandglows-popup__heading" id="history-heading">Recent insertions</h2>
+        <ul class="commandglows-popup__list" id="history" aria-label="Recent insertions"></ul>
+      </section>
+
+      <section class="commandglows-popup__section" aria-labelledby="backup-heading">
+        <h2 class="commandglows-popup__heading" id="backup-heading">Local backup</h2>
+        <button class="commandglows-popup__button" id="export-backup" type="button">Export backup</button>
+        <label class="commandglows-popup__field" for="restore-backup">Restore backup</label>
+        <input class="commandglows-popup__file" id="restore-backup" type="file" accept="application/json">
+        <p class="commandglows-popup__status" id="sync-status" role="status" aria-live="polite"></p>
+      </section>
     </main>
+    <script src="design-system-mapping.js"></script>
     <script type="module" src="popup.js"></script>
   </body>
 </html>
