@@ -150,6 +150,8 @@ describe('CommunityGlows trial Convex integration', () => {
       trialAttempt: 1,
       trialRestartsRemaining: 2,
       trialRestartEligible: false,
+      knownInstallationCount: 1,
+      includedAccess: ['communityglows_protected_features'],
     })
     expect(initial.trialExpiresAt).toBeGreaterThanOrEqual(
       initialStartedAt + TRIAL_DURATION_MS

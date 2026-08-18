@@ -1,11 +1,11 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: CommandGlows
 created: "2026-08-11"
-updated: "2026-08-11"
-status: draft
+updated: "2026-08-18"
+status: active
 source_skill: sg-docs
 scope: stripe-managed-payments-usage
 owner: Diane
@@ -32,6 +32,7 @@ evidence:
   - "Local verification on 2026-08-11: 131 Vitest tests pass, Flutter analyze/tests pass, and Astro check reports zero errors; hosted Stripe and Convex proof remains outstanding."
   - "Operator decision later on 2026-08-11: Stripe Managed Payments becomes the only provider for every current and future suite product, including CommunityGlows; Lemon Squeezy and Polar are superseded."
   - "Local batch B on 2026-08-11: CommunityGlows and Formation offers use Stripe Price-ID placeholders; active Lemon Squeezy and Polar adapters/routes/webhooks/tests/dependency were removed; all checkout offers require product/environment-bound signed identity handoff; Convex rejects non-Stripe providers."
+  - "Local licence administration slice on 2026-08-18: CommandGlows exposes admin-gated search/detail/manual grant/revoke over the canonical Convex ledger; CommunityGlows consumes an additive account-scoped licence summary."
 next_review: "2026-09-11"
 next_step: "Configure Stripe test-mode Product/Price and webhook values, then capture hosted checkout, replay, refund/dispute, Convex, and app-refresh proof before launch."
 ---
@@ -121,6 +122,26 @@ modified, cross-product or cross-environment handoffs fail closed.
   rejected or non-granting `pending_review`.
 - Every offer Price ID comes from server environment configuration; no runtime
   or documentation layer invents a price amount.
+
+## Licence Administration And Customer Visibility
+
+CommandGlows is the sole operator surface and durable authority for licences and
+entitlements. Its protected `/dashboard/licences` console reads the canonical
+Convex ledger through a Clerk-authenticated server route; Convex independently
+checks the caller's canonical `admin` role and the server bridge secret. Manual
+grant and revoke operations require a support reason, are allowlisted and
+idempotent, and append an audit event. They never alter Stripe payment records.
+
+CommunityGlows remains a product adapter. Its authenticated billing panel shows
+only the current account's product-scoped snapshot: plan, access state, access
+activation date, centrally declared included access, and an informational count
+of recognized installations. No licence key or device cap exists. The count is
+derived from the existing anti-abuse installation signal and must not be
+described as a trusted device-activation registry.
+
+The local CommandGlows console requires `PUBLIC_CONVEX_URL` and
+`SUITE_BRIDGE_CONVEX_SECRET` in the server environment. Missing configuration
+returns a non-granting `503`; it must never trigger a local entitlement fallback.
 
 ## Proof Before Launch
 

@@ -1,0 +1,22 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro'
+import LicenseAdminConsole from '@/components/admin/LicenseAdminConsole'
+
+const auth = Astro.locals.auth()
+if (!auth.userId) {
+  return Astro.redirect('/signin?next=%2Fdashboard%2Flicences')
+}
+---
+
+<DashboardLayout title="Licences - Dashboard" currentPath="/dashboard/licences" lang="fr">
+  <header class="mb-8">
+    <p class="brand-text-magenta text-sm font-bold uppercase tracking-wide">Administration</p>
+    <h1 class="text-dashboard-text-primary mt-2 text-3xl font-bold">Licences et entitlements</h1>
+    <p class="text-dashboard-text-muted mt-3 max-w-3xl">
+      Recherchez un compte canonique, vérifiez ses droits et appliquez une action
+      support auditée. Stripe reste la source des paiements ; Convex reste
+      l’autorité des accès.
+    </p>
+  </header>
+  <LicenseAdminConsole client:load />
+</DashboardLayout>

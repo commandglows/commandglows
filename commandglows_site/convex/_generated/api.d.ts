@@ -13,6 +13,7 @@ import type * as bridge from "../bridge.js";
 import type * as defaultFreeEntitlements from "../defaultFreeEntitlements.js";
 import type * as features from "../features.js";
 import type * as http from "../http.js";
+import type * as licenseAdministration from "../licenseAdministration.js";
 import type * as productEntitlementPolicies from "../productEntitlementPolicies.js";
 import type * as resend from "../resend.js";
 import type * as users from "../users.js";
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   defaultFreeEntitlements: typeof defaultFreeEntitlements;
   features: typeof features;
   http: typeof http;
+  licenseAdministration: typeof licenseAdministration;
   productEntitlementPolicies: typeof productEntitlementPolicies;
   resend: typeof resend;
   users: typeof users;

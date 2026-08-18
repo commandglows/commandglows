@@ -86,7 +86,7 @@ export default defineConfig({
       }
     }),
     react({
-      include: ['**/components/react/**', '**/components/ui/**'],
+      include: ['**/components/react/**', '**/components/ui/**', '**/components/admin/**'],
     }),
     clerk(),
   ],

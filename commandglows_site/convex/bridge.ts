@@ -1603,12 +1603,16 @@ function resolveCommunityGlowsAccess(args: {
     status: string
     plan: string
     source: string
+    grantedAt?: number
+    createdAt?: number
+    updatedAt?: number
     trialStartedAt?: number
     trialExpiresAt?: number
     trialAttempt?: number
   }[]
   now?: number
   trialEligible?: boolean
+  knownInstallationCount?: number
 }) {
   const now = args.now ?? Date.now()
   const activeEntitlements = args.entitlements.filter(
@@ -1657,6 +1661,10 @@ function resolveCommunityGlowsAccess(args: {
         trialAttempt: latestTrial.trialAttempt ?? trials.length,
         trialRestartsRemaining,
         trialRestartEligible,
+        entitlementGrantedAt: null,
+        entitlementUpdatedAt: latestTrial.updatedAt ?? null,
+        knownInstallationCount: args.knownInstallationCount ?? 0,
+        includedAccess: [],
         reasonCode: exhausted
           ? ('trial_exhausted' as const)
           : ('trial_expired' as const),
@@ -1674,6 +1682,10 @@ function resolveCommunityGlowsAccess(args: {
       trialAttempt: null,
       trialRestartsRemaining: SUITE_TRIAL_MAX_CYCLES - 1,
       trialRestartEligible: false,
+      entitlementGrantedAt: null,
+      entitlementUpdatedAt: null,
+      knownInstallationCount: args.knownInstallationCount ?? 0,
+      includedAccess: [],
       reasonCode: 'missing_product_entitlement' as const,
     }
   }
@@ -1691,6 +1703,12 @@ function resolveCommunityGlowsAccess(args: {
     trialAttempt: isTrial ? (entitlement.trialAttempt ?? trials.length) : null,
     trialRestartsRemaining,
     trialRestartEligible: false,
+    entitlementGrantedAt: isTrial
+      ? null
+      : (entitlement.grantedAt ?? entitlement.createdAt ?? null),
+    entitlementUpdatedAt: entitlement.updatedAt ?? null,
+    knownInstallationCount: args.knownInstallationCount ?? 0,
+    includedAccess: ['communityglows_protected_features'] as const,
     reasonCode: 'active_entitlement' as const,
   }
 }
@@ -2457,11 +2475,21 @@ export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount = mutation
         .collect()
     }
 
+    const knownInstallations = await ctx.db
+      .query('productTrialInstallations')
+      .withIndex('by_globalUserProduct', (q) =>
+        q.eq('globalUserId', globalUserDocId).eq('productId', COMMUNITYGLOWS_PRODUCT_ID)
+      )
+      .collect()
+
     return resolveCommunityGlowsAccess({
       globalUserId: globalUser.globalUserId,
       entitlements: rawEntitlements,
       now,
       trialEligible: installation.eligible,
+      knownInstallationCount: knownInstallations.filter(
+        (entry) => entry.environment === environment
+      ).length,
     })
   },
 })
