@@ -90,8 +90,11 @@ function getTranslatedPath(path: string, targetLang: string): string {
 const altLangUrl = getTranslatedPath(Astro.url.pathname, altLang)
 
 const signInLabel = lang === 'fr' ? 'Connexion' : 'Sign In'
-const signOutLabel = lang === 'fr' ? 'Déconnexion' : 'Sign Out'
 const signInUrl = lang === 'fr' ? '/fr/signin' : '/signin'
+const overviewLabel = lang === 'fr' ? "Vue d'ensemble" : 'Overview'
+const tasksLabel = lang === 'fr' ? 'Tâches' : 'Tasks'
+const settingsLabel =
+  lang === 'fr' ? 'Profil et paramètres' : 'Profile and settings'
 const menuLabel = lang === 'fr' ? 'Ouvrir le menu' : 'Open menu'
 const closeMenuLabel = lang === 'fr' ? 'Fermer le menu' : 'Close menu'
 const darkModeLabel = lang === 'fr' ? 'Mode sombre' : 'Dark mode'
@@ -121,8 +124,6 @@ const langLinkClass = forceDark
 const ctaButtonClass = forceDark
   ? 'shimmer-btn inline-flex min-h-11 items-center rounded-full bg-navbar-cta-text px-3 py-1.5 text-xs font-medium text-navbar-cta-bg hover:bg-navbar-cta-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring md:text-sm'
   : 'shimmer-btn inline-flex min-h-11 items-center rounded-full bg-navbar-cta-bg px-3 py-1.5 text-xs font-medium text-navbar-cta-text hover:bg-navbar-cta-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring md:text-sm'
-const mobileCtaButtonClass =
-  'shimmer-btn bg-navbar-cta-bg text-navbar-cta-text hover:bg-navbar-cta-bg-hover inline-flex min-h-11 w-full items-center justify-center rounded-full px-4 py-2.5 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring'
 ---
 
 <header
@@ -171,15 +172,17 @@ const mobileCtaButtonClass =
         {altLangLabel}
       </a>
       {showThemePicker && !forceDark && <ThemePicker />}
-      <AuthNavAction
-        client:only="react"
-        className={ctaButtonClass}
-        homeUrl={homeUrl}
-        signInLabel={signInLabel}
-        signInUrl={signInUrl}
-        signOutLabel={signOutLabel}
-      />
     </div>
+
+    <AuthNavAction
+      client:only="react"
+      className={ctaButtonClass}
+      overviewLabel={overviewLabel}
+      settingsLabel={settingsLabel}
+      signInLabel={signInLabel}
+      signInUrl={signInUrl}
+      tasksLabel={tasksLabel}
+    />
 
     <details class="mobile-menu relative md:hidden">
       <summary
@@ -304,14 +307,6 @@ const mobileCtaButtonClass =
               )
             }
           </div>
-          <AuthNavAction
-            client:only="react"
-            className={mobileCtaButtonClass}
-            homeUrl={homeUrl}
-            signInLabel={signInLabel}
-            signInUrl={signInUrl}
-            signOutLabel={signOutLabel}
-          />
         </div>
       </div>
     </details>

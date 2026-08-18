@@ -1,5 +1,5 @@
 ---
-import MainLayout from '@/layouts/MainLayout.astro'
+import DashboardLayout from '@/layouts/DashboardLayout.astro'
 import { getCollection, render } from 'astro:content'
 import { getCourseAccess, isFormationSlug } from '@/utils/courseGating'
 import { getEntrySlug } from '@/utils/docs'
@@ -27,8 +27,12 @@ const lang = entrySlug.startsWith('fr/') ? 'fr' : 'en'
 const publicPath = `/${entrySlug}`
 ---
 
-<MainLayout title={entry.data.title} lang={lang}>
-  <div class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+<DashboardLayout
+  title={entry.data.title}
+  lang={lang}
+  currentPath="/dashboard/docs"
+>
+  <div class="mx-auto max-w-5xl">
     <div class="mb-6 flex flex-wrap items-center gap-3">
       <span
         class="bg-green/15 tracking-eyebrow text-green ring-green/30 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ring-1"
@@ -73,4 +77,4 @@ const publicPath = `/${entrySlug}`
       )
     }
   </div>
-</MainLayout>
+</DashboardLayout>

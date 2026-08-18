@@ -1,0 +1,55 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro'
+import { getNavigation } from '@/utils/fr/navigation'
+import type { Language } from '@/types'
+
+interface Props {
+  title: string
+  currentPath: string
+  lang?: Language
+}
+
+const { title, currentPath, lang = 'en' } = Astro.props
+const navigation = await getNavigation(lang)
+const navigationLabel =
+  lang === 'fr' ? 'Navigation privée' : 'Private navigation'
+---
+
+<MainLayout title={title} lang={lang}>
+  <div class="min-h-screen py-8 sm:py-12">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <nav
+        aria-label={navigationLabel}
+        class="border-dashboard-border bg-dashboard-bg-elevated mb-8 rounded-2xl border p-2 shadow-sm"
+      >
+        <ul class="flex flex-wrap gap-1">
+          {
+            navigation.dashboard.map((item) => {
+              const isActive = currentPath === item.href
+
+              return (
+                <li class="min-w-0 flex-1 sm:flex-none">
+                  <a
+                    href={item.href}
+                    aria-current={isActive ? 'page' : undefined}
+                    class:list={[
+                      'focus-visible:outline-navbar-ring flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
+                      isActive
+                        ? 'bg-dashboard-bg-subtle text-dashboard-text-primary'
+                        : 'text-dashboard-text-muted hover:bg-dashboard-bg-hover hover:text-dashboard-text-primary',
+                    ]}
+                  >
+                    <Fragment set:html={item.icon} />
+                    <span>{item.name}</span>
+                  </a>
+                </li>
+              )
+            })
+          }
+        </ul>
+      </nav>
+
+      <slot />
+    </div>
+  </div>
+</MainLayout>

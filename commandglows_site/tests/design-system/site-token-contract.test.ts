@@ -112,6 +112,10 @@ describe('site design-system adapter contract', () => {
       join(sourceRoot, 'pages/dashboard/docs/[...slug].astro'),
       'utf8'
     )
+    const dashboardLayout = readFileSync(
+      join(sourceRoot, 'layouts/DashboardLayout.astro'),
+      'utf8'
+    )
     const pricing = readFileSync(
       join(sourceRoot, 'components/astro/landing/Pricing.astro'),
       'utf8'
@@ -149,10 +153,16 @@ describe('site design-system adapter contract', () => {
     expect(navbar).toContain("import AuthNavAction from './AuthNavAction'")
     expect(
       navbar.match(/<AuthNavAction[\s\S]*?client:only="react"/g)
-    ).toHaveLength(2)
+    ).toHaveLength(1)
     expect(authNavAction).toContain("from '@clerk/astro/react'")
     expect(authNavAction).toContain('when="signed-in"')
-    expect(authNavAction).toContain('<SignOutButton redirectUrl={homeUrl}>')
+    expect(authNavAction).toContain('<UserButton')
+    expect(authNavAction).toContain("href: '/dashboard'")
+    expect(authNavAction).toContain("href: '/dashboard/taches'")
+    expect(authNavAction).toContain("href: '/dashboard/parametres'")
+    expect(authNavAction).not.toContain('/api/auth/signout')
+    expect(dashboardLayout).toContain('aria-label={navigationLabel}')
+    expect(dashboardLayout).toContain("aria-current={isActive ? 'page'")
     expect(dashboard).not.toMatch(/class="[^"]*(?<![\w-])text-magenta(?![\w-])/)
     expect(dashboardDocs).not.toMatch(
       /class="[^"]*(?<![\w-])text-magenta(?![\w-])/

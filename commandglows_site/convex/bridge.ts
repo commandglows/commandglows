@@ -397,7 +397,7 @@ function normalizeBridgeEnvironment(value: unknown): string {
   }
 
   if (value === 'preview' || value === 'staging') {
-    return 'production'
+    return 'development'
   }
 
   return 'production'
@@ -416,7 +416,7 @@ function isAllowedCommerceEnvironment(
 
 function resolveRuntimeBridgeEnvironment() {
   return normalizeBridgeEnvironment(
-    process.env.VERCEL_ENV || process.env.NODE_ENV
+    process.env.SUITE_BRIDGE_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV
   )
 }
 

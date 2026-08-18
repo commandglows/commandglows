@@ -1,5 +1,5 @@
 ---
-import MainLayout from '@/layouts/MainLayout.astro'
+import DashboardLayout from '@/layouts/DashboardLayout.astro'
 
 const auth = Astro.locals.auth()
 if (!auth.userId) {
@@ -7,106 +7,104 @@ if (!auth.userId) {
 }
 ---
 
-<MainLayout title="Dashboard">
-  <div class="min-h-screen py-12">
-    <div class="mx-auto max-w-4xl">
-      <h1
-        class="text-content-text-primary dark:text-content-text-primary mb-8 text-3xl font-bold"
+<DashboardLayout title="Dashboard" currentPath="/dashboard">
+  <div class="mx-auto max-w-4xl">
+    <h1
+      class="text-content-text-primary dark:text-content-text-primary mb-8 text-3xl font-bold"
+    >
+      Dashboard
+    </h1>
+
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <!-- Subscription Status -->
+      <div
+        class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
       >
-        Dashboard
-      </h1>
-
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <!-- Subscription Status -->
-        <div
-          class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
+        <h2
+          class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
         >
-          <h2
-            class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
-          >
-            Plan
-          </h2>
-          <p
-            class="text-content-text-primary dark:text-content-text-over-dark text-2xl font-bold"
-          >
-            Free
-          </p>
-          <a
-            href="/landing#pricing"
-            class="dashboard-action-link brand-text-magenta mt-3 text-sm hover:underline"
-          >
-            Upgrade to Pro
-          </a>
-        </div>
-
-        <!-- Quick Links -->
-        <div
-          class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
+          Plan
+        </h2>
+        <p
+          class="text-content-text-primary dark:text-content-text-over-dark text-2xl font-bold"
         >
-          <h2
-            class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
-          >
-            Quick Links
-          </h2>
-          <ul class="space-y-2 text-sm">
-            <li>
-              <a
-                href="/dashboard/taches"
-                class="dashboard-action-link brand-text-magenta hover:underline"
-                >Tasks</a
-              >
-            </li>
-            <li>
-              <a
-                href="/dashboard/parametres"
-                class="dashboard-action-link brand-text-magenta hover:underline"
-                >Settings</a
-              >
-            </li>
-            <li>
-              <a
-                href="/products"
-                class="dashboard-action-link brand-text-magenta hover:underline"
-                >Products</a
-              >
-            </li>
-          </ul>
-        </div>
-
-        <!-- Resources -->
-        <div
-          class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
+          Free
+        </p>
+        <a
+          href="/landing#pricing"
+          class="dashboard-action-link brand-text-magenta mt-3 text-sm hover:underline"
         >
-          <h2
-            class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
-          >
-            Resources
-          </h2>
-          <ul class="space-y-2 text-sm">
-            <li>
-              <a
-                href="/en/formations/"
-                class="dashboard-action-link brand-text-magenta hover:underline"
-                >Courses</a
-              >
-            </li>
-            <li>
-              <a
-                href="/blog"
-                class="dashboard-action-link brand-text-magenta hover:underline"
-                >Blog</a
-              >
-            </li>
-            <li>
-              <a
-                href="/roadmap"
-                class="dashboard-action-link brand-text-magenta hover:underline"
-                >Roadmap</a
-              >
-            </li>
-          </ul>
-        </div>
+          Upgrade to Pro
+        </a>
+      </div>
+
+      <!-- Quick Links -->
+      <div
+        class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
+      >
+        <h2
+          class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
+        >
+          Quick Links
+        </h2>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a
+              href="/dashboard/taches"
+              class="dashboard-action-link brand-text-magenta hover:underline"
+              >Tasks</a
+            >
+          </li>
+          <li>
+            <a
+              href="/dashboard/parametres"
+              class="dashboard-action-link brand-text-magenta hover:underline"
+              >Settings</a
+            >
+          </li>
+          <li>
+            <a
+              href="/products"
+              class="dashboard-action-link brand-text-magenta hover:underline"
+              >Products</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- Resources -->
+      <div
+        class="border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-strong rounded-xl border p-6"
+      >
+        <h2
+          class="text-content-text-tertiary dark:text-content-text-muted mb-2 text-sm font-medium"
+        >
+          Resources
+        </h2>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a
+              href="/en/formations/"
+              class="dashboard-action-link brand-text-magenta hover:underline"
+              >Courses</a
+            >
+          </li>
+          <li>
+            <a
+              href="/blog"
+              class="dashboard-action-link brand-text-magenta hover:underline"
+              >Blog</a
+            >
+          </li>
+          <li>
+            <a
+              href="/roadmap"
+              class="dashboard-action-link brand-text-magenta hover:underline"
+              >Roadmap</a
+            >
+          </li>
+        </ul>
       </div>
     </div>
   </div>
-</MainLayout>
+</DashboardLayout>
