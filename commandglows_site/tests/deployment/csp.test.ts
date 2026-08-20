@@ -15,13 +15,37 @@ describe("Vercel security headers", () => {
       (header) => header.key === "Content-Security-Policy"
     )?.value;
 
-    expect(csp).toContain("script-src");
-    expect(csp).toContain("https://clerk.commandglows.com");
-    expect(csp).toContain("https://challenges.cloudflare.com");
-    expect(csp).toContain("connect-src");
-    expect(csp).toContain("https://accounts.commandglows.com");
-    expect(csp).toContain("worker-src 'self' blob:");
-    expect(csp).toContain("style-src");
-    expect(csp).toContain("https://fonts.googleapis.com");
+    expect(csp).toBeDefined();
+
+    const directives = new Map(
+      csp!.split(";").map((directive) => {
+        const [name, ...sources] = directive.trim().split(/\s+/);
+        return [name, sources] as const;
+      })
+    );
+    const formerClerkHost = ["https://clerk", "win" + "flowz", "com"].join(
+      "."
+    );
+
+    expect(directives.get("script-src")).toContain(
+      "https://clerk.commandglows.com"
+    );
+    expect(directives.get("script-src")).toContain(
+      "https://challenges.cloudflare.com"
+    );
+    expect(directives.get("frame-src")).toContain(
+      "https://clerk.commandglows.com"
+    );
+    expect(directives.get("connect-src")).toContain(
+      "https://accounts.commandglows.com"
+    );
+    expect(directives.get("style-src")).toContain(
+      "https://clerk.commandglows.com"
+    );
+    expect(directives.get("style-src")).toContain(
+      "https://fonts.googleapis.com"
+    );
+    expect(directives.get("worker-src")).toEqual(["'self'", "blob:"]);
+    expect(csp).not.toContain(formerClerkHost);
   });
 });

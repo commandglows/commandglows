@@ -84,6 +84,10 @@ describe('site design-system adapter contract', () => {
       join(sourceRoot, 'assets/styles/landing.css'),
       'utf8'
     )
+    const landingLayout = readFileSync(
+      join(sourceRoot, 'layouts/LandingLayout.astro'),
+      'utf8'
+    )
     const button = readFileSync(
       join(sourceRoot, 'components/Button.astro'),
       'utf8'
@@ -146,6 +150,16 @@ describe('site design-system adapter contract', () => {
     )
     expect(landingCss).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.animate-marquee[\s\S]*\.reveal/
+    )
+    expect(landingCss).toMatch(
+      /\.reveal\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*translateY\(0\);/
+    )
+    expect(landingCss).toMatch(
+      /\.reveal-enhanced \.reveal:not\(\.revealed\)\s*\{[\s\S]*?opacity:\s*0;/
+    )
+    expect(landingLayout).toContain("if ('IntersectionObserver' in window)")
+    expect(landingLayout).toContain(
+      "document.documentElement.classList.add('reveal-enhanced')"
     )
     expect(leadMagnet).toContain('for="lead-magnet-email"')
     expect(leadMagnet).toContain('autocomplete="email"')

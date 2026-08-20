@@ -466,7 +466,7 @@ Pour conclure, je tiens à dire que LockHunter est devenu pour moi un outil indi
 "don't make me think about the wrong thing". You should give all of your energy to creativity work, and every requirement and processing around that should just flow naturally, effortlessly, mindlessly.
 You've got a really sophisticated piece of machinery, that some of the smartest engineers in the world have worked on, and that's why you should take the responsability fo this power. You should have everything at your fingertip, everything should be accessed really easily.
 
-With Winflows you've got something really powerful in your hands, but it never feels like you are fighting with it, you always feel like everything is right at your fingertips. 
+With CommandGlows you've got something really powerful in your hands, but it never feels like you are fighting with it, you always feel like everything is right at your fingertips.
 ### 
 it's an introduction to productivity and Windows, it assumes no pior knowledge, you can come really fresh, everything is starting really at the base we're gonna go slowly to every single piece to give you a good lay of the land of what windows has to offer
 

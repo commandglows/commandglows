@@ -36,7 +36,7 @@ depends_on:
 supersedes: []
 evidence:
   - "Production audit of https://www.commandglows.com/ and /fr on 2026-08-05: 3,974 px English desktop, 5,898 px English mobile, and 4,197 px French desktop with no horizontal overflow."
-  - "Production console audit: Clerk scripts requested from clerk.winflowz.com are blocked by the current CommandGlows CSP."
+  - "Production console audit: Clerk scripts requested from the former Clerk host are blocked by the current CommandGlows CSP."
   - "Production DOM audit: twelve below-the-fold .reveal elements default to opacity 0 and depend on client-side IntersectionObserver initialization."
   - "Production screenshot review: the landing combines a Windows course, multiple apps/tools, an early lead magnet, testimonials, carousel, product marquee and repeated course CTAs without one obvious decision path."
   - "Local source review of Hero, BentoGrid, LeadMagnet, Pricing, FinalCTA and testimonial data on 2026-08-05."
@@ -65,7 +65,7 @@ The current homepage has a strong visual identity and a memorable headline, but 
 
 Two runtime defects are more urgent than copy refinement:
 
-- production CSP blocks Clerk scripts requested from a legacy `clerk.winflowz.com` host;
+- production CSP blocks Clerk scripts requested from a the former Clerk host;
 - below-the-fold content defaults to `opacity: 0` and is revealed only after client-side JavaScript initializes an IntersectionObserver, so a JavaScript failure or unavailable motion initialization can leave the public page visually empty.
 
 The public French route also retains English testimonial titles, quotes, and carousel navigation labels. The proof is real historical evidence, but its relationship to the current CommandGlows offer is not explained.
@@ -87,7 +87,7 @@ The proposed narrative sequence is:
 ## Minimal Behavior Contract
 
 - Every public homepage section is visible by default. Motion may enhance entry but must never gate content, navigation, or conversion.
-- Production CSP allows only the authenticated CommandGlows Clerk host(s) actually required by the deployed integration; no legacy WinFlowz host remains in active runtime configuration unless it is explicitly approved and CSP-safe.
+- Production CSP allows only the authenticated CommandGlows Clerk host(s) actually required by the deployed integration; no former brand host remains in active runtime configuration unless it is explicitly approved and CSP-safe.
 - `/` and `/fr` expose one clearly named primary path and one secondary exploration path.
 - The page distinguishes the flagship course from companion applications and tools without presenting them as equal first choices.
 - Real testimonials retain accurate provenance. If they refer to a predecessor product, the page states the relationship truthfully or moves them to a supporting context.
@@ -216,7 +216,7 @@ Recommended answer: yes. The current hero, final CTA, and existing route structu
 
 | Priority | Finding | User consequence | Proposed treatment |
 | --- | --- | --- | --- |
-| P0 | Clerk assets from `clerk.winflowz.com` are blocked by production CSP. | Sign-in may fail and the public console reports security errors. | Align active provider host and CSP through preview/prod proof. |
+| P0 | Clerk assets from the former Clerk host are blocked by production CSP. | Sign-in may fail and the public console reports security errors. | Align active provider host and CSP through preview/prod proof. |
 | P0 | Below-fold `.reveal` content defaults to `opacity: 0`. | A client-side failure can turn the homepage into a visually empty page after the hero. | Use visible default markup and opt-in motion enhancement. |
 | P1 | Course, apps, tools, product catalogue, lead magnet, and repeated CTAs compete. | Visitors cannot tell which first decision CommandGlows wants them to make. | Confirm one flagship offer and create an argument spine. |
 | P1 | Historical English testimonials are embedded in the French hero. | Proof is difficult to connect to the current offer and disrupts locale coherence. | Add honest provenance, move proof to a dedicated section, and localize controls. |

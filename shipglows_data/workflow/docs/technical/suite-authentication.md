@@ -14,7 +14,7 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - "winflows.com / WinGlows Formation"
+  - "Former suite domain for WinGlows Formation"
   - "WinGlows Android app"
   - "ReplayGlowz"
   - "VoiceFlowz legacy naming for WinGlows app"
@@ -33,7 +33,7 @@ depends_on:
     required_status: "active"
 supersedes: []
 evidence:
-  - "User decision 2026-05-17: document the suite auth decision in the main WinGlows project because winflows.com presents the full tool suite."
+  - "User decision 2026-05-17: document the suite auth decision in the main WinGlows project because the former suite domain presents the full tool suite."
   - "User accepted recommendation: Clerk as long-term suite identity, Firebase retained for Android app until Clerk Flutter/native is proven, entitlements server-owned."
   - "User clarification 2026-05-17: VoiceFlowz / VoiceFlows is the old name of the current WinGlows app, not a separate product."
   - "Local evidence: WinGlows Formation uses Clerk/Convex/Polar patterns; WinGlows Android app targets Firebase Auth/Firestore."
@@ -141,7 +141,7 @@ one of the exceptions above.
 
 ## Product Boundaries
 
-### WinGlows Formation / winflows.com
+### WinGlows Formation / the former suite domain
 
 - Uses Clerk as the primary user account system.
 - Keeps Convex/Polar integration until a separate migration says otherwise.

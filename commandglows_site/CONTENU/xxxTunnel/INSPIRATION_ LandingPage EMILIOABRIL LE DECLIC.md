@@ -546,15 +546,15 @@ _Puis sur le moyen/long terme, en continuant d’appliquer les méthodes du Déc
 
 **Q: Quelle différence avec une autre formation en ligne ?**
 
-R: Contrairement à une formation en ligne classique qui vous donne la théorie, puis c’est à vous de vous débrouiller … Winflows est un plan d’action clair et prouvé qui s’étale sur 30jours Vous vous connectez à votre ordinateur, vous écoutez tranquillement le premier module video en sirotant votre café du matin, vous téléchargez votre nouveau logiciel accompagnant
-Certains modules sont uniquement audio et vous pourrez les écouter en vous baladant dans un parc ou en conduisant votre voiture pour aller au boulot. Finalement, vous prenez 15 à 30 minutes de votre journée pour réaliser le défi que je vous lance à la fin de chaque module. C’est aussi simple que ça. Avec une formation en ligne classique, vous devez vous organiser vous-même pour appliquer les méthodes. Et vous le savez bien : dans 95% des cas vous procrastinez. Avec Winflows vous n’avez aucune excuse : tout est actionable et expliqué en détail, vous vous laissez simplement guider par le programme, et vous obtenez de vrais résultats immédiats et durables dans votre quotidien professionnels.
+R: Contrairement à une formation en ligne classique qui vous donne la théorie, puis c’est à vous de vous débrouiller … CommandGlows est un plan d’action clair et prouvé qui s’étale sur 30jours Vous vous connectez à votre ordinateur, vous écoutez tranquillement le premier module video en sirotant votre café du matin, vous téléchargez votre nouveau logiciel accompagnant
+Certains modules sont uniquement audio et vous pourrez les écouter en vous baladant dans un parc ou en conduisant votre voiture pour aller au boulot. Finalement, vous prenez 15 à 30 minutes de votre journée pour réaliser le défi que je vous lance à la fin de chaque module. C’est aussi simple que ça. Avec une formation en ligne classique, vous devez vous organiser vous-même pour appliquer les méthodes. Et vous le savez bien : dans 95% des cas vous procrastinez. Avec CommandGlows vous n’avez aucune excuse : tout est actionable et expliqué en détail, vous vous laissez simplement guider par le programme, et vous obtenez de vrais résultats immédiats et durables dans votre quotidien professionnels.
 
 **Q: Que se passe t-il après ma commande ?**
 
 R: Après votre commande, vous recevrez immédiatement un e-mail de bienvenue qui vous donnera accès à un premier module d’introduction à écouter pour démarrer le programme sur de bonnes bases. Une fois réalisé l’action liée et ce premier module validé, vous recevrez dans votre boite mail un nouveau module à écouter et une action à appliquer. Chaque module traite d’un sujet essentiel pour vous créer une routine de productivité orientée vers le succès, pleine de sens, et un espace de travail idéal sur Windows.
 Je vous lance une action à réaliser pour passer de la théorie à la pratique et progresser à chaque module. Les modules durent (en moyenne) 15 minutes en audio pour vous permettre de les écouter facilement avec votre smartphone et vos écouteurs.
 
-**Q: Combien de temps ai-je besoin d’investir pour suivre Winflows ?**
+**Q: Combien de temps ai-je besoin d’investir pour suivre CommandGlows ?**
 
 R: Comptez environ 15 minutes pour chaque module du jour + 10 à 30 minutes pour appliquer les actions. Si vous manquez de temps soyez rassuré : vous allez rapidement apprendre à cadrer vos journées pour devenir une personne productive et organisée
 
@@ -564,11 +564,11 @@ R: Non, ce n’est pas nécessaire. Si vous êtes encore dans le brouillard et q
 
 **Q: Je suis un gros procrastinateur, est-ce que ça va quand même marcher pour moi ?**
 
-R: Oui, à une condition : vous devez faire de Winflows une priorité pendant une journée. Je vous rassure j’ai fait tout mon possible pour rendre le programme motivant et agréable à suivre. Vous verrez que votre tendance à procrastiner s’effacera progressivement dès les premières semaines avec la mise en place des outils et techniques. Cependant ne vous attendez pas à des méthodes miracle qui font tout le boulot à votre place. Engagez-vous à réaliser sérieusement les défis quotidiens, et tout se passera à merveille.
+R: Oui, à une condition : vous devez faire de CommandGlows une priorité pendant une journée. Je vous rassure j’ai fait tout mon possible pour rendre le programme motivant et agréable à suivre. Vous verrez que votre tendance à procrastiner s’effacera progressivement dès les premières semaines avec la mise en place des outils et techniques. Cependant ne vous attendez pas à des méthodes miracle qui font tout le boulot à votre place. Engagez-vous à réaliser sérieusement les défis quotidiens, et tout se passera à merveille.
 
 **Q: J’ai déjà de bonnes connaissances en informatique et développement personnel, vais-je apprendre de nouvelles choses dans Le Déclic ?**
 
-R: Comprenons-nous bien: le but de Winflows n’est pas de vous “apprendre l’informatique”. Si c’est ça que vous cherchez, lisez plutôt des bouquins. Bien sûr nous allons aborder de nombreux principes essentiels pour vaincre la procrastination et se bâtir une vie épanouie en partant de zéro, mais le but premier est de vous faire passer à l’action et implémenter des systèmes qui rendent la procrastination impossible jour après jour pour que vous obteniez des résultats solides.
+R: Comprenons-nous bien: le but de CommandGlows n’est pas de vous “apprendre l’informatique”. Si c’est ça que vous cherchez, lisez plutôt des bouquins. Bien sûr nous allons aborder de nombreux principes essentiels pour vaincre la procrastination et se bâtir une vie épanouie en partant de zéro, mais le but premier est de vous faire passer à l’action et implémenter des systèmes qui rendent la procrastination impossible jour après jour pour que vous obteniez des résultats solides.
 
 Vous avez de larges connaissances en développement personnel, vous avez regardé des centaines de vidéos et lu des dizaines de livres sur le sujet … mais êtes vous satisfait de votre vie ? Avez vous fait le pont entre la théorie et la pratique ? Si oui, vous n’avez pas besoin du programme - je vous souhaite le meilleur pour la suite. Autrement rappelez-vous que seule l’action compte quand on veut améliorer sa vie. La valeur du Déclic n’est pas dans les “choses que vous allez apprendre” mais dans le plan d’action clair et cohérent, dans les défis du jour et dans la motivation que ça va vous apporter au quotidien. C’est tout ça qui vous permettre de vous créer une vie dont vous êtes fier.
 	

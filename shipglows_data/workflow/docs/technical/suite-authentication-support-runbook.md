@@ -14,7 +14,7 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - "winflows.com / WinGlows Formation"
+  - "Former suite domain for WinGlows Formation"
   - "WinGlows Android app"
   - "ReplayGlowz"
   - "Clerk"

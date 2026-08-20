@@ -107,16 +107,22 @@ const siteUrl = getLocalizedSiteUrl(lang === 'fr' ? 'fr' : 'en');
 
 			requestAnimationFrame(raf);
 
-			// Intersection Observer for .reveal elements
-			const observer = new IntersectionObserver((entries) => {
-				entries.forEach(e => {
-					if (e.isIntersecting) {
-						e.target.classList.add('revealed');
-						observer.unobserve(e.target);
-					}
-				});
-			}, { rootMargin: '-80px' });
-			document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+			// Reveal content is visible by default. Motion is enabled only after
+			// IntersectionObserver is available, so JavaScript failures cannot hide it.
+			if ('IntersectionObserver' in window) {
+				const revealElements = document.querySelectorAll('.reveal');
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach(e => {
+						if (e.isIntersecting) {
+							e.target.classList.add('revealed');
+							observer.unobserve(e.target);
+						}
+					});
+				}, { rootMargin: '-80px' });
+
+				revealElements.forEach(el => observer.observe(el));
+				document.documentElement.classList.add('reveal-enhanced');
+			}
 		</script>
 </body>
 </html>

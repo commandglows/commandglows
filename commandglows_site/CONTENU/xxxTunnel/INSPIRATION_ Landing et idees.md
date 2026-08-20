@@ -164,7 +164,7 @@ Devine quoi, on a tout testé pour toi et on t'apprend pas à pas, un outil à l
 
 En quoi cela sera-t-il bénéfique pour ton entreprise si tu réalises 2, 3 ou 4 fois plus en une journée de travail sur ton ordinateur ? C'est la raison d'être de la Desktop Enhanced Community.
 
-Winflows a commencé quand j'ai réalité que la plupart des gens bossaient sur un environnement Windows normal, alors que chez moi tout est customisé au millimètre. C'est beaucoup d'énergies qui pourraient être optimisées chez la plupart des travailleurs en ligne et je me suis rendue compte que je pourrais aider là-dessus
+CommandGlows a commencé quand j'ai réalisé que la plupart des gens bossaient sur un environnement Windows normal, alors que chez moi tout est customisé au millimètre. C'est beaucoup d'énergie qui pourrait être optimisée chez la plupart des travailleurs en ligne et je me suis rendu compte que je pourrais aider là-dessus
 
 Gary est arrivé et a fait parler de lui…
 
@@ -432,4 +432,3 @@ Il t'aidera à retrouver une énergie précieuse afin que tu puisses utiliser to
 
 
 Sharing what makes my experience easier on Windows really excites me ! If you learnt anything please let me know 🙂**
-

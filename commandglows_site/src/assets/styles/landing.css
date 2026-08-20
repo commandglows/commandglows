@@ -177,13 +177,17 @@
    (replaces framer-motion useInView)
    ========================================== */
 .reveal {
-  opacity: 0;
-  transform: translateY(20px);
+  opacity: 1;
+  transform: translateY(0);
   transition:
     opacity var(--landing-reveal-transition-duration)
       var(--landing-reveal-transition-ease),
     transform var(--landing-reveal-transition-duration)
       var(--landing-reveal-transition-ease);
+}
+.reveal-enhanced .reveal:not(.revealed) {
+  opacity: 0;
+  transform: translateY(20px);
 }
 .reveal.revealed {
   opacity: 1;

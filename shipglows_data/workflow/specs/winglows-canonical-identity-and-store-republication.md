@@ -41,12 +41,12 @@ depends_on:
     required_status: reviewed
 supersedes: []
 evidence:
-  - "2026-08-03 tracked inventory: 3,305 matching lines across 574 files and 1,112 tracked paths for winglowz/winflowz identity surfaces."
+  - "2026-08-03 tracked inventory: 3,305 matching lines across 574 files and 1,112 tracked paths for winglowz/legacy identity surfaces."
   - "Exact tracked inventory: WinGlowz 1,003 occurrences in 203 files; WinGlows 1,429 in 242; lowercase winglowz 3,129 in 392; lowercase winglows 0; uppercase WINGLOWZ 145 in 23; uppercase WINGLOWS 0."
-  - "Domain inventory: winglowz.com 104 occurrences in 37 files, winglows.com 0, and winflowz.com 86 in 30."
+  - "Domain inventory: winglowz.com 104 occurrences in 37 files, winglows.com 0, and the former public domain 86 in 30."
   - "2026-08-03 network proof: winglowz.com did not resolve; winglows.com and www.winglows.com resolved to Vercel but returned 404 DEPLOYMENT_NOT_FOUND."
   - "2026-08-03 Git proof: diane-defores/winglowz exists at HEAD f77118351feafa3eec53aff4a9011ecdcc2ab809; diane-defores/winglows did not yet exist."
-  - "Operator decision 2026-08-03: winglows.com replaces www.winflowz.com with a permanent redirect from the previous canonical domain."
+  - "Operator decision 2026-08-03: winglows.com replaces the former public domain with a permanent redirect from the previous canonical domain."
   - "Operator decision 2026-08-03: publish a new store application with new platform IDs; do not represent the change as an in-place update."
 next_step: "Follow shipglows_data/workflow/specs/commandglows-clean-identity-reset.md."
 ---
@@ -71,7 +71,7 @@ The migration accepts active WinGlowz installations, accounts, purchases, URLs a
 
 ## Success Behavior
 
-- New public visits resolve canonically to `https://winglows.com`; `www.winglows.com`, `https://www.winflowz.com` and any controlled legacy WinGlowz host permanently redirect while preserving path and safe query parameters.
+- New public visits resolve canonically to `https://winglows.com`; `www.winglows.com`, the former public domain and any controlled legacy WinGlowz host permanently redirect while preserving path and safe query parameters.
 - Git operations use `diane-defores/winglows`; GitHub's repository redirect remains a compatibility aid, while local remotes, CI links and badges use the new URL.
 - New store binaries are distinct applications with `com.winglows.app`, canonical display name WinGlows and canonical package/runtime names. Store listings state clearly that migration may require export/import or sign-in/cloud restore.
 - Existing purchases and account access remain valid because legacy product and offer IDs are normalized to canonical identities before entitlement evaluation; no duplicate grant is emitted.
@@ -90,11 +90,11 @@ The migration accepts active WinGlowz installations, accounts, purchases, URLs a
 
 ## Problem
 
-The monorepo already mixes `WinGlowz` and `WinGlows`, while its persistent and external contracts still use `winglowz`, `WINGLOWZ` and `winflowz.com`. This affects 574 tracked files and reaches application identities, local data keys, native channels, commerce records, JWT trust, auth callbacks, domains and provider consoles. A global search-and-replace would produce a cosmetically coherent repository but break updates, access, data continuity and inbound traffic.
+The monorepo already mixes `WinGlowz` and `WinGlows`, while its persistent and external contracts still use `winglowz`, `WINGLOWZ` and the former public domain. This affects 574 tracked files and reaches application identities, local data keys, native channels, commerce records, JWT trust, auth callbacks, domains and provider consoles. A global search-and-replace would produce a cosmetically coherent repository but break updates, access, data continuity and inbound traffic.
 
 Material decision change:
 
-- Before: public site `www.winflowz.com`, repository `diane-defores/winglowz`, existing app IDs derived from `winglowz`, mixed WinGlowz/WinGlows display copy.
+- Before: public site the former public domain, repository `diane-defores/winglowz`, existing app IDs derived from `winglowz`, mixed WinGlowz/WinGlows display copy.
 - After: public site `winglows.com`, repository `diane-defores/winglows`, new separately published app ID `com.winglows.app`, canonical `winglows` identifiers, and explicit legacy migration/redirect contracts.
 - Preserved invariants: paid access remains attributable, auth remains issuer/audience constrained, user-owned data is not silently discarded, old evidence remains truthful, and provider changes are reversible until verified.
 
@@ -106,7 +106,7 @@ Execute a staged republication rather than a replacement-in-place. First establi
 
 - Rename active brand copy, code symbols, tracked source filenames and monorepo roots from WinGlowz/winglowz/WINGLOWZ to WinGlows/winglows/WINGLOWS.
 - Rename repository to `diane-defores/winglows` and update origin references.
-- Make `https://winglows.com` canonical; redirect `www.winglows.com` and `www.winflowz.com` permanently with path/query preservation.
+- Make `https://winglows.com` canonical; redirect `www.winglows.com` and the former public domain permanently with path/query preservation.
 - Publish new Android/iOS/macOS identities using `com.winglows.app` when validation confirms the identifier is accepted for each new app record; use `winglows_app` for Dart/package/runtime source names.
 - Preserve the old application as a migration source and define export/import and account-cloud recovery where existing architecture permits.
 - Normalize legacy commerce, entitlement, JWT, preference, theme, method-channel, route and environment identifiers.
@@ -173,7 +173,7 @@ Execute a staged republication rather than a replacement-in-place. First establi
 
 ## Links & Consequences
 
-- SEO/domain: canonical URLs, sitemap, robots, structured data, Open Graph, CSP, CORS, legal links, emails and backlinks move together. `www.winflowz.com` must redirect only after `winglows.com` passes hosted proof.
+- SEO/domain: canonical URLs, sitemap, robots, structured data, Open Graph, CSP, CORS, legal links, emails and backlinks move together. the former public domain must redirect only after `winglows.com` passes hosted proof.
 - Repository/CI: renaming both monorepo roots changes workflow paths, Dependabot directories, Vercel Root Directory settings, scripts, badges and local commands.
 - Mobile stores: new IDs reset store-install continuity, ratings/listing continuity and app sandbox data. Migration UX and support communication are product requirements, not optional docs.
 - Firebase/auth: a new app registration changes OAuth client/config files and authorized domains. The immutable project ID may intentionally retain `winglowz` as provider history.
@@ -209,7 +209,7 @@ Execute a staged republication rather than a replacement-in-place. First establi
 
 - [ ] Task 0: Prove external reservations and capture the migration baseline
   - Files: redacted evidence in the manual checklist and bounded operator runbook; no secret export and no provider mutation beyond reversible reservations.
-  - Action: prove control of `winglows.com`, redirect ownership for `www.winflowz.com`, repository rename authority, email/domain access, and exact `com.winglows.app` availability in both store accounts; inventory current auth callbacks, webhook endpoints, product/offer IDs, maximum JWT TTL and active data stores.
+  - Action: prove control of `winglows.com`, redirect ownership for the former public domain, repository rename authority, email/domain access, and exact `com.winglows.app` availability in both store accounts; inventory current auth callbacks, webhook endpoints, product/offer IDs, maximum JWT TTL and active data stores.
   - User story link: prevents source renames or user promises from outrunning identities and recovery paths the operator actually controls.
   - Depends on: none.
   - Validate with: redacted presence matrix signed by the authorized release operator; any unavailable exact ID or uncontrolled legacy domain blocks dependent batches and returns the spec for decision.
@@ -286,9 +286,9 @@ Execute a staged republication rather than a replacement-in-place. First establi
 
 ## Acceptance Criteria
 
-- [ ] AC 1: Given the completed migration, when an operator scans active tracked source outside the documented history/provider allowlist, then no unintended `WinGlowz`, `winglowz`, `WINGLOWZ` or `winflowz.com` remains.
+- [ ] AC 1: Given the completed migration, when an operator scans active tracked source outside the documented history/provider allowlist, then no unintended `WinGlowz`, `winglowz`, `WINGLOWZ` or the former public domain remains.
 - [ ] AC 2: Given `winglows.com`, when requesting apex and canonical public paths, then valid content responds with canonical metadata and no redirect loop.
-- [ ] AC 3: Given `www.winglows.com` or `www.winflowz.com`, when requesting an existing path with a safe query, then a permanent redirect preserves path/query and lands on `winglows.com`.
+- [ ] AC 3: Given `www.winglows.com` or the former public domain, when requesting an existing path with a safe query, then a permanent redirect preserves path/query and lands on `winglows.com`.
 - [ ] AC 4: Given the GitHub repository rename, when using the old web/Git URL, then GitHub compatibility resolves, while local origin, CI and docs identify `diane-defores/winglows`.
 - [ ] AC 5: Given an existing legacy store install, when migration is offered, then the UI states that WinGlows is a separate app and offers the proved export/cloud path without claiming automatic in-place upgrade.
 - [ ] AC 6: Given a new build, when platform manifests are inspected, then the new app uses accepted `com.winglows.app` identities and WinGlows display metadata; the old app remains independently identifiable.
@@ -339,7 +339,7 @@ Execute a staged republication rather than a replacement-in-place. First establi
 4. Rename GitHub repository and update local/CI remotes. Rollback: GitHub rename back only if critical tooling cannot be repaired; otherwise use GitHub redirect while fixing consumers.
 5. Attach and verify `winglows.com` on Vercel, then switch DNS. Rollback: restore previous DNS/project alias and keep canonical deployment available on its Vercel preview URL.
 6. Enable canonical Clerk/OAuth/Convex/provider callbacks and webhooks. Rollback: restore the previous endpoint/env configuration and replay only idempotent signed events.
-7. Redirect `www.winflowz.com` only after canonical health passes. Rollback: remove redirect and restore last healthy origin; never point both hosts into a loop.
+7. Redirect the former public domain only after canonical health passes. Rollback: remove redirect and restore last healthy origin; never point both hosts into a loop.
 8. Publish new store apps as separate listings, initially limited/tested. Rollback: halt rollout or unlist the new app without deleting the legacy migration source.
 9. After each minimum observation window and its health gate, retire aliases individually with explicit operator approval and rollback evidence; do not combine retirement with initial cutover.
 
@@ -364,7 +364,7 @@ Each batch starts from a reviewed diff and clean coordination state, has its own
 - Commerce: legacy and canonical IDs can duplicate access or payment effects. Mitigation: normalize before evaluation and preserve webhook idempotency/provider object IDs.
 - Store continuity: users, reviews and install identity do not transfer automatically. Mitigation: explicit republication messaging, staged rollout and support plan.
 - Firebase: project ID cannot be renamed. Mitigation: keep it as an intentional provider legacy ID or create a separately approved project with a real data/auth migration.
-- Domain/SEO: current canonical is `www.winflowz.com`, not live `winglowz.com`. Mitigation: migrate the actual canonical host and preserve permanent redirects/canonical metadata.
+- Domain/SEO: current canonical is the former public domain, not live `winglowz.com`. Mitigation: migrate the actual canonical host and preserve permanent redirects/canonical metadata.
 - Email/support: changing visible addresses before provisioning loses support/legal mail. Mitigation: prove new mailboxes and old aliases first.
 - Native state: changing prefs/channels/actions/themes breaks continuity. Mitigation: compatibility readers and idempotent migration tests.
 - Historical integrity: zero-match replacement falsifies evidence. Mitigation: reasoned allowlist and active-versus-historical scan modes.

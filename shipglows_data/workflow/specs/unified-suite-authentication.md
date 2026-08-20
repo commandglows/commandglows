@@ -39,7 +39,7 @@ depends_on:
     required_status: "ready"
 supersedes: []
 evidence:
-  - "User request 2026-05-17: one account across winflows.com, WinGlows app, and YouTube product, with access or no access per product."
+  - "User request 2026-05-17: one account across the former suite domain, WinGlows app, and YouTube product, with access or no access per product."
   - "docs/explorations/2026-05-16-unified-suite-auth.md found no binding decision requiring separate auth per product."
   - "docs/explorations/2026-05-16-unified-suite-auth.md found VoiceFlowz historical task 'Configure Clerk for auth (shared with WinGlows)'. User later clarified VoiceFlowz / VoiceFlows is the old name of the WinGlows app, not a separate product."
   - "docs/DECISIONS.md targets Firebase Auth + Firestore as first hosted adapter for the WinGlows Android app, not as a suite-wide identity decision."

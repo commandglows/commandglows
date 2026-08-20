@@ -14,7 +14,7 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - "winflows.com / WinGlowz site"
+  - "Former suite domain for the WinGlowz site"
   - "WinGlowz Flutter app"
   - "Legacy video app"
   - "VoiceFlowz historical tracker, now legacy naming for WinGlowz app"
