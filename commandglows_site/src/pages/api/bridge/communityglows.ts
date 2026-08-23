@@ -7,6 +7,10 @@ import {
 } from '@/lib/suiteBridge'
 import { createCommerceCheckoutIdentityToken } from '@/lib/commerce/checkoutIdentity'
 import { pseudonymizeCommunityTrialSignal } from '@/lib/trialSignals'
+import {
+  digestDeletedProviderAccountId,
+  digestRetainedEmail,
+} from '@/lib/accountRetention'
 
 export const prerender = false
 
@@ -70,6 +74,18 @@ type CommunityGlowsDisableCodeRequest = {
   sourceRef?: string
 }
 
+type CommunityGlowsPrepareDeletionRequest = {
+  operation: 'prepare_account_deletion'
+  providerAccountId: string
+  email: string
+}
+
+type CommunityGlowsRelinkRequest = {
+  operation: 'relink_account'
+  providerAccountId: string
+  email: string
+}
+
 type CommunityGlowsBridgeRequest =
   | CommunityGlowsSnapshotRequest
   | CommunityGlowsRedeemRequest
@@ -78,6 +94,8 @@ type CommunityGlowsBridgeRequest =
   | CommunityGlowsRefundRequest
   | CommunityGlowsUpsertCodeRequest
   | CommunityGlowsDisableCodeRequest
+  | CommunityGlowsPrepareDeletionRequest
+  | CommunityGlowsRelinkRequest
 
 function jsonResponse(payload: Record<string, unknown>, status: number) {
   return new Response(JSON.stringify(payload), { status, headers: JSON_HEADERS })
@@ -104,6 +122,15 @@ function parseCommunityGlowsRequest(
 
   const email = asNonEmptyString(payload.email) ?? undefined
   const sourceRef = asNonEmptyString(payload.sourceRef) ?? undefined
+
+  if (
+    operation === 'prepare_account_deletion' ||
+    operation === 'relink_account'
+  ) {
+    const providerAccountId = asNonEmptyString(payload.providerAccountId)
+    if (!providerAccountId || !email) return null
+    return { operation, providerAccountId, email }
+  }
 
   if (operation === 'snapshot' || operation === 'restart_trial') {
     const providerAccountId = asNonEmptyString(payload.providerAccountId)
@@ -239,6 +266,12 @@ function mapBridgeError(error: unknown): string {
     return 'invalid_payload'
   if (/product_not_allowed/i.test(message)) return 'product_not_allowed'
   if (/unsupported_operation/i.test(message)) return 'invalid_payload'
+  if (/account_email_mismatch/i.test(message)) return 'account_email_mismatch'
+  if (/account_retention_not_found/i.test(message))
+    return 'account_retention_not_found'
+  if (/provider_account_deleted/i.test(message)) return 'provider_account_deleted'
+  if (/provider_account_already_linked/i.test(message))
+    return 'provider_account_already_linked'
   return 'bridge_operation_failed'
 }
 
@@ -248,6 +281,8 @@ export const POST: APIRoute = async ({ request }) => {
   const convexBridgeSecret = getConvexBridgeSecret(env)
   const convexUrl = env.PUBLIC_CONVEX_URL
   const trialSignalSecret = env.SUITE_TRIAL_SIGNAL_SECRET?.trim()
+  const accountRetentionSecret =
+    env.COMMUNITYGLOWS_ACCOUNT_RETENTION_SECRET?.trim()
 
   if (!endpointSecret || !convexBridgeSecret) {
     return jsonResponse(
@@ -289,9 +324,50 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     if (
+      parsed.operation === 'prepare_account_deletion' ||
+      parsed.operation === 'relink_account'
+    ) {
+      if (!accountRetentionSecret) {
+        return jsonResponse(
+          { status: 'unavailable', error: 'account_retention_secret_not_configured' },
+          503
+        )
+      }
+      const emailDigest = digestRetainedEmail(
+        parsed.email,
+        accountRetentionSecret
+      )
+      const providerAccountDigest = digestDeletedProviderAccountId(
+        parsed.providerAccountId,
+        accountRetentionSecret
+      )
+      const mutationName =
+        parsed.operation === 'prepare_account_deletion'
+          ? 'bridge:prepareCommunityGlowsAccountDeletion'
+          : 'bridge:relinkCommunityGlowsAccount'
+      const result = await convex.mutation(mutationName as never, {
+        providerAccountId: parsed.providerAccountId,
+        ...(parsed.operation === 'prepare_account_deletion'
+          ? { email: parsed.email }
+          : {}),
+        emailDigest,
+        providerAccountDigest,
+        environment,
+        bridgeSecret: convexBridgeSecret,
+      } as never)
+      return jsonResponse({ status: 'ok', result }, 200)
+    }
+
+    if (
       parsed.operation === 'snapshot' ||
       parsed.operation === 'restart_trial'
     ) {
+      if (!accountRetentionSecret) {
+        return jsonResponse(
+          { status: 'unavailable', error: 'account_retention_secret_not_configured' },
+          503
+        )
+      }
       if (!trialSignalSecret) {
         return jsonResponse(
           { status: 'unavailable', error: 'trial_signal_secret_not_configured' },
@@ -320,6 +396,10 @@ export const POST: APIRoute = async ({ request }) => {
         'bridge:ensureCommunityGlowsEntitlementSnapshotByProviderAccount' as never,
         {
           providerAccountId: parsed.providerAccountId,
+          providerAccountDigest: digestDeletedProviderAccountId(
+            parsed.providerAccountId,
+            accountRetentionSecret
+          ),
           email: parsed.email,
           sourceRef: parsed.sourceRef,
           installationHash,
@@ -421,10 +501,20 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     if (parsed.operation === 'redeem_code') {
+      if (!accountRetentionSecret) {
+        return jsonResponse(
+          { status: 'unavailable', error: 'account_retention_secret_not_configured' },
+          503
+        )
+      }
       const redemption = await convex.mutation(
         'bridge:redeemCommunityGlowsActivationCodeByProviderAccount' as never,
         {
           providerAccountId: parsed.providerAccountId,
+          providerAccountDigest: digestDeletedProviderAccountId(
+            parsed.providerAccountId,
+            accountRetentionSecret
+          ),
           email: parsed.email,
           sourceRef: parsed.sourceRef,
           environment,

@@ -101,7 +101,7 @@ commandglows_site/
 - `/api/commerce/webhooks/stripe` — central suite purchase, refund, and dispute webhook
 - `/api/bridge/firebase` — Firebase ID token bridge to suite identity snapshot
 - `/api/bridge/sync` — internal entitlement mirror sync by `globalUserId` + shared secret
-- `/api/bridge/communityglows` — CommunityGlows server-to-server entitlement snapshot and activation-code redemption bridge
+- `/api/bridge/communityglows` — CommunityGlows server-to-server entitlement, account-retention, and activation-code bridge
 
 ## Environment Variables
 
@@ -141,15 +141,19 @@ The bridge also writes a server-owned Firestore mirror at `suiteAccess/{firebase
 `POST /api/bridge/communityglows` accepts:
 
 - header `x-communityglows-suite-secret` with a dedicated shared secret;
-- JSON body with `operation` (`snapshot`, `restart_trial`, `redeem_code`, `manual_grant`, `revoke`, `refund`, `upsert_code`, or `disable_code`), plus
+- JSON body with `operation` (`snapshot`, `restart_trial`, `redeem_code`, `manual_grant`, `revoke`, `refund`, `upsert_code`, `disable_code`, `prepare_account_deletion`, or `relink_account`), plus
   operation-specific fields:
   - `snapshot`, `restart_trial`, and `redeem_code` require `providerAccountId`,
+  - `prepare_account_deletion` and `relink_account` require the server-verified email and `providerAccountId`; retention lookup fields are stored only as keyed email/provider digests,
   - trial operations accept product-scoped pseudonymized `installationHash` and short-lived `networkHash` signals; `restart_trial` is accepted only after expiry and before the third cycle is exhausted.
 
 The route calls suite Convex bridge mutations for `communityglows` entitlement snapshots and activation-code redemption without merging identities by email alone. Successful snapshots may include a short-lived, product-bound checkout handoff; payment events enter only through the central Stripe webhook.
 
+Account deletion preparation removes plaintext CommunityGlows identity fields and tombstones the former provider identifier while retaining only the commercial entitlement and trial history needed for legal proof, abuse prevention, and same-email recovery. Relinking requires the same verified-email digest, never restores deleted product data, and never changes refunded or revoked entitlement status.
+
 - `COMMUNITYGLOWS_SUITE_BRIDGE_SECRET` (preferred dedicated secret)
 - `SUITE_COMMUNITYGLOWS_BRIDGE_SECRET` (legacy/alternate key accepted as fallback)
+- `COMMUNITYGLOWS_ACCOUNT_RETENTION_SECRET` (distinct server-only HMAC key for retained email and deleted-provider lookup digests)
 
 ### Clerk
 

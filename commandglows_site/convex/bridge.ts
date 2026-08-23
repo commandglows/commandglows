@@ -18,6 +18,10 @@ import {
 } from './productEntitlementPolicies'
 
 const COMMUNITYGLOWS_PROVIDER = 'communityglows_convex'
+const COMMUNITYGLOWS_PROVIDER_ALIASES = [
+  COMMUNITYGLOWS_PROVIDER,
+  'socialglowz_convex',
+] as const
 const COMMUNITYGLOWS_BRIDGE_SOURCE = 'communityglows_bridge_api'
 const COMMUNITYGLOWS_PLAN_ALLOWLIST = new Set(['lifetime_deal', 'founder_ltd', 'ltd'])
 const COMMUNITYGLOWS_SOURCE_ALLOWLIST = new Set([
@@ -2402,9 +2406,222 @@ export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
   },
 })
 
+export const prepareCommunityGlowsAccountDeletion = mutation({
+  args: {
+    providerAccountId: v.string(),
+    email: v.string(),
+    emailDigest: v.string(),
+    providerAccountDigest: v.string(),
+    environment: v.optional(v.string()),
+    bridgeSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+    const providerAccountId = args.providerAccountId.trim()
+    const email = args.email.trim().toLowerCase()
+    const environment = args.environment ?? 'production'
+    if (!providerAccountId || !email || !args.emailDigest || !args.providerAccountDigest) {
+      throw new Error('invalid_payload')
+    }
+
+    const previous = await ctx.db
+      .query('communityGlowsAccountRetentions')
+      .withIndex('by_deletedProviderEnvironment', (q) =>
+        q
+          .eq('deletedProviderAccountDigest', args.providerAccountDigest)
+          .eq('environment', environment)
+      )
+      .first()
+    if (previous) {
+      return { status: 'already_prepared', retained: true }
+    }
+
+    let identity = null
+    for (const provider of COMMUNITYGLOWS_PROVIDER_ALIASES) {
+      identity = await ctx.db
+        .query('identityAccounts')
+        .withIndex('by_providerAccount', (q) =>
+          q.eq('provider', provider).eq('providerAccountId', providerAccountId)
+        )
+        .first()
+      if (identity) break
+    }
+    if (!identity) throw new Error('account_not_found')
+
+    const globalUser = await ctx.db.get(identity.globalUserId)
+    if (!globalUser) throw new Error('global_user_not_found')
+    const knownEmail = (identity.email ?? globalUser.primaryEmail ?? '')
+      .trim()
+      .toLowerCase()
+    if (!knownEmail || knownEmail !== email) {
+      throw new Error('account_email_mismatch')
+    }
+
+    const entitlements = await ctx.db
+      .query('productEntitlements')
+      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
+      .collect()
+    const communityEntitlements = entitlements.filter(
+      (entry) => entry.productId === COMMUNITYGLOWS_PRODUCT_ID
+    )
+    const trialAttempts = communityEntitlements.reduce(
+      (maximum, entry) => Math.max(maximum, entry.trialAttempt ?? 0),
+      0
+    )
+    const now = Date.now()
+
+    await ctx.db.insert('communityGlowsAccountRetentions', {
+      emailDigest: args.emailDigest,
+      deletedProviderAccountDigest: args.providerAccountDigest,
+      globalUserId: globalUser._id,
+      environment,
+      trialAttempts,
+      retainedEntitlementIds: communityEntitlements.map((entry) => entry._id),
+      status: 'retained',
+      deletedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    const accessEvents = await ctx.db
+      .query('productAccessEvents')
+      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
+      .collect()
+    for (const event of accessEvents) {
+      if (
+        event.productId === COMMUNITYGLOWS_PRODUCT_ID &&
+        event.customerEmail
+      ) {
+        await ctx.db.patch(event._id, { customerEmail: undefined })
+      }
+    }
+    const providerIdentities = await ctx.db
+      .query('identityAccounts')
+      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
+      .collect()
+    for (const providerIdentity of providerIdentities) {
+      if (
+        COMMUNITYGLOWS_PROVIDER_ALIASES.includes(
+          providerIdentity.provider as (typeof COMMUNITYGLOWS_PROVIDER_ALIASES)[number]
+        )
+      ) {
+        await ctx.db.patch(providerIdentity._id, {
+          providerAccountId: `deleted:${providerIdentity._id}`,
+          email: undefined,
+          sourceRef: undefined,
+          updatedAt: now,
+        })
+      }
+    }
+    const hasAnotherActiveProvider = providerIdentities.some(
+      (providerIdentity) =>
+        !COMMUNITYGLOWS_PROVIDER_ALIASES.includes(
+          providerIdentity.provider as (typeof COMMUNITYGLOWS_PROVIDER_ALIASES)[number]
+        )
+    )
+    await ctx.db.patch(globalUser._id, hasAnotherActiveProvider
+      ? { updatedAt: now }
+      : {
+          primaryEmail: undefined,
+          name: undefined,
+          imageUrl: undefined,
+          updatedAt: now,
+        })
+
+    return {
+      status: 'prepared',
+      retained: true,
+      paidEntitlementRetained: communityEntitlements.some(
+        (entry) => entry.status === 'active'
+      ),
+    }
+  },
+})
+
+export const relinkCommunityGlowsAccount = mutation({
+  args: {
+    providerAccountId: v.string(),
+    emailDigest: v.string(),
+    providerAccountDigest: v.string(),
+    environment: v.optional(v.string()),
+    bridgeSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+    const providerAccountId = args.providerAccountId.trim()
+    const environment = args.environment ?? 'production'
+    if (!providerAccountId || !args.emailDigest || !args.providerAccountDigest) {
+      throw new Error('invalid_payload')
+    }
+
+    const existingIdentity = await ctx.db
+      .query('identityAccounts')
+      .withIndex('by_providerAccount', (q) =>
+        q.eq('provider', COMMUNITYGLOWS_PROVIDER).eq('providerAccountId', providerAccountId)
+      )
+      .first()
+    const retention = await ctx.db
+      .query('communityGlowsAccountRetentions')
+      .withIndex('by_emailEnvironment', (q) =>
+        q.eq('emailDigest', args.emailDigest).eq('environment', environment)
+      )
+      .order('desc')
+      .first()
+    if (!retention) throw new Error('account_retention_not_found')
+    if (existingIdentity) {
+      if (existingIdentity.globalUserId !== retention.globalUserId) {
+        throw new Error('provider_account_already_linked')
+      }
+      return { status: 'already_relinked' }
+    }
+
+    const deletedProvider = await ctx.db
+      .query('communityGlowsAccountRetentions')
+      .withIndex('by_deletedProviderEnvironment', (q) =>
+        q
+          .eq('deletedProviderAccountDigest', args.providerAccountDigest)
+          .eq('environment', environment)
+      )
+      .first()
+    if (deletedProvider) throw new Error('provider_account_deleted')
+
+    const now = Date.now()
+    await ctx.db.insert('identityAccounts', {
+      globalUserId: retention.globalUserId,
+      provider: COMMUNITYGLOWS_PROVIDER,
+      providerAccountId,
+      source: COMMUNITYGLOWS_BRIDGE_SOURCE,
+      environment,
+      createdAt: now,
+      updatedAt: now,
+    })
+    await ctx.db.patch(retention._id, {
+      status: 'relinked',
+      relinkedAt: now,
+      updatedAt: now,
+    })
+
+    const entitlements = await ctx.db
+      .query('productEntitlements')
+      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', retention.globalUserId))
+      .collect()
+    const activeEntitlement = selectPreferredActiveProductEntitlement(
+      entitlements.filter((entry) => entry.productId === COMMUNITYGLOWS_PRODUCT_ID),
+      COMMUNITYGLOWS_PRODUCT_ID
+    )
+    return {
+      status: 'relinked',
+      hasAccess: Boolean(activeEntitlement),
+      planId: activeEntitlement?.plan ?? null,
+      trialAttempts: retention.trialAttempts,
+    }
+  },
+})
+
 export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount = mutation({
   args: {
     providerAccountId: v.string(),
+    providerAccountDigest: v.optional(v.string()),
     email: v.optional(v.string()),
     environment: v.optional(v.string()),
     sourceRef: v.optional(v.string()),
@@ -2420,6 +2637,17 @@ export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount = mutation
     const providerAccountId = args.providerAccountId.trim()
     if (!providerAccountId) {
       throw new Error('provider_account_id_required')
+    }
+    if (args.providerAccountDigest) {
+      const deletedProvider = await ctx.db
+        .query('communityGlowsAccountRetentions')
+        .withIndex('by_deletedProviderEnvironment', (q) =>
+          q
+            .eq('deletedProviderAccountDigest', args.providerAccountDigest!)
+            .eq('environment', environment)
+        )
+        .first()
+      if (deletedProvider) throw new Error('provider_account_deleted')
     }
 
     const { globalUser, globalUserDocId } = await getOrCreateCommunityGlowsIdentity(
@@ -2644,6 +2872,7 @@ export const upsertCommunityGlowsActivationCode = mutation({
 export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
   args: {
     providerAccountId: v.string(),
+    providerAccountDigest: v.optional(v.string()),
     email: v.optional(v.string()),
     code: v.string(),
     bridgeSecret: v.string(),
@@ -2664,6 +2893,17 @@ export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
     }
 
     const environment = args.environment ?? 'production'
+    if (args.providerAccountDigest) {
+      const deletedProvider = await ctx.db
+        .query('communityGlowsAccountRetentions')
+        .withIndex('by_deletedProviderEnvironment', (q) =>
+          q
+            .eq('deletedProviderAccountDigest', args.providerAccountDigest!)
+            .eq('environment', environment)
+        )
+        .first()
+      if (deletedProvider) throw new Error('provider_account_deleted')
+    }
     const { globalUser, globalUserDocId } = await getOrCreateCommunityGlowsIdentity(
       ctx,
       {

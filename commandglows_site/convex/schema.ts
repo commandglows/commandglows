@@ -82,6 +82,26 @@ export default defineSchema({
     ])
     .index('by_expiresAt', ['expiresAt']),
 
+  communityGlowsAccountRetentions: defineTable({
+    emailDigest: v.string(),
+    deletedProviderAccountDigest: v.string(),
+    globalUserId: v.id('globalUsers'),
+    environment: v.string(),
+    trialAttempts: v.number(),
+    retainedEntitlementIds: v.array(v.id('productEntitlements')),
+    status: v.union(v.literal('retained'), v.literal('relinked')),
+    deletedAt: v.number(),
+    relinkedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_emailEnvironment', ['emailDigest', 'environment'])
+    .index('by_deletedProviderEnvironment', [
+      'deletedProviderAccountDigest',
+      'environment',
+    ])
+    .index('by_globalUserId', ['globalUserId']),
+
   productActivationCodes: defineTable({
     codeNormalized: v.string(),
     productId: v.string(),

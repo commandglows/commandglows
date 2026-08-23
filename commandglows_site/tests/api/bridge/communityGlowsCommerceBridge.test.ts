@@ -15,6 +15,66 @@ describe('communityglows suite bridge', () => {
     mockMutation.mockReset()
     delete process.env.SUITE_COMMERCE_CHECKOUT_SECRET
     process.env.SUITE_TRIAL_SIGNAL_SECRET = 'trial-signal-secret'
+    process.env.COMMUNITYGLOWS_ACCOUNT_RETENTION_SECRET = 'retention-secret'
+  })
+
+  test('pseudonymizes account deletion identity before forwarding it', async () => {
+    const { POST } = await import('@/pages/api/bridge/communityglows')
+    process.env.COMMUNITYGLOWS_SUITE_BRIDGE_SECRET = 'community-secret'
+    process.env.SUITE_BRIDGE_CONVEX_SECRET = 'convex-secret'
+    process.env.PUBLIC_CONVEX_URL = 'https://convex.example.com'
+    mockMutation.mockResolvedValueOnce({ status: 'prepared', retained: true })
+
+    const response = await POST({ request: new Request(
+      'https://commandglows.com/api/bridge/communityglows',
+      {
+        method: 'POST',
+        headers: { 'x-communityglows-suite-secret': 'community-secret' },
+        body: JSON.stringify({
+          operation: 'prepare_account_deletion',
+          providerAccountId: 'old-provider-id',
+          email: 'Buyer@Example.com',
+        }),
+      }
+    ) })
+
+    expect(response.status).toBe(200)
+    expect(mockMutation).toHaveBeenCalledWith(
+      'bridge:prepareCommunityGlowsAccountDeletion',
+      expect.objectContaining({
+        providerAccountId: 'old-provider-id',
+        email: 'Buyer@Example.com',
+        emailDigest: expect.stringMatching(/^[a-f0-9]{64}$/),
+        providerAccountDigest: expect.stringMatching(/^[a-f0-9]{64}$/),
+      })
+    )
+    const forwarded = mockMutation.mock.calls[0]?.[1]
+    expect(forwarded.emailDigest).not.toContain('buyer@example.com')
+    expect(forwarded.providerAccountDigest).not.toContain('old-provider-id')
+  })
+
+  test('fails account deletion closed without the retention key', async () => {
+    const { POST } = await import('@/pages/api/bridge/communityglows')
+    process.env.COMMUNITYGLOWS_SUITE_BRIDGE_SECRET = 'community-secret'
+    process.env.SUITE_BRIDGE_CONVEX_SECRET = 'convex-secret'
+    process.env.PUBLIC_CONVEX_URL = 'https://convex.example.com'
+    delete process.env.COMMUNITYGLOWS_ACCOUNT_RETENTION_SECRET
+
+    const response = await POST({ request: new Request(
+      'https://commandglows.com/api/bridge/communityglows',
+      {
+        method: 'POST',
+        headers: { 'x-communityglows-suite-secret': 'community-secret' },
+        body: JSON.stringify({
+          operation: 'prepare_account_deletion',
+          providerAccountId: 'old-provider-id',
+          email: 'buyer@example.com',
+        }),
+      }
+    ) })
+
+    expect(response.status).toBe(503)
+    expect(mockMutation).not.toHaveBeenCalled()
   })
 
   test('rejects retired product-local commerce forwarding', async () => {
