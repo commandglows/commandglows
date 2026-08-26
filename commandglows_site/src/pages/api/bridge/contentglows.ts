@@ -27,7 +27,7 @@ function secretsMatch(received: string | null, expected: string): boolean {
 
 export const POST: APIRoute = async ({ request }) => {
   const env = getServerEnv()
-  const endpointSecret = env.CONTENTGLOWS_ENTITLEMENT_BRIDGE_SECRET?.trim()
+  const endpointSecret = env.CONTENTGLOWS_AUTH0_ENTITLEMENT_BRIDGE_SECRET?.trim()
   const convexSecret = getConvexBridgeSecret(env)
   const domain = env.CONTENTGLOWS_AUTH0_DOMAIN?.trim()
   const audience = env.CONTENTGLOWS_AUTH0_AUDIENCE?.trim()

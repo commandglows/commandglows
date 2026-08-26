@@ -13,7 +13,7 @@ vi.mock('@/lib/auth0AccessToken', () => ({
 }))
 
 const configuredEnvironment = {
-  CONTENTGLOWS_ENTITLEMENT_BRIDGE_SECRET: 'endpoint-secret',
+  CONTENTGLOWS_AUTH0_ENTITLEMENT_BRIDGE_SECRET: 'endpoint-secret',
   CONTENTGLOWS_AUTH0_DOMAIN: 'tenant.example',
   CONTENTGLOWS_AUTH0_AUDIENCE: 'https://api.contentglows.test',
   SUITE_BRIDGE_CONVEX_SECRET: 'convex-secret',

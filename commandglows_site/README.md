@@ -143,7 +143,7 @@ server-only `x-contentglows-bridge-secret`. It revalidates RS256 signature,
 issuer, audience, expiry, and subject before linking provider `auth0` to a
 provider-neutral `globalUserId`. E-mail is metadata only and never merges
 identities. Configure `CONTENTGLOWS_AUTH0_DOMAIN`,
-`CONTENTGLOWS_AUTH0_AUDIENCE`, `CONTENTGLOWS_ENTITLEMENT_BRIDGE_SECRET`, and
+`CONTENTGLOWS_AUTH0_AUDIENCE`, `CONTENTGLOWS_AUTH0_ENTITLEMENT_BRIDGE_SECRET`, and
 `SUITE_BRIDGE_CONVEX_SECRET` on the server. Set `SUITE_BRIDGE_ENVIRONMENT` to
 the same environment as the entitlement ledger; ContentGlows access is filtered
 to that exact environment.
