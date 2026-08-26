@@ -136,6 +136,18 @@ It recomputes entitlements from Convex (`productEntitlements` source of truth), 
 
 The bridge also writes a server-owned Firestore mirror at `suiteAccess/{firebaseUid}` after Convex entitlement lookup. CommandGlows app Firestore rules use that mirror to allow or deny `commandglows_app` data under `users/{uid}`.
 
+### ContentGlows Auth0 bridge
+
+`POST /api/bridge/contentglows` requires both a valid Auth0 access token and the
+server-only `x-contentglows-bridge-secret`. It revalidates RS256 signature,
+issuer, audience, expiry, and subject before linking provider `auth0` to a
+provider-neutral `globalUserId`. E-mail is metadata only and never merges
+identities. Configure `CONTENTGLOWS_AUTH0_DOMAIN`,
+`CONTENTGLOWS_AUTH0_AUDIENCE`, `CONTENTGLOWS_AUTH0_ENTITLEMENT_BRIDGE_SECRET`, and
+`SUITE_BRIDGE_CONVEX_SECRET` on the server. Set `SUITE_BRIDGE_ENVIRONMENT` to
+the same environment as the entitlement ledger; ContentGlows access is filtered
+to that exact environment.
+
 `POST /api/bridge/entitlement` verifies ReplayGlowz Clerk sessions server-side and fails closed without an active paid entitlement or valid shared-policy trial. A recognized installation may receive one 30-day cycle and request at most two restarts; legacy free grants never unlock ReplayGlowz.
 
 `POST /api/bridge/communityglows` accepts:
