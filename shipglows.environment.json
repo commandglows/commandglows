@@ -1,0 +1,28 @@
+{
+  "backends": {},
+  "capabilities": {
+    "targets": [
+      {
+        "id": "web"
+      }
+    ],
+    "tools": [
+      {
+        "constraint": "*",
+        "id": "flutter"
+      },
+      {
+        "constraint": "24.x",
+        "id": "node"
+      },
+      {
+        "constraint": "10.33.2",
+        "id": "pnpm"
+      }
+    ]
+  },
+  "project": {
+    "name": "commandglows"
+  },
+  "schema": "shipglows.environment/v1"
+}
