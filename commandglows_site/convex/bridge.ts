@@ -2145,7 +2145,8 @@ export const upsertContentGlowsAuth0Identity = mutation({
     const contentGlowsEntitlements = entitlements
       .filter(
         (entry) =>
-          normalizeSuiteProductId(entry.productId) === CONTENTGLOWZ_PRODUCT_ID
+          normalizeSuiteProductId(entry.productId) === CONTENTGLOWZ_PRODUCT_ID &&
+          entry.environment === environment
       )
       .map((entry) => ({
         productId: entry.productId,

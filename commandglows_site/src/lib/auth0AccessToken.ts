@@ -54,9 +54,11 @@ function normalizeIssuer(domainOrIssuer: string): string {
   return parsed.toString()
 }
 
-async function getJwks(issuer: string): Promise<Jwk[]> {
+async function getJwks(issuer: string, forceRefresh = false): Promise<Jwk[]> {
   const cached = jwksCache.get(issuer)
-  if (cached && cached.expiresAt > Date.now()) return cached.keys
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
+    return cached.keys
+  }
 
   const response = await fetch(`${issuer}.well-known/jwks.json`, {
     headers: { accept: 'application/json' },
@@ -93,12 +95,17 @@ export async function verifyAuth0AccessToken(
   }
 
   const issuer = normalizeIssuer(config.domainOrIssuer)
-  const key = (await getJwks(issuer)).find(
-    (candidate) =>
-      candidate.kid === header.kid &&
-      (!candidate.alg || candidate.alg === 'RS256') &&
-      (!candidate.use || candidate.use === 'sig')
-  )
+  const findKey = (keys: Jwk[]) =>
+    keys.find(
+      (candidate) =>
+        candidate.kid === header.kid &&
+        (!candidate.alg || candidate.alg === 'RS256') &&
+        (!candidate.use || candidate.use === 'sig')
+    )
+  let key = findKey(await getJwks(issuer))
+  if (!key) {
+    key = findKey(await getJwks(issuer, true))
+  }
   if (!key) throw new Error('jwt_signing_key_not_found')
 
   const verifier = createVerify('RSA-SHA256')

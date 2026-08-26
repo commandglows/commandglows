@@ -69,7 +69,9 @@ export const POST: APIRoute = async ({ request }) => {
       {
         auth0Subject: claims.sub,
         auth0Email: claims.email,
-        environment: resolveBridgeEnvironment(env.NODE_ENV),
+        environment: resolveBridgeEnvironment(
+          env.SUITE_BRIDGE_ENVIRONMENT ?? env.NODE_ENV
+        ),
         sourceRef: request.headers.get('x-request-id') ?? undefined,
         bridgeSecret: convexSecret,
       } as never

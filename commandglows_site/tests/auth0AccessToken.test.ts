@@ -1,4 +1,4 @@
-import { generateKeyPairSync, sign } from 'node:crypto'
+import { generateKeyPairSync, randomUUID, sign } from 'node:crypto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { verifyAuth0AccessToken } from '../src/lib/auth0AccessToken'
@@ -92,5 +92,62 @@ describe('verifyAuth0AccessToken', () => {
         nowSeconds: 1_000,
       })
     ).rejects.toThrow('invalid_jwt_claims')
+  })
+
+  it('refetches JWKS exactly once when a cached set does not contain the kid', async () => {
+    const oldPair = generateKeyPairSync('rsa', { modulusLength: 2048 })
+    const rotatedPair = generateKeyPairSync('rsa', { modulusLength: 2048 })
+    const oldJwk = oldPair.publicKey.export({ format: 'jwk' })
+    const rotatedJwk = rotatedPair.publicKey.export({ format: 'jwk' })
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            keys: [{ ...oldJwk, kid: 'old-key', alg: 'RS256' }],
+          }),
+          { status: 200 }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            keys: [{ ...rotatedJwk, kid: 'rotated-key', alg: 'RS256' }],
+          }),
+          { status: 200 }
+        )
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const issuer = `rotation-${randomUUID()}.example`
+    const audience = 'https://api.contentglows.test'
+    const makeToken = (kid: string, privateKey: typeof oldPair.privateKey) => {
+      const header = encode({ alg: 'RS256', kid })
+      const payload = encode({
+        sub: 'auth0|rotation-subject',
+        iss: `https://${issuer}/`,
+        aud: audience,
+        exp: 2_000,
+      })
+      const input = `${header}.${payload}`
+      const signature = sign(
+        'RSA-SHA256',
+        Buffer.from(input),
+        privateKey
+      ).toString('base64url')
+      return `${input}.${signature}`
+    }
+
+    await verifyAuth0AccessToken(makeToken('old-key', oldPair.privateKey), {
+      domainOrIssuer: issuer,
+      audience,
+      nowSeconds: 1_000,
+    })
+    await verifyAuth0AccessToken(
+      makeToken('rotated-key', rotatedPair.privateKey),
+      { domainOrIssuer: issuer, audience, nowSeconds: 1_000 }
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })

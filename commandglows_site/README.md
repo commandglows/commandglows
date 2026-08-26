@@ -144,7 +144,9 @@ issuer, audience, expiry, and subject before linking provider `auth0` to a
 provider-neutral `globalUserId`. E-mail is metadata only and never merges
 identities. Configure `CONTENTGLOWS_AUTH0_DOMAIN`,
 `CONTENTGLOWS_AUTH0_AUDIENCE`, `CONTENTGLOWS_ENTITLEMENT_BRIDGE_SECRET`, and
-`SUITE_BRIDGE_CONVEX_SECRET` on the server.
+`SUITE_BRIDGE_CONVEX_SECRET` on the server. Set `SUITE_BRIDGE_ENVIRONMENT` to
+the same environment as the entitlement ledger; ContentGlows access is filtered
+to that exact environment.
 
 `POST /api/bridge/entitlement` verifies ReplayGlowz Clerk sessions server-side and fails closed without an active paid entitlement or valid shared-policy trial. A recognized installation may receive one 30-day cycle and request at most two restarts; legacy free grants never unlock ReplayGlowz.
 
