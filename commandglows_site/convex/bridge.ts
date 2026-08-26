@@ -7,6 +7,7 @@ import {
   COMMUNITYGLOWS_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
   COMMANDGLOWS_APP_PRODUCT_ID,
+  CONTENTGLOWZ_PRODUCT_ID,
   normalizeSuiteProductId,
   SUITE_TRIAL_MAX_CYCLES,
   SUITE_TRIAL_SOURCE,
@@ -23,7 +24,11 @@ const COMMUNITYGLOWS_PROVIDER_ALIASES = [
   'socialglowz_convex',
 ] as const
 const COMMUNITYGLOWS_BRIDGE_SOURCE = 'communityglows_bridge_api'
-const COMMUNITYGLOWS_PLAN_ALLOWLIST = new Set(['lifetime_deal', 'founder_ltd', 'ltd'])
+const COMMUNITYGLOWS_PLAN_ALLOWLIST = new Set([
+  'lifetime_deal',
+  'founder_ltd',
+  'ltd',
+])
 const COMMUNITYGLOWS_SOURCE_ALLOWLIST = new Set([
   'manual',
   'partner',
@@ -166,11 +171,13 @@ function buildProductTrialDecision(
   now: number,
   trialEligible: boolean
 ) {
-  const trials = productTrials(entitlements, productId).sort((left, right) =>
-    (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0)
+  const trials = productTrials(entitlements, productId).sort(
+    (left, right) => (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0)
   )
   const latestTrial = trials[0]
-  const activeTrial = trials.find((entry) => isTrialEntitlementActive(entry, now))
+  const activeTrial = trials.find((entry) =>
+    isTrialEntitlementActive(entry, now)
+  )
   const paidActive = hasActivePaidEntitlement(entitlements, productId, now)
   const trialRestartsRemaining = Math.max(
     0,
@@ -326,7 +333,9 @@ async function maybeStartProductTrialEntitlement(
   await ctx.db.insert('productAccessEvents', {
     source: SUITE_TRIAL_SOURCE,
     eventType:
-      nextTrialAttempt === 1 ? 'product_trial.started' : 'product_trial.restarted',
+      nextTrialAttempt === 1
+        ? 'product_trial.started'
+        : 'product_trial.restarted',
     sourceRef: args.sourceRef,
     idempotencyKey: trialIdempotencyKey,
     environment: args.environment,
@@ -350,7 +359,10 @@ async function registerProductTrialInstallation(
   }
 ) {
   if (!args.installationHash) {
-    return { eligible: false, installationId: null as Id<'productTrialInstallations'> | null }
+    return {
+      eligible: false,
+      installationId: null as Id<'productTrialInstallations'> | null,
+    }
   }
 
   const existing = await ctx.db
@@ -420,7 +432,9 @@ function isAllowedCommerceEnvironment(
 
 function resolveRuntimeBridgeEnvironment() {
   return normalizeBridgeEnvironment(
-    process.env.SUITE_BRIDGE_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV
+    process.env.SUITE_BRIDGE_ENVIRONMENT ||
+      process.env.VERCEL_ENV ||
+      process.env.NODE_ENV
   )
 }
 
@@ -448,13 +462,22 @@ function buildCommunityGlowsCommerceSourceRef(args: {
   return args.sourceRef || args.providerSourceRef || args.providerOrderId
 }
 
-function buildCommunityGlowsCommerceEventIdempotency(eventType: string, eventKey: string) {
+function buildCommunityGlowsCommerceEventIdempotency(
+  eventType: string,
+  eventKey: string
+) {
   const normalizedType = eventType === 'revoked' ? 'revoked' : eventType
   return `${COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE_PREFIX}:${normalizedType}:${eventKey}`
 }
 
-function normalizeCommerceEnvironment(rawEnvironment: string | undefined): string {
-  if (rawEnvironment === 'development' || rawEnvironment === 'test' || rawEnvironment === 'sandbox') {
+function normalizeCommerceEnvironment(
+  rawEnvironment: string | undefined
+): string {
+  if (
+    rawEnvironment === 'development' ||
+    rawEnvironment === 'test' ||
+    rawEnvironment === 'sandbox'
+  ) {
     return 'sandbox'
   }
 
@@ -491,7 +514,9 @@ function resolveCommerceIdentityBySourceRef(
     const sourceEvents = await ctx.db
       .query('productAccessEvents')
       .withIndex('by_sourceRef', (q) =>
-        q.eq('source', COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE).eq('sourceRef', sourceRef)
+        q
+          .eq('source', COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE)
+          .eq('sourceRef', sourceRef)
       )
       .collect()
 
@@ -534,7 +559,9 @@ async function upsertCommunityGlowsCommerceEntitlement(
   const now = Date.now()
   const existing = await ctx.db
     .query('productEntitlements')
-    .withIndex('by_idempotencyKey', (q) => q.eq('idempotencyKey', args.idempotencyKey))
+    .withIndex('by_idempotencyKey', (q) =>
+      q.eq('idempotencyKey', args.idempotencyKey)
+    )
     .first()
 
   if (existing) {
@@ -583,7 +610,9 @@ async function upsertCommunityGlowsCommerceEntitlement(
 
   const rawEntitlements = await ctx.db
     .query('productEntitlements')
-    .withIndex('by_globalUserId', (q) => q.eq('globalUserId', args.globalUserDocId))
+    .withIndex('by_globalUserId', (q) =>
+      q.eq('globalUserId', args.globalUserDocId)
+    )
     .collect()
 
   return resolveCommunityGlowsAccess({
@@ -658,7 +687,9 @@ async function upsertCommunityGlowsCommerceAccessEvent(
     providerCustomerId: params.providerCustomerId,
     customerEmail: params.customerEmail,
     reason: params.reason,
-    ...(params.globalUserDocId ? { globalUserDocId: params.globalUserDocId } : {}),
+    ...(params.globalUserDocId
+      ? { globalUserDocId: params.globalUserDocId }
+      : {}),
   })
 }
 
@@ -674,7 +705,9 @@ function buildCommerceEventIdempotencyKey(
   return `${COMMUNITYGLOWS_COMMERCE_EVENT_SOURCE_PREFIX}:${provider}:${eventType}:${providerOrderId}`
 }
 
-function isSupportedCommerceStatus(status: string): status is 'paid' | 'refunded' | 'revoked' | 'pending_review' {
+function isSupportedCommerceStatus(
+  status: string
+): status is 'paid' | 'refunded' | 'revoked' | 'pending_review' {
   return (
     status === 'paid' ||
     status === 'refunded' ||
@@ -683,12 +716,11 @@ function isSupportedCommerceStatus(status: string): status is 'paid' | 'refunded
   )
 }
 
-function isHigherPriorityStatus(
-  incoming: string,
-  existing: string
-) {
-  const incomingPriority = COMMUNITYGLOWS_COMMERCE_STATUS_PRIORITY[incoming] ?? 0
-  const existingPriority = COMMUNITYGLOWS_COMMERCE_STATUS_PRIORITY[existing] ?? 0
+function isHigherPriorityStatus(incoming: string, existing: string) {
+  const incomingPriority =
+    COMMUNITYGLOWS_COMMERCE_STATUS_PRIORITY[incoming] ?? 0
+  const existingPriority =
+    COMMUNITYGLOWS_COMMERCE_STATUS_PRIORITY[existing] ?? 0
   return incomingPriority >= existingPriority
 }
 
@@ -1034,7 +1066,9 @@ async function upsertCommerceAccessEvent(
 ) {
   const existing = await ctx.db
     .query('productAccessEvents')
-    .withIndex('by_idempotencyKey', (q) => q.eq('idempotencyKey', params.idempotencyKey))
+    .withIndex('by_idempotencyKey', (q) =>
+      q.eq('idempotencyKey', params.idempotencyKey)
+    )
     .first()
 
   if (existing) {
@@ -1069,9 +1103,7 @@ async function upsertCommerceAccessEvent(
     status: params.status,
     reason: params.reason,
     createdAt: Date.now(),
-    ...(params.globalUserDocId
-      ? { globalUserId: params.globalUserDocId }
-      : {}),
+    ...(params.globalUserDocId ? { globalUserId: params.globalUserDocId } : {}),
   } as never)
 }
 
@@ -1183,7 +1215,9 @@ async function upsertSuiteCommerceEntitlement(
   const now = Date.now()
   const existing = await ctx.db
     .query('productEntitlements')
-    .withIndex('by_idempotencyKey', (q) => q.eq('idempotencyKey', args.idempotencyKey))
+    .withIndex('by_idempotencyKey', (q) =>
+      q.eq('idempotencyKey', args.idempotencyKey)
+    )
     .first()
 
   if (existing) {
@@ -1260,7 +1294,9 @@ async function buildSuiteCommerceAccessSnapshot(
     productId,
     planId: entitlement?.plan ?? null,
     source: entitlement?.source ?? null,
-    reasonCode: entitlement ? 'active_entitlement' : 'missing_product_entitlement',
+    reasonCode: entitlement
+      ? 'active_entitlement'
+      : 'missing_product_entitlement',
   }
 }
 
@@ -1292,7 +1328,9 @@ async function upsertSuiteCommerceAccessEvent(
     providerCustomerId: params.providerCustomerId,
     customerEmail: params.customerEmail,
     reason: params.reason,
-    ...(params.globalUserDocId ? { globalUserDocId: params.globalUserDocId } : {}),
+    ...(params.globalUserDocId
+      ? { globalUserDocId: params.globalUserDocId }
+      : {}),
   })
 }
 
@@ -1313,9 +1351,7 @@ async function getOrCreateCommunityGlowsIdentity(
   let identity = await ctx.db
     .query('identityAccounts')
     .withIndex('by_providerAccount', (q) =>
-      q
-        .eq('provider', provider)
-        .eq('providerAccountId', args.providerAccountId)
+      q.eq('provider', provider).eq('providerAccountId', args.providerAccountId)
     )
     .first()
 
@@ -1426,18 +1462,22 @@ function buildCommunityGlowsIdempotencyKey(...parts: Array<string>): string {
   return `communityglows:${parts.join(':')}`
 }
 
-async function revokeCommunityGlowsEntitlementsByProviderId(ctx: MutationCtx, args: {
-  providerAccountId: string
-  status: string
-  sourceRef?: string
-  environment: string
-  reason?: string
-}) {
-  const { globalUserDocId, globalUser } = await getOrCreateCommunityGlowsIdentity(ctx, {
-    providerAccountId: args.providerAccountId,
-    sourceRef: args.sourceRef,
-    environment: args.environment,
-  })
+async function revokeCommunityGlowsEntitlementsByProviderId(
+  ctx: MutationCtx,
+  args: {
+    providerAccountId: string
+    status: string
+    sourceRef?: string
+    environment: string
+    reason?: string
+  }
+) {
+  const { globalUserDocId, globalUser } =
+    await getOrCreateCommunityGlowsIdentity(ctx, {
+      providerAccountId: args.providerAccountId,
+      sourceRef: args.sourceRef,
+      environment: args.environment,
+    })
 
   const entitlements = await ctx.db
     .query('productEntitlements')
@@ -1497,13 +1537,16 @@ async function revokeCommunityGlowsEntitlementsByProviderId(ctx: MutationCtx, ar
   }
 }
 
-async function runManualGrantCommunityGlowsAccess(ctx: MutationCtx, args: {
-  providerAccountId: string
-  plan: string
-  source: string
-  sourceRef?: string
-  environment: string
-}) {
+async function runManualGrantCommunityGlowsAccess(
+  ctx: MutationCtx,
+  args: {
+    providerAccountId: string
+    plan: string
+    source: string
+    sourceRef?: string
+    environment: string
+  }
+) {
   if (!isAllowedCommunityGlowsPlan(args.plan)) {
     throw new Error('plan_not_allowed')
   }
@@ -1512,11 +1555,12 @@ async function runManualGrantCommunityGlowsAccess(ctx: MutationCtx, args: {
     throw new Error('source_not_allowed')
   }
 
-  const { globalUserDocId, globalUser } = await getOrCreateCommunityGlowsIdentity(ctx, {
-    providerAccountId: args.providerAccountId,
-    sourceRef: args.sourceRef,
-    environment: args.environment,
-  })
+  const { globalUserDocId, globalUser } =
+    await getOrCreateCommunityGlowsIdentity(ctx, {
+      providerAccountId: args.providerAccountId,
+      sourceRef: args.sourceRef,
+      environment: args.environment,
+    })
 
   const now = Date.now()
   const idempotencyKey = buildCommunityGlowsIdempotencyKey(
@@ -1528,7 +1572,9 @@ async function runManualGrantCommunityGlowsAccess(ctx: MutationCtx, args: {
 
   const existing = await ctx.db
     .query('productEntitlements')
-    .withIndex('by_idempotencyKey', (q) => q.eq('idempotencyKey', idempotencyKey))
+    .withIndex('by_idempotencyKey', (q) =>
+      q.eq('idempotencyKey', idempotencyKey)
+    )
     .first()
 
   if (existing) {
@@ -1544,7 +1590,9 @@ async function runManualGrantCommunityGlowsAccess(ctx: MutationCtx, args: {
 
     const rawEntitlements = await ctx.db
       .query('productEntitlements')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUserDocId))
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', globalUserDocId)
+      )
       .collect()
 
     return {
@@ -1628,13 +1676,15 @@ function resolveCommunityGlowsAccess(args: {
       )
   )
   const paidEntitlement = activeEntitlements.find(
-      (entry) => entry.status === 'active' && entry.source !== 'product_default'
-    )
-  const activeTrial = activeEntitlements.find((entry) => entry.status === 'trialing')
-  const trials = productTrials(args.entitlements, COMMUNITYGLOWS_PRODUCT_ID)
-    .sort((left, right) =>
-      (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0)
-    )
+    (entry) => entry.status === 'active' && entry.source !== 'product_default'
+  )
+  const activeTrial = activeEntitlements.find(
+    (entry) => entry.status === 'trialing'
+  )
+  const trials = productTrials(
+    args.entitlements,
+    COMMUNITYGLOWS_PRODUCT_ID
+  ).sort((left, right) => (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0))
   const latestTrial = trials[0]
   const trialRestartsRemaining = Math.max(
     0,
@@ -1697,7 +1747,9 @@ function resolveCommunityGlowsAccess(args: {
   const isTrial = entitlement.status === 'trialing'
   return {
     hasAccess: true,
-    accessState: isTrial ? ('trial_active' as const) : ('lifetime_active' as const),
+    accessState: isTrial
+      ? ('trial_active' as const)
+      : ('lifetime_active' as const),
     globalUserId: args.globalUserId,
     planId: entitlement.plan,
     source: entitlement.source,
@@ -1876,27 +1928,30 @@ export const upsertFirebaseIdentity = mutation({
       environment,
       now,
     })
-    const didStartCommandGlowsTrial = await maybeStartProductTrialEntitlement(ctx, {
-      productId: COMMANDGLOWS_APP_PRODUCT_ID,
-      globalUserDocId: identity.globalUserId,
-      globalUserPublicId: globalUser.globalUserId,
-      sourceRef: args.sourceRef ?? args.firebaseUid,
-      environment,
-      now,
-      allowRestart: args.trialAction === 'restart',
-      trialEligible: installation.eligible,
-      networkHash: args.networkHash,
-      entitlements: rawEntitlements.map((entry) => ({
-        productId: entry.productId,
-        status: entry.status,
-        plan: entry.plan,
-        source: entry.source,
-        sourceRef: entry.sourceRef,
-        trialStartedAt: entry.trialStartedAt,
-        trialExpiresAt: entry.trialExpiresAt,
-        trialAttempt: entry.trialAttempt,
-      })),
-    })
+    const didStartCommandGlowsTrial = await maybeStartProductTrialEntitlement(
+      ctx,
+      {
+        productId: COMMANDGLOWS_APP_PRODUCT_ID,
+        globalUserDocId: identity.globalUserId,
+        globalUserPublicId: globalUser.globalUserId,
+        sourceRef: args.sourceRef ?? args.firebaseUid,
+        environment,
+        now,
+        allowRestart: args.trialAction === 'restart',
+        trialEligible: installation.eligible,
+        networkHash: args.networkHash,
+        entitlements: rawEntitlements.map((entry) => ({
+          productId: entry.productId,
+          status: entry.status,
+          plan: entry.plan,
+          source: entry.source,
+          sourceRef: entry.sourceRef,
+          trialStartedAt: entry.trialStartedAt,
+          trialExpiresAt: entry.trialExpiresAt,
+          trialAttempt: entry.trialAttempt,
+        })),
+      }
+    )
 
     if (didStartCommandGlowsTrial) {
       await markProductTrialInstallationConsumed(
@@ -1972,7 +2027,8 @@ export const upsertFirebaseIdentity = mutation({
       }))
 
     const replayGlowzProductUserId =
-      (await getClerkIdentityAccountIdForGlobalUser(ctx, globalUserDocId)) ?? null
+      (await getClerkIdentityAccountIdForGlobalUser(ctx, globalUserDocId)) ??
+      null
 
     return {
       status: 'ok' as const,
@@ -1986,9 +2042,141 @@ export const upsertFirebaseIdentity = mutation({
         },
       ],
       replayGlowzProductUserId,
-      replayGlowzProductUserIdSource:
-        replayGlowzProductUserId ? ('clerk' as const) : null,
+      replayGlowzProductUserIdSource: replayGlowzProductUserId
+        ? ('clerk' as const)
+        : null,
       entitlements,
+    }
+  },
+})
+
+/**
+ * Links a verified Auth0 subject to the provider-neutral suite identity.
+ * Email is metadata only: identities are never merged by email.
+ */
+export const upsertContentGlowsAuth0Identity = mutation({
+  args: {
+    auth0Subject: v.string(),
+    auth0Email: v.optional(v.string()),
+    environment: v.optional(v.string()),
+    sourceRef: v.optional(v.string()),
+    bridgeSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+
+    const providerAccountId = args.auth0Subject.trim()
+    if (!providerAccountId) {
+      throw new Error('provider_account_id_required')
+    }
+
+    const now = Date.now()
+    const environment = args.environment ?? 'production'
+    let identity = await ctx.db
+      .query('identityAccounts')
+      .withIndex('by_providerAccount', (q) =>
+        q.eq('provider', 'auth0').eq('providerAccountId', providerAccountId)
+      )
+      .first()
+
+    if (!identity) {
+      const globalUserDocId = await ctx.db.insert(
+        'globalUsers',
+        withoutUndefined({
+          globalUserId: createGlobalUserId(),
+          primaryEmail: args.auth0Email,
+          createdAt: now,
+          updatedAt: now,
+        })
+      )
+      await ctx.db.insert(
+        'identityAccounts',
+        withoutUndefined({
+          globalUserId: globalUserDocId,
+          provider: 'auth0',
+          providerAccountId,
+          email: args.auth0Email,
+          source: 'contentglows_auth0_bridge_api',
+          sourceRef: args.sourceRef,
+          environment,
+          createdAt: now,
+          updatedAt: now,
+        })
+      )
+      identity = await ctx.db
+        .query('identityAccounts')
+        .withIndex('by_providerAccount', (q) =>
+          q.eq('provider', 'auth0').eq('providerAccountId', providerAccountId)
+        )
+        .first()
+    } else {
+      await ctx.db.patch(
+        identity._id,
+        withoutUndefined({
+          email: args.auth0Email,
+          sourceRef: args.sourceRef,
+          environment,
+          updatedAt: now,
+        })
+      )
+    }
+
+    if (!identity) {
+      throw new Error('auth0_identity_link_failed')
+    }
+
+    const globalUser = await ctx.db.get(identity.globalUserId)
+    if (!globalUser) {
+      throw new Error('global_user_not_found')
+    }
+    if (args.auth0Email && !globalUser.primaryEmail) {
+      await ctx.db.patch(globalUser._id, {
+        primaryEmail: args.auth0Email,
+        updatedAt: now,
+      })
+    }
+
+    const entitlements = await ctx.db
+      .query('productEntitlements')
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', identity.globalUserId)
+      )
+      .collect()
+    const contentGlowsEntitlements = entitlements
+      .filter(
+        (entry) =>
+          normalizeSuiteProductId(entry.productId) === CONTENTGLOWZ_PRODUCT_ID
+      )
+      .map((entry) => ({
+        productId: entry.productId,
+        status: entry.status,
+        plan: entry.plan,
+        source: entry.source,
+        sourceRef: entry.sourceRef,
+        trialStartedAt: entry.trialStartedAt,
+        trialExpiresAt: entry.trialExpiresAt,
+        trialAttempt: entry.trialAttempt,
+      }))
+    const activeEntitlement = selectPreferredActiveProductEntitlement(
+      contentGlowsEntitlements,
+      CONTENTGLOWZ_PRODUCT_ID,
+      now
+    )
+
+    return {
+      status: 'ok' as const,
+      globalUserId: globalUser.globalUserId,
+      identity: {
+        provider: 'auth0' as const,
+        providerAccountIdMasked: maskProviderAccountId(providerAccountId),
+      },
+      entitlement: {
+        productId: CONTENTGLOWZ_PRODUCT_ID,
+        hasAccess: Boolean(activeEntitlement),
+        status: activeEntitlement?.status ?? 'inactive',
+        plan: activeEntitlement?.plan ?? null,
+      },
+      entitlements: contentGlowsEntitlements,
     }
   },
 })
@@ -2104,7 +2292,9 @@ export const ensureSuiteProductTrialByGlobalUserId = mutation({
 
     const globalUser = await ctx.db
       .query('globalUsers')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', args.globalUserId))
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', args.globalUserId)
+      )
       .first()
     if (!globalUser) {
       throw new Error('global_user_not_found')
@@ -2136,10 +2326,16 @@ export const ensureSuiteProductTrialByGlobalUserId = mutation({
       entitlements,
     })
     if (didEnsureTrial) {
-      await markProductTrialInstallationConsumed(ctx, installation.installationId, now)
+      await markProductTrialInstallationConsumed(
+        ctx,
+        installation.installationId,
+        now
+      )
       entitlements = await ctx.db
         .query('productEntitlements')
-        .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
+        .withIndex('by_globalUserId', (q) =>
+          q.eq('globalUserId', globalUser._id)
+        )
         .collect()
     }
 
@@ -2183,7 +2379,9 @@ export const restartCommandGlowsTrialByGlobalUserId = mutation({
 
     const globalUser = await ctx.db
       .query('globalUsers')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', args.globalUserId))
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', args.globalUserId)
+      )
       .first()
 
     if (!globalUser) {
@@ -2237,7 +2435,8 @@ export const restartCommandGlowsTrialByGlobalUserId = mutation({
       globalUserId: globalUser.globalUserId,
       activeTrialCount: trialCount,
       nextTrialCount: didStartTrial ? trialCount + 1 : trialCount,
-      canRetry: (didStartTrial ? trialCount + 1 : trialCount) < SUITE_TRIAL_MAX_CYCLES,
+      canRetry:
+        (didStartTrial ? trialCount + 1 : trialCount) < SUITE_TRIAL_MAX_CYCLES,
     }
   },
 })
@@ -2420,7 +2619,12 @@ export const prepareCommunityGlowsAccountDeletion = mutation({
     const providerAccountId = args.providerAccountId.trim()
     const email = args.email.trim().toLowerCase()
     const environment = args.environment ?? 'production'
-    if (!providerAccountId || !email || !args.emailDigest || !args.providerAccountDigest) {
+    if (
+      !providerAccountId ||
+      !email ||
+      !args.emailDigest ||
+      !args.providerAccountDigest
+    ) {
       throw new Error('invalid_payload')
     }
 
@@ -2519,14 +2723,17 @@ export const prepareCommunityGlowsAccountDeletion = mutation({
           providerIdentity.provider as (typeof COMMUNITYGLOWS_PROVIDER_ALIASES)[number]
         )
     )
-    await ctx.db.patch(globalUser._id, hasAnotherActiveProvider
-      ? { updatedAt: now }
-      : {
-          primaryEmail: undefined,
-          name: undefined,
-          imageUrl: undefined,
-          updatedAt: now,
-        })
+    await ctx.db.patch(
+      globalUser._id,
+      hasAnotherActiveProvider
+        ? { updatedAt: now }
+        : {
+            primaryEmail: undefined,
+            name: undefined,
+            imageUrl: undefined,
+            updatedAt: now,
+          }
+    )
 
     return {
       status: 'prepared',
@@ -2550,14 +2757,20 @@ export const relinkCommunityGlowsAccount = mutation({
     requireBridgeSecret(args.bridgeSecret)
     const providerAccountId = args.providerAccountId.trim()
     const environment = args.environment ?? 'production'
-    if (!providerAccountId || !args.emailDigest || !args.providerAccountDigest) {
+    if (
+      !providerAccountId ||
+      !args.emailDigest ||
+      !args.providerAccountDigest
+    ) {
       throw new Error('invalid_payload')
     }
 
     const existingIdentity = await ctx.db
       .query('identityAccounts')
       .withIndex('by_providerAccount', (q) =>
-        q.eq('provider', COMMUNITYGLOWS_PROVIDER).eq('providerAccountId', providerAccountId)
+        q
+          .eq('provider', COMMUNITYGLOWS_PROVIDER)
+          .eq('providerAccountId', providerAccountId)
       )
       .first()
     const retention = await ctx.db
@@ -2603,10 +2816,14 @@ export const relinkCommunityGlowsAccount = mutation({
 
     const entitlements = await ctx.db
       .query('productEntitlements')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', retention.globalUserId))
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', retention.globalUserId)
+      )
       .collect()
     const activeEntitlement = selectPreferredActiveProductEntitlement(
-      entitlements.filter((entry) => entry.productId === COMMUNITYGLOWS_PRODUCT_ID),
+      entitlements.filter(
+        (entry) => entry.productId === COMMUNITYGLOWS_PRODUCT_ID
+      ),
       COMMUNITYGLOWS_PRODUCT_ID
     )
     return {
@@ -2618,190 +2835,204 @@ export const relinkCommunityGlowsAccount = mutation({
   },
 })
 
-export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount = mutation({
-  args: {
-    providerAccountId: v.string(),
-    providerAccountDigest: v.optional(v.string()),
-    email: v.optional(v.string()),
-    environment: v.optional(v.string()),
-    sourceRef: v.optional(v.string()),
-    installationHash: v.optional(v.string()),
-    networkHash: v.optional(v.string()),
-    trialAction: v.optional(v.union(v.literal('start'), v.literal('restart'))),
-    bridgeSecret: v.string(),
-  },
-  handler: async (ctx, args) => {
-    requireBridgeSecret(args.bridgeSecret)
+export const ensureCommunityGlowsEntitlementSnapshotByProviderAccount =
+  mutation({
+    args: {
+      providerAccountId: v.string(),
+      providerAccountDigest: v.optional(v.string()),
+      email: v.optional(v.string()),
+      environment: v.optional(v.string()),
+      sourceRef: v.optional(v.string()),
+      installationHash: v.optional(v.string()),
+      networkHash: v.optional(v.string()),
+      trialAction: v.optional(
+        v.union(v.literal('start'), v.literal('restart'))
+      ),
+      bridgeSecret: v.string(),
+    },
+    handler: async (ctx, args) => {
+      requireBridgeSecret(args.bridgeSecret)
 
-    const environment = args.environment ?? 'production'
-    const providerAccountId = args.providerAccountId.trim()
-    if (!providerAccountId) {
-      throw new Error('provider_account_id_required')
-    }
-    if (args.providerAccountDigest) {
-      const deletedProvider = await ctx.db
-        .query('communityGlowsAccountRetentions')
-        .withIndex('by_deletedProviderEnvironment', (q) =>
+      const environment = args.environment ?? 'production'
+      const providerAccountId = args.providerAccountId.trim()
+      if (!providerAccountId) {
+        throw new Error('provider_account_id_required')
+      }
+      if (args.providerAccountDigest) {
+        const deletedProvider = await ctx.db
+          .query('communityGlowsAccountRetentions')
+          .withIndex('by_deletedProviderEnvironment', (q) =>
+            q
+              .eq('deletedProviderAccountDigest', args.providerAccountDigest!)
+              .eq('environment', environment)
+          )
+          .first()
+        if (deletedProvider) throw new Error('provider_account_deleted')
+      }
+
+      const { globalUser, globalUserDocId } =
+        await getOrCreateCommunityGlowsIdentity(ctx, {
+          providerAccountId,
+          email: args.email,
+          environment,
+          sourceRef: args.sourceRef,
+        })
+
+      let rawEntitlements = await ctx.db
+        .query('productEntitlements')
+        .withIndex('by_globalUserId', (q) =>
+          q.eq('globalUserId', globalUserDocId)
+        )
+        .collect()
+
+      const now = Date.now()
+      const installation = await registerProductTrialInstallation(ctx, {
+        productId: COMMUNITYGLOWS_PRODUCT_ID,
+        globalUserDocId,
+        installationHash: args.installationHash,
+        environment,
+        now,
+      })
+      const didEnsureTrialEntitlement = await maybeStartProductTrialEntitlement(
+        ctx,
+        {
+          productId: COMMUNITYGLOWS_PRODUCT_ID,
+          entitlements: rawEntitlements,
+          globalUserDocId,
+          globalUserPublicId: globalUser.globalUserId,
+          sourceRef: args.sourceRef ?? providerAccountId,
+          environment,
+          now,
+          allowRestart: args.trialAction === 'restart',
+          trialEligible: installation.eligible,
+          networkHash: args.networkHash,
+        }
+      )
+
+      if (didEnsureTrialEntitlement) {
+        await markProductTrialInstallationConsumed(
+          ctx,
+          installation.installationId,
+          now
+        )
+      }
+
+      if (didEnsureTrialEntitlement) {
+        rawEntitlements = await ctx.db
+          .query('productEntitlements')
+          .withIndex('by_globalUserId', (q) =>
+            q.eq('globalUserId', globalUserDocId)
+          )
+          .collect()
+      }
+
+      const knownInstallations = await ctx.db
+        .query('productTrialInstallations')
+        .withIndex('by_globalUserProduct', (q) =>
           q
-            .eq('deletedProviderAccountDigest', args.providerAccountDigest!)
-            .eq('environment', environment)
+            .eq('globalUserId', globalUserDocId)
+            .eq('productId', COMMUNITYGLOWS_PRODUCT_ID)
         )
-        .first()
-      if (deletedProvider) throw new Error('provider_account_deleted')
-    }
+        .collect()
 
-    const { globalUser, globalUserDocId } = await getOrCreateCommunityGlowsIdentity(
-      ctx,
-      {
-        providerAccountId,
-        email: args.email,
-        environment,
-        sourceRef: args.sourceRef,
+      return resolveCommunityGlowsAccess({
+        globalUserId: globalUser.globalUserId,
+        entitlements: rawEntitlements,
+        now,
+        trialEligible: installation.eligible,
+        knownInstallationCount: knownInstallations.filter(
+          (entry) => entry.environment === environment
+        ).length,
+      })
+    },
+  })
+
+export const ensureTemuShoppingListsEntitlementSnapshotByProviderAccount =
+  mutation({
+    args: {
+      providerAccountId: v.string(),
+      email: v.optional(v.string()),
+      environment: v.optional(v.string()),
+      sourceRef: v.optional(v.string()),
+      installationHash: v.optional(v.string()),
+      networkHash: v.optional(v.string()),
+      trialAction: v.optional(
+        v.union(v.literal('start'), v.literal('restart'))
+      ),
+      bridgeSecret: v.string(),
+    },
+    handler: async (ctx, args) => {
+      requireBridgeSecret(args.bridgeSecret)
+
+      const environment = args.environment ?? 'production'
+      const providerAccountId = args.providerAccountId.trim()
+      if (!providerAccountId) {
+        throw new Error('provider_account_id_required')
       }
-    )
 
-    let rawEntitlements = await ctx.db
-      .query('productEntitlements')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUserDocId))
-      .collect()
+      const { globalUser, globalUserDocId } =
+        await getOrCreateCommunityGlowsIdentity(ctx, {
+          provider: TEMU_SHOPPING_LISTS_PROVIDER,
+          providerAccountId,
+          email: args.email,
+          environment,
+          sourceRef: args.sourceRef,
+          source: TEMU_SHOPPING_LISTS_BRIDGE_SOURCE,
+        })
 
-    const now = Date.now()
-    const installation = await registerProductTrialInstallation(ctx, {
-      productId: COMMUNITYGLOWS_PRODUCT_ID,
-      globalUserDocId,
-      installationHash: args.installationHash,
-      environment,
-      now,
-    })
-    const didEnsureTrialEntitlement = await maybeStartProductTrialEntitlement(ctx, {
-      productId: COMMUNITYGLOWS_PRODUCT_ID,
-      entitlements: rawEntitlements,
-      globalUserDocId,
-      globalUserPublicId: globalUser.globalUserId,
-      sourceRef: args.sourceRef ?? providerAccountId,
-      environment,
-      now,
-      allowRestart: args.trialAction === 'restart',
-      trialEligible: installation.eligible,
-      networkHash: args.networkHash,
-    })
-
-    if (didEnsureTrialEntitlement) {
-      await markProductTrialInstallationConsumed(
-        ctx,
-        installation.installationId,
-        now
-      )
-    }
-
-    if (didEnsureTrialEntitlement) {
-      rawEntitlements = await ctx.db
+      let rawEntitlements = await ctx.db
         .query('productEntitlements')
         .withIndex('by_globalUserId', (q) =>
           q.eq('globalUserId', globalUserDocId)
         )
         .collect()
-    }
 
-    const knownInstallations = await ctx.db
-      .query('productTrialInstallations')
-      .withIndex('by_globalUserProduct', (q) =>
-        q.eq('globalUserId', globalUserDocId).eq('productId', COMMUNITYGLOWS_PRODUCT_ID)
-      )
-      .collect()
-
-    return resolveCommunityGlowsAccess({
-      globalUserId: globalUser.globalUserId,
-      entitlements: rawEntitlements,
-      now,
-      trialEligible: installation.eligible,
-      knownInstallationCount: knownInstallations.filter(
-        (entry) => entry.environment === environment
-      ).length,
-    })
-  },
-})
-
-export const ensureTemuShoppingListsEntitlementSnapshotByProviderAccount = mutation({
-  args: {
-    providerAccountId: v.string(),
-    email: v.optional(v.string()),
-    environment: v.optional(v.string()),
-    sourceRef: v.optional(v.string()),
-    installationHash: v.optional(v.string()),
-    networkHash: v.optional(v.string()),
-    trialAction: v.optional(v.union(v.literal('start'), v.literal('restart'))),
-    bridgeSecret: v.string(),
-  },
-  handler: async (ctx, args) => {
-    requireBridgeSecret(args.bridgeSecret)
-
-    const environment = args.environment ?? 'production'
-    const providerAccountId = args.providerAccountId.trim()
-    if (!providerAccountId) {
-      throw new Error('provider_account_id_required')
-    }
-
-    const { globalUser, globalUserDocId } = await getOrCreateCommunityGlowsIdentity(
-      ctx,
-      {
-        provider: TEMU_SHOPPING_LISTS_PROVIDER,
-        providerAccountId,
-        email: args.email,
+      const now = Date.now()
+      const installation = await registerProductTrialInstallation(ctx, {
+        productId: TEMU_SHOPPING_LISTS_PRODUCT_ID,
+        globalUserDocId,
+        installationHash: args.installationHash,
         environment,
-        sourceRef: args.sourceRef,
-        source: TEMU_SHOPPING_LISTS_BRIDGE_SOURCE,
-      }
-    )
-
-    let rawEntitlements = await ctx.db
-      .query('productEntitlements')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUserDocId))
-      .collect()
-
-    const now = Date.now()
-    const installation = await registerProductTrialInstallation(ctx, {
-      productId: TEMU_SHOPPING_LISTS_PRODUCT_ID,
-      globalUserDocId,
-      installationHash: args.installationHash,
-      environment,
-      now,
-    })
-    const didEnsureTrialEntitlement = await maybeStartProductTrialEntitlement(ctx, {
-      productId: TEMU_SHOPPING_LISTS_PRODUCT_ID,
-      entitlements: rawEntitlements,
-      globalUserDocId,
-      globalUserPublicId: globalUser.globalUserId,
-      sourceRef: args.sourceRef ?? providerAccountId,
-      environment,
-      now,
-      allowRestart: args.trialAction === 'restart',
-      trialEligible: installation.eligible,
-      networkHash: args.networkHash,
-    })
-
-    if (didEnsureTrialEntitlement) {
-      await markProductTrialInstallationConsumed(
+        now,
+      })
+      const didEnsureTrialEntitlement = await maybeStartProductTrialEntitlement(
         ctx,
-        installation.installationId,
-        now
+        {
+          productId: TEMU_SHOPPING_LISTS_PRODUCT_ID,
+          entitlements: rawEntitlements,
+          globalUserDocId,
+          globalUserPublicId: globalUser.globalUserId,
+          sourceRef: args.sourceRef ?? providerAccountId,
+          environment,
+          now,
+          allowRestart: args.trialAction === 'restart',
+          trialEligible: installation.eligible,
+          networkHash: args.networkHash,
+        }
       )
-      rawEntitlements = await ctx.db
-        .query('productEntitlements')
-        .withIndex('by_globalUserId', (q) =>
-          q.eq('globalUserId', globalUserDocId)
-        )
-        .collect()
-    }
 
-    return resolveTemuShoppingListsAccess({
-      globalUserId: globalUser.globalUserId,
-      entitlements: rawEntitlements,
-      now,
-      trialEligible: installation.eligible,
-    })
-  },
-})
+      if (didEnsureTrialEntitlement) {
+        await markProductTrialInstallationConsumed(
+          ctx,
+          installation.installationId,
+          now
+        )
+        rawEntitlements = await ctx.db
+          .query('productEntitlements')
+          .withIndex('by_globalUserId', (q) =>
+            q.eq('globalUserId', globalUserDocId)
+          )
+          .collect()
+      }
+
+      return resolveTemuShoppingListsAccess({
+        globalUserId: globalUser.globalUserId,
+        entitlements: rawEntitlements,
+        now,
+        trialEligible: installation.eligible,
+      })
+    },
+  })
 
 export const upsertCommunityGlowsActivationCode = mutation({
   args: {
@@ -2836,7 +3067,9 @@ export const upsertCommunityGlowsActivationCode = mutation({
     const idempotencyKey = `communityglows_code:${codeNormalized}`
     const existing = await ctx.db
       .query('productActivationCodes')
-      .withIndex('by_codeNormalized', (q) => q.eq('codeNormalized', codeNormalized))
+      .withIndex('by_codeNormalized', (q) =>
+        q.eq('codeNormalized', codeNormalized)
+      )
       .unique()
 
     if (existing?.status === 'redeemed') {
@@ -2904,19 +3137,19 @@ export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
         .first()
       if (deletedProvider) throw new Error('provider_account_deleted')
     }
-    const { globalUser, globalUserDocId } = await getOrCreateCommunityGlowsIdentity(
-      ctx,
-      {
+    const { globalUser, globalUserDocId } =
+      await getOrCreateCommunityGlowsIdentity(ctx, {
         providerAccountId,
         email: args.email,
         environment,
         sourceRef: args.sourceRef,
-      }
-    )
+      })
 
     const codeDoc = await ctx.db
       .query('productActivationCodes')
-      .withIndex('by_codeNormalized', (q) => q.eq('codeNormalized', codeNormalized))
+      .withIndex('by_codeNormalized', (q) =>
+        q.eq('codeNormalized', codeNormalized)
+      )
       .unique()
     if (!codeDoc) {
       throw new Error('code_not_found')
@@ -2936,7 +3169,8 @@ export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
 
     const now = Date.now()
     const sameUserCode =
-      codeDoc.status === 'redeemed' && codeDoc.redeemedByGlobalUserId === globalUserDocId
+      codeDoc.status === 'redeemed' &&
+      codeDoc.redeemedByGlobalUserId === globalUserDocId
     if (codeDoc.status === 'redeemed' && !sameUserCode) {
       throw new Error('code_already_used')
     }
@@ -2957,7 +3191,8 @@ export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
         plan: codeDoc.plan,
         status: 'active',
         source: codeDoc.source,
-        sourceRef: args.sourceRef ?? codeDoc.sourceRef ?? codeDoc.codeNormalized,
+        sourceRef:
+          args.sourceRef ?? codeDoc.sourceRef ?? codeDoc.codeNormalized,
         environment,
         idempotencyKey: entitlementIdempotencyKey,
         grantedAt: now,
@@ -2970,7 +3205,8 @@ export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
         plan: codeDoc.plan,
         status: 'active',
         source: codeDoc.source,
-        sourceRef: args.sourceRef ?? codeDoc.sourceRef ?? existingEntitlement.sourceRef,
+        sourceRef:
+          args.sourceRef ?? codeDoc.sourceRef ?? existingEntitlement.sourceRef,
         environment,
         grantedAt: existingEntitlement.grantedAt ?? now,
         updatedAt: now,
@@ -2999,7 +3235,8 @@ export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
       await ctx.db.insert('productAccessEvents', {
         source: codeDoc.source,
         eventType: 'activation_code.redeemed',
-        sourceRef: args.sourceRef ?? codeDoc.sourceRef ?? codeDoc.codeNormalized,
+        sourceRef:
+          args.sourceRef ?? codeDoc.sourceRef ?? codeDoc.codeNormalized,
         idempotencyKey: accessEventIdempotencyKey,
         environment,
         productId: COMMUNITYGLOWS_PRODUCT_ID,
@@ -3011,7 +3248,9 @@ export const redeemCommunityGlowsActivationCodeByProviderAccount = mutation({
 
     const rawEntitlements = await ctx.db
       .query('productEntitlements')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUserDocId))
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', globalUserDocId)
+      )
       .collect()
 
     return {
@@ -3196,7 +3435,11 @@ export const processCommerceEvent = mutation({
     providerEventId: v.string(),
     providerOrderId: v.string(),
     idempotencyKey: v.string(),
-    status: v.union(v.literal('applied'), v.literal('pending_review'), v.literal('ignored')),
+    status: v.union(
+      v.literal('applied'),
+      v.literal('pending_review'),
+      v.literal('ignored')
+    ),
     customerEmail: v.optional(v.string()),
     providerCustomerId: v.optional(v.string()),
     globalUserId: v.optional(v.string()),
@@ -3216,7 +3459,9 @@ export const processCommerceEvent = mutation({
       providerOrderId: args.providerOrderId,
       providerSourceRef: args.providerSourceRef,
     })
-    const metadataSource = normalizeCommerceMetadataSource(args.metadata?.source)
+    const metadataSource = normalizeCommerceMetadataSource(
+      args.metadata?.source
+    )
     const eventSourceRef = `${args.productId}:${sourceRef}`
 
     if (args.provider !== 'stripe') {
@@ -3240,7 +3485,9 @@ export const processCommerceEvent = mutation({
       }
     }
 
-    if (!isAllowedCommerceEnvironment(incomingEnvironment, runtimeEnvironment)) {
+    if (
+      !isAllowedCommerceEnvironment(incomingEnvironment, runtimeEnvironment)
+    ) {
       await upsertSuiteCommerceAccessEvent(ctx, {
         productId: args.productId,
         environment: runtimeEnvironment,
@@ -3261,7 +3508,9 @@ export const processCommerceEvent = mutation({
       }
     }
 
-    if (!isSupportedSuiteCommerceOffer(args.offerId, args.productId, args.plan)) {
+    if (
+      !isSupportedSuiteCommerceOffer(args.offerId, args.productId, args.plan)
+    ) {
       await upsertSuiteCommerceAccessEvent(ctx, {
         productId: args.productId,
         environment: incomingEnvironment,
@@ -3305,7 +3554,9 @@ export const processCommerceEvent = mutation({
 
     const existingEvent = await ctx.db
       .query('productAccessEvents')
-      .withIndex('by_idempotencyKey', (q) => q.eq('idempotencyKey', args.idempotencyKey))
+      .withIndex('by_idempotencyKey', (q) =>
+        q.eq('idempotencyKey', args.idempotencyKey)
+      )
       .first()
     if (existingEvent) {
       return {
@@ -3325,7 +3576,8 @@ export const processCommerceEvent = mutation({
       sourceRef: eventSourceRef,
     })
     const globalUserDocId =
-      resolvedByProvided?.globalUserDocId ?? (await resolveCommerceIdentityBySourceRef(ctx, eventSourceRef))
+      resolvedByProvided?.globalUserDocId ??
+      (await resolveCommerceIdentityBySourceRef(ctx, eventSourceRef))
 
     if (args.eventType === 'paid') {
       if (!globalUserDocId) {
@@ -3413,7 +3665,9 @@ export const processCommerceEvent = mutation({
     const now = Date.now()
     const rawEntitlements = await ctx.db
       .query('productEntitlements')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUserDocId))
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', globalUserDocId)
+      )
       .collect()
 
     const activeEntitlement = rawEntitlements.find(
@@ -3480,7 +3734,11 @@ export const processCommunityGlowsCommerceEvent = mutation({
     providerEventId: v.string(),
     providerOrderId: v.string(),
     idempotencyKey: v.string(),
-    status: v.union(v.literal('applied'), v.literal('pending_review'), v.literal('ignored')),
+    status: v.union(
+      v.literal('applied'),
+      v.literal('pending_review'),
+      v.literal('ignored')
+    ),
     customerEmail: v.optional(v.string()),
     providerCustomerId: v.optional(v.string()),
     globalUserId: v.optional(v.string()),
@@ -3502,7 +3760,9 @@ export const processCommunityGlowsCommerceEvent = mutation({
       providerSourceRef: args.providerSourceRef,
     })
 
-    const metadataSource = normalizeCommerceMetadataSource(args.metadata?.source)
+    const metadataSource = normalizeCommerceMetadataSource(
+      args.metadata?.source
+    )
     if (args.provider !== 'stripe') {
       await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: incomingEnvironment,
@@ -3522,7 +3782,9 @@ export const processCommunityGlowsCommerceEvent = mutation({
         reason: 'provider_not_allowed',
       }
     }
-    if (!isAllowedCommerceEnvironment(incomingEnvironment, runtimeEnvironment)) {
+    if (
+      !isAllowedCommerceEnvironment(incomingEnvironment, runtimeEnvironment)
+    ) {
       await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: runtimeEnvironment,
         sourceRef,
@@ -3542,7 +3804,13 @@ export const processCommunityGlowsCommerceEvent = mutation({
       }
     }
 
-    if (!isSupportedCommunityGlowsCommerceOffer(args.offerId, args.productId, args.plan)) {
+    if (
+      !isSupportedCommunityGlowsCommerceOffer(
+        args.offerId,
+        args.productId,
+        args.plan
+      )
+    ) {
       await upsertCommunityGlowsCommerceAccessEvent(ctx, {
         environment: incomingEnvironment,
         sourceRef,
@@ -3584,7 +3852,9 @@ export const processCommunityGlowsCommerceEvent = mutation({
 
     const existingEvent = await ctx.db
       .query('productAccessEvents')
-      .withIndex('by_idempotencyKey', (q) => q.eq('idempotencyKey', args.idempotencyKey))
+      .withIndex('by_idempotencyKey', (q) =>
+        q.eq('idempotencyKey', args.idempotencyKey)
+      )
       .first()
     if (existingEvent) {
       return {
@@ -3595,17 +3865,21 @@ export const processCommunityGlowsCommerceEvent = mutation({
       }
     }
 
-    const resolvedByProvided = await resolveVerifiedCommunityGlowsGlobalUser(ctx, {
-      globalUserId: args.globalUserId,
-      provider: args.provider,
-      providerAccountId: args.providerCustomerId,
-      email: args.customerEmail,
-      environment: incomingEnvironment,
-      sourceRef,
-    })
+    const resolvedByProvided = await resolveVerifiedCommunityGlowsGlobalUser(
+      ctx,
+      {
+        globalUserId: args.globalUserId,
+        provider: args.provider,
+        providerAccountId: args.providerCustomerId,
+        email: args.customerEmail,
+        environment: incomingEnvironment,
+        sourceRef,
+      }
+    )
 
     const globalUserDocId =
-      resolvedByProvided?.globalUserDocId ?? (await resolveCommerceIdentityBySourceRef(ctx, sourceRef))
+      resolvedByProvided?.globalUserDocId ??
+      (await resolveCommerceIdentityBySourceRef(ctx, sourceRef))
 
     if (args.eventType === 'paid') {
       if (!globalUserDocId) {
@@ -3690,7 +3964,9 @@ export const processCommunityGlowsCommerceEvent = mutation({
     const now = Date.now()
     const rawEntitlements = await ctx.db
       .query('productEntitlements')
-      .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUserDocId))
+      .withIndex('by_globalUserId', (q) =>
+        q.eq('globalUserId', globalUserDocId)
+      )
       .collect()
 
     const activeEntitlement = rawEntitlements.find(
@@ -3702,7 +3978,8 @@ export const processCommunityGlowsCommerceEvent = mutation({
     if (activeEntitlement) {
       await ctx.db.patch(activeEntitlement._id, {
         status: 'revoked',
-        source: activeEntitlement.source ?? COMMUNITYGLOWS_COMMERCE_GRANT_SOURCE,
+        source:
+          activeEntitlement.source ?? COMMUNITYGLOWS_COMMERCE_GRANT_SOURCE,
         sourceRef,
         environment: incomingEnvironment,
         updatedAt: now,
