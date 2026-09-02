@@ -1,10 +1,10 @@
 ---
 artifact: business_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-05-17"
+updated: "2026-09-02"
 status: reviewed
 source_skill: sf-docs
 scope: business
@@ -17,6 +17,7 @@ target_audience: "Windows-first professionals, independents, and productivity-mi
 value_proposition: "A Windows-first productivity system centered on Windows Mastery, supported by bilingual educational content and companion assets."
 business_model: "Content-led acquisition into a paid flagship offer (Windows Mastery), with gated learning resources and adjacent products."
 market: "Windows productivity education and workflow optimization."
+delivery_posture: development
 depends_on: []
 supersedes:
   - BUSINESS.md
@@ -24,7 +25,8 @@ evidence:
   - README.md
   - src/content/products/en/commandglows.md
   - src/content/docs/en/formations.mdx
-next_review: "2026-06-17"
+  - "Operator decision 2026-09-02: delivery_posture is development."
+next_review: "2026-12-02"
 next_step: "/sf-docs update"
 ---
 # Business Context
