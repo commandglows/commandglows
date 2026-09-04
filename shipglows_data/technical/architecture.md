@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: '1.0'
-artifact_version: '1.5.0'
+artifact_version: '1.6.0'
 project: commandglows
 created: '2026-05-17'
-updated: '2026-08-11'
+updated: '2026-09-04'
 status: reviewed
 source_skill: sg-docs
 scope: architecture
@@ -37,6 +37,7 @@ linked_systems:
   - convex
   - Clerk
   - Resend
+  - Postmark target transport
   - Stripe Managed Payments
   - Firebase
 external_dependencies:
@@ -55,10 +56,11 @@ depends_on:
   - shipglows_data/technical/guidelines.md
   - shipglows_data/business/business.md
   - shipglows_data/business/branding.md
+  - shipglows_data/workflow/specs/unified-identity-email-consent-and-delivery.md
 supersedes:
   - ARCHITECTURE.md
 next_review: '2026-09-11'
-next_step: 'Capture hosted Stripe, Convex and app-refresh proof before production readiness.'
+next_step: 'Implement phase 1 of the approved identity/email control-plane contract, then capture hosted Stripe, Convex and app-refresh proof before production readiness.'
 ---
 
 # Architecture
@@ -163,6 +165,28 @@ Convex is the primary state store. Current tables in `convex/schema.ts` are:
 - `featureVotes`
 - `featureSuggestions`
 
+### Target email control plane (approved, not implemented)
+
+The approved `unified-identity-email-consent-and-delivery` contract extends the
+existing Convex identity and entitlement spine rather than creating an
+independent marketing identity store. CommandGlows will own email addresses,
+consent evidence, audience membership, suppressions and delivery events.
+Anonymous email contacts may exist before a `globalUserId` is known and may be
+linked later only through verified identity reconciliation.
+
+Consent, audience membership, suppression and entitlement remain separate
+domains. Account creation, purchase or entitlement never implies marketing
+consent; a marketing unsubscribe never revokes product access. Product-facing
+email APIs will be versioned and server-authenticated, with business-scoped
+authorization and idempotency.
+
+Postmark is the approved target transport: one Server per business and distinct
+Transactional and Broadcast Message Streams. Provider contact state is not
+canonical and the application will depend on a provider-neutral transport
+adapter. Existing Resend newsletter and waitlist integrations remain the
+runtime truth until their corresponding migration phases have implementation,
+parity, rollback and hosted-delivery proof.
+
 ## Invariants
 
 - English routes remain unprefixed while French routes stay under `/fr`.
@@ -172,6 +196,9 @@ Convex is the primary state store. Current tables in `convex/schema.ts` are:
 - Checkout redirects never grant access. Only signed, idempotent provider events may change paid entitlement state.
 - Raw client-supplied global user IDs are never trusted for any suite checkout identity.
 - Convex classifies every non-Stripe commerce event as non-granting `pending_review`.
+- Email, consent and entitlement belong to one CommandGlows control plane but
+  remain distinct records and authorization decisions.
+- A provider delivery state never creates marketing consent or product access.
 
 ## Validation
 
