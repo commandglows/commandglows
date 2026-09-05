@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "CommandGlows"
 created: "2026-09-04"
 created_at: "2026-09-04 01:52:00 UTC"
-updated: "2026-09-04"
-updated_at: "2026-09-04 01:52:00 UTC"
+updated: "2026-09-05"
+updated_at: "2026-09-05 12:14:00 UTC"
 status: ready
 source_skill: sg-engineering
 source_model: "GPT-5 Codex"
@@ -40,7 +40,7 @@ evidence:
   - "Operator decision of 2026-09-03: CommandGlows owns contacts, consents, audiences and entitlements; ShipGlows governs without storing personal data."
   - "Operator decision of 2026-09-03: Postmark is the target delivery transport and remains replaceable."
   - "Operator correction of 2026-09-04: the architecture contract is exhaustive and starts from the existing identity, entitlement and email implementation."
-next_step: "Implement phase 1 domain storage and the versioned subscription intake without changing ContentGlows or removing Resend."
+next_step: "Configure an authorized isolated email pilot after controller and market decisions; retain Resend and do not migrate production."
 ---
 
 # Unified Identity, Email Consent And Delivery
@@ -632,3 +632,37 @@ No production-ready claim is permitted while legal retention durations, hosted w
 ## Current Chantier Flow
 
 - `2026-09-04 — architecture`: exhaustive contract approved and documented from the existing Convex identity/entitlement spine, direct Resend routes and ContentGlows Auth0 bridge. No runtime behavior or provider configuration changed.
+
+## Implementation continuation — 2026-09-05
+
+Diane authorized the central implementation and CommunityGlows as first pilot through the originating CommunityGlows task. This supersedes phase order only: other products remain inventory-only; Resend stays intact. Production migration, real sends (including tests without an authorized recipient), DNS, purchases and provider configuration mutations remain excluded.
+
+Readiness: ready for additive local implementation and mocked proof; not production-ready. Entity, markets, exact retention policy, approved notices and configured non-production provider resources remain activation gates. Missing values fail closed rather than using invented legal or provider identifiers.
+
+Execution contract: Astro v1 routes remain thin, Convex owns atomic domain transitions and a durable outbox. Product credentials are environment/business scoped and checked at the authoritative Convex boundary. Confirmation uses scoped expiring single-use opaque tokens; GET links never mutate. Broadcast drafts require immutable rendered-content preview and explicit approval before enqueue. Dispatch rechecks consent and suppressions. Postmark-managed opt-out remains enabled until separate custom-unsubscribe approval exists. Tracking is disabled. Ambiguous provider submissions are held for reconciliation, never automatically retried, because Postmark has no idempotency-key support.
+
+Execution batches (integration owner: main agent):
+
+| Batch | Write ownership | Dependency / proof |
+| --- | --- | --- |
+| A — domain and outbox | `commandglows_site/convex/email*.ts`, additive schema import, `tests/email/centralDomain.test.ts` | Existing identity tables preserved; Convex integration tests for isolation, replay, consent, token, suppression and dispatch races |
+| B — transport and presentation | `commandglows_site/src/lib/email/central/**`, `src/pages/api/v1/email/**`, `tests/email/centralApi.test.ts`, `tests/email/centralTransport.test.ts` | Agreed A interface; route, template and mocked provider proof |
+| C — pilot and integration | CommunityGlows email-only files after coordination, docs, generated Convex API | A+B; no concurrent shared-file writes; combined local proof then operator-owned hosted gates |
+
+ZOMBIES: zero/one/repeated subscriptions, many brands, payload/time boundaries, API and provider errors, expired/replayed tokens, withdraw-before-dispatch and crash-after-submission are required. OWASP scope: server authorization, tenant isolation, input/HTML injection, cryptographic tokens, abuse limits, bounded payloads, safe errors and retry uncertainty. Existing lowercase contract vocabulary is retained as the project-defined identifier exception.
+
+## Skill Run History
+
+| Date UTC | Skill | Model | Action | Result | Next step |
+| --- | --- | --- | --- | --- | --- |
+| 2026-09-05 | sg-development / 101-sg-ready | inherited Codex | Reconcile approved contract, clean worktree and current Postmark constraints | Ready for additive local implementation; external activation gated | Implement A/B then coordinated pilot |
+| 2026-09-05 | sg-development / 102-sg-start | inherited Codex | Add Convex consent/outbox, v1 API, Postmark, templates and coordinated CommunityGlows proxy/form | Local implementation and mocked lifecycle passing; legacy Resend preserved | Complete combined checks and preserve checkpoint |
+| 2026-09-05 | sg-development / 103-sg-verify | inherited Codex | Combined domain, API, identity regression and scheduled-worker checks | 117 tests pass; Astro 0 errors; Convex tsc pass; 5 metadata files pass. CommunityGlows 10 tests and 49-page builds pass. Hosted/legal/provider verification remains partial. | Preserve isolated checkpoint; resolve activation facts |
+
+### Current implementation evidence
+
+- Local proof includes actual Convex test mutations, HTTP authentication, client/business isolation, replay/conflict, expiring/replayed/generation-bound tokens, recipient/IP quotas, immutable preview, final consent recheck, ambiguous submission reconciliation, keyed erasure tombstones and provider outage tests.
+- The public pilot stays disabled by default. No Convex deployment selected, no Postmark resource configured, no real or sandbox send, no contact import and no DNS mutation occurred.
+- `central-email-operations.md` is the configuration and legal/operations handoff. The implementation is a one-recipient reviewed broadcast pilot with one marketing purpose per business stream. Full audience execution, verified identity linking, global suppression administration, automatic retention cleanup and hosted/client-matrix proof remain outside the delivered local slice.
+- `Implementation Excellence Gate`: local backend/domain and route proof pass; hosted/provider/manual/legal readiness partial. `OWASP Security Gate`: authentication, tenant checks, token integrity, bounded input, escaped output and safe failure tests pass locally; no full ASVS or universal compliance claim. `Clean Code Gate`: coherent domain/adapter separation and behavior tests; persisted configuration and cleanup require the documented activation work.
+- Topology receipt: three directly dispatched agents, partitioned domain/pilot writes and read-only provider review; main owns shared integration. CommunityGlows owner explicitly released the dirty newsletter component and targeted launch check; billing/app/guides remained untouched.

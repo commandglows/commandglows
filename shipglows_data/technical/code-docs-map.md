@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-08-11"
+updated: "2026-09-05"
 status: reviewed
 source_skill: sg-docs
 scope: code-docs-map
@@ -63,6 +63,13 @@ Map stable code areas to their primary technical docs, expected validations, and
 | `README.md`, `AGENT.md`, `shipglows_data/**` | governance and onboarding docs | `shipglows_data/technical/README.md` | all canonical governance docs | metadata lint + targeted `rg` checks | doc drift, new subsystem docs, or governance migration |
 
 ## Documentation Update Plan
+
+Central email pilot: `commandglows_site/convex/email*.ts`, `convex/crons.ts`,
+`src/lib/email/central/**` and `src/pages/api/v1/email/**` map to
+`central-email-operations.md`, `architecture.md` and `context-function-tree.md`.
+Focused proof is `pnpm exec vitest run tests/email tests/bridge` plus site and
+Convex type checks. CommunityGlows's coordinated `site/NEWSLETTER.md` owns its
+static-site proxy configuration; no other product migration is implied.
 
 Use this format when code changes affect docs:
 
