@@ -658,6 +658,7 @@ ZOMBIES: zero/one/repeated subscriptions, many brands, payload/time boundaries, 
 | 2026-09-05 | sg-development / 101-sg-ready | inherited Codex | Reconcile approved contract, clean worktree and current Postmark constraints | Ready for additive local implementation; external activation gated | Implement A/B then coordinated pilot |
 | 2026-09-05 | sg-development / 102-sg-start | inherited Codex | Add Convex consent/outbox, v1 API, Postmark, templates and coordinated CommunityGlows proxy/form | Local implementation and mocked lifecycle passing; legacy Resend preserved | Complete combined checks and preserve checkpoint |
 | 2026-09-05 | sg-development / 103-sg-verify | inherited Codex | Combined domain, API, identity regression and scheduled-worker checks | 117 tests pass; Astro 0 errors; Convex tsc pass; 5 metadata files pass. CommunityGlows 10 tests and 49-page builds pass. Hosted/legal/provider verification remains partial. | Preserve isolated checkpoint; resolve activation facts |
+| 2026-09-05 | sg-development / 005-sg-ship / 405-sg-prod | inherited Codex | Push code checkpoint `1fcca1e` and open draft PR 3; inspect automatic Vercel Preview deployment | Git-backed; GitHub deployment 6280869074 reports Preview success for the code commit. HTTP probe is blocked by Vercel authentication (401 Protected deployment), not application auth proof. No email sent. | Keep PR draft and transport disabled; configure authorized isolated environment and resolve controller/market/retention facts |
 
 ### Current implementation evidence
 
