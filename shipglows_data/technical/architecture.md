@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: '1.0'
-artifact_version: '1.6.0'
+artifact_version: '1.7.0'
 project: commandglows
 created: '2026-05-17'
-updated: '2026-09-04'
+updated: '2026-09-05'
 status: reviewed
 source_skill: sg-docs
 scope: architecture
@@ -165,7 +165,7 @@ Convex is the primary state store. Current tables in `convex/schema.ts` are:
 - `featureVotes`
 - `featureSuggestions`
 
-### Target email control plane (approved, not implemented)
+### Email control plane (local pilot implemented, deployment unverified)
 
 The approved `unified-identity-email-consent-and-delivery` contract extends the
 existing Convex identity and entitlement spine rather than creating an
@@ -186,6 +186,14 @@ canonical and the application will depend on a provider-neutral transport
 adapter. Existing Resend newsletter and waitlist integrations remain the
 runtime truth until their corresponding migration phases have implementation,
 parity, rollback and hosted-delivery proof.
+
+The September 5 additive pilot now has `convex/email*.ts` domain/outbox storage,
+versioned Astro email controllers, Postmark transport, FR/EN HTML/text templates,
+and a guarded scheduled worker. CommunityGlows has the first coordinated
+same-origin signup proxy. Current local tests cover persistence through
+confirmation and withdrawal with mocked provider calls. No provider or
+production deployment is claimed. See `central-email-operations.md` for actual
+configuration, pilot limits, legal gates and deferred migrations.
 
 ## Invariants
 
