@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.4.0"
 project: "CommandGlows"
 created: "2026-06-18"
-updated: "2026-08-11"
+updated: "2026-09-06"
 status: draft
 source_skill: "sg-docs"
 scope: "payment-activation-entitlements"
@@ -24,8 +24,8 @@ depends_on:
   - artifact: "shipglows_data/technical/platforms/stripe-managed-payments.md"
     artifact_version: "1.0.0"
     required_status: "draft"
-  - artifact: "/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
-    artifact_version: "1.0.0"
+  - artifact: "C:/Users/Diane/ShipGlows/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
+    artifact_version: "1.3.0"
     required_status: "ready"
 supersedes: []
 evidence:
@@ -49,7 +49,7 @@ next_step: "Complete hosted Stripe/Convex lifecycle proof, retention/telemetry, 
 ## Active Suite Decision (2026-08-11)
 
 This document derives from the sole active cross-product authority:
-`/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md`.
+`C:/Users/Diane/ShipGlows/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md`.
 
 Every current and future suite product uses exactly three maximum 30-day trial
 cycles: the initial cycle plus two user-triggered restarts. Purchase is
@@ -81,9 +81,30 @@ proof remains incomplete:
 - Every current sellable offer has a named environment-backed Stripe Price-ID
   placeholder; real values and price amounts remain intentionally unconfigured.
 
-No users or paid orders exist to preserve, so the planned migration is a clean
-reset without grandfathering or provider/customer transfer. If real hosted
-records are discovered, implementation stops for a migration amendment.
+The earlier no-user assumption is historical and has not been revalidated.
+Existing identities, orders and ledger history must be preserved. No destructive
+migration or hosted data change is authorized by local implementation.
+
+## Central transition hardening (2026-09-06, local)
+
+Checkout now stamps the Convex handoff's stable idempotency reference into both
+Session and PaymentIntent metadata. A client-supplied source reference cannot
+choose the purchase targeted by a later refund.
+
+The generic commerce processor leaves grants unchanged for pending review,
+allows a pending event to resume after identity resolution, and targets negative
+transitions by owner, product, environment and purchase reference. A negative
+event without an existing grant is retained to block a delayed payment for that
+purchase. Existing grants cannot be reassigned or reactivated through a changed
+binding. Commerce response snapshots and source-reference identity lookup filter
+the environment.
+
+These guarantees require the same purchase reference on related events. Older
+events without a stable shared reference still require reconciliation; the
+retired CommunityGlows-specific commerce mutation has not yet been unified.
+AppSumo, identity recovery, Firebase freshness, all product adapters and native
+acceptance remain work in progress. Local synthetic tests do not prove hosted
+provider fulfillment or Windows acceptance.
 
 ## Purpose
 
@@ -201,7 +222,7 @@ One shared checkout endpoint is acceptable for multiple products when all of the
 
 - The request contains an explicit allowlisted `offerId`.
 - The backend resolves the matching `productId`, `plan`, provider config, and redirect paths from the offer registry instead of trusting the client.
-- Product analytics can still distinguish the origin surface through fields such as `source` and `source_ref`.
+- Product analytics can distinguish the origin through `source`; `source_ref` identifies the server-owned checkout purchase.
 - Webhook fulfillment writes the canonical suite entitlement for the resolved product instead of a product-local duplicate ledger.
 
 Do not create a separate checkout endpoint per domain unless a product requires materially different provider, auth, risk, or deployment behavior. Domain count alone is not a reason to split the endpoint.

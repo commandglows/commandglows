@@ -101,6 +101,9 @@ describe('Stripe-only commerce checkout route', () => {
     expect(body).toContain('managed_payments[enabled]=true')
     expect(body).toContain(`line_items[0][price]=${priceId}`)
     expect(body).toContain(`metadata[product_id]=${productId}`)
+    const form = new URLSearchParams(body)
+    expect(form.get('metadata[source_ref]')).toBe(`suite-checkout:${productId}`)
+    expect(form.get('payment_intent_data[metadata][source_ref]')).toBe(`suite-checkout:${productId}`)
     expect(body).not.toContain(identityToken)
     expect(stripeOptions?.headers).toContainEqual([
       'Idempotency-Key',

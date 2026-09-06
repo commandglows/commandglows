@@ -490,7 +490,8 @@ function normalizeCommerceEnvironment(
 
 function resolveCommerceIdentityBySourceRef(
   ctx: MutationCtx,
-  sourceRef: string | undefined
+  sourceRef: string | undefined,
+  environment: string
 ): Promise<Id<'globalUsers'> | null> {
   if (!sourceRef) {
     return Promise.resolve(null)
@@ -503,7 +504,7 @@ function resolveCommerceIdentityBySourceRef(
         q.eq('source', SUITE_COMMERCE_EVENT_SOURCE).eq('sourceRef', sourceRef)
       )
       .collect()
-    const suiteEvent = suiteEvents.find((entry) => entry.globalUserId) as
+    const suiteEvent = suiteEvents.find((entry) => entry.globalUserId && entry.environment === environment) as
       | { globalUserId: Id<'globalUsers'> }
       | undefined
 
@@ -520,7 +521,7 @@ function resolveCommerceIdentityBySourceRef(
       )
       .collect()
 
-    const event = sourceEvents.find((entry) => entry.globalUserId) as
+    const event = sourceEvents.find((entry) => entry.globalUserId && entry.environment === environment) as
       | { globalUserId: Id<'globalUsers'> }
       | undefined
 
@@ -1073,6 +1074,14 @@ async function upsertCommerceAccessEvent(
 
   if (existing) {
     if (
+      existing.source !== params.source ||
+      existing.productId !== params.productId ||
+      existing.sourceRef !== params.sourceRef ||
+      existing.environment !== params.environment
+    ) {
+      throw new Error('commerce_event_binding_conflict')
+    }
+    if (
       existing.status !== params.status &&
       isHigherPriorityStatus(params.status, existing.status)
     ) {
@@ -1085,6 +1094,11 @@ async function upsertCommerceAccessEvent(
         customerId: params.providerCustomerId ?? existing.customerId,
         customerEmail: params.customerEmail ?? existing.customerEmail,
         sourceRef: params.sourceRef,
+        environment: params.environment,
+        productId: params.productId,
+        ...(params.globalUserDocId
+          ? { globalUserId: params.globalUserDocId }
+          : {}),
       })
     }
     return existing
@@ -1221,6 +1235,15 @@ async function upsertSuiteCommerceEntitlement(
     .first()
 
   if (existing) {
+    if (
+      existing.globalUserId !== args.globalUserDocId ||
+      existing.productId !== args.productId ||
+      existing.environment !== args.environment ||
+      existing.sourceRef !== args.sourceRef ||
+      existing.status !== 'active'
+    ) {
+      throw new Error('commerce_grant_binding_conflict')
+    }
     await ctx.db.patch(existing._id, {
       status: 'active',
       source: args.source,
@@ -1248,6 +1271,59 @@ async function upsertSuiteCommerceEntitlement(
   })
 }
 
+async function hasTerminalCommerceEventForPurchase(
+  ctx: MutationCtx,
+  args: {
+    source: string
+    sourceRef: string
+    productId: string
+    environment: string
+  }
+) {
+  const purchaseEvents = await ctx.db
+    .query('productAccessEvents')
+    .withIndex('by_sourceRef', (q) =>
+      q.eq('source', args.source).eq('sourceRef', args.sourceRef)
+    )
+    .collect()
+
+  return purchaseEvents.some(
+    (event) =>
+      event.productId === args.productId &&
+      event.environment === args.environment &&
+      (event.status === 'revoked' ||
+        (event.status === 'pending_review' &&
+          event.reason === 'missing_global_user_for_revoke'))
+  )
+}
+
+async function findActiveCommerceEntitlementForPurchase(
+  ctx: MutationCtx,
+  args: {
+    globalUserDocId: Id<'globalUsers'>
+    productId: string
+    sourceRef: string
+    environment: string
+  }
+) {
+  const entitlements = await ctx.db
+    .query('productEntitlements')
+    .withIndex('by_globalUserId', (q) =>
+      q.eq('globalUserId', args.globalUserDocId)
+    )
+    .collect()
+
+  return (
+    entitlements.find(
+      (entry) =>
+        entry.productId === args.productId &&
+        entry.environment === args.environment &&
+        entry.sourceRef === args.sourceRef &&
+        isActiveSuiteEntitlementWithExpiration(entry)
+    ) ?? null
+  )
+}
+
 async function resolveVerifiedCommerceGlobalUser(
   ctx: MutationCtx,
   args: {
@@ -1265,7 +1341,8 @@ async function resolveVerifiedCommerceGlobalUser(
 async function buildSuiteCommerceAccessSnapshot(
   ctx: MutationCtx,
   globalUserDocId: Id<'globalUsers'>,
-  productId: string
+  productId: string,
+  environment: string
 ) {
   const rawEntitlements = await ctx.db
     .query('productEntitlements')
@@ -1278,7 +1355,7 @@ async function buildSuiteCommerceAccessSnapshot(
   }
 
   const entitlement = selectPreferredActiveProductEntitlement(
-    rawEntitlements.map((entry) => ({
+    rawEntitlements.filter((entry) => entry.environment === environment).map((entry) => ({
       productId: entry.productId,
       status: entry.status,
       plan: entry.plan,
@@ -3559,12 +3636,44 @@ export const processCommerceEvent = mutation({
         q.eq('idempotencyKey', args.idempotencyKey)
       )
       .first()
-    if (existingEvent) {
+    if (existingEvent && (
+      existingEvent.source !== SUITE_COMMERCE_EVENT_SOURCE ||
+      existingEvent.productId !== args.productId ||
+      existingEvent.sourceRef !== eventSourceRef ||
+      existingEvent.environment !== incomingEnvironment
+    )) {
+      throw new Error('commerce_event_binding_conflict')
+    }
+    if (existingEvent && existingEvent.status !== 'pending_review') {
       return {
         ok: true,
         status: existingEvent.status,
         alreadyProcessed: true,
         reason: existingEvent.reason ?? 'already_processed',
+      }
+    }
+
+    if (
+      args.eventType === 'pending_review' ||
+      args.status === 'pending_review'
+    ) {
+      await upsertSuiteCommerceAccessEvent(ctx, {
+        productId: args.productId,
+        environment: incomingEnvironment,
+        sourceRef: eventSourceRef,
+        idempotencyKey: args.idempotencyKey,
+        status: 'pending_review',
+        eventType: 'suite_commerce.pending_review',
+        customerEmail: args.customerEmail,
+        providerCustomerId: args.providerCustomerId,
+        providerEventId: args.providerEventId,
+        reason: buildCommerceEventReason('pending_review'),
+      })
+      return {
+        ok: false,
+        status: 'pending_review',
+        alreadyProcessed: Boolean(existingEvent),
+        reason: 'commerce_pending_review',
       }
     }
 
@@ -3578,7 +3687,7 @@ export const processCommerceEvent = mutation({
     })
     const globalUserDocId =
       resolvedByProvided?.globalUserDocId ??
-      (await resolveCommerceIdentityBySourceRef(ctx, eventSourceRef))
+      (await resolveCommerceIdentityBySourceRef(ctx, eventSourceRef, incomingEnvironment))
 
     if (args.eventType === 'paid') {
       if (!globalUserDocId) {
@@ -3599,6 +3708,35 @@ export const processCommerceEvent = mutation({
           status: 'pending_review',
           alreadyProcessed: false,
           reason: 'missing_global_user',
+        }
+      }
+
+      if (
+        await hasTerminalCommerceEventForPurchase(ctx, {
+          source: SUITE_COMMERCE_EVENT_SOURCE,
+          sourceRef: eventSourceRef,
+          productId: args.productId,
+          environment: incomingEnvironment,
+        })
+      ) {
+        await upsertSuiteCommerceAccessEvent(ctx, {
+          productId: args.productId,
+          environment: incomingEnvironment,
+          sourceRef: eventSourceRef,
+          idempotencyKey: args.idempotencyKey,
+          status: 'revoked',
+          eventType: 'suite_commerce.stale_paid_ignored',
+          customerEmail: args.customerEmail,
+          providerCustomerId: args.providerCustomerId,
+          providerEventId: args.providerEventId,
+          reason: 'purchase_already_revoked',
+          globalUserDocId,
+        })
+        return {
+          ok: true,
+          status: 'revoked',
+          alreadyProcessed: false,
+          reason: 'purchase_already_revoked',
         }
       }
 
@@ -3632,7 +3770,8 @@ export const processCommerceEvent = mutation({
       const snapshot = await buildSuiteCommerceAccessSnapshot(
         ctx,
         globalUserDocId,
-        args.productId
+        args.productId,
+        incomingEnvironment
       )
       return {
         ok: true,
@@ -3664,33 +3803,49 @@ export const processCommerceEvent = mutation({
     }
 
     const now = Date.now()
-    const rawEntitlements = await ctx.db
-      .query('productEntitlements')
-      .withIndex('by_globalUserId', (q) =>
-        q.eq('globalUserId', globalUserDocId)
-      )
-      .collect()
-
-    const activeEntitlement = rawEntitlements.find(
-      (entry) =>
-        entry.productId === args.productId &&
-        isActiveSuiteEntitlementWithExpiration(entry)
-    )
-
-    if (activeEntitlement) {
-      await ctx.db.patch(activeEntitlement._id, {
-        status: 'revoked',
-        source: activeEntitlement.source ?? SUITE_COMMERCE_EVENT_SOURCE,
+    const activeEntitlement = await findActiveCommerceEntitlementForPurchase(
+      ctx,
+      {
+        globalUserDocId,
+        productId: args.productId,
         sourceRef: eventSourceRef,
         environment: incomingEnvironment,
-        updatedAt: now,
+      }
+    )
+
+    if (!activeEntitlement) {
+      await upsertSuiteCommerceAccessEvent(ctx, {
+        productId: args.productId,
+        environment: incomingEnvironment,
+        sourceRef: eventSourceRef,
+        idempotencyKey: args.idempotencyKey,
+        status: 'revoked',
+        eventType: 'suite_commerce.revoke_target_missing',
+        customerEmail: args.customerEmail,
+        providerCustomerId: args.providerCustomerId,
+        providerEventId: args.providerEventId,
+        reason: 'matching_purchase_not_found',
+        globalUserDocId,
       })
+      return {
+        ok: true,
+        status: 'revoked',
+        alreadyProcessed: false,
+        reason: 'matching_purchase_not_found',
+      }
     }
+
+    await ctx.db.patch(activeEntitlement._id, {
+      status: 'revoked',
+      source: activeEntitlement.source ?? SUITE_COMMERCE_EVENT_SOURCE,
+      updatedAt: now,
+    })
 
     const snapshot = await buildSuiteCommerceAccessSnapshot(
       ctx,
       globalUserDocId,
-      args.productId
+      args.productId,
+      incomingEnvironment
     )
     await upsertSuiteCommerceAccessEvent(ctx, {
       productId: args.productId,
@@ -3880,7 +4035,7 @@ export const processCommunityGlowsCommerceEvent = mutation({
 
     const globalUserDocId =
       resolvedByProvided?.globalUserDocId ??
-      (await resolveCommerceIdentityBySourceRef(ctx, sourceRef))
+      (await resolveCommerceIdentityBySourceRef(ctx, sourceRef, incomingEnvironment))
 
     if (args.eventType === 'paid') {
       if (!globalUserDocId) {
