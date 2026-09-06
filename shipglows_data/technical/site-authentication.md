@@ -110,8 +110,11 @@ not claimed by this checkpoint.
 Implementation checkpoint: 346 focused tests pass. The additive backend is deployed
 to the existing development deployment (32 tables, no further table/index removals;
 commerce and email crons retained). The hosted preview renders legacy recovery;
-authenticated Auth0 acceptance remains pending because operator CLI login expired.
-No Auth0 tenant/client configuration or production activation was performed.
+authenticated Auth0 acceptance remains pending. Operator CLI login is now verified;
+the accessible tenant already serves ContentGlows and has no CommandGlows client.
+Selecting a dedicated preview client in that shared tenant versus a separate test
+tenant is awaiting the operator's choice. No Auth0 tenant/client configuration or
+production activation was performed.
 
 Capture live schema/indexes, functions and crons before any shared-backend deploy.
 The audited dev schema contains 31 existing tables. The planned delta adds
