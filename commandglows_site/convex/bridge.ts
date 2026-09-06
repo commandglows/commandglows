@@ -782,7 +782,7 @@ function isSupportedCommunityGlowsCommerceOffer(
   )
 }
 
-function isSupportedSuiteCommerceOffer(
+export function isSupportedSuiteCommerceOffer(
   offerId: string,
   productId: string,
   plan: string

@@ -1,0 +1,155 @@
+---
+artifact: spec
+metadata_schema_version: "1.0"
+artifact_version: "1.0.0"
+project: commandglows
+created: "2026-09-06"
+updated: "2026-09-06"
+created_at: "2026-09-06T19:15:00Z"
+updated_at: "2026-09-06T19:51:00Z"
+status: active
+source_skill: sg-development
+source_model: GPT-6
+user_story: "A paid buyer receives the correct access or an identifiable, owned recovery case."
+scope: commerce-launch-readiness
+owner: Diane
+confidence: high
+risk_level: high
+security_impact: yes
+docs_impact: yes
+linked_systems: [Stripe, Convex, Clerk, Astro]
+depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
+supersedes: []
+evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "244 synthetic tests across 28 suites, Convex TypeScript and Astro checks passed.", "Hosted acceptance, notification receipt and protected access are pending."]
+next_step: "Execute the hosted test-mode acceptance authorized on 2026-09-06; commit validated milestones."
+---
+
+# Title
+
+Commerce launch readiness
+
+## Status
+
+Implemented and verified with local synthetic evidence. Commercial opening remains blocked on hosted test-mode proof.
+
+## User Story
+
+As a buyer, a completed payment gives me the correct access or an identifiable support case. As the operator, I can find, own and resolve every blocked purchase, including cases without a known user and cases whose retries are exhausted.
+
+## Minimal Behavior Contract
+
+Verified payment grants exactly the bound purchase. Partial successful refunds preserve access; full cumulative successful refunds remove it. An open dispute suspends that purchase. A won or closed warning dispute removes only its own blocking reason; lost disputes and other blocking reasons remain effective. Duplicate or unordered delivery never rewrites received evidence. Unresolved events create visible, owned, auditable incidents with bounded recovery. Return URLs never prove payment or entitlement.
+
+## Success Behavior
+
+One purchase grant, no cross-purchase revocation, safe restoration after dispute closure, stable replay, successful controlled recovery and an auditable operator resolution. The buyer checks actual account access and has a support path while verification is pending.
+
+## Error Behavior
+
+Invalid signatures are rejected. Dependency failures are retryable. Unbound identity/payment/offer data never grants access and produces a durable incident when a verified event is available. Terminal retry exhaustion escalates rather than disappearing. Alert delivery failure remains visible and retryable. A missing webhook can be recovered only from authenticated Stripe evidence with environment and purchase binding rechecked; an operator cannot supply an arbitrary granting envelope.
+
+## Problem
+
+Before this change, disputes were irreversible revocations, refund normalization depended on mutable charge.amount_refunded, and recovery had five total attempts but no operational queue or exhaustion workflow. The success page overstated payment/access proof.
+
+## Solution
+
+Retain immutable provider snapshots and their payload digest. Add explicit refund/dispute facts to the existing receipt contract and derive purchase access from eligible facts. Preserve legacy terminal events conservatively. Extend the existing admin authorization pattern with a commerce incident queue, bounded actions, durable alerts and provider-event reconciliation. Use existing UI tokens and account/admin navigation.
+
+## Scope In
+
+Stripe checkout lifecycle, receipts, refund/dispute state, purchase entitlements, admin incident handling and alerts, safe replay/reconciliation, buyer feedback, synthetic tests and operator documentation.
+
+## Scope Out
+
+Historical migration; unrelated identity/email architecture; real messages, provider configuration, hosted database writes, deployment and commercial opening in this local stage.
+
+## Constraints
+
+Work in the existing commerce worktree. Preserve unrelated work. Keep schemas additive and legacy receipts readable. Server-side bridge secret and admin identity checks remain mandatory. No raw webhook, customer email or secret in operational alerts. No manual license grant/revoke shortcut for a commerce incident.
+
+## Test Contract
+
+Run local Vitest commerce/bridge/admin tests, Convex TypeScript, Astro check and governance metadata lint. Fixtures and mocked provider/transport calls only. Hosted checklist must later prove signed delivery, authentication, protected access, alert receipt/failure and app refresh. Local tests do not fulfill hosted acceptance.
+
+## Dependencies
+
+Existing server-owned commerceCheckoutHandoffs and PaymentIntent binding; receipt ledger; admin authentication; installed Stripe SDK and convex-test. Alert transport configuration is a deployment prerequisite, never inferred from newsletter configuration.
+
+## Invariants
+
+- Receipt identity is provider + environment + event ID; the same verified payload reuses its original envelope.
+- Only a paid Checkout Session matching the server handoff establishes the payment binding.
+- Refund/dispute facts operate on that payment and purchase only.
+- Failed/pending refunds do not count as successful refunds; distinct refund IDs count once.
+- Closed disputes beat stale open events; contradictory terminal evidence requires review.
+- Legacy/manual terminal revocations are not undone by a new dispute closure.
+- Resolution cannot change a receipt envelope, overwrite identity, reset retry counters or bypass signatures.
+
+## Links & Consequences
+
+The Astro webhook and Convex bridge remain one purchase flow. Product entitlement snapshots and formation gating consume the same authoritative rights. Admin operations reuse Clerk/server and Convex role checks. Existing compatibility entrypoints use the same processor.
+
+## Documentation Coherence
+
+Update payment-activation-entitlements.md and stripe-managed-payments.md. The scenario matrix is [commerce-launch-scenarios.md](../../technical/commerce-launch-scenarios.md); the operator runbook documents alert/reconciliation steps. Correct purchase return copy.
+
+## Edge Cases
+
+ZOMBIES: zero/no webhook; one/multiple purchases; repeated partial refunds; boundary full refund and retry limit; malformed or foreign evidence; stale/equal-time events; concurrent delivery/recovery; missing user; failed alert; disabled browser JavaScript. No bulk migration is required.
+
+## Implementation Tasks
+
+1. Extend provider evidence and the receipt processor; verify signed parser-to-ledger fixtures, refund totals, disputes and replay permutations.
+2. Add operator queue, durable alerts and authenticated evidence recovery; verify auth, pagination, attempt conflicts, exhaustion, alert retry and environment isolation.
+3. Correct buyer feedback and add scenario/runbook evidence; run combined focused suites, type checks and metadata lint.
+
+## Acceptance Criteria
+
+- Every matrix row states expected rights, buyer feedback, treatment, proof and error exit.
+- Partial then full refunds and old-event replay produce no binding conflict and no double counting.
+- Won/closed-warning disputes restore only a previously paid, otherwise unblocked purchase; lost/multiple disputes and full refunds prevent restoration.
+- Every pending incident is listable without an owner identity; operator claim/escalation/recovery are audited and stale writes rejected.
+- Exhausted cases have an explicit evidence-based recovery or linked terminal resolution, never a silent reset.
+- Alert configuration/delivery failures are visible; hosted launch checklist requires actual receipt by the operator.
+- No webhook recovery accepts arbitrary customer-supplied event data.
+
+## Test Strategy
+
+Exercise receipt and entitlement state through Convex mutations, signed Stripe fixtures through the adapter and route, operator APIs with unauthorized/admin identities, and transport actions with mocked HTTP. Run regression suites for checkout and bridge consumers. Keep hosted/auth/browser claims pending unless actually proved.
+
+## Risks
+
+Ordering and partial external failure can cause unsafe restoration: derive from immutable qualified purchase facts. Old receipts are conservative and require explicit evidence. Schema deployment and notification transport are not activated by local tests. OWASP Security Gate: server authorization (A01), configuration (A02), integrity (A08), logging/alerting (A09), exceptional conditions (A10); test identity/environment isolation, replay/concurrency and failure recovery. This is scoped evidence, not full OWASP certification.
+
+## Execution Notes
+
+First reads: providers/stripe.ts, convex/commerceProcessor.ts, convex/commerceEventContract.ts, convex/licenseAdministration.ts, admin/licenses API. Current branch codex/unified-commerce-entitlements was clean at start. Main thread owns integration. Stop only on material expansion or missing external authorization.
+
+## Execution Batches
+
+- Batch A, main thread: provider adapter/types/webhook, commerceEventContract.ts, commerceProcessor.ts, schema.ts, bridge.ts and generated API integration; commerce lifecycle tests.
+- Batch B, delegated after interfaces are fixed: new commerceOperations module/API and tests, admin commerce panel, buyer return copy and operator runbook. Do not edit Batch A files; request integration changes from main.
+- Dependencies: agree receipt optional fields and exported retry helper first; B may work independently after that boundary. Main integrates schema/API exports and runs all combined checks. No hosted actions or actual alert sends in either batch.
+
+## Open Questions
+
+Hosted test-mode acceptance and progressive commits were authorized on 2026-09-06. Resolve the declared test configuration and operator alert destination from provider evidence; never infer production authority.
+
+## Skill Run History
+
+| Date UTC | Skill | Model | Action | Result | Next step |
+| --- | --- | --- | --- | --- | --- |
+| 2026-09-06 | sg-development | GPT-6 | Formalized approved commerce rules and bounded local proof. | reviewed | Readiness review and implementation. |
+| 2026-09-06 | 101-sg-ready | GPT-6 | Checked purchase isolation, provider evidence, failure exits and non-overlapping write batches against current code. | ready for local implementation | Implement both batches and run combined checks. |
+| 2026-09-06 | sg-development | GPT-6 | Implemented immutable financial facts, purchase rights reduction, operator cases, alert outbox, missing-webhook surveillance, evidence recovery and buyer copy. Independent review fixes cover legacy audit provenance and contradictory dispute outcomes. | 244 synthetic tests, Convex TypeScript and Astro checks passed; metadata lint passed. | Hosted test-mode acceptance requires separate authorization. |
+
+## Current Chantier Flow
+
+2026-09-06 continuation: the operator approved hosted test-mode acceptance and progressive commits. The previous local-only boundary below records the completed local stage; this continuation now owns scoped Git delivery, hosted target/configuration verification and the acceptance checklist. Commercial opening and production mutations remain outside scope.
+
+Local implementation and synthetic checks are complete. Files remain local on codex/unified-commerce-entitlements; no remote delivery or deployment is claimed. Hosted notification reception, surveillance, authentication, protected access and commercial opening remain separate and unverified. Local DOM tests do not prove rendered or authenticated browser behavior.
+
+Convex API declarations were regenerated offline with the installed official code generator template. No deployment configuration or secret was inferred. Standard deployment-backed codegen was unavailable without CONVEX_DEPLOYMENT.
+
+The direct design drift command stops on Windows CRLF conversion of immutable baseline bytes. The scoped guard passed in an isolated temporary snapshot: current changed source bytes, unchanged policy, and each immutable baseline verified against both HEAD and its declared SHA256 before copying its canonical Git bytes. Seven changed source files were scanned with zero findings. The checkout's baseline files and guard policy were left unchanged. Astro and DOM checks are separate passing evidence; rendered and authenticated hosted validation remain pending.

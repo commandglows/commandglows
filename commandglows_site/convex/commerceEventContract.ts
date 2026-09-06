@@ -7,7 +7,9 @@ export const commerceEventFields = {
   offerId: v.string(),
   productId: v.string(),
   plan: v.string(),
-  eventType: v.union(v.literal('paid'), v.literal('refunded'), v.literal('revoked'), v.literal('pending_review')),
+  eventType: v.union(v.literal('paid'), v.literal('refunded'), v.literal('revoked'), v.literal('pending_review'),
+    v.literal('refund_updated'), v.literal('dispute_updated'), v.literal('checkout_pending'),
+    v.literal('checkout_failed'), v.literal('checkout_expired')),
   environment: v.string(),
   providerEventId: v.string(),
   providerOrderId: v.string(),
@@ -20,6 +22,17 @@ export const commerceEventFields = {
   providerSourceRef: v.optional(v.string()),
   providerInvoiceId: v.optional(v.string()),
   providerPaymentIntentId: v.optional(v.string()),
+  // Additive provider evidence; legacy envelopes remain readable and immutable.
+  providerPayloadHash: v.optional(v.string()),
+  providerCreatedAt: v.optional(v.number()),
+  providerEventType: v.optional(v.string()),
+  providerRefundId: v.optional(v.string()),
+  refundStatus: v.optional(v.string()),
+  refundAmount: v.optional(v.number()),
+  chargeAmount: v.optional(v.number()),
+  currency: v.optional(v.string()),
+  providerDisputeId: v.optional(v.string()),
+  disputeStatus: v.optional(v.string()),
 }
 
 export const commerceEventEnvelope = v.object(commerceEventFields)

@@ -28,4 +28,6 @@ Run checks from the affected subproject:
 
 ## Working Rule
 
+Commerce launch preparation is tracked in the [scenario matrix](shipglows_data/technical/commerce-launch-scenarios.md) and [operator runbook](shipglows_data/technical/commerce-operator-runbook.md). Local synthetic validation does not replace the separately authorized hosted test-mode acceptance before commercial opening.
+
 All active CommandGlows surfaces live in this single repository. The sibling legacy checkout is historical migration input only and must not be used as an active source.

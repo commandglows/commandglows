@@ -12,13 +12,13 @@ const isCommunityGlowsOffer = offerId === 'communityglows/lifetime_deal'
 const labels =
 	lang === 'fr'
 		? {
-				title: 'Achat confirmé',
+				title: 'Vérifiez votre accès',
 				body:
 					isCommandGlowsAppOffer || isCommunityGlowsOffer
 						? isCommandGlowsAppOffer
-							? "Paiement reçu. L'accès CMDglows est confirmé par webhook signé et peut nécessiter une vérification de compte avant activation dans l'app."
-							: "Paiement reçu. L'accès CommunityGlows est confirmé par webhook signé et peut nécessiter une vérification de compte avant activation."
-						: 'Votre accès à la formation a été débloqué. Vous pouvez ouvrir la leçon privée maintenant.',
+							? "Votre paiement peut encore être en cours de vérification. Consultez votre compte CMDglows pour vérifier l’accès. S’il manque après confirmation du paiement dans Stripe, contactez le support avec la référence de votre reçu."
+							: "Votre paiement peut encore être en cours de vérification. Consultez votre compte CommunityGlows pour vérifier l’accès. S’il manque après confirmation du paiement dans Stripe, contactez le support avec la référence de votre reçu."
+						: 'Votre paiement peut encore être en cours de vérification. Ouvrez votre compte pour vérifier l’accès à la formation. Si le paiement est confirmé mais que l’accès manque, contactez le support avec la référence de votre reçu.',
 				openLesson: 'Ouvrir la leçon',
 				goToDashboard: 'Aller au dashboard',
 				signIn: 'Se connecter pour accéder',
@@ -26,13 +26,13 @@ const labels =
 				contact: 'Contacter le support',
 			}
 		: {
-				title: 'Purchase Confirmed',
+				title: 'Check your access',
 				body:
 					isCommandGlowsAppOffer || isCommunityGlowsOffer
 						? isCommandGlowsAppOffer
-							? 'Payment received. CMDglows access is confirmed by signed webhook and may require account verification before activation in the app.'
-							: 'Payment received. CommunityGlows access is confirmed by signed webhook and may require account verification before activation.'
-						: 'Your training access has been unlocked. You can open the private lesson now.',
+							? 'Your payment may still be under review. Check your CMDglows account for access. If access is missing after Stripe confirms payment, contact support with your receipt reference.'
+							: 'Your payment may still be under review. Check your CommunityGlows account for access. If access is missing after Stripe confirms payment, contact support with your receipt reference.'
+						: 'Your payment may still be under review. Open your account to check training access. If payment is confirmed but access is missing, contact support with your receipt reference.',
 				openLesson: 'Open Lesson',
 				goToDashboard: 'Go to Dashboard',
 				signIn: 'Sign In to Access',
@@ -48,7 +48,7 @@ const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
 		<div class="mx-auto max-w-lg text-center">
 			<div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-content-bg-subtle dark:bg-content-bg-strong">
 				<svg class="h-8 w-8 text-content-text-primary dark:text-content-text-over-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M20 6 9 17l-5-5"/>
+						<circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2"/>
 				</svg>
 			</div>
 
@@ -74,6 +74,7 @@ const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
 				<a href={productsUrl} class="btn-secondary inline-flex items-center justify-center">
 					{labels.viewProducts}
 				</a>
+				{!isCommandGlowsAppOffer && !isCommunityGlowsOffer && <a href={contactUrl} class="btn-secondary inline-flex items-center justify-center">{labels.contact}</a>}
 			</div>
 		</div>
 	</div>

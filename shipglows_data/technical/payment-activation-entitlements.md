@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.5.0"
+artifact_version: "1.6.0"
 project: "CommandGlows"
 created: "2026-06-18"
 updated: "2026-09-06"
@@ -22,7 +22,7 @@ linked_systems:
   - "shipglows_data/technical/platforms/stripe-managed-payments.md"
 depends_on:
   - artifact: "shipglows_data/technical/platforms/stripe-managed-payments.md"
-    artifact_version: "1.0.0"
+    artifact_version: "1.1.0"
     required_status: "draft"
   - artifact: "C:/Users/Diane/ShipGlows/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
     artifact_version: "1.3.1"
@@ -101,10 +101,14 @@ never replaced with a Session/Charge ID. The provider contract is documented by
 Stripe's [Checkout Session object](https://docs.stripe.com/api/checkout/sessions/object)
 and [Charge object](https://docs.stripe.com/api/charges/object).
 
-Provider/environment/event identity and the complete normalized envelope are
-bound in additive `commerceEventReceipts`. The grant key depends on provider,
+Provider/environment/event identity and the first normalized envelope are
+bound in additive `commerceEventReceipts`. New receipts also retain a canonical
+hash of the verified Stripe snapshot (excluding mutable delivery counters).
+Identical provider evidence reuses the first envelope despite subsequent charge
+metadata changes; differing evidence under the same event ID remains a conflict.
+The grant key depends on provider,
 environment, product and purchase, never a marketing channel. A negative
-transition revokes all matching historical duplicate commerce grants for that
+transition affects all matching historical duplicate commerce grants for that
 purchase, preserving other purchases, trials, manual grants and identities.
 Sandbox aliases (test/development/preview/staging) share one normalization;
 production is isolated in both directions, including response snapshots.
@@ -140,22 +144,67 @@ An authorized operator uses a concrete receipt and a non-secret review reason:
    audit. A stale counter is rejected; completed receipts are no-ops.
 
 Only missing purchase/identity/completed checkout/payment binding and a pending
-negative transition are recoverable. Five total processing attempts are allowed
-(initial plus four controlled retries). Unsupported providers/offers, environment
-mismatches, identity conflicts, partial-refund classifications and missing signed
+negative transition are recoverable. Five normal processing attempts are allowed
+(initial plus four controlled retries), followed by a durable escalation. The
+administrator reconciliation route can perform one sixth attempt only after
+retrieving the original event from Stripe and matching its retained snapshot hash.
+Counters are never reset. Unsupported providers/offers, environment mismatches,
+identity conflicts, legacy partial-refund classifications and missing signed
 payment evidence cannot be promoted through this endpoint. They need separately
-verified evidence, not a caller-supplied status override. Historical events that
-predate retained envelopes cannot be reconstructed by this endpoint.
+verified evidence and a linked resolution, not a caller-supplied status override.
+Historical events predating retained envelopes are not reconstructed.
 
 If a refund arrives before its paid session, it stays pending while the signed
 session establishes the payment reference. The paid event also stays pending
 without granting access. Recover the negative event first, then the paid event;
 the latter remains revoked. Tests cover this order without contacting Stripe.
 
-### Local proof and delivery boundary
+### Launch lifecycle and operations (2026-09-06)
+
+The approved rules and every expected outcome/error exit are in
+[the launch matrix](commerce-launch-scenarios.md). The implementation stores
+individual refund/dispute facts, rather than reclassifying a past refund from
+the current charge.amount_refunded. Distinct successful refunds accumulate;
+partial refunds retain access and full refunds remove it. Failed/pending refunds
+do not contribute to the successful total; failed/requires_action states alert
+the operator. A later failed refund can restore the still-paid purchase while
+keeping that refund incident open.
+
+Open disputes suspend only the affected purchase. Won, warning_closed and
+prevented lift only their own block. Lost/other active disputes, full refunds,
+legacy revocations and externally changed entitlement states prevent unsafe
+restoration. Qualified immutable facts determine ordering; conflicting terminal
+dispute outcomes remain review cases even at different timestamps. The receipt's historic result is
+not the current access snapshot.
+
+`commerceOperations` exposes an admin-only, environment-scoped queue, ownership,
+deadlines, audited actions, bounded retry and authenticated provider-event
+reconciliation. `commerceIncidentLedger` records incidents and an alert outbox
+atomically with fulfillment. Verified normalization failures have incidents even
+before a receipt exists. A complete database outage retains HTTP 500 and emits
+only a redacted hosting alarm. Hosted monitoring of that fallback is mandatory.
+Scheduled sweeps recover alert leases, escalate overdue cases and inspect old
+handoffs using bounded pages. Age is never proof of payment. The operator must
+configure the HTTPS alert receiver and prove receipt during hosted acceptance;
+local fixtures send no real notifications. Resolving a support case changes
+neither its immutable receipt nor the customer's rights.
+
+The [operator runbook](commerce-operator-runbook.md) defines ownership, alert
+failure fallback, provider reconciliation and the hosted acceptance checklist.
+
+Local launch-preparation proof: 244 tests across 28 commerce, bridge, API and
+interface suites passed; Convex TypeScript and Astro check passed. Independent
+review regressions preserve legacy revocation audit provenance and reject
+contradictory closed dispute outcomes across timestamps. This is synthetic
+evidence; the hosted acceptance checklist remains pending.
+
+The purchase return page states verification is pending and links the account
+and support; browser return parameters cannot confirm payment or grant rights.
+
+### Earlier local proof and delivery boundary
 
 - Baseline: 20 tests passed before changing `9016d47`.
-- Current tranche: 151 tests across 18 commerce/bridge suites, including signed
+- Earlier tranche: 151 tests across 18 commerce/bridge suites, including signed
   synthetic parser-to-ledger paid/refund/dispute flows, concurrent deliveries,
   immutable replays, bounded recovery, environment aliases and historical rows.
 - Convex TypeScript and Astro check pass; Astro retains one unrelated script hint.

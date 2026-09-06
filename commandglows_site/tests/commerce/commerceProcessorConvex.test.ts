@@ -169,9 +169,11 @@ describe('immutable receipt recovery and historical isolation', () => {
       .toMatchObject({ status: 'granted' })
     const retrieve = vi.spyOn(stripe.charges, 'retrieve').mockResolvedValue({ id: 'ch_a', payment_intent: 'pi_a', metadata,
       amount: 100, amount_refunded: 100 } as Stripe.Charge)
-    expect(await deliver(type, { id: 'negative_a', status: 'succeeded', charge: 'ch_a' })).toMatchObject({ status: 'revoked' })
+    const status = type === 'refund.created' ? 'revoked' : 'suspended'
+    expect(await deliver(type, { id: 'negative_a', status: type === 'refund.created' ? 'succeeded' : 'needs_response',
+      charge: 'ch_a', amount: 100, currency: 'eur' })).toMatchObject({ status })
     expect(retrieve).toHaveBeenCalledOnce()
-    expect((await rows(t))[0].status).toBe('revoked')
+    expect((await rows(t))[0].status).toBe(status)
   })
 
   test('serializes simultaneous grants and rejects a stale review attempt', async () => {

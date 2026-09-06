@@ -44,6 +44,47 @@ afterEach(() => {
 })
 
 describe('Stripe-only commerce checkout route', () => {
+  test('provider failure leaves a retryable handoff and never finalizes an absent checkout', async () => {
+    const { POST } = await import('@/pages/api/commerce/checkout')
+    process.env.STRIPE_SECRET_KEY = 'sk_test_route'
+    process.env.STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID = 'price_community'
+    mockMutation.mockResolvedValueOnce({ status: 'claimed', idempotencyKey: 'suite-checkout:failure' })
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: { message: 'synthetic refusal' } }),
+      { status: 400, headers: { 'content-type': 'application/json' } }))
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const response = await POST({ request: request({ offerId: 'communityglows/lifetime_deal', identityToken: token('communityglows') }) })
+    expect(response.status).toBe(502)
+    expect(mockMutation).toHaveBeenCalledTimes(1)
+    expect(log).toHaveBeenCalledWith('stripe_checkout_creation_failed')
+    log.mockRestore()
+  })
+
+  test('finalization outage returns an error and the same idempotency key can recover the session', async () => {
+    const { POST } = await import('@/pages/api/commerce/checkout')
+    process.env.STRIPE_SECRET_KEY = 'sk_test_route'
+    process.env.STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID = 'price_community'
+    const claim = { status: 'claimed', idempotencyKey: 'suite-checkout:finalization' }
+    mockMutation.mockResolvedValueOnce(claim).mockRejectedValueOnce(new Error('synthetic database outage'))
+      .mockResolvedValueOnce(claim).mockResolvedValueOnce({ status: 'completed' })
+    const fetch = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ id: 'cs_retry', url: 'https://checkout.stripe.test/retry' }),
+      { status: 200, headers: { 'content-type': 'application/json' } }))
+    globalThis.fetch = fetch
+    const body = { offerId: 'communityglows/lifetime_deal', identityToken: token('communityglows') }
+    expect((await POST({ request: request(body) })).status).toBe(502)
+    expect((await POST({ request: request(body) })).status).toBe(200)
+    expect(fetch.mock.calls).toHaveLength(2)
+    for (const call of fetch.mock.calls) expect(call[1]?.headers).toContainEqual(['Idempotency-Key', claim.idempotencyKey])
+    expect(mockMutation.mock.calls[3][1]).toMatchObject({ providerOrderId: 'cs_retry' })
+  })
+
+  test('an expired or invalid handoff never contacts Stripe', async () => {
+    const { POST } = await import('@/pages/api/commerce/checkout')
+    const fetch = vi.fn(); globalThis.fetch = fetch
+    mockMutation.mockRejectedValueOnce(new Error('expired handoff'))
+    expect((await POST({ request: request({ offerId: 'communityglows/lifetime_deal', identityToken: token('communityglows') }) })).status).toBe(409)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
   test('rejects browser-visible GET handoffs', async () => {
     const { GET } = await import('@/pages/api/commerce/checkout')
     const response = await GET({ request: new Request(

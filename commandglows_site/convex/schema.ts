@@ -1,8 +1,10 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { commerceEventEnvelope } from './commerceEventContract'
+import { commerceOperationsTables } from './commerceOperationsSchema'
 
 export default defineSchema({
+  ...commerceOperationsTables,
   globalUsers: defineTable({
     globalUserId: v.string(),
     primaryEmail: v.optional(v.string()),
@@ -40,6 +42,7 @@ export default defineSchema({
     environment: v.string(),
     idempotencyKey: v.string(),
     grantedAt: v.optional(v.number()),
+    commerceManagedStatus: v.optional(v.string()),
     trialStartedAt: v.optional(v.number()),
     trialExpiresAt: v.optional(v.number()),
     trialAttempt: v.optional(v.number()),
@@ -171,6 +174,7 @@ export default defineSchema({
     status: v.string(),
     reason: v.optional(v.string()),
     attempts: v.number(),
+    purchaseResolved: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

@@ -92,14 +92,14 @@ describe('Stripe Managed Payments adapter', () => {
   })
 
   test.each([
-    ['refund.created', 'refunded'],
-    ['charge.dispute.created', 'revoked'],
+    ['refund.created', 'refund_updated'],
+    ['charge.dispute.created', 'dispute_updated'],
   ])('normalizes %s to %s through charge metadata', async (type, expectedType) => {
     const stripe = client()
     vi.spyOn(stripe.charges, 'retrieve').mockResolvedValue({ id: 'ch_123', object: 'charge', metadata, customer: 'cus_123', amount: 4900, amount_refunded: 4900 } as Stripe.Charge)
     const object = type === 'refund.created'
-      ? { id: 're_123', object: 'refund', status: 'succeeded', charge: 'ch_123' }
-      : { id: 'dp_123', object: 'dispute', charge: 'ch_123' }
+      ? { id: 're_123', object: 'refund', status: 'succeeded', charge: 'ch_123', amount: 4900, currency: 'eur' }
+      : { id: 'dp_123', object: 'dispute', charge: 'ch_123', status: 'needs_response' }
     const payload = { id: `evt_${expectedType}`, object: 'event', type, livemode: false, data: { object } }
     const parsed = await parseStripeManagedPaymentsWebhook(signedEvent(stripe, payload), 'sk_test', undefined, stripe)
     expect(parsed.ok && parsed.normalizedEvent).toMatchObject({ eventType: expectedType, providerOrderId: 'ch_123', globalUserId: 'user_123' })

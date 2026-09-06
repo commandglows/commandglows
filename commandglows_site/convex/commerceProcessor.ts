@@ -1,11 +1,13 @@
 import type { Doc, Id } from './_generated/dataModel'
 import type { MutationCtx } from './_generated/server'
 import { commerceEnvironment, type CommerceEventEnvelope } from './commerceEventContract'
+import { deriveCommercePurchaseState } from './commercePurchaseState'
+import { syncCommerceIncident } from './commerceIncidentLedger'
 
 type Dependencies = {
   supportsOffer: (offer: string, product: string, plan: string) => boolean
 }
-type Result = { ok: boolean; status: string; reason?: string; globalUserDocId?: Id<'globalUsers'> }
+type Result = { ok: boolean; status: string; reason?: string; globalUserDocId?: Id<'globalUsers'>; purchaseResolved?: boolean }
 const pending = (reason: string): Result => ({ ok: false, status: 'pending_review', reason })
 
 function runtimeEnvironment() {
@@ -13,6 +15,11 @@ function runtimeEnvironment() {
 }
 
 function sameEnvelope(left: CommerceEventEnvelope, right: CommerceEventEnvelope) {
+  // A redelivery reuses the original normalized envelope even if charge metadata
+  // was edited since receipt. The raw verified event, not enrichment, is identity.
+  if (left.providerPayloadHash && right.providerPayloadHash) {
+    return left.providerPayloadHash === right.providerPayloadHash
+  }
   return (Object.keys({ ...left, ...right }) as (keyof CommerceEventEnvelope)[])
     .every((key) => left[key] === right[key])
 }
@@ -113,48 +120,105 @@ async function applyEvent(ctx: MutationCtx, event: CommerceEventEnvelope, depend
   if (!dependencies.supportsOffer(event.offerId, event.productId, event.plan)) return pending('unsupported_offer')
   if (event.status === 'ignored') return { ok: true, status: 'ignored', reason: 'ignored_webhook_event' }
   if (event.eventType === 'pending_review' || event.status === 'pending_review') return pending('commerce_pending_review')
+  if (event.eventType.startsWith('checkout_')) return applyCheckoutState(ctx, event)
   const purchase = await resolvePurchase(ctx, event)
   if ('error' in purchase) return pending(purchase.error ?? 'purchase_not_found')
   const { owner, history, entitlements } = purchase
-  const terminal = history.some((row) => row.status === 'revoked' ||
-    (row.status === 'pending_review' && row.reason === 'missing_global_user_for_revoke')) || entitlements.some((row) => row.status === 'revoked')
+  const receipts = await ctx.db.query('commerceEventReceipts').withIndex('by_purchase', (q) =>
+    q.eq('envelope.provider', event.provider).eq('envelope.environment', event.environment)
+      .eq('envelope.productId', event.productId).eq('envelope.sourceRef', event.sourceRef)).collect()
+  const qualified = receipts.filter((row) => row.purchaseResolved && row.envelope.offerId === event.offerId &&
+    row.envelope.plan === event.plan && row.envelope.providerPaymentIntentId === event.providerPaymentIntentId)
+  const managedAuditKeys = new Set(qualified.flatMap((row) => Array.from({ length: row.attempts },
+    (_, index) => `suite:commerce:event:${row._id}:${index + 1}`)))
+  const terminal = history.some((row) => !managedAuditKeys.has(row.idempotencyKey) && (row.status === 'revoked' ||
+    (row.status === 'pending_review' && row.reason === 'missing_global_user_for_revoke'))) ||
+    entitlements.some((row) => row.status !== 'active' && row.commerceManagedStatus !== row.status)
   const now = Date.now()
-  if (event.eventType === 'paid') {
-    if (terminal) return { ok: true, status: 'revoked', reason: 'purchase_already_revoked', globalUserDocId: owner._id }
-    // Refunds arriving before identity/checkout completion still block delayed payment.
-    const reviews = await ctx.db.query('commerceEventReceipts').withIndex('by_purchase', (q) =>
-      q.eq('envelope.provider', event.provider).eq('envelope.environment', event.environment)
-        .eq('envelope.productId', event.productId).eq('envelope.sourceRef', event.sourceRef)).collect()
-    if (reviews.some((row) => row.status === 'pending_review' && row.envelope.provider === 'stripe' && row.envelope.environment === event.environment &&
-      row.envelope.productId === event.productId && row.envelope.offerId === event.offerId && row.envelope.plan === event.plan &&
-      row.envelope.sourceRef === event.sourceRef && row.envelope.status === 'applied' &&
+  const facts = [...qualified.filter((row) => row.envelope.providerEventId !== event.providerEventId).map((row) => row.envelope), event]
+  const decision = terminal
+    ? { status: 'revoked' as const, reason: 'purchase_already_revoked' }
+    : deriveCommercePurchaseState(facts, entitlements.some((row) => row.grantedAt !== undefined))
+  if (decision.status === 'granted') {
+    // A potentially blocking event received before its binding was known must
+    // be reviewed before ANY granting transition, including a dispute closure.
+    if (receipts.some((row) => row.envelope.providerEventId !== event.providerEventId &&
+      !row.purchaseResolved && row.status === 'pending_review' &&
+      row.envelope.offerId === event.offerId && row.envelope.plan === event.plan && row.envelope.status === 'applied' &&
       row.envelope.providerPaymentIntentId === event.providerPaymentIntentId &&
       (!row.envelope.globalUserId || row.envelope.globalUserId === owner.globalUserId) &&
       ['missing_global_user', 'checkout_not_completed_or_mismatched', 'purchase_not_found', 'purchase_payment_reference_missing'].includes(row.reason ?? '') &&
-      (row.envelope.eventType === 'refunded' || row.envelope.eventType === 'revoked'))) {
-      return pending('negative_transition_pending_review')
+      ['refunded', 'revoked', 'refund_updated', 'dispute_updated'].includes(row.envelope.eventType))) {
+      return { ...pending('negative_transition_pending_review'), globalUserDocId: owner._id, purchaseResolved: true }
     }
     if (!entitlements.some((row) => row.status === 'active')) {
-      await ctx.db.insert('productEntitlements', {
-        globalUserId: owner._id, productId: event.productId, plan: event.plan,
-        status: 'active', source: 'suite_commerce', sourceRef: `${event.productId}:${event.sourceRef}`,
-        environment: event.environment,
-        idempotencyKey: `suite:commerce:grant:${JSON.stringify([event.provider, event.environment, event.productId, event.sourceRef])}`,
-        grantedAt: now, createdAt: now, updatedAt: now,
-      })
+      const restorable = entitlements.find((row) => row.commerceManagedStatus === row.status)
+      if (restorable) {
+        await ctx.db.patch(restorable._id, { status: 'active', commerceManagedStatus: 'active', updatedAt: now })
+      } else {
+        await ctx.db.insert('productEntitlements', {
+          globalUserId: owner._id, productId: event.productId, plan: event.plan,
+          status: 'active', commerceManagedStatus: 'active', source: 'suite_commerce', sourceRef: `${event.productId}:${event.sourceRef}`,
+          environment: event.environment,
+          idempotencyKey: `suite:commerce:grant:${JSON.stringify([event.provider, event.environment, event.productId, event.sourceRef])}`,
+          grantedAt: now, createdAt: now, updatedAt: now,
+        })
+      }
     }
-    return { ok: true, status: 'granted', globalUserDocId: owner._id }
+  } else if (decision.status !== 'awaiting_payment') {
+    const status = decision.status === 'pending_review' ? 'suspended' : decision.status
+    // Change all grants for this purchase only; preserve unrelated/manual state.
+    for (const row of entitlements.filter((entry) => entry.status === 'active' ||
+      (!terminal && entry.commerceManagedStatus === entry.status))) {
+      await ctx.db.patch(row._id, { status, commerceManagedStatus: status, updatedAt: now })
+    }
   }
-  // Revoke all historical duplicate grants for this exact purchase, never another purchase/trial/manual grant.
-  for (const row of entitlements.filter((entry) => entry.status === 'active')) {
-    await ctx.db.patch(row._id, { status: 'revoked', updatedAt: now })
+  // Resolve operational cases for superseded financial snapshots without
+  // rewriting their historical receipt result or swallowing unrelated reviews.
+  for (const receipt of qualified.filter((row) => row.envelope.providerEventId !== event.providerEventId)) {
+    const previous = receipt.envelope
+    const versions = previous.eventType === 'dispute_updated'
+      ? facts.filter((fact) => fact.eventType === 'dispute_updated' && fact.providerDisputeId === previous.providerDisputeId)
+      : previous.eventType === 'refund_updated'
+        ? facts.filter((fact) => fact.eventType === 'refund_updated' && fact.providerRefundId === previous.providerRefundId)
+        : []
+    if (!versions.length) continue
+    const state = deriveCommercePurchaseState(versions, true)
+    if (!['pending_review', 'suspended'].includes(state.status) && !['refund_failed', 'refund_requires_action'].includes(state.reason ?? '')) {
+      await syncCommerceIncident(ctx, { receiptId: receipt._id, environment: event.environment,
+        providerEventId: previous.providerEventId, productId: previous.productId, sourceRef: previous.sourceRef,
+        status: 'resolved', reason: `resolved_by:${event.providerEventId}`, attempts: receipt.attempts })
+    }
   }
-  return { ok: true, status: 'revoked', reason: event.eventType === 'refunded' ? 'commerce_refunded' : 'commerce_revoked', globalUserDocId: owner._id }
+  return { ...decision, ok: decision.status !== 'pending_review', globalUserDocId: owner._id, purchaseResolved: true }
+}
+
+async function applyCheckoutState(ctx: MutationCtx, event: CommerceEventEnvelope): Promise<Result> {
+  if (!event.sourceRef) return pending('missing_purchase_reference')
+  const matches = await ctx.db.query('commerceCheckoutHandoffs').withIndex('by_idempotencyKey',
+    (q) => q.eq('idempotencyKey', event.sourceRef!)).collect()
+  const handoffs = matches.filter((row) => commerceEnvironment(row.environment) === event.environment)
+  if (handoffs.length !== 1) return pending(handoffs.length ? 'ambiguous_purchase' : 'purchase_not_found')
+  const handoff = handoffs[0]
+  if (handoff.globalUserId !== event.globalUserId || handoff.productId !== event.productId ||
+    handoff.offerId !== event.offerId || handoff.providerOrderId !== event.providerOrderId) return pending('purchase_context_mismatch')
+  const paid = await ctx.db.query('commerceEventReceipts').withIndex('by_purchase', (q) =>
+    q.eq('envelope.provider', event.provider).eq('envelope.environment', event.environment)
+      .eq('envelope.productId', event.productId).eq('envelope.sourceRef', event.sourceRef)).collect()
+  if (paid.some((row) => row.purchaseResolved && row.envelope.eventType === 'paid')) {
+    return { ok: true, status: 'ignored', reason: 'payment_already_verified' }
+  }
+  return { ok: true, status: event.eventType === 'checkout_pending' ? 'awaiting_payment'
+    : event.eventType === 'checkout_failed' ? 'payment_failed' : 'checkout_expired' }
 }
 
 async function recordResult(ctx: MutationCtx, receipt: Doc<'commerceEventReceipts'>, result: Result, attempt: number) {
   const event = receipt.envelope
-  await ctx.db.patch(receipt._id, { status: result.status, reason: result.reason, attempts: attempt, updatedAt: Date.now() })
+  await ctx.db.patch(receipt._id, { status: result.status, reason: result.reason, attempts: attempt,
+    purchaseResolved: result.purchaseResolved ?? receipt.purchaseResolved, updatedAt: Date.now() })
+  await syncCommerceIncident(ctx, { receiptId: receipt._id, environment: event.environment,
+    providerEventId: event.providerEventId, productId: event.productId, sourceRef: event.sourceRef,
+    status: result.status, reason: result.reason, attempts: attempt })
   await ctx.db.insert('productAccessEvents', {
     source: 'suite_commerce', eventType: `suite_commerce.${event.eventType}`,
     eventId: event.providerEventId, sourceRef: `${event.productId}:${event.sourceRef ?? ''}`,
@@ -173,11 +237,13 @@ export async function receiveCommerceEvent(ctx: MutationCtx, input: CommerceEven
     throw new Error('invalid_purchase_reference')
   }
   if (input.provider === 'stripe' && input.status === 'applied' && input.eventType !== 'pending_review' &&
-    (!input.providerOrderId.startsWith(input.eventType === 'paid' ? 'cs_' : 'ch_') ||
+    (!input.providerOrderId.startsWith(input.eventType === 'paid' || input.eventType.startsWith('checkout_') ? 'cs_' : 'ch_') ||
       (input.providerSourceRef !== undefined && input.providerSourceRef !== input.providerOrderId))) {
     throw new Error('invalid_provider_purchase_reference')
   }
   const envelope = { ...input, environment: commerceEnvironment(input.environment) ?? input.environment }
+  if (envelope.providerPayloadHash !== undefined && !/^[a-f0-9]{64}$/.test(envelope.providerPayloadHash)) throw new Error('invalid_provider_payload_hash')
+  if (envelope.providerCreatedAt !== undefined && (!Number.isSafeInteger(envelope.providerCreatedAt) || envelope.providerCreatedAt < 0)) throw new Error('invalid_provider_timestamp')
   const eventKey = JSON.stringify([envelope.provider, envelope.environment, envelope.providerEventId])
   const existing = await ctx.db.query('commerceEventReceipts').withIndex('by_eventKey', (q) => q.eq('eventKey', eventKey)).unique()
   if (existing) {
@@ -238,5 +304,30 @@ export async function reviewCommerceEvent(ctx: MutationCtx, args: {
     previousStatus: receipt.status, previousReason: receipt.reason,
     resultingStatus: result.status, resultingReason: result.reason, createdAt: Date.now(),
   })
+  return { ...result, eligible: true, alreadyProcessed: false, attempts: attempt }
+}
+
+// Used only by authenticated admin reconciliation after retrieving this exact
+// Event from Stripe. It permits one additional attempt, never a counter reset.
+export async function recoverCommerceEvent(ctx: MutationCtx, args: {
+  receiptId: Id<'commerceEventReceipts'>; expectedAttempts: number; operatorId: string;
+  reason: string; providerPayloadHash: string
+}, dependencies: Dependencies) {
+  if (!args.operatorId.trim() || !args.reason.trim() || args.operatorId.length > 200 || args.reason.length > 500) throw new Error('review_audit_required')
+  const receipt = await ctx.db.get(args.receiptId)
+  if (!receipt) throw new Error('commerce_receipt_not_found')
+  if (receipt.envelope.environment !== runtimeEnvironment()) throw new Error('environment_mismatch')
+  if (receipt.attempts !== args.expectedAttempts) throw new Error('review_attempt_conflict')
+  if (!receipt.envelope.providerPayloadHash || receipt.envelope.providerPayloadHash !== args.providerPayloadHash) {
+    throw new Error('recovery_evidence_mismatch')
+  }
+  if (receipt.status !== 'pending_review') return { eligible: false, alreadyProcessed: true, status: receipt.status }
+  if (receipt.attempts !== 5 || !RECOVERABLE_REASONS.has(receipt.reason ?? '')) throw new Error('commerce_review_not_recoverable')
+  const result = await applyEvent(ctx, receipt.envelope, dependencies)
+  const attempt = receipt.attempts + 1
+  await recordResult(ctx, receipt, result, attempt)
+  await ctx.db.insert('commerceEventReviewAttempts', { receiptId: receipt._id, attempt,
+    operatorId: args.operatorId, reason: args.reason, previousStatus: receipt.status,
+    previousReason: receipt.reason, resultingStatus: result.status, resultingReason: result.reason, createdAt: Date.now() })
   return { ...result, eligible: true, alreadyProcessed: false, attempts: attempt }
 }

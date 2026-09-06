@@ -21,7 +21,7 @@ linked_systems:
   - /home/claude/communityglows
 depends_on:
   - artifact: "/home/claude/shipglows/shipglows_data/technical/external-platforms/stripe-managed-payments.md"
-    artifact_version: "1.0.0"
+artifact_version: "1.1.0"
     required_status: active
 supersedes: []
 evidence:
@@ -99,13 +99,13 @@ modified, cross-product or cross-environment handoffs fail closed.
 
 ## Event Contract
 
-- `checkout.session.completed` with `payment_status=paid` becomes a normalized paid event.
-- `refund.created` and `refund.updated` become refunded only for a successful full refund; partial or pending refunds remain `pending_review`.
-- `charge.dispute.created` becomes a normalized revoked event.
+- `checkout.session.completed` and `checkout.session.async_payment_succeeded` with `payment_status=paid` become normalized paid events. Unpaid completion remains awaiting payment; async failure and expiration are recorded without granting access.
+- `refund.created`, `refund.updated` and `refund.failed` preserve per-refund facts. Only the cumulative amount of distinct successful refunds removes access when it reaches the charge amount; partial refunds preserve otherwise valid access.
+- `charge.dispute.created`, `charge.dispute.updated` and `charge.dispute.closed` preserve per-dispute facts. Open disputes suspend the purchase, lost disputes block it, and won/closed-warning/prevented states lift only their own block.
 - Unsupported or incomplete events never grant access.
 - Convex owns idempotency and the final entitlement transition through one shared processor, including the CommunityGlows compatibility entrypoint.
 - Paid Session and refund/dispute Charge references carry their PaymentIntent into Convex; it must match the completed server-owned purchase.
-- Pending receipts require internal, bounded, audited recovery from their immutable envelope; ordinary delivery cannot promote them. See the payment activation contract for the operator procedure.
+- Pending receipts have an admin incident queue, deadline, owner and durable alert outbox. Normal recovery has five total attempts; one exceptional sixth attempt requires authenticated retrieval of the original Stripe event and matching its retained hash. Ordinary delivery cannot promote a pending receipt. See the [launch scenario matrix](../commerce-launch-scenarios.md) and payment activation contract.
 
 ## Invariants
 
@@ -113,7 +113,8 @@ modified, cross-product or cross-environment handoffs fail closed.
 - Checkout success redirects never grant access.
 - The server derives user identity from a valid signed handoff; raw client-provided user IDs are rejected.
 - Stripe identifiers are provider references, not canonical product or user identities.
-- Refunds and disputes move access to a non-granting state.
+- Full successful refunds and blocking disputes make the affected purchase non-granting; other purchases/trials/manual grants remain independent. A closed dispute cannot override another blocking reason.
+- New receipt hashes represent immutable financial snapshots, excluding Stripe delivery counters. Re-reading a changed charge never rewrites the original receipt.
 - Secret keys, webhook secrets, and raw handoff contents remain server-side or
   in encrypted POST transport; handoffs never appear in browser query URLs,
   page markup, Stripe metadata, or logs.
