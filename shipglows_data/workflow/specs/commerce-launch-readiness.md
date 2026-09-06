@@ -225,3 +225,10 @@ and paid access. Rollback retains the previous login until the replacement passe
 2026-09-07: source audit complete; approved migration contract recorded. No Auth0
 site login or provider configuration change is claimed. Commerce acceptance stays
 open until the replacement authentication and remaining payment/alert proofs pass.
+
+2026-09-07 foundation implemented: checkout resolves its canonical global user
+through an AccountIdentityAdapter; the transitional Clerk adapter contains provider
+identity handling and rejects malformed mappings. Backend failure returns a safe
+503 with retry guidance and never creates checkout. Thirteen focused adapter and
+checkout tests pass. Auth0 session/callback and account linkage are still pending;
+this checkpoint does not switch authentication or deploy Convex.

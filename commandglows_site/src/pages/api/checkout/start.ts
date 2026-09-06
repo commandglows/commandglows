@@ -4,6 +4,7 @@ import { createCommerceCheckoutIdentityToken } from '@/lib/commerce/checkoutIden
 import { createCommerceCheckout } from '@/pages/api/commerce/checkout'
 import { getCommerceOffer } from '@/lib/commerce/offers'
 import { getServerEnv } from '@/lib/serverEnv'
+import { clerkAccountIdentityAdapter } from '@/lib/auth/clerkAccountIdentity'
 import {
   getPrivateCoursePath,
   getPublicCoursePath,
@@ -51,10 +52,21 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   }
 
   const convex = new ConvexHttpClient(convexUrl)
-  const identity = await convex.query(
-    'bridge:getCheckoutIdentityByClerkAccount' as never,
-    { clerkId: auth.userId, bridgeSecret } as never
-  ) as { globalUserId?: string } | null
+  const accountAdapter = clerkAccountIdentityAdapter(auth.userId, (clerkId) =>
+    convex.query(
+      'bridge:getCheckoutIdentityByClerkAccount' as never,
+      { clerkId, bridgeSecret } as never
+    )
+  )
+  let identity
+  try {
+    identity = await accountAdapter.resolveAccount()
+  } catch {
+    return new Response('Account verification is temporarily unavailable. Please retry.', {
+      status: 503,
+      headers: { 'Cache-Control': 'no-store', 'Retry-After': '30' },
+    })
+  }
   if (!identity?.globalUserId) {
     return new Response('Suite identity is not available', { status: 409 })
   }

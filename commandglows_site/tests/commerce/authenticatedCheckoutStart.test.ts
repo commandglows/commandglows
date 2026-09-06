@@ -12,6 +12,24 @@ vi.mock('@/pages/api/commerce/checkout', () => ({
 }))
 
 describe('authenticated checkout start route', () => {
+  test.each([
+    ['missing account', 409],
+    ['backend failure', 503],
+  ])('does not start checkout on %s', async (scenario, status) => {
+    if (scenario === 'backend failure') mockQuery.mockRejectedValueOnce(new Error('private backend error'))
+    else mockQuery.mockResolvedValueOnce(null)
+    const { POST } = await import('@/pages/api/checkout/start')
+    const response = await POST({
+      request: new Request('https://commandglows.test/api/checkout/start?offerId=commandglows_formation/full_course', { method: 'POST' }),
+      locals: { auth: () => ({ userId: 'verified-buyer' }) },
+      redirect: vi.fn(),
+    })
+    expect(response.status).toBe(status)
+    expect(mockCheckout).not.toHaveBeenCalled()
+    expect(await response.text()).not.toContain('private backend error')
+    if (status === 503) expect(response.headers.get('Retry-After')).toBe('30')
+  })
+
   beforeEach(() => {
     mockQuery.mockReset()
     mockCheckout.mockReset()
