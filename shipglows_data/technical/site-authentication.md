@@ -112,9 +112,19 @@ to the existing development deployment (32 tables, no further table/index remova
 commerce and email crons retained). The hosted preview renders legacy recovery;
 authenticated Auth0 acceptance remains pending. Operator CLI login is now verified;
 the accessible tenant already serves ContentGlows and has no CommandGlows client.
-Selecting a dedicated preview client in that shared tenant versus a separate test
-tenant is awaiting the operator's choice. No Auth0 tenant/client configuration or
-production activation was performed.
+The operator approved centralized management with distinct technical application
+configurations and separate test/production tenants. CommandGlows acceptance targets
+a shared suite test tenant, not a new tenant per business. The existing tenant is
+not reclassified or migrated by this decision. The CLI currently knows only that
+existing tenant; the dashboard requires its own operator sign-in before available
+test tenants can be checked. No Auth0 tenant/client configuration or production
+activation was performed.
+
+Application configurations identify each independently deployed login client for
+callback allowlists, confidential-client credentials and authentication diagnostics.
+They do not create separate user directories within a tenant and do not isolate
+sensitive business data. Additional business boundaries require explicit review;
+the current approval does not onboard unrelated businesses or change their data.
 
 Capture live schema/indexes, functions and crons before any shared-backend deploy.
 The audited dev schema contains 31 existing tables. The planned delta adds
