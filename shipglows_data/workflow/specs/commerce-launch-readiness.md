@@ -167,3 +167,61 @@ Local implementation and synthetic checks are complete. Files remain local on co
 Convex API declarations were regenerated offline with the installed official code generator template. No deployment configuration or secret was inferred. Standard deployment-backed codegen was unavailable without CONVEX_DEPLOYMENT.
 
 The direct design drift command stops on Windows CRLF conversion of immutable baseline bytes. The scoped guard passed in an isolated temporary snapshot: current changed source bytes, unchanged policy, and each immutable baseline verified against both HEAD and its declared SHA256 before copying its canonical Git bytes. Seven changed source files were scanned with zero findings. The checkout's baseline files and guard policy were left unchanged. Astro and DOM checks are separate passing evidence; rendered and authenticated hosted validation remain pending.
+
+## Auth0 migration continuation — approved 2026-09-07
+
+The operator explicitly approved replacing the CommandGlows site login with Auth0,
+keeping the authentication provider replaceable, preserving internal accounts and
+purchases, and committing verified milestones. This continuation belongs to this
+launch-readiness chantier; it does not authorize production activation.
+
+### Objective and scope
+
+Use Auth0 for the Astro site's sign-in, callback, session, logout, dashboard,
+admin and checkout surfaces behind a project-owned authentication interface.
+CommandGlows global users, commerce receipts and entitlements remain authoritative.
+ContentGlows is the verified implementation reference; CommunityGlows currently
+uses Convex Auth. Flutter application migration is a separate surface and is not
+silently included in the site migration.
+
+### Decisions and safeguards
+
+- Provider SDK types stay inside adapters. Product code consumes a verified
+  application identity and the canonical global user ID.
+- An external OIDC identity is keyed by verified issuer and subject, never email.
+- Existing Clerk identities, purchases and admin assignments are preserved.
+  Linking requires proof of both identities or an explicitly audited recovery;
+  matching email alone never authorizes a merge or access restoration.
+- The existing ContentGlows adapter keys Auth0 accounts by subject only. Do not
+  reuse that lookup across issuers without verified legacy issuer provenance.
+- No production tenant is inferred from a development-looking tenant name.
+- Capture and reconcile shared backend schema/index/function/cron inventory before
+  deployment. The previously recorded email index incident remains open.
+
+### Execution batches
+
+1. Extract the existing verified checkout identity lookup into a provider adapter;
+   preserve current behavior and add regression tests. Commit this safe foundation.
+2. Implement Auth0 login/callback/session/logout and issuer-aware identity mapping,
+   including existing-account linking and server-owned administrator resolution.
+3. Replace coupled Clerk consumers, update operational/configuration docs, and
+   verify wrong-account, missing rights, expired session and logout recovery.
+4. Validate the exact declared test configuration and hosted callback/login/access,
+   then resume the Stripe and operational alert acceptance scenarios above.
+
+### Proof and readiness
+
+The first extraction is ready: its boundary and current behavior are visible in
+checkout/start.ts and bridge:getCheckoutIdentityByClerkAccount. It requires no
+provider or backend mutation. Later activation remains gated on exact Auth0 test
+application configuration and safe account linkage. Required tests cover anonymous
+and unmapped checkout, canonical ID handoff, provider errors, issuer isolation,
+invalid/expired tokens, state/nonce/PKCE, redirect allowlists, logout, administrator
+and paid/unlicensed authorization. Hosted login is distinct from backend acceptance
+and paid access. Rollback retains the previous login until the replacement passes.
+
+### Current migration state
+
+2026-09-07: source audit complete; approved migration contract recorded. No Auth0
+site login or provider configuration change is claimed. Commerce acceptance stays
+open until the replacement authentication and remaining payment/alert proofs pass.
