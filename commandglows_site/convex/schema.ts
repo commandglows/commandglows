@@ -1,3 +1,4 @@
+import { emailTables } from './emailSchema'
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { commerceEventEnvelope } from './commerceEventContract'
@@ -5,6 +6,7 @@ import { commerceOperationsTables } from './commerceOperationsSchema'
 
 export default defineSchema({
   ...commerceOperationsTables,
+  ...emailTables,
   globalUsers: defineTable({
     globalUserId: v.string(),
     primaryEmail: v.optional(v.string()),

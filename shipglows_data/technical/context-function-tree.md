@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.4.0"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-08-11"
+updated: "2026-09-05"
 status: reviewed
 source_skill: sg-docs
 scope: context-function-tree
@@ -101,7 +101,15 @@ Capture the request, routing, and integration flow so behavior changes in middle
   - rejects replay through the provider event idempotency key;
   - makes refund and revoke transitions non-granting.
 
-## Auth Lifecycle
+## Central Email Pilot
+
+- `src/pages/api/v1/email/**` authenticates product, preferences, operator and worker commands; controllers delegate persistent decisions to `convex/email.ts`.
+- `convex/email.ts` owns consent, tokens, scoped membership, outbox eligibility, attempts, callback reconciliation and erasure tombstones; `emailSchema.ts` adds tables without modifying identity/entitlement meaning.
+- `convex/crons.ts` and `emailDelivery.ts` poll activated outboxes through the configured server worker; missing configuration disables polling.
+- `src/lib/email/central/**` owns bounded HTTP parsing, signed preference links, FR/EN text/HTML rendering, Postmark mode/stream verification and safe transport outcomes.
+- `shipglows_data/technical/central-email-operations.md` records actual configuration, proof and production gates. Legacy `api/newsletter/*` Resend routes remain unchanged.
+
+## Auth Lifecycle (existing)
 
 - `src/pages/api/clerk/webhook.ts`
   - receives Clerk lifecycle events
