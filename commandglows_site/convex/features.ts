@@ -1,3 +1,4 @@
+import { siteAuthorityArgs, requireSiteAccount } from './siteAuthority'
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
@@ -106,18 +107,6 @@ function normalizeTitle(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-async function getGlobalUserIdByClerkId(
-  ctx: MutationCtx,
-  clerkId: string,
-): Promise<Id<"globalUsers"> | null> {
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_clerkId", (q) => q.eq("clerkId", clerkId))
-    .unique();
-
-  return user?.globalUserId ?? null;
-}
-
 async function ensureFeatureForKey(
   ctx: MutationCtx,
   key: string,
@@ -173,9 +162,9 @@ export const list = query({
 });
 
 export const vote = mutation({
-  args: { key: v.string(), clerkId: v.string() },
+  args: { key: v.string(), ...siteAuthorityArgs },
   handler: async (ctx, args) => {
-    const globalUserId = await getGlobalUserIdByClerkId(ctx, args.clerkId);
+    const globalUserId = (await requireSiteAccount(ctx, args))._id;
     if (!globalUserId) {
       throw new Error("account_not_ready");
     }
@@ -217,13 +206,13 @@ export const vote = mutation({
 
 export const suggest = mutation({
   args: {
-    clerkId: v.string(),
+    ...siteAuthorityArgs,
     projectId: v.string(),
     title: v.string(),
     description: v.string(),
   },
   handler: async (ctx, args) => {
-    const globalUserId = await getGlobalUserIdByClerkId(ctx, args.clerkId);
+    const globalUserId = (await requireSiteAccount(ctx, args))._id;
     if (!globalUserId) {
       throw new Error("account_not_ready");
     }

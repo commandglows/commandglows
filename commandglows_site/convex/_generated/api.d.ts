@@ -8,11 +8,6 @@
  * @module
  */
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
 import type * as apiKeys from "../apiKeys.js";
 import type * as bridge from "../bridge.js";
 import type * as commerceAlerts from "../commerceAlerts.js";
@@ -33,16 +28,17 @@ import type * as http from "../http.js";
 import type * as licenseAdministration from "../licenseAdministration.js";
 import type * as productEntitlementPolicies from "../productEntitlementPolicies.js";
 import type * as resend from "../resend.js";
+import type * as siteAuthority from "../siteAuthority.js";
+import type * as siteIdentity from "../siteIdentity.js";
+import type * as siteSessions from "../siteSessions.js";
 import type * as users from "../users.js";
 
-/**
- * A utility for referencing Convex functions in your app's API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+
 declare const fullApi: ApiFromModules<{
   apiKeys: typeof apiKeys;
   bridge: typeof bridge;
@@ -64,13 +60,36 @@ declare const fullApi: ApiFromModules<{
   licenseAdministration: typeof licenseAdministration;
   productEntitlementPolicies: typeof productEntitlementPolicies;
   resend: typeof resend;
+  siteAuthority: typeof siteAuthority;
+  siteIdentity: typeof siteIdentity;
+  siteSessions: typeof siteSessions;
   users: typeof users;
 }>;
+
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 export declare const api: FilterApi<
   typeof fullApi,
   FunctionReference<any, "public">
 >;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
 export declare const internal: FilterApi<
   typeof fullApi,
   FunctionReference<any, "internal">
 >;
+
+export declare const components: {};

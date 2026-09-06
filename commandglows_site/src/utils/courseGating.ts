@@ -1,14 +1,5 @@
 import type { APIContext } from 'astro'
-import { ConvexHttpClient } from 'convex/browser'
 import { SITE } from '@/constants'
-
-type CourseUser = { role?: string }
-
-type FormationAccess = {
-	hasAccess: boolean
-	source?: string
-	user?: CourseUser | null
-}
 
 export const COURSE_ENTITLEMENT = 'commandglows_formation'
 const FORMATION_OFFER_ID = 'commandglows_formation/full_course'
@@ -80,6 +71,8 @@ export function isSafeCourseCheckoutPath(pathname: string | null) {
 }
 
 export function getSafeAuthRedirectPath(pathname: string | null) {
+	if (!pathname || !pathname.startsWith('/') || pathname.startsWith('//') || /[\\\u0000-\u0020]/.test(pathname)) return '/dashboard'
+	try { if (new URL(pathname, SITE.url).origin !== new URL(SITE.url).origin) return '/dashboard' } catch { return '/dashboard' }
 	if (
 		isSafePrivateCoursePath(pathname) ||
 		isSafeAccountPath(pathname) ||
@@ -109,28 +102,6 @@ export function extractCoursePreview(body: string, maxParagraphs = 4) {
 }
 
 export async function getCourseAccess(context: APIContext) {
-	const auth = context.locals.auth()
-	if (!auth.userId) {
-		return { isAuthenticated: false, hasAccess: false }
-	}
-
-	const convexUrl = import.meta.env.PUBLIC_CONVEX_URL
-	if (!convexUrl || convexUrl === 'https://PLACEHOLDER.convex.cloud') {
-		return { isAuthenticated: true, hasAccess: false }
-	}
-
-	try {
-		const convex = new ConvexHttpClient(convexUrl)
-		const access = (await convex.query('users:getFormationAccessByClerkId' as never, {
-			clerkId: auth.userId,
-		} as never)) as FormationAccess | null
-
-		return {
-			isAuthenticated: true,
-			hasAccess: access?.hasAccess === true,
-			user: access?.user ?? null,
-		}
-	} catch {
-		return { isAuthenticated: true, hasAccess: false }
-	}
+  const auth = context.locals.siteAuth()
+  return { isAuthenticated: Boolean(auth.userId), hasAccess: Boolean(auth.userId && auth.formationAccess), user: auth.userId ? { role: auth.role } : null }
 }

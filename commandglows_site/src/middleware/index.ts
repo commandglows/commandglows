@@ -1,4 +1,5 @@
 import { clerkMiddleware } from '@clerk/astro/server';
+import { initializeSiteAuth, siteProvider } from '../lib/auth/siteAuth';
 import { sequence } from 'astro:middleware';
 import type { APIContext, MiddlewareHandler, MiddlewareNext } from 'astro';
 import { corsMiddleware } from './cors';
@@ -44,6 +45,9 @@ function getLegacyRedirect(pathname: string): string | null {
 
 const appMiddleware = async (context: APIContext, next: MiddlewareNext): Promise<Response> => {
   const url = new URL(context.request.url);
+  if (context.locals.siteAuth?.().unavailable && !url.pathname.startsWith('/api/auth/') && url.pathname !== '/account/link-existing') {
+    return new Response('Account verification is temporarily unavailable. Please reload this page to retry.', { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '30' } });
+  }
   const legacyRedirect = getLegacyRedirect(url.pathname);
 
   if (legacyRedirect) {
@@ -68,6 +72,7 @@ const CLERK_PROTECTED_PATH_PREFIXES = [
   '/api/features',
   '/api/checkout',
   '/api/admin',
+  '/api/auth',
 ];
 
 function shouldUseClerkMiddleware(pathname: string): boolean {
@@ -85,13 +90,17 @@ let clerkAwareMiddleware: MiddlewareHandler | null = null;
 function getClerkAwareMiddleware(): MiddlewareHandler {
   clerkAwareMiddleware ??= sequence(
     clerkMiddleware(),
-    appMiddleware,
+    async (context, next) => {
+      await initializeSiteAuth(context);
+      return appMiddleware(context, next);
+    },
   );
 
   return clerkAwareMiddleware;
 }
 
-export const onRequest: MiddlewareHandler = (context, next) => {
+const authenticateRequest = async (context: APIContext, next: MiddlewareNext): Promise<Response> => {
+  context.locals.siteAuth = () => ({ userId: null, provider: siteProvider() });
   const url = new URL(context.request.url);
 
   if (shouldBypassClerkMiddleware(url.pathname)) {
@@ -102,5 +111,27 @@ export const onRequest: MiddlewareHandler = (context, next) => {
     return appMiddleware(context, next);
   }
 
-  return getClerkAwareMiddleware()(context, next);
+  if (siteProvider() === 'auth0' && !['/api/auth/link', '/account/link-existing'].includes(url.pathname.replace(/\/$/, ''))) {
+    await initializeSiteAuth(context);
+    return appMiddleware(context, next);
+  }
+  const response = await getClerkAwareMiddleware()(context, next);
+  if (!response) throw new Error('auth_response_missing');
+  return response;
+};
+
+export const onRequest: MiddlewareHandler = async (context, next) => {
+  try {
+    const response = await authenticateRequest(context, next)
+    if (shouldUseClerkMiddleware(context.url.pathname)) {
+      const headers = new Headers(response.headers)
+      headers.set('Cache-Control', 'no-store')
+      const vary = headers.get('Vary')
+      headers.set('Vary', vary ? `${vary}, Cookie` : 'Cookie')
+      return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
+    }
+    return response
+  } catch {
+    return new Response('Authentication is temporarily unavailable. Please retry.', { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '30' } })
+  }
 };

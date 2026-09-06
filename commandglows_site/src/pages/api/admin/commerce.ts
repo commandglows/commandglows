@@ -20,14 +20,14 @@ function errorResponse(error: unknown) {
 }
 
 async function authority(locals: App.Locals) {
-  const clerkId = locals.auth().userId
-  if (!clerkId) return { ok: false as const, response: json({ error: 'auth_required' }, 401) }
+  const actorGlobalUserId = locals.siteAuth().userId
+  if (!actorGlobalUserId) return { ok: false as const, response: json({ error: 'auth_required' }, 401) }
   const env = getServerEnv()
   if (!env.PUBLIC_CONVEX_URL || env.PUBLIC_CONVEX_URL.includes('PLACEHOLDER') || !env.SUITE_BRIDGE_CONVEX_SECRET) {
     return { ok: false as const, response: json({ error: 'commerce_operations_unavailable' }, 503) }
   }
   const convex = new ConvexHttpClient(env.PUBLIC_CONVEX_URL)
-  const auth = { clerkId, bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET }
+  const auth = { actorGlobalUserId, bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET }
   // Verify the canonical role before any Stripe network request, including read-only requests.
   const access = await convex.query('commerceOperations:authorize' as never, auth as never) as { environment: string }
   return { ok: true as const, convex, auth, env, environment: access.environment }

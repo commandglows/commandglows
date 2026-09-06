@@ -1,3 +1,4 @@
+import { siteAuthorityArgs, requireSiteAdmin } from './siteAuthority'
 import { mutation, query } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
@@ -39,23 +40,6 @@ function requireBridgeSecret(providedSecret: string) {
   if (!configuredSecret) throw new Error('bridge_secret_not_configured')
   if (providedSecret !== configuredSecret)
     throw new Error('bridge_secret_mismatch')
-}
-
-async function requireAdmin(
-  ctx: LicenseCtx,
-  clerkId: string,
-  bridgeSecret: string
-) {
-  requireBridgeSecret(bridgeSecret)
-  const normalizedClerkId = clerkId.trim()
-  if (!normalizedClerkId) throw new Error('admin_identity_required')
-
-  const admin = await ctx.db
-    .query('users')
-    .withIndex('by_clerkId', (q) => q.eq('clerkId', normalizedClerkId))
-    .unique()
-  if (!admin || admin.role !== 'admin') throw new Error('admin_forbidden')
-  return admin
 }
 
 function normalizeSearch(raw: string) {
@@ -165,9 +149,9 @@ async function summarizeUser(ctx: QueryCtx, userId: Id<'globalUsers'>) {
 }
 
 export const searchLicenses = query({
-  args: { clerkId: v.string(), bridgeSecret: v.string(), search: v.string() },
+  args: { ...siteAuthorityArgs, search: v.string() },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx, args.clerkId, args.bridgeSecret)
+    await requireSiteAdmin(ctx, args)
     const search = normalizeSearch(args.search)
     const ids = new Set<Id<'globalUsers'>>()
     let sourceTruncated = false
@@ -229,12 +213,11 @@ export const searchLicenses = query({
 
 export const getLicenseDetail = query({
   args: {
-    clerkId: v.string(),
-    bridgeSecret: v.string(),
+    ...siteAuthorityArgs,
     globalUserId: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx, args.clerkId, args.bridgeSecret)
+    await requireSiteAdmin(ctx, args)
     const globalUser = await getGlobalUserByPublicId(
       ctx,
       args.globalUserId.trim()
@@ -312,8 +295,7 @@ export const getLicenseDetail = query({
 
 export const manualGrant = mutation({
   args: {
-    clerkId: v.string(),
-    bridgeSecret: v.string(),
+    ...siteAuthorityArgs,
     globalUserId: v.string(),
     productId: v.string(),
     plan: v.string(),
@@ -321,7 +303,7 @@ export const manualGrant = mutation({
     environment: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkId, args.bridgeSecret)
+    const admin = await requireSiteAdmin(ctx, args)
     const reason = normalizeReason(args.reason)
     const { productId, plan } = normalizeProductAndPlan(
       args.productId,
@@ -394,8 +376,7 @@ export const manualGrant = mutation({
 
 export const manualRevoke = mutation({
   args: {
-    clerkId: v.string(),
-    bridgeSecret: v.string(),
+    ...siteAuthorityArgs,
     globalUserId: v.string(),
     productId: v.string(),
     plan: v.string(),
@@ -403,7 +384,7 @@ export const manualRevoke = mutation({
     environment: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkId, args.bridgeSecret)
+    const admin = await requireSiteAdmin(ctx, args)
     const reason = normalizeReason(args.reason)
     const { productId, plan } = normalizeProductAndPlan(
       args.productId,

@@ -209,7 +209,12 @@ export const deleteByClerkId = internalMutation({
       .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
       .unique();
     if (user) {
-      await ctx.db.delete(user._id);
+      // The provider lifecycle must not erase the canonical role/profile after
+      // an explicitly verified second identity has been attached.
+      const remainingIdentities = user.globalUserId
+        ? await ctx.db.query("identityAccounts").withIndex("by_globalUserId", q => q.eq("globalUserId", user.globalUserId!)).collect()
+        : [];
+      if (remainingIdentities.length === 0) await ctx.db.delete(user._id);
     }
   },
 });

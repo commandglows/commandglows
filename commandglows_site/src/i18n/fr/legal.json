@@ -37,8 +37,8 @@
       "title": "4. Services d'Authentification",
       "intro": "L'authentification des utilisateurs est assurée par :",
       "items": [
-        "Prestataire : Clerk",
-        "Site web : https://clerk.com",
+        "Prestataires : Auth0 ; Clerk pour la transition des comptes existants",
+        "Site web : https://auth0.com ; https://clerk.com",
         "Traitement des données : Conforme au RGPD"
       ]
     },

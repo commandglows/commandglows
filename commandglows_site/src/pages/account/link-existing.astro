@@ -1,0 +1,23 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro'
+import { SignIn as LegacySignIn } from '@clerk/astro/components'
+
+export const prerender = false
+// Only the verified legacy session can authorize the account-link transaction.
+const legacyAccount = Astro.locals.auth?.().userId
+const failed = Astro.url.searchParams.has('error')
+---
+<MainLayout title="Retrouver mes achats" lang="fr">
+  <section class="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 py-12">
+    <h1 class="text-content-text-primary text-3xl font-bold">Retrouver mes achats</h1>
+    <p class="text-content-text-secondary">Pour retrouver vos achats et vos accès, connectez-vous d’abord à votre compte existant. Vous pourrez ensuite le relier à votre nouvelle connexion.</p>
+    {failed && <p role="alert" class="text-content-text-primary">Le rapprochement n’a pas abouti. Vous pouvez réessayer depuis votre compte existant.</p>}
+    {legacyAccount ? <div class="rounded-xl border border-content-border bg-content-bg-elevated p-6">
+      <p class="mb-4 text-content-text-secondary">Votre compte existant est connecté. Continuez pour confirmer également votre nouvelle connexion.</p>
+      <form method="post" action="/api/auth/link">
+        <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-5 py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">Relier mon compte à ma nouvelle connexion</button>
+      </form>
+    </div> : <LegacySignIn routing="hash" fallbackRedirectUrl="/account/link-existing" />}
+    <a href="/signin" class="brand-text-magenta underline">Revenir à la connexion</a>
+  </section>
+</MainLayout>

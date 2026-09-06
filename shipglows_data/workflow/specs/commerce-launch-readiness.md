@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: commandglows
 created: "2026-09-06"
-updated: "2026-09-06"
+updated: "2026-09-07"
 created_at: "2026-09-06T19:15:00Z"
 updated_at: "2026-09-06T21:44:34Z"
 status: active
@@ -232,3 +232,32 @@ identity handling and rejects malformed mappings. Backend failure returns a safe
 503 with retry guidance and never creates checkout. Thirteen focused adapter and
 checkout tests pass. Auth0 session/callback and account linkage are still pending;
 this checkpoint does not switch authentication or deploy Convex.
+
+2026-09-07 implementation: three bounded subagents implemented/reviewed OIDC
+sessions, canonical identity/authority and UI/routes. The site now has project-owned
+session consumers, explicit existing-account recovery and dual-control linking,
+server-revocable login attempts, environment-scoped account/access resolution,
+canonical admin/feature/checkout authority, same-origin mutation checks and safe
+failure exits. Legacy Clerk remains the default selector until Auth0 configuration
+and hosted proof are available; no completed Auth0 login is claimed.
+
+329 tests across 39 suites passed; Astro checked 284 files with zero errors and
+zero warnings, plus the existing ScriptInstallPage hint. Additional recovery page
+and session tests passed subsequently. Standard Convex code generation and backend
+TypeScript passed. See technical/site-authentication.md for activation/rollback.
+
+Live dev predeployment inventory captured through the official Convex CLI/MCP:
+31 declared existing tables; no removed table/index in the normalized schema diff;
+only identityAccounts changes and new siteLoginAttempts. Existing crons verified:
+commerceAlerts:sweep every 300 seconds and emailDelivery:poll every 60 seconds,
+with the email poll currently disabled. Planned cleanup cron is additive. Auth0
+CLI login is awaiting the operator; no tenant/application configuration inspected
+or modified in this continuation. Hosted activation remains pending.
+
+Final review added protected-page revalidation on browser restoration, focus and
+other-tab logout/link signals, with stale-response cancellation. The site identity
+namespace is isolated as site:auth0; a regression calls the actual ContentGlows
+bridge with the same subject and proves it cannot adopt a site account. The
+transitional checkout-only adapter was superseded by the complete site session
+boundary and removed. Design drift scan passed: 33 source files, zero findings,
+using unchanged policy and verified canonical baseline bytes in an isolated snapshot.

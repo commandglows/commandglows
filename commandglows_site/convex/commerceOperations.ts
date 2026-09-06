@@ -1,3 +1,4 @@
+import { siteAuthorityArgs, requireSiteAdmin, type SiteAuthority } from './siteAuthority'
 import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
@@ -8,15 +9,15 @@ import { receiveCommerceEvent, reviewCommerceEvent, recoverCommerceEvent } from 
 import { isSupportedSuiteCommerceOffer } from './bridge'
 import { enqueueCommerceAlert, syncCommerceIngressFailure } from './commerceIncidentLedger'
 
-const authorityArgs = { clerkId: v.string(), bridgeSecret: v.string() }
-type Authority = { clerkId: string; bridgeSecret: string }
+const authorityArgs = siteAuthorityArgs
+type Authority = SiteAuthority
 async function requireAdmin(ctx: QueryCtx | MutationCtx, args: Authority) {
   if (!process.env.SUITE_BRIDGE_CONVEX_SECRET || args.bridgeSecret !== process.env.SUITE_BRIDGE_CONVEX_SECRET) throw new Error('admin_forbidden')
-  const admin = await ctx.db.query('users').withIndex('by_clerkId', (q) => q.eq('clerkId', args.clerkId)).unique()
+  const admin = await requireSiteAdmin(ctx, args)
   if (!admin || admin.role !== 'admin') throw new Error('admin_forbidden')
   const environment = commerceEnvironment(process.env.SUITE_BRIDGE_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV || '')
   if (!environment) throw new Error('environment_not_configured')
-  return { operatorId: admin.clerkId, environment }
+  return { operatorId: admin.actorGlobalUserId, environment }
 }
 function note(value: string, name = 'reason') {
   const normalized = value.trim()
@@ -53,7 +54,7 @@ export const reconcileEvent = mutation({
     const authority = await requireAdmin(ctx, args)
     const reason = note(args.reason)
     if (commerceEnvironment(args.environment) !== authority.environment) throw new Error('evidence_mismatch')
-    const { clerkId: _clerkId, bridgeSecret: _secret, reason: _reason, ...envelope } = args
+    const { actorGlobalUserId: _actorId, clerkId: _clerkId, bridgeSecret: _secret, reason: _reason, ...envelope } = args
     const result = await receiveCommerceEvent(ctx, envelope, { supportsOffer: isSupportedSuiteCommerceOffer })
     await ctx.db.insert('productAccessEvents', { source: 'commerce_operations', eventType: 'provider_event_reconciled',
       eventId: envelope.providerEventId, sourceRef: envelope.sourceRef, environment: authority.environment,

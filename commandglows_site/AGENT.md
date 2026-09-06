@@ -42,7 +42,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 
 - marketing and editorial pages
 - gated training purchase flows
-- Clerk authentication
+- Provider-neutral site authentication with Auth0 and explicit Clerk transition
 - Convex-backed user and feature data
 - Stripe-only checkout and webhook handling
 - Resend newsletter flows
@@ -58,7 +58,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 
 - Frontend: Astro 6, Tailwind, MDX, React islands
 - Deployment: Vercel server output
-- Auth: Clerk middleware and webhook sync
+- Auth: project-owned site session; Auth0 OIDC and explicit Clerk recovery/rollback adapter
 - Data: Convex schema, queries, mutations, HTTP actions
 - Billing: signed suite handoff, Stripe Managed Payments checkout, central webhook, and Convex fulfillment
 - Email: Resend subscription and unsubscribe endpoints
@@ -69,7 +69,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 - Keep English routes unprefixed and French routes under `/fr`.
 - Preserve route translation integrity between `src/pages/[...lang]`, `src/i18n/*`, and routing helpers.
 - Treat `src/pages/api/checkout/start.ts`, `src/pages/api/commerce/checkout.ts`, `src/pages/api/commerce/webhooks/stripe.ts`, and `convex/bridge.ts` as one coupled purchase flow.
-- Treat Clerk webhook sync and Convex user records as a coupled identity flow.
+- Treat site sessions, canonical identity linking, Clerk lifecycle and Convex user records as one coupled identity flow. See `shipglows_data/technical/site-authentication.md`.
 - Do not document or introduce dead-end commerce CTAs.
 - If changing content schemas, update `src/content/config.ts` and audit affected content folders.
 

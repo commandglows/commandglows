@@ -1,22 +1,26 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro'
 import type { Language } from '@/types'
+import { SignIn as LegacySignIn } from '@clerk/astro/components'
 import { getSafeAuthRedirectPath } from '@/utils/courseGating'
-import { SignIn } from '@clerk/astro/components'
 
 export const prerender = false
-
 const lang = Astro.params.lang === 'fr' ? ('fr' as Language) : ('en' as Language)
 const title = lang === 'fr' ? 'Connexion' : 'Sign In'
-const nextUrl = Astro.url.searchParams.get('next')
-const safeNextUrl = getSafeAuthRedirectPath(nextUrl)
+const safeNextUrl = getSafeAuthRedirectPath(Astro.url.searchParams.get('next'))
+const auth = Astro.locals.siteAuth()
+const failed = Astro.url.searchParams.has('error')
+const linkConflict = Astro.url.searchParams.get('error') === 'account_link_conflict'
+if (auth.userId && !failed) return Astro.redirect(safeNextUrl)
+const loginUrl = `/api/auth/login?${new URLSearchParams({ next: safeNextUrl })}`
 ---
-
 <MainLayout title={title} lang={lang}>
-	<div class="flex min-h-screen items-center justify-center py-12">
-		<SignIn
-			routing="hash"
-			fallbackRedirectUrl={safeNextUrl}
-		/>
-	</div>
+  <section class="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 py-12">
+    <h1 class="text-content-text-primary text-3xl font-bold">{title}</h1>
+    <p class="text-content-text-secondary">{lang === 'fr' ? 'Connectez-vous pour retrouver votre compte et vos achats.' : 'Sign in to access your account and purchases.'}</p>
+    {failed && <p role="alert" class="text-content-text-primary">{lang === 'fr' ? 'La connexion nâ€™a pas abouti. Vous pouvez rÃ©essayer.' : 'Sign-in could not be completed. Please try again.'}</p>}
+    {linkConflict && <p role="alert">{lang === 'fr' ? 'Ces connexions sont déjà rattachées à deux comptes différents. Vos achats sont conservés. Contactez-nous pour vérifier leur rattachement.' : 'These sign-ins already belong to different accounts. Your purchases are preserved. Contact us to review the link.'} <a href={lang === 'fr' ? '/fr/contact' : '/contact'} class="brand-text-magenta underline">{lang === 'fr' ? 'Nous contacter' : 'Contact us'}</a></p>}
+    {auth.userId ? <a href="/dashboard/parametres" class="brand-text-magenta underline">{lang === 'fr' ? 'Revenir aux paramÃ¨tres du compte' : 'Return to account settings'}</a> : auth.provider === 'clerk' ? <LegacySignIn routing="hash" fallbackRedirectUrl={safeNextUrl} /> : <a href={loginUrl} class="brand-text-magenta rounded-lg border border-content-border px-5 py-3 text-center font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">{lang === 'fr' ? 'Se connecter' : 'Sign in'}</a>}
+    {auth.provider === 'auth0' && <a href="/account/link-existing" class="brand-text-magenta underline">{lang === 'fr' ? 'Retrouver mes achats existants' : 'Recover my existing purchases'}</a>}
+  </section>
 </MainLayout>

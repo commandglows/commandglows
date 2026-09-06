@@ -2,7 +2,7 @@
 import MainLayout from '@/layouts/MainLayout.astro'
 import { isSafePrivateCoursePath } from '@/utils/courseGating'
 
-const auth = Astro.locals.auth()
+const auth = Astro.locals.siteAuth()
 const nextUrl = Astro.url.searchParams.get('next')
 const offerId = Astro.url.searchParams.get('offerId')
 const safeNextUrl = isSafePrivateCoursePath(nextUrl) ? nextUrl : null

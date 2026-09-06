@@ -10,7 +10,7 @@ vi.mock('convex/browser', () => ({
 }))
 
 const locals = (userId: string | null) => ({
-  auth: () => ({ userId }),
+  siteAuth: () => ({ userId }),
 })
 
 describe('licence administration API', () => {
@@ -32,7 +32,7 @@ describe('licence administration API', () => {
     expect(mockQuery).not.toHaveBeenCalled()
   })
 
-  test('forwards the trusted Clerk identity and server secret for search', async () => {
+  test('forwards the trusted canonical identity and server secret for search', async () => {
     const { GET } = await import('@/pages/api/admin/licenses')
     mockQuery.mockResolvedValueOnce({ results: [] })
     const response = await GET({
@@ -43,7 +43,7 @@ describe('licence administration API', () => {
     expect(mockQuery).toHaveBeenCalledWith(
       'licenseAdministration:searchLicenses',
       expect.objectContaining({
-        clerkId: 'clerk_admin',
+        actorGlobalUserId: 'clerk_admin',
         bridgeSecret: 'bridge-secret',
         search: 'a@example.com',
       }),
@@ -69,6 +69,7 @@ describe('licence administration API', () => {
     const response = await POST({
       request: new Request('https://commandglows.com/api/admin/licenses', {
         method: 'POST',
+        headers: { Origin: 'https://commandglows.com', 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'revoke',
           globalUserId: 'gu_customer',

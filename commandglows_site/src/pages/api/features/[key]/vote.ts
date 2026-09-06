@@ -13,8 +13,9 @@ function jsonResponse(payload: Record<string, unknown>, status: number) {
   });
 }
 
-export const POST: APIRoute = async ({ locals, params }) => {
-  const auth = locals.auth();
+export const POST: APIRoute = async ({ request, locals, params }) => {
+  if (request.headers.get('origin') !== new URL(request.url).origin) return jsonResponse({ error: 'same_origin_required' }, 403);
+  const auth = locals.siteAuth();
   if (!auth.userId) {
     return jsonResponse({ status: 'unauthorized', error: 'auth_required' }, 401);
   }
@@ -26,7 +27,7 @@ export const POST: APIRoute = async ({ locals, params }) => {
 
   const env = getServerEnv();
   const convexUrl = env.PUBLIC_CONVEX_URL;
-  if (!convexUrl || convexUrl === 'https://PLACEHOLDER.convex.cloud') {
+  if (!env.SUITE_BRIDGE_CONVEX_SECRET || !convexUrl || convexUrl === 'https://PLACEHOLDER.convex.cloud') {
     return jsonResponse({ status: 'unavailable', error: 'roadmap_unavailable' }, 503);
   }
 
@@ -34,7 +35,8 @@ export const POST: APIRoute = async ({ locals, params }) => {
     const convex = new ConvexHttpClient(convexUrl);
     const result = (await convex.mutation('features:vote' as never, {
       key,
-      clerkId: auth.userId,
+      actorGlobalUserId: auth.userId,
+      bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET,
     } as never)) as { status: 'ok' | 'duplicate'; votes: number };
 
     return jsonResponse(result, result.status === 'ok' ? 200 : 409);

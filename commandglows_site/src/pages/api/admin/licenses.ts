@@ -20,7 +20,7 @@ function adminError(error: unknown) {
 }
 
 function getAuthority(locals: App.Locals) {
-  const auth = locals.auth()
+  const auth = locals.siteAuth()
   if (!auth.userId) {
     return {
       ok: false as const,
@@ -42,7 +42,7 @@ function getAuthority(locals: App.Locals) {
 
   return {
     ok: true as const,
-    clerkId: auth.userId,
+    actorGlobalUserId: auth.userId,
     bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET,
     environment: env.SUITE_BRIDGE_ENVIRONMENT || env.VERCEL_ENV || 'development',
     convex: new ConvexHttpClient(env.PUBLIC_CONVEX_URL),
@@ -65,7 +65,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       const detail = await authority.convex.query(
         'licenseAdministration:getLicenseDetail' as never,
         {
-          clerkId: authority.clerkId,
+          actorGlobalUserId: authority.actorGlobalUserId,
           bridgeSecret: authority.bridgeSecret,
           globalUserId,
         } as never,
@@ -76,7 +76,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const result = await authority.convex.query(
       'licenseAdministration:searchLicenses' as never,
       {
-        clerkId: authority.clerkId,
+        actorGlobalUserId: authority.actorGlobalUserId,
         bridgeSecret: authority.bridgeSecret,
         search,
       } as never,
@@ -88,6 +88,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  if (request.headers.get('origin') !== new URL(request.url).origin) return json({ error: 'same_origin_required' }, 403)
   const authority = getAuthority(locals)
   if (!authority.ok) return authority.response
 
@@ -117,7 +118,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const result = await authority.convex.mutation(
       `licenseAdministration:${action === 'grant' ? 'manualGrant' : 'manualRevoke'}` as never,
       {
-        clerkId: authority.clerkId,
+        actorGlobalUserId: authority.actorGlobalUserId,
         bridgeSecret: authority.bridgeSecret,
         globalUserId,
         productId,

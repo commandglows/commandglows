@@ -7,7 +7,7 @@ vi.mock('@/lib/commerce/providers/stripe', () => ({ normalizeVerifiedStripeEvent
 import { GET, POST } from '@/pages/api/admin/commerce'
 
 const url = 'https://commandglows.example.test/api/admin/commerce'
-const locals = (userId: string | null = 'trusted_admin') => ({ auth: () => ({ userId }) })
+const locals = (userId: string | null = 'trusted_admin') => ({ siteAuth: () => ({ userId }) })
 const request = (payload: unknown, headers: Record<string, string> = {}) => new Request(url, {
   method: 'POST', headers: { Origin: new URL(url).origin, 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(payload),
 })
@@ -53,7 +53,7 @@ describe('administrator commerce API', () => {
     const response = await GET({ request: new Request(`${url}?environment=production&cursor=page2`), locals: locals() } as never)
     expect(response.status).toBe(200)
     expect(mocks.query).toHaveBeenLastCalledWith('commerceOperations:listIncidents', {
-      clerkId: 'trusted_admin', bridgeSecret: 'server-only-secret', active: true, paginationOpts: { numItems: 20, cursor: 'page2' },
+      actorGlobalUserId: 'trusted_admin', bridgeSecret: 'server-only-secret', active: true, paginationOpts: { numItems: 20, cursor: 'page2' },
     })
   })
   test('requires a version, attempts and support reason before retry', async () => {
@@ -74,7 +74,7 @@ describe('administrator commerce API', () => {
     expect(mocks.event).toHaveBeenCalledWith('evt_trusted')
     const { metadata: _metadata, ...trusted } = envelope
     expect(mocks.mutation).toHaveBeenCalledWith('commerceOperations:reconcileEvent', {
-      ...trusted, clerkId: 'trusted_admin', bridgeSecret: 'server-only-secret', reason: 'Verified missing webhook',
+      ...trusted, actorGlobalUserId: 'trusted_admin', bridgeSecret: 'server-only-secret', reason: 'Verified missing webhook',
     })
   })
   test('rejects live-mode evidence in sandbox before normalizing', async () => {
@@ -95,7 +95,7 @@ describe('administrator commerce API', () => {
     expect(response.status).toBe(200)
     expect(mocks.event).toHaveBeenCalledWith('evt_trusted')
     expect(mocks.mutation).toHaveBeenCalledWith('commerceOperations:recoverIncident', expect.objectContaining({
-      providerEventId: 'evt_trusted', providerPayloadHash: 'a'.repeat(64), expectedAttempts: 5, expectedVersion: 5, clerkId: 'trusted_admin',
+      providerEventId: 'evt_trusted', providerPayloadHash: 'a'.repeat(64), expectedAttempts: 5, expectedVersion: 5, actorGlobalUserId: 'trusted_admin',
     }))
   })
   test('provider outages leave the case intact and return a retryable service error', async () => {

@@ -1,10 +1,8 @@
 import type { APIRoute } from 'astro'
-import { ConvexHttpClient } from 'convex/browser'
 import { createCommerceCheckoutIdentityToken } from '@/lib/commerce/checkoutIdentity'
 import { createCommerceCheckout } from '@/pages/api/commerce/checkout'
 import { getCommerceOffer } from '@/lib/commerce/offers'
 import { getServerEnv } from '@/lib/serverEnv'
-import { clerkAccountIdentityAdapter } from '@/lib/auth/clerkAccountIdentity'
 import {
   getPrivateCoursePath,
   getPublicCoursePath,
@@ -22,11 +20,19 @@ export const GET: APIRoute = async () =>
 
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const url = new URL(request.url)
+  if (request.headers.get('origin') !== url.origin) {
+    return new Response('Same origin required', { status: 403 })
+  }
   const offerId = url.searchParams.get('offerId')?.trim() ?? ''
   const offer = getCommerceOffer(offerId)
   if (!offer) return new Response('Offer not found', { status: 404 })
 
-  const auth = locals.auth()
+  const auth = locals.siteAuth()
+  if (auth.unavailable) {
+    return new Response('Account verification is temporarily unavailable. Please retry.', {
+      status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '30' },
+    })
+  }
   if (!auth.userId) {
     const lang = url.searchParams.get('lang') === 'fr' ? 'fr' : 'en'
     const signInPath = lang === 'fr' ? '/fr/signin' : '/signin'
@@ -51,28 +57,8 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     return new Response('Checkout identity is not configured', { status: 503 })
   }
 
-  const convex = new ConvexHttpClient(convexUrl)
-  const accountAdapter = clerkAccountIdentityAdapter(auth.userId, (clerkId) =>
-    convex.query(
-      'bridge:getCheckoutIdentityByClerkAccount' as never,
-      { clerkId, bridgeSecret } as never
-    )
-  )
-  let identity
-  try {
-    identity = await accountAdapter.resolveAccount()
-  } catch {
-    return new Response('Account verification is temporarily unavailable. Please retry.', {
-      status: 503,
-      headers: { 'Cache-Control': 'no-store', 'Retry-After': '30' },
-    })
-  }
-  if (!identity?.globalUserId) {
-    return new Response('Suite identity is not available', { status: 409 })
-  }
-
   const checkoutToken = createCommerceCheckoutIdentityToken(
-    identity.globalUserId,
+    auth.userId,
     offer.productId,
     runtimeEnvironment(env),
     checkoutSecret
