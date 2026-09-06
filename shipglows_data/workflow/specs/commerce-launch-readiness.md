@@ -6,7 +6,7 @@ project: commandglows
 created: "2026-09-06"
 updated: "2026-09-06"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-06T19:51:00Z"
+updated_at: "2026-09-06T20:35:17Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -21,7 +21,7 @@ linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
 evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "244 synthetic tests across 28 suites, Convex TypeScript and Astro checks passed.", "Hosted acceptance, notification receipt and protected access are pending."]
-next_step: "Execute the hosted test-mode acceptance authorized on 2026-09-06; commit validated milestones."
+next_step: "Complete browser sign-in and operator alert destination, then verify Stripe test mode and end-to-end recovery; reconcile historical shared-dev schema drift."
 ---
 
 # Title
@@ -145,6 +145,18 @@ Hosted test-mode acceptance and progressive commits were authorized on 2026-09-0
 | 2026-09-06 | sg-development | GPT-6 | Implemented immutable financial facts, purchase rights reduction, operator cases, alert outbox, missing-webhook surveillance, evidence recovery and buyer copy. Independent review fixes cover legacy audit provenance and contradictory dispute outcomes. | 244 synthetic tests, Convex TypeScript and Astro checks passed; metadata lint passed. | Hosted test-mode acceptance requires separate authorization. |
 
 ## Current Chantier Flow
+
+### Hosted continuation evidence — 2026-09-06
+
+- Commerce checkpoint `4f4e4fb19feaae1a8b1b0189ea865a325ab14d8d` committed and pushed on `codex/unified-commerce-entitlements`; Vercel deployment `dpl_53NmnVtfz1GLuUZCf1oZtKsQdc6i` READY at `https://commandglows-28lz335ua-diane-ds-projects.vercel.app`.
+- Provider configuration identifies the existing preview backend as `beaming-cow-328`, Convex deployment type `dev`, runtime commerce environment `preview` (normalized sandbox). Clerk publishable and server keys report test mode. Vercel keeps sensitive Stripe and bridge values out of local `env run`; their absence there does not mean absence in the hosted runtime. No secret was printed or copied into source.
+- The first backend deployment exposed shared-dev drift: it removed four legacy indexes on `emailConsentEvents` and `emailSubscriptions`. Both tables were subsequently queried with a one-row bound and were empty. No data deletion command or import ran. Their previous schema is absent from available repository history; exact legacy-index restoration is **not** claimed.
+- To retain current versioned Postmark functionality alongside commerce, integration branch `codex/commerce-hosted-integration` merges the existing Postmark checkpoint `3cb5d79` and commerce `4f4e4fb`. Merge `d973594e840c6e7c36ea05e15f21ccf83d4743dd` is committed/pushed. The email source files are unchanged from that checkpoint; the schema spreads and both crons coexist. Convex TypeScript and 184 tests across 16 commerce/email suites pass. This is a separate integration branch, not a production promotion.
+- The integration backend is deployed. Function metadata confirms commerce operations/alerts and Postmark functions present. Vercel integration deployment `dpl_DG1vwtdxxeFBMTuCyN6A3paqL87h` is READY at `https://commandglows-r605ib4nk-diane-ds-projects.vercel.app`, matching `d973594`.
+- Hosted commerce API rejects a signed-out request with HTTP 401 and `Cache-Control: no-store`; the Stripe webhook rejects an invalid signature. These checks use Vercel's authenticated CLI access to the protected preview and do not establish application login.
+- The scheduled watchdog advanced its checkpoint on two observations and opened three `checkout_verification` cases from existing old development handoffs. They remain unverified payments, without receipt or grant. Alert attempts persist with `alert_channel_not_configured`; the observed latest count is four, not yet exhaustion proof. No actual notification was sent. The email poll is disabled because EMAIL_CONTROL_CONFIG is absent.
+- Browser proof is waiting at Vercel sign-in in the in-app browser. The operator was asked to sign in and to name the test alert destination/on-call owner. No answer has yet been received. Stripe key mode, real test payment/refund/dispute events, admin/buyer login, protected access, alert reception and final recovery remain unverified.
+- Before another backend deployment, capture the live schema, indexes, function list and cron inventory and compare the exact planned deployment. A Vercel branch preview does not isolate a shared Convex dev backend. Historical empty-table index drift remains explicitly open for reconciliation; do not overwrite it with invented schemas or claim full restoration.
 
 2026-09-06 continuation: the operator approved hosted test-mode acceptance and progressive commits. The previous local-only boundary below records the completed local stage; this continuation now owns scoped Git delivery, hosted target/configuration verification and the acceptance checklist. Commercial opening and production mutations remain outside scope.
 

@@ -77,6 +77,8 @@ The return URL does not prove payment or access. The buyer page asks them to che
 
 ## Hosted launch acceptance — separately authorized
 
+Before a backend deployment, capture its live schema/indexes, function list and cron inventory and compare the planned source. A branch-specific Vercel preview can still share its Convex dev backend with another task. Preserve all unrelated deployed contracts or select a separately approved isolated target. The 2026-09-06 commerce continuation records a shared-dev index drift incident; its historical index restoration remains unverified.
+
 Local tests use synthetic database fixtures and mocked Stripe/HTTP calls. They do not configure a receiver, send a real alert, deploy a schema, establish operator coverage or prove login and protected access.
 
 - Verify the declared Clerk/Convex/Stripe test environment and the canonical admin role. Prove non-admin and signed-out denial, admin queue access, and buyer protected access independently.
