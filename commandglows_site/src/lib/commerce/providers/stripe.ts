@@ -115,7 +115,7 @@ function normalized(
   eventType: CommerceNormalizedEvent['eventType'],
   providerOrderId: string,
   metadata: Record<string, string>,
-  details: { email?: string; customer?: string; invoice?: string } = {},
+  details: { email?: string; customer?: string; invoice?: string; paymentIntent?: string } = {},
   status: CommerceNormalizedEvent['status'] = 'applied'
 ): CommerceNormalizedEvent | null {
   const offerId = nonEmpty(metadata.offer_id)
@@ -137,9 +137,10 @@ function normalized(
     customerEmail: details.email,
     providerCustomerId: details.customer,
     globalUserId: nonEmpty(metadata.global_user_id),
-    sourceRef: nonEmpty(metadata.source_ref) ?? providerOrderId,
+    sourceRef: nonEmpty(metadata.source_ref),
     providerSourceRef: providerOrderId,
     providerInvoiceId: details.invoice,
+    providerPaymentIntentId: details.paymentIntent,
     metadata,
   }
 }
@@ -183,6 +184,7 @@ export async function parseStripeManagedPaymentsWebhook(
           email: nonEmpty(session.customer_details?.email) ?? nonEmpty(session.customer_email),
           customer: customerId(session.customer),
           invoice: typeof session.invoice === 'string' ? session.invoice : session.invoice?.id,
+          paymentIntent: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
         })
       }
     } else if (event.type === 'refund.created' || event.type === 'refund.updated') {
@@ -196,7 +198,7 @@ export async function parseStripeManagedPaymentsWebhook(
           isFullSuccessfulRefund ? 'refunded' : 'pending_review',
           charge.id,
           metadataRecord(charge.metadata),
-          { customer: customerId(charge.customer) },
+          { customer: customerId(charge.customer), paymentIntent: typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id },
           isFullSuccessfulRefund ? 'applied' : 'pending_review'
         )
       }
@@ -206,6 +208,7 @@ export async function parseStripeManagedPaymentsWebhook(
       if (charge) {
         result = normalized(event, 'revoked', charge.id, metadataRecord(charge.metadata), {
           customer: customerId(charge.customer),
+          paymentIntent: typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id,
         })
       }
     } else {

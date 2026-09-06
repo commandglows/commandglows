@@ -72,13 +72,23 @@ describe('Stripe Managed Payments adapter', () => {
     const stripe = client()
     const payload = {
       id: 'evt_paid', object: 'event', type: 'checkout.session.completed', livemode: false,
-      data: { object: { id: 'cs_paid', object: 'checkout.session', payment_status: 'paid', metadata, customer: 'cus_123', customer_details: { email: 'buyer@example.com' } } },
+      data: { object: { id: 'cs_paid', object: 'checkout.session', payment_status: 'paid', payment_intent: 'pi_123', metadata, customer: 'cus_123', customer_details: { email: 'buyer@example.com' } } },
     }
     const parsed = await parseStripeManagedPaymentsWebhook(signedEvent(stripe, payload), 'sk_test', undefined, stripe)
     expect(parsed.ok && parsed.normalizedEvent).toMatchObject({
       provider: 'stripe', eventType: 'paid', offerId: 'commandglows_app/power',
-      providerOrderId: 'cs_paid', globalUserId: 'user_123', environment: 'sandbox',
+      providerOrderId: 'cs_paid', providerPaymentIntentId: 'pi_123', globalUserId: 'user_123', environment: 'sandbox',
     })
+  })
+
+  test('does not invent a purchase reference when signed metadata is incomplete', async () => {
+    const stripe = client()
+    const { source_ref: _source, ...incomplete } = metadata
+    const parsed = await parseStripeManagedPaymentsWebhook(signedEvent(stripe, {
+      id: 'evt_missing_ref', type: 'checkout.session.completed', livemode: false,
+      data: { object: { id: 'cs_missing_ref', payment_status: 'paid', payment_intent: 'pi_123', metadata: incomplete } },
+    }), undefined, undefined, stripe)
+    expect(parsed.ok && parsed.normalizedEvent.sourceRef).toBeUndefined()
   })
 
   test.each([

@@ -57,6 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
         sourceRef: event.sourceRef,
         providerSourceRef: event.providerSourceRef,
         providerInvoiceId: event.providerInvoiceId,
+        providerPaymentIntentId: event.providerPaymentIntentId,
         metadata: event.metadata,
         bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET,
       } as never

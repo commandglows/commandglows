@@ -4,7 +4,7 @@ metadata_schema_version: '1.0'
 artifact_version: '1.6.0'
 project: commandglows
 created: '2026-05-17'
-updated: '2026-09-04'
+updated: '2026-09-06'
 status: reviewed
 source_skill: sg-docs
 scope: architecture
@@ -196,6 +196,7 @@ parity, rollback and hosted-delivery proof.
 - Checkout redirects never grant access. Only signed, idempotent provider events may change paid entitlement state.
 - Raw client-supplied global user IDs are never trusted for any suite checkout identity.
 - Convex classifies every non-Stripe commerce event as non-granting `pending_review`.
+- `convex/commerceProcessor.ts` owns both commerce entrypoints; server checkout and PaymentIntent bindings scope grants and revocations. Additive receipts preserve immutable event input, while internal recovery appends review attempts. See `payment-activation-entitlements.md` for isolation, historical-data and operator recovery rules.
 - Email, consent and entitlement belong to one CommandGlows control plane but
   remain distinct records and authorization decisions.
 - A provider delivery state never creates marketing consent or product access.

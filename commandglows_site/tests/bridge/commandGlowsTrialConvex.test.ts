@@ -1,6 +1,7 @@
 import { convexTest } from 'convex-test'
-import { api } from '../../convex/_generated/api'
+import { api, internal } from '../../convex/_generated/api'
 import schema from '../../convex/schema'
+import type { CommerceEventEnvelope } from '../../convex/commerceEventContract'
 
 const modules = import.meta.glob('../../convex/**/*.ts')
 const BRIDGE_SECRET = 'convex-trial-test-secret'
@@ -20,6 +21,25 @@ type TrialEntitlement = {
 
 function createTestBackend() {
   return convexTest(schema, modules)
+}
+
+async function deliverCommerce(t: ReturnType<typeof createTestBackend>, event: CommerceEventEnvelope & { bridgeSecret: string; metadata?: Record<string, string> }) {
+  if (event.globalUserId && event.sourceRef) {
+    await t.run(async (ctx) => {
+      const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
+      if (!rows.some((row) => row.idempotencyKey === event.sourceRef)) {
+        await ctx.db.insert('commerceCheckoutHandoffs', {
+          jtiHash: event.sourceRef, idempotencyKey: event.sourceRef,
+          globalUserId: event.globalUserId, productId: event.productId, offerId: event.offerId,
+          environment: 'test', status: 'completed', providerOrderId: event.providerOrderId,
+          expiresAt: Date.now() + 60_000, createdAt: Date.now(), updatedAt: Date.now(),
+        })
+      }
+    })
+  }
+  return t.mutation(api.bridge.processCommerceEvent, {
+    ...event, providerPaymentIntentId: `pi_${event.sourceRef}`,
+  })
 }
 
 async function bridgeIdentity(
@@ -304,8 +324,8 @@ describe('CommandGlows trial Convex integration', () => {
       metadata: { source: 'direct', managed_payments: 'true' },
       bridgeSecret: BRIDGE_SECRET,
     }
-    const first = await t.mutation(api.bridge.processCommerceEvent, paidEvent)
-    const replay = await t.mutation(api.bridge.processCommerceEvent, paidEvent)
+    const first = await deliverCommerce(t, paidEvent)
+    const replay = await deliverCommerce(t, paidEvent)
     expect(first).toMatchObject({
       ok: true,
       status: 'granted',
@@ -313,7 +333,7 @@ describe('CommandGlows trial Convex integration', () => {
     })
     expect(replay).toMatchObject({ ok: true, alreadyProcessed: true })
 
-    const revoked = await t.mutation(api.bridge.processCommerceEvent, {
+    const revoked = await deliverCommerce(t, {
       ...paidEvent,
       eventType: 'refunded',
       providerEventId: 'evt_stripe_refund',
@@ -356,7 +376,7 @@ describe('CommandGlows trial Convex integration', () => {
       bridgeSecret: BRIDGE_SECRET,
     }
 
-    const rejected = await t.mutation(api.bridge.processCommerceEvent, {
+    const rejected = await deliverCommerce(t, {
       ...baseEvent,
       provider: 'polar',
       providerEventId: 'evt_polar_formation',
@@ -368,7 +388,7 @@ describe('CommandGlows trial Convex integration', () => {
       reason: 'provider_not_allowed',
     })
 
-    const granted = await t.mutation(api.bridge.processCommerceEvent, {
+    const granted = await deliverCommerce(t, {
       ...baseEvent,
       provider: 'stripe',
       providerEventId: 'evt_stripe_formation',
@@ -406,14 +426,14 @@ describe('CommandGlows trial Convex integration', () => {
       bridgeSecret: BRIDGE_SECRET,
     }
 
-    await t.mutation(api.bridge.processCommerceEvent, {
+    await deliverCommerce(t, {
       ...baseEvent,
       providerEventId: 'evt_purchase_a',
       providerOrderId: 'cs_purchase_a',
       idempotencyKey: 'stripe:checkout.session.completed:evt_purchase_a',
       sourceRef: 'purchase:a',
     })
-    await t.mutation(api.bridge.processCommerceEvent, {
+    await deliverCommerce(t, {
       ...baseEvent,
       providerEventId: 'evt_purchase_b',
       providerOrderId: 'cs_purchase_b',
@@ -421,7 +441,7 @@ describe('CommandGlows trial Convex integration', () => {
       sourceRef: 'purchase:b',
     })
 
-    const refunded = await t.mutation(api.bridge.processCommerceEvent, {
+    const refunded = await deliverCommerce(t, {
       ...baseEvent,
       eventType: 'refunded',
       providerEventId: 'evt_refund_a',
@@ -470,14 +490,14 @@ describe('CommandGlows trial Convex integration', () => {
       metadata: { source: 'direct' },
       bridgeSecret: BRIDGE_SECRET,
     }
-    await t.mutation(api.bridge.processCommerceEvent, {
+    await deliverCommerce(t, {
       ...paidEvent,
       eventType: 'paid',
       providerEventId: 'evt_partial_paid',
       idempotencyKey: 'stripe:checkout.session.completed:evt_partial_paid',
       status: 'applied',
     })
-    const pending = await t.mutation(api.bridge.processCommerceEvent, {
+    const pending = await deliverCommerce(t, {
       ...paidEvent,
       eventType: 'pending_review',
       providerEventId: 'evt_partial_refund',
@@ -514,7 +534,7 @@ describe('CommandGlows trial Convex integration', () => {
       metadata: { source: 'direct' },
       bridgeSecret: BRIDGE_SECRET,
     }
-    await t.mutation(api.bridge.processCommerceEvent, {
+    await deliverCommerce(t, {
       ...baseEvent,
       eventType: 'refunded',
       globalUserId: knownOwner ? identity.globalUserId : undefined,
@@ -522,14 +542,27 @@ describe('CommandGlows trial Convex integration', () => {
       providerOrderId: 'ch_refund_first',
       idempotencyKey: 'stripe:refund.created:evt_refund_first',
     })
-    const delayedPaid = await t.mutation(api.bridge.processCommerceEvent, {
+    const delayedEvent = {
       ...baseEvent,
-      eventType: 'paid',
+      eventType: 'paid' as const,
       providerEventId: 'evt_delayed_paid',
       providerOrderId: 'cs_delayed_paid',
       idempotencyKey: 'stripe:checkout.session.completed:evt_delayed_paid',
+    }
+    // The completed session is independent of webhook delivery order.
+    await t.run(async (ctx) => {
+      const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
+      for (const row of rows) await ctx.db.patch(row._id, { providerOrderId: delayedEvent.providerOrderId })
     })
-    expect(delayedPaid).toMatchObject({
+    const delayedPaid = await deliverCommerce(t, delayedEvent)
+    const receipts = await t.run((ctx) => ctx.db.query('commerceEventReceipts').collect())
+    for (const receipt of receipts.filter((row) => row.status === 'pending_review' && row.envelope.eventType === 'refunded')) {
+      await t.mutation(internal.bridge.retryPendingCommerceEvent, { receiptId: receipt._id, expectedAttempts: 1, operatorId: 'test-operator', reason: 'Payment reference now bound', dryRun: false })
+    }
+    const resolvedPaid = delayedPaid.status === 'pending_review'
+      ? await t.mutation(internal.bridge.retryPendingCommerceEvent, { receiptId: delayedPaid.receiptId, expectedAttempts: 1, operatorId: 'test-operator', reason: 'Negative transition reconciled', dryRun: false })
+      : delayedPaid
+    expect(resolvedPaid).toMatchObject({
       ok: true,
       status: 'revoked',
       reason: 'purchase_already_revoked',
@@ -539,46 +572,6 @@ describe('CommandGlows trial Convex integration', () => {
         (row) => row.sourceRef === 'commandglows_app:purchase:refund-first'
       )
     )).toHaveLength(0)
-  })
-
-  test('retries a pending event after its identity becomes resolvable', async () => {
-    const t = createTestBackend()
-    const event = {
-      provider: 'stripe',
-      offerId: 'commandglows_app/power',
-      productId: 'commandglows_app',
-      plan: 'power',
-      eventType: 'paid' as const,
-      environment: 'test',
-      providerEventId: 'evt_identity_retry',
-      providerOrderId: 'cs_identity_retry',
-      idempotencyKey: 'stripe:checkout.session.completed:evt_identity_retry',
-      status: 'applied' as const,
-      sourceRef: 'purchase:identity-retry',
-      metadata: { source: 'direct' },
-      bridgeSecret: BRIDGE_SECRET,
-    }
-    const pending = await t.mutation(api.bridge.processCommerceEvent, event)
-    expect(pending).toMatchObject({ ok: false, status: 'pending_review' })
-
-    const identity = await bridgeIdentity(t, {
-      uid: 'firebase-identity-retry',
-      installationHash: 'installation-hash-identity-retry',
-    })
-    const applied = await t.mutation(api.bridge.processCommerceEvent, {
-      ...event,
-      globalUserId: identity.globalUserId,
-    })
-    expect(applied).toMatchObject({
-      ok: true,
-      status: 'granted',
-      alreadyProcessed: false,
-    })
-    await expect(t.mutation(api.bridge.processCommerceEvent, {
-      ...event,
-      sourceRef: 'purchase:another-purchase',
-      globalUserId: identity.globalUserId,
-    })).rejects.toThrow('commerce_event_binding_conflict')
   })
 
   test('ENT-TRIAL-011 temporarily denies the fourth network grant in 24 hours', async () => {

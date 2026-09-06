@@ -22,7 +22,7 @@ describe('Stripe webhook route', () => {
       const body = JSON.stringify({
         id: `evt_${plan}`, object: 'event', type: 'checkout.session.completed', livemode: false,
         data: { object: {
-          id: `cs_${plan}`, object: 'checkout.session', payment_status: 'paid', customer: `cus_${plan}`,
+          id: `cs_${plan}`, object: 'checkout.session', payment_status: 'paid', payment_intent: `pi_${plan}`, customer: `cus_${plan}`,
           metadata: { offer_id: `commandglows_app/${plan}`, product_id: 'commandglows_app', plan, source: 'direct', source_ref: `purchase:${plan}`, global_user_id: `user_${plan}` },
         } },
       })
@@ -34,7 +34,7 @@ describe('Stripe webhook route', () => {
       expect(response.status).toBe(200)
       expect(mockMutation).toHaveBeenCalledWith('bridge:processCommerceEvent', expect.objectContaining({
         provider: 'stripe', offerId: `commandglows_app/${plan}`, productId: 'commandglows_app', plan,
-        eventType: 'paid', providerOrderId: `cs_${plan}`, bridgeSecret: 'convex-secret',
+        eventType: 'paid', providerOrderId: `cs_${plan}`, providerPaymentIntentId: `pi_${plan}`, bridgeSecret: 'convex-secret',
       }))
     }
   )

@@ -104,6 +104,7 @@ export type CommerceNormalizedEvent = {
   sourceRef?: string
   providerSourceRef?: string
   providerInvoiceId?: string
+  providerPaymentIntentId?: string
   metadata: CommerceWebhookPayloadMetadata
 }
 

@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.4.0"
+artifact_version: "1.5.0"
 project: "CommandGlows"
 created: "2026-06-18"
 updated: "2026-09-06"
@@ -25,7 +25,7 @@ depends_on:
     artifact_version: "1.0.0"
     required_status: "draft"
   - artifact: "C:/Users/Diane/ShipGlows/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
-    artifact_version: "1.3.0"
+    artifact_version: "1.3.1"
     required_status: "ready"
 supersedes: []
 evidence:
@@ -85,26 +85,84 @@ The earlier no-user assumption is historical and has not been revalidated.
 Existing identities, orders and ledger history must be preserved. No destructive
 migration or hosted data change is authorized by local implementation.
 
-## Central transition hardening (2026-09-06, local)
+## Central commerce foundation (2026-09-06, local)
 
-Checkout now stamps the Convex handoff's stable idempotency reference into both
-Session and PaymentIntent metadata. A client-supplied source reference cannot
-choose the purchase targeted by a later refund.
+Baseline `9016d47` was revalidated with its 20 focused trial/checkout tests before
+implementation. Both `bridge:processCommerceEvent` and the retained
+`bridge:processCommunityGlowsCommerceEvent` now call `commerceProcessor.ts`.
+The compatibility entrypoint accepts CommunityGlows only. There is one writer,
+not a second product-specific entitlement authority.
 
-The generic commerce processor leaves grants unchanged for pending review,
-allows a pending event to resume after identity resolution, and targets negative
-transitions by owner, product, environment and purchase reference. A negative
-event without an existing grant is retained to block a delayed payment for that
-purchase. Existing grants cannot be reassigned or reactivated through a changed
-binding. Commerce response snapshots and source-reference identity lookup filter
-the environment.
+A new grant requires a server-owned `commerceCheckoutHandoffs` record matching
+source reference, product, offer, identity and environment, plus the exact
+completed Checkout Session. A signed paid session binds its PaymentIntent once;
+refunds/disputes must carry that same PaymentIntent. Missing source metadata is
+never replaced with a Session/Charge ID. The provider contract is documented by
+Stripe's [Checkout Session object](https://docs.stripe.com/api/checkout/sessions/object)
+and [Charge object](https://docs.stripe.com/api/charges/object).
 
-These guarantees require the same purchase reference on related events. Older
-events without a stable shared reference still require reconciliation; the
-retired CommunityGlows-specific commerce mutation has not yet been unified.
-AppSumo, identity recovery, Firebase freshness, all product adapters and native
-acceptance remain work in progress. Local synthetic tests do not prove hosted
-provider fulfillment or Windows acceptance.
+Provider/environment/event identity and the complete normalized envelope are
+bound in additive `commerceEventReceipts`. The grant key depends on provider,
+environment, product and purchase, never a marketing channel. A negative
+transition revokes all matching historical duplicate commerce grants for that
+purchase, preserving other purchases, trials, manual grants and identities.
+Sandbox aliases (test/development/preview/staging) share one normalization;
+production is isolated in both directions, including response snapshots.
+Unknown environments fail closed. Customer identities are checked, never moved
+between environments or silently reassigned by commerce processing.
+
+Existing rows and their original audit fields are retained. Legacy raw
+CommunityGlows references and suite-prefixed references are read only with their
+corresponding ledger source/key family. Ambiguous ownership and purchases
+without a verified server/provider binding remain non-granting review cases;
+there is no bulk migration, deletion, backfill or inferred historical linkage.
+The earlier `missing_global_user_for_revoke` tombstone continues to block a
+late payment. Historical assumptions about absence of customers are not authority.
+
+### Controlled pending-review recovery
+
+Duplicate webhook delivery returns the stored result; it cannot change the
+envelope or retry fulfillment. New receipts have one initial attempt and retain
+no bridge secret, raw webhook body or arbitrary metadata.
+
+`internal.bridge.retryPendingCommerceEvent` is an internal Convex mutation with
+no public/customer route. It accepts only `receiptId`, `expectedAttempts`,
+`operatorId`, `reason`, and `dryRun`; it never accepts replacement event data.
+An authorized operator uses a concrete receipt and a non-secret review reason:
+
+1. Inspect the retained envelope and repair its server-owned prerequisite
+   through the existing authorized checkout/identity workflow.
+2. Call with `dryRun=true` to check eligibility without writes. This is an
+   eligibility check, not a simulated fulfillment result.
+3. Call with `dryRun=false` and the inspected attempt counter. The mutation
+   revalidates the original envelope in the runtime environment atomically.
+4. Read the resulting receipt and append-only `commerceEventReviewAttempts`
+   audit. A stale counter is rejected; completed receipts are no-ops.
+
+Only missing purchase/identity/completed checkout/payment binding and a pending
+negative transition are recoverable. Five total processing attempts are allowed
+(initial plus four controlled retries). Unsupported providers/offers, environment
+mismatches, identity conflicts, partial-refund classifications and missing signed
+payment evidence cannot be promoted through this endpoint. They need separately
+verified evidence, not a caller-supplied status override. Historical events that
+predate retained envelopes cannot be reconstructed by this endpoint.
+
+If a refund arrives before its paid session, it stays pending while the signed
+session establishes the payment reference. The paid event also stays pending
+without granting access. Recover the negative event first, then the paid event;
+the latter remains revoked. Tests cover this order without contacting Stripe.
+
+### Local proof and delivery boundary
+
+- Baseline: 20 tests passed before changing `9016d47`.
+- Current tranche: 151 tests across 18 commerce/bridge suites, including signed
+  synthetic parser-to-ledger paid/refund/dispute flows, concurrent deliveries,
+  immutable replays, bounded recovery, environment aliases and historical rows.
+- Convex TypeScript and Astro check pass; Astro retains one unrelated script hint.
+- No deployment, real provider data, hosted database mutation or production
+  purchase was used. Schema additions require a later authorized deployment.
+- The broader identity/recovery, AppSumo, CommunityGlows Windows and portfolio
+  adapter work remains open; these local commerce results do not prove it.
 
 ## Purpose
 
@@ -236,8 +294,8 @@ Do not create a separate checkout endpoint per domain unless a product requires 
 5. Unsupported, malformed, or incomplete signed events must become `pending_review` or `ignored`, never active access.
 6. The route forwards normalized data to Convex `bridge:processCommerceEvent`.
 7. Convex allowlists the product, offer, plan, environment, and idempotency key before writing.
-8. A paid event creates or refreshes an active `productEntitlements` row only when it can resolve a verified global user.
-9. A refund or revoke makes access non-granting without deleting identity.
+8. A paid event grants once only after its completed server-owned purchase and signed PaymentIntent resolve to the same identity, product and environment.
+9. A refund or revoke targets the same verified PaymentIntent and purchase without deleting identity or historical audit events.
 
 ## Identity Resolution
 
@@ -250,7 +308,7 @@ Supported resolution path for automatic grants:
 - Provider-account or source correlation may support negative transitions and
   manual review, but it never replaces the signed checkout identity for a new purchase.
 
-If identity cannot be resolved, the event goes to `pending_review`; support must reconcile it manually.
+If identity cannot be resolved, the event goes to `pending_review`; controlled recovery follows the retained-envelope procedure above.
 
 ## Device Activation Contract
 

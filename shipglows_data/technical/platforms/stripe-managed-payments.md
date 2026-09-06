@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.3.0"
 project: CommandGlows
 created: "2026-08-11"
-updated: "2026-08-18"
+updated: "2026-09-06"
 status: active
 source_skill: sg-docs
 scope: stripe-managed-payments-usage
@@ -100,10 +100,12 @@ modified, cross-product or cross-environment handoffs fail closed.
 ## Event Contract
 
 - `checkout.session.completed` with `payment_status=paid` becomes a normalized paid event.
-- `charge.refunded` becomes a normalized refunded event.
-- `charge.dispute.created` becomes a normalized disputed event.
+- `refund.created` and `refund.updated` become refunded only for a successful full refund; partial or pending refunds remain `pending_review`.
+- `charge.dispute.created` becomes a normalized revoked event.
 - Unsupported or incomplete events never grant access.
-- Convex owns idempotency and the final entitlement transition.
+- Convex owns idempotency and the final entitlement transition through one shared processor, including the CommunityGlows compatibility entrypoint.
+- Paid Session and refund/dispute Charge references carry their PaymentIntent into Convex; it must match the completed server-owned purchase.
+- Pending receipts require internal, bounded, audited recovery from their immutable envelope; ordinary delivery cannot promote them. See the payment activation contract for the operator procedure.
 
 ## Invariants
 

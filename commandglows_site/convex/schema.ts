@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import { commerceEventEnvelope } from './commerceEventContract'
 
 export default defineSchema({
   globalUsers: defineTable({
@@ -47,6 +48,7 @@ export default defineSchema({
   })
     .index('by_globalUserId', ['globalUserId'])
     .index('by_productStatus', ['productId', 'status'])
+    .index('by_sourceRef', ['sourceRef'])
     .index('by_idempotencyKey', ['idempotencyKey']),
 
   productTrialInstallations: defineTable({
@@ -137,6 +139,7 @@ export default defineSchema({
     reason: v.optional(v.string()),
     createdAt: v.number(),
   })
+    .index('by_eventId', ['eventId'])
     .index('by_idempotencyKey', ['idempotencyKey'])
     .index('by_globalUserId', ['globalUserId'])
     .index('by_sourceRef', ['source', 'sourceRef']),
@@ -151,12 +154,42 @@ export default defineSchema({
     idempotencyKey: v.string(),
     checkoutUrl: v.optional(v.string()),
     providerOrderId: v.optional(v.string()),
+    providerPaymentIntentId: v.optional(v.string()),
     expiresAt: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index('by_jtiHash', ['jtiHash'])
+    .index('by_idempotencyKey', ['idempotencyKey'])
+    .index('by_providerOrderId', ['providerOrderId'])
+    .index('by_paymentIntent', ['providerPaymentIntentId'])
     .index('by_expiresAt', ['expiresAt']),
+
+  commerceEventReceipts: defineTable({
+    eventKey: v.string(),
+    envelope: commerceEventEnvelope,
+    status: v.string(),
+    reason: v.optional(v.string()),
+    attempts: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_eventKey', ['eventKey'])
+    .index('by_status', ['status'])
+    .index('by_purchase', ['envelope.provider', 'envelope.environment', 'envelope.productId', 'envelope.sourceRef'])
+    .index('by_environmentIdempotency', ['envelope.environment', 'envelope.idempotencyKey']),
+
+  commerceEventReviewAttempts: defineTable({
+    receiptId: v.id('commerceEventReceipts'),
+    attempt: v.number(),
+    operatorId: v.string(),
+    reason: v.string(),
+    previousStatus: v.string(),
+    previousReason: v.optional(v.string()),
+    resultingStatus: v.string(),
+    resultingReason: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index('by_receipt', ['receiptId']),
 
   users: defineTable({
     clerkId: v.string(),
