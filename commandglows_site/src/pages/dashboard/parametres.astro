@@ -20,7 +20,7 @@ if (!auth.userId) return Astro.redirect('/signin?next=%2Fdashboard%2Fparametres'
         <p class="mb-3 text-sm text-content-text-secondary">Reliez ce compte à la nouvelle connexion pour conserver vos achats et vos accès.</p>
         <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-4 py-2 font-semibold">Relier mon compte à Auth0</button>
       </form>}
-      <p class="mt-6"><a href="/account/link-existing" class="brand-text-magenta underline">Retrouver mes achats existants</a></p>
+      <p class="mt-6"><a href="/fr/account/link-existing" class="brand-text-magenta underline">Retrouver mes achats existants</a></p>
       <form method="post" action="/api/auth/logout" class="mt-6">
         <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">Se déconnecter</button>
       </form>

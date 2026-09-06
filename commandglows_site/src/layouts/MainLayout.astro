@@ -53,7 +53,7 @@ interface Props {
 	</head>
 	<body id="top" class="bg-content-bg dark:bg-content-bg">
 		<Navbar />
-		<SiteSessionGuard />
+  <SiteSessionGuard lang={lang === 'fr' ? 'fr' : 'en'} />
 		<div class="site-page-shell site-main-shell">
 			<main>
 				<slot />

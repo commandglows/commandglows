@@ -1,10 +1,13 @@
 ---
+interface Props { lang?: 'en' | 'fr' }
+const { lang = 'en' } = Astro.props
+const signInPath = lang === 'fr' ? '/fr/signin' : '/signin'
 const userId = Astro.locals.siteAuth?.().userId ?? null
 ---
-<div data-site-session-guard data-user-id={userId ?? ''}>
+<div data-site-session-guard data-user-id={userId ?? ''} data-sign-in-path={signInPath}>
   <section data-session-recovery hidden role="alert" class="mx-auto max-w-lg px-6 py-12">
-    <p>Votre connexion a changé ou ne peut pas être vérifiée. Reconnectez-vous pour continuer.</p>
-    <a href="/signin" class="underline">Revenir à la connexion</a>
+    <p>{lang === 'fr' ? 'Votre connexion a changé ou ne peut pas être vérifiée. Reconnectez-vous pour continuer.' : 'Your session has changed or cannot be verified. Sign in again to continue.'}</p>
+    <a href={signInPath} class="underline">{lang === 'fr' ? 'Revenir à la connexion' : 'Return to sign-in'}</a>
   </section>
 </div>
 <script>
@@ -19,7 +22,7 @@ const userId = Astro.locals.siteAuth?.().userId ?? null
         const response = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store', signal })
         if (!response.ok) throw new Error('session_unavailable')
         return response.json()
-      }, reload: () => location.reload(), signIn: () => location.replace('/signin') })
+      }, reload: () => location.reload(), signIn: () => location.replace(element.dataset.signInPath || '/signin') })
   }
   document.addEventListener('astro:before-swap', () => { dispose?.(); dispose = undefined })
   document.addEventListener('astro:page-load', mount)

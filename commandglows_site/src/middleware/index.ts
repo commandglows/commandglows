@@ -1,3 +1,5 @@
+import { siteAuthContentSecurityPolicy } from '../lib/auth/siteAuthCsp';
+import { getServerEnv } from '../lib/serverEnv';
 import { clerkMiddleware } from '@clerk/astro/server';
 import { initializeSiteAuth, siteProvider } from '../lib/auth/siteAuth';
 import { sequence } from 'astro:middleware';
@@ -45,7 +47,7 @@ function getLegacyRedirect(pathname: string): string | null {
 
 const appMiddleware = async (context: APIContext, next: MiddlewareNext): Promise<Response> => {
   const url = new URL(context.request.url);
-  if (context.locals.siteAuth?.().unavailable && !url.pathname.startsWith('/api/auth/') && url.pathname !== '/account/link-existing') {
+  if (context.locals.siteAuth?.().unavailable && !url.pathname.startsWith('/api/auth/') && !['/account/link-existing', '/fr/account/link-existing'].includes(url.pathname)) {
     return new Response('Account verification is temporarily unavailable. Please reload this page to retry.', { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '30' } });
   }
   const legacyRedirect = getLegacyRedirect(url.pathname);
@@ -63,6 +65,7 @@ const appMiddleware = async (context: APIContext, next: MiddlewareNext): Promise
 
 const CLERK_PROTECTED_PATH_PREFIXES = [
   '/account',
+  '/fr/account',
   '/dashboard',
   '/purchase/success',
   '/signin',
@@ -111,7 +114,7 @@ const authenticateRequest = async (context: APIContext, next: MiddlewareNext): P
     return appMiddleware(context, next);
   }
 
-  if (siteProvider() === 'auth0' && !['/api/auth/link', '/account/link-existing'].includes(url.pathname.replace(/\/$/, ''))) {
+  if (siteProvider() === 'auth0' && !['/api/auth/link', '/account/link-existing', '/fr/account/link-existing'].includes(url.pathname.replace(/\/$/, ''))) {
     await initializeSiteAuth(context);
     return appMiddleware(context, next);
   }
@@ -126,8 +129,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     if (shouldUseClerkMiddleware(context.url.pathname)) {
       const headers = new Headers(response.headers)
       headers.set('Cache-Control', 'no-store')
+      headers.set('Content-Security-Policy', siteAuthContentSecurityPolicy(getServerEnv().AUTH0_ISSUER))
       const vary = headers.get('Vary')
-      headers.set('Vary', vary ? `${vary}, Cookie` : 'Cookie')
+      headers.set('Vary', [...new Set([...(vary?.split(',').map(value => value.trim()) ?? []), 'Cookie'])].join(', '))
       return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
     }
     return response

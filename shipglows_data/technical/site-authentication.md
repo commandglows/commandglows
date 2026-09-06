@@ -50,7 +50,9 @@ Auth0 configuration is server-only:
 | SUITE_BRIDGE_ENVIRONMENT | Exact declared environment, normalized to sandbox/production and checked on the backend. |
 
 Auth0 callback is exactly `<AUTH_SITE_ORIGIN>/api/auth/callback`; logout allowlist
-contains exactly `<AUTH_SITE_ORIGIN>/`. No wildcard preview callbacks. Keep the
+contains exactly `<AUTH_SITE_ORIGIN>/`. The response CSP preserves the deployment
+policy and adds only the configured issuer origin to `form-action`, permitting
+the POST link/logout redirect. Verify this header on the actual hosted origin. No wildcard preview callbacks. Keep the
 provider selector on Clerk until the dedicated Auth0 application, origin, secrets
 and shared backend changes are verified. A tenant whose name starts with `dev`
 may already serve production; the ContentGlows tenant is not assumed disposable.
@@ -98,6 +100,18 @@ claim successful logout. Cleanup removes at most 100 attempts expired for over a
 hour every 15 minutes, preserving existing commerce and email crons.
 
 ## Deployment and acceptance
+
+The transitional Astro Clerk integration still injects its browser SDK globally.
+Auth0 server sessions and canonical authorization do not use that SDK, but removing
+the global browser dependency requires replacing the remaining legacy recovery UI
+with a route-scoped client before removing the integration. Full Clerk removal is
+not claimed by this checkpoint.
+
+Implementation checkpoint: 346 focused tests pass. The additive backend is deployed
+to the existing development deployment (32 tables, no further table/index removals;
+commerce and email crons retained). The hosted preview renders legacy recovery;
+authenticated Auth0 acceptance remains pending because operator CLI login expired.
+No Auth0 tenant/client configuration or production activation was performed.
 
 Capture live schema/indexes, functions and crons before any shared-backend deploy.
 The audited dev schema contains 31 existing tables. The planned delta adds

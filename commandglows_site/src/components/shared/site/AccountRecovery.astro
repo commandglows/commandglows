@@ -1,0 +1,27 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro'
+import { SignIn as LegacySignIn } from '@clerk/astro/components'
+interface Props { lang: 'en' | 'fr' }
+const { lang } = Astro.props
+const french = lang === 'fr'
+// Only the verified legacy session can authorize the account-link transaction.
+const legacyAccount = Astro.locals.auth?.().userId
+const failed = Astro.url.searchParams.has('error')
+const recoveryPath = french ? '/fr/account/link-existing' : '/account/link-existing'
+const signInPath = french ? '/fr/signin' : '/signin'
+const title = french ? 'Retrouver mes achats' : 'Recover my purchases'
+---
+<MainLayout title={title} lang={lang}>
+  <section class="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 py-12">
+    <h1 class="text-content-text-primary text-3xl font-bold">{title}</h1>
+    <p class="text-content-text-secondary">{french ? 'Pour retrouver vos achats et vos accès, connectez-vous d’abord à votre compte existant. Vous pourrez ensuite le relier à votre nouvelle connexion.' : 'To recover your purchases and access, first sign in to your existing account. You can then link it to your new sign-in.'}</p>
+    {failed && <p role="alert" class="text-content-text-primary">{french ? 'Le rapprochement n’a pas abouti. Vous pouvez réessayer depuis votre compte existant.' : 'Account linking could not be completed. You can try again from your existing account.'}</p>}
+    {legacyAccount ? <div class="rounded-xl border border-content-border bg-content-bg-elevated p-6">
+      <p class="mb-4 text-content-text-secondary">{french ? 'Votre compte existant est connecté. Continuez pour confirmer également votre nouvelle connexion.' : 'You are signed in to your existing account. Continue to verify your new sign-in as well.'}</p>
+      <form method="post" action="/api/auth/link">
+        <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-5 py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">{french ? 'Relier mon compte à ma nouvelle connexion' : 'Link my account to my new sign-in'}</button>
+      </form>
+    </div> : <LegacySignIn routing="hash" fallbackRedirectUrl={recoveryPath} />}
+    <a href={signInPath} class="brand-text-magenta underline">{french ? 'Revenir à la connexion' : 'Return to sign-in'}</a>
+  </section>
+</MainLayout>
