@@ -6,7 +6,7 @@ project: commandglows
 created: "2026-09-06"
 updated: "2026-09-06"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-06T20:35:17Z"
+updated_at: "2026-09-06T21:44:34Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -20,8 +20,8 @@ docs_impact: yes
 linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
-evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "244 synthetic tests across 28 suites, Convex TypeScript and Astro checks passed.", "Hosted acceptance, notification receipt and protected access are pending."]
-next_step: "Complete browser sign-in and operator alert destination, then verify Stripe test mode and end-to-end recovery; reconcile historical shared-dev schema drift."
+evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "244 synthetic tests across 28 suites, Convex TypeScript and Astro checks passed.", "Hosted administrator login and incident visibility verified; payment-linked access and notification receipt remain pending."]
+next_step: "Complete Stripe sign-in and operator alert destination, then verify Stripe test mode and end-to-end recovery; reconcile historical shared-dev schema drift."
 ---
 
 # Title
@@ -148,7 +148,7 @@ Hosted test-mode acceptance and progressive commits were authorized on 2026-09-0
 
 ### Hosted continuation evidence — 2026-09-06
 
-At 23:26 Europe/Paris, browser evidence confirmed Vercel login. CommandGlows itself redirected to sign-in but rendered no form: Clerk JS/UI failed to load from the declared test FAPI `stirred-elf-25.clerk.accounts.dev`, absent from CSP script-src. The narrow fix adds that exact existing instance host, preserving all other directives and avoiding a development-host wildcard. The focused deployment CSP test passes. [Clerk's CSP contract](https://clerk.com/docs/guides/secure/best-practices/csp-headers) requires the application's FAPI host in script-src. Deployment and rendered retest follow; application login remains unproved until the operator signs in.
+At 23:26 Europe/Paris, browser evidence confirmed Vercel login. CommandGlows itself redirected to sign-in but rendered no form: Clerk JS/UI failed to load from the declared test FAPI `stirred-elf-25.clerk.accounts.dev`, absent from CSP script-src. The narrow fix adds that exact existing instance host, preserving all other directives and avoiding a development-host wildcard. The focused deployment CSP test passes. [Clerk's CSP contract](https://clerk.com/docs/guides/secure/best-practices/csp-headers) requires the application's FAPI host in script-src. Commit `f6cf95d2ab3ae3bbf42a2929f2173dc54aa70e24` deployed READY as `dpl_5cjTkZS3736mi9asNa4UN2DtKFKs` at `https://commandglows-jual622ip-diane-ds-projects.vercel.app`. The sign-in form subsequently rendered in development mode and the operator completed login. The authenticated dashboard and administrator licences page both loaded successfully.
 
 - Commerce checkpoint `4f4e4fb19feaae1a8b1b0189ea865a325ab14d8d` committed and pushed on `codex/unified-commerce-entitlements`; Vercel deployment `dpl_53NmnVtfz1GLuUZCf1oZtKsQdc6i` READY at `https://commandglows-28lz335ua-diane-ds-projects.vercel.app`.
 - Provider configuration identifies the existing preview backend as `beaming-cow-328`, Convex deployment type `dev`, runtime commerce environment `preview` (normalized sandbox). Clerk publishable and server keys report test mode. Vercel keeps sensitive Stripe and bridge values out of local `env run`; their absence there does not mean absence in the hosted runtime. No secret was printed or copied into source.
@@ -156,8 +156,8 @@ At 23:26 Europe/Paris, browser evidence confirmed Vercel login. CommandGlows its
 - To retain current versioned Postmark functionality alongside commerce, integration branch `codex/commerce-hosted-integration` merges the existing Postmark checkpoint `3cb5d79` and commerce `4f4e4fb`. Merge `d973594e840c6e7c36ea05e15f21ccf83d4743dd` is committed/pushed. The email source files are unchanged from that checkpoint; the schema spreads and both crons coexist. Convex TypeScript and 184 tests across 16 commerce/email suites pass. This is a separate integration branch, not a production promotion.
 - The integration backend is deployed. Function metadata confirms commerce operations/alerts and Postmark functions present. Vercel integration deployment `dpl_DG1vwtdxxeFBMTuCyN6A3paqL87h` is READY at `https://commandglows-r605ib4nk-diane-ds-projects.vercel.app`, matching `d973594`.
 - Hosted commerce API rejects a signed-out request with HTTP 401 and `Cache-Control: no-store`; the Stripe webhook rejects an invalid signature. These checks use Vercel's authenticated CLI access to the protected preview and do not establish application login.
-- The scheduled watchdog advanced its checkpoint on two observations and opened three `checkout_verification` cases from existing old development handoffs. They remain unverified payments, without receipt or grant. Alert attempts persist with `alert_channel_not_configured`; the observed latest count is four, not yet exhaustion proof. No actual notification was sent. The email poll is disabled because EMAIL_CONTROL_CONFIG is absent.
-- Browser proof is waiting at Vercel sign-in in the in-app browser. The operator was asked to sign in and to name the test alert destination/on-call owner. No answer has yet been received. Stripe key mode, real test payment/refund/dispute events, admin/buyer login, protected access, alert reception and final recovery remain unverified.
+- The scheduled watchdog advanced its checkpoint on two observations and opened three `checkout_verification` cases from existing old development handoffs. They remain unverified payments, without receipt or grant. The authenticated administrator console subsequently showed all three cases with exhausted notifications after five attempts and `alert_channel_not_configured`. Each remains visible, unassigned, with an explicit deadline and payment-not-verified status. Opening a case displayed its watchdog audit record, claim/escalation/notification-retry actions and evidence-based recovery instructions; unsafe receipt retry and closure were disabled. No operator mutation was performed in this browser check. No actual notification was sent. The email poll is disabled because EMAIL_CONTROL_CONFIG is absent.
+- Browser proof now confirms Clerk application login, administrator access and incident list/detail rendering. The operator alert destination/on-call owner is still unanswered. A separate Stripe test-dashboard tab redirects to Stripe sign-in, which requires the operator. Stripe key mode, real test payment/refund/dispute events, payment-linked protected access, alert reception and final recovery remain unverified. Administrator access does not establish a paid entitlement.
 - Before another backend deployment, capture the live schema, indexes, function list and cron inventory and compare the exact planned deployment. A Vercel branch preview does not isolate a shared Convex dev backend. Historical empty-table index drift remains explicitly open for reconciliation; do not overwrite it with invented schemas or claim full restoration.
 
 2026-09-06 continuation: the operator approved hosted test-mode acceptance and progressive commits. The previous local-only boundary below records the completed local stage; this continuation now owns scoped Git delivery, hosted target/configuration verification and the acceptance checklist. Commercial opening and production mutations remain outside scope.
