@@ -21,7 +21,7 @@ linked_systems: [CommandGlows, Convex, Astro, Postmark, Resend, CommunityGlows, 
 depends_on: [shipglows_data/workflow/specs/unified-identity-email-consent-and-delivery.md, shipglows_data/workflow/specs/commerce-launch-readiness.md, shipglows_data/technical/central-email-operations.md]
 supersedes: []
 evidence: [commandglows_site/convex/email.ts, commandglows_site/convex/emailDelivery.ts, commandglows_site/convex/commerceAlerts.ts, commandglows_site/src/lib/email/central/transport.ts, commandglows_site/src/lib/email/central/worker.ts, commandglows_site/tests/email/centralLifecycle.test.ts]
-next_step: Confirm inbox receipt and seven-day test-data cleanup; separately validate commerce linkage, callbacks and independent monitoring before broader activation.
+next_step: Erase the scoped test evidence on September 14; separately validate commerce linkage, callbacks and independent monitoring before broader activation.
 next_review: "2026-10-07"
 ---
 
@@ -240,7 +240,7 @@ Préparation achevée → lancement backend/API autorisé en nouvelle tâche →
 
 ## Skill Run History
 
-September 7, 17:35 UTC result: `d31760a` deployed to the shared development target and protected branch preview; four historical indexes restored and verified with no index deletion. One authorized operator test was submitted through the normal hosted worker; Postmark reports Delivered and the durable quota is 1/1. No campaign, default scheduler dispatch or commerce channel was activated. Inbox confirmation is pending; seven-day trace cleanup has no automatic implementation. The preceding preparation notes remain chronological evidence, superseded by this result.
+September 7 result: `d31760a` deployed to the shared development target and protected branch preview; four historical indexes restored and verified with no index deletion. One authorized operator test was submitted through the normal hosted worker; Postmark reports Delivered and the durable quota is 1/1. The operator supplied a Gmail screenshot confirming visible inbox receipt with the expected sender, subject and content; only a redacted evidence reference is stored. No campaign, default scheduler dispatch or commerce channel was activated. Acceptance configuration was removed after the proof. Seven-day trace cleanup remains due September 14. The preceding preparation notes remain chronological evidence, superseded by this result.
 
 The operator subsequently authorized the exact controlled test, specified the CommandGlows sender/reply address and private recipient, and chose seven-day evidence retention. Four historical index definitions were recovered from the original deployment receipt; additive restoration and an internal idempotent acceptance producer are prepared. The shared-target dry run reports no index deletion. Scheduled dispatch and the commerce channel stay disabled while the single test is manually driven through authenticated preview access. No public activation is implied.
 

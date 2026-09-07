@@ -17,7 +17,7 @@ linked_systems: [CommandGlows, ContentGlows, ShipGlows, Convex, Postmark]
 depends_on: [shipglows_data/workflow/specs/central-email-completion-plan.md]
 supersedes: []
 evidence: [commandglows_site/convex/email.ts, commandglows_site/convex/resend.ts, commandglows_site/src/pages/api/newsletter/subscribe.ts]
-next_step: Confirm inbox receipt, arrange seven-day test-evidence erasure, then separately validate callbacks and commerce incident delivery.
+next_step: Erase the scoped acceptance evidence on September 14, then separately validate callbacks and commerce incident delivery.
 next_review: "2026-10-07"
 ---
 
@@ -74,9 +74,11 @@ Commit `d31760a` is deployed to the exact shared development backend and its pro
 
 The private one-shot profile is installed with one recipient, one attempt, a 24-hour expiry and seven-day evidence retention. No default dispatch scheduler credential or commerce email channel is enabled. The preview rejects requests without the email credential and serves the catalogue with it. The acceptance command created one operator job; the normal hosted dispatch endpoint returned `submitted`. The actual Postmark message API reports a `Delivered` event at 19:35:08 Europe/Paris, correct sender `info@commandglows.com`, subject “Test d’alerte CommandGlows” and transactional stream `outbound`. The durable quota is exactly **1/1**. No second request to send was made.
 
-The canonical message remains `submitted` because a provider delivery webhook has not been configured for this test. The direct Postmark API result is provider-delivery evidence, not webhook ingestion or inbox rendering proof. Inbox confirmation has been requested from the operator. Private recipient, provider/message identifiers and credentials are deliberately omitted from repository evidence. Seven-day cleanup is due September 14; there is no automatic erasure mechanism or scheduled deletion in this checkpoint.
+The canonical message remains `submitted` because a provider delivery webhook has not been configured for this test. The direct Postmark API result is provider-delivery evidence, not webhook ingestion proof. The operator then supplied a Gmail screenshot confirming visible inbox receipt at 19:35, with the correct sender, subject and rendered content. A redacted reference `operator_inbox_screenshot_20260907T1935CEST` is recorded through `record_evidence`; the screenshot and private recipient are not copied into the repository. Seven-day cleanup is due September 14; there is no automatic erasure mechanism or scheduled deletion in this checkpoint.
 
-Validation: 331 tests across 36 suites passed, then four targeted acceptance tests passed after the additional route-freezing regression was added. Convex TypeScript and Astro (296 files, zero errors/warnings, one pre-existing hint) passed. The shared-target dry run and post-deploy metadata checks are distinct from these local tests. This closes the bounded operator transport test at provider-delivery level, not public activation, commerce-event acceptance, callbacks, independent monitoring or the full email chantier.
+After recording the receipt, the two Convex acceptance configuration variables and all five branch-scoped Vercel preview variables were removed. The provider server token itself was not rotated because it is the existing shared server credential; the immutable deployed preview may retain its build-time copy, but its profile quota is durably exhausted at 1/1 and expires after 24 hours. The next branch deployment is built without those variables. No additional send is possible through the test profile.
+
+Validation: 331 tests across 36 suites passed, then four targeted acceptance tests passed after the additional route-freezing regression was added. Convex TypeScript and Astro (296 files, zero errors/warnings, one pre-existing hint) passed. The shared-target dry run and post-deploy metadata checks are distinct from these local tests. This closes the bounded operator transport test through visible inbox receipt, not public activation, commerce-event acceptance, callbacks, independent monitoring or the full email chantier.
 
 ## Unresolved activation and dependent lots
 
