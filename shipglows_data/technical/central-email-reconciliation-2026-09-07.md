@@ -17,7 +17,7 @@ linked_systems: [CommandGlows, ContentGlows, ShipGlows, Convex, Postmark]
 depends_on: [shipglows_data/workflow/specs/central-email-completion-plan.md]
 supersedes: []
 evidence: [commandglows_site/convex/email.ts, commandglows_site/convex/resend.ts, commandglows_site/src/pages/api/newsletter/subscribe.ts]
-next_step: Resolve the historical index incident and private activation configuration before shared deployment.
+next_step: Confirm inbox receipt, arrange seven-day test-evidence erasure, then separately validate callbacks and commerce incident delivery.
 next_review: "2026-10-07"
 ---
 
@@ -67,6 +67,16 @@ Fresh metadata still has 32 declared tables, the same 69 function contracts, and
 Postmark read-only verification confirms `commandglows.com` DKIM and Return-Path, Live server 20723143, transactional `outbound`, and Postmark-managed `broadcast`. The operator authorized CommandGlows sender/reply address `info@commandglows.com`, one private recipient, one attempt in a 24-hour profile, and seven-day retention for test evidence (automatic erasure remains absent). No recipient or token belongs in repository artifacts.
 
 The internal `emailAcceptance.enqueue` command requires scoped `operator_test` permission and the one-recipient/one-attempt Live-test profile. It pins the route at creation and deduplicates by profile, creates no commerce incident or consent, and uses the normal outbox/worker/quota pipeline. Preview access uses existing authenticated Vercel tooling. The scheduled dispatch credential and global commerce email channel remain disabled for this one-shot acceptance; historical alerts and campaigns are not activated. Provider callbacks and independent monitoring remain separate acceptance work.
+
+### Applied restoration and provider acceptance — September 7, 17:35 UTC
+
+Commit `d31760a` is deployed to the exact shared development backend and its protected Vercel branch preview. Convex reported no index deletions. A post-deploy schema query confirms all four historical indexes and their exact ordered fields; the index incident is reconciled. Historical document validators remain unknown and are not represented as recovered. The current function inventory contains 80 contracts; the only changed pre-existing argument contracts are the intended optional `expectedRoute` additions to email claim/recheck. The other 67 pre-existing contracts remain identical.
+
+The private one-shot profile is installed with one recipient, one attempt, a 24-hour expiry and seven-day evidence retention. No default dispatch scheduler credential or commerce email channel is enabled. The preview rejects requests without the email credential and serves the catalogue with it. The acceptance command created one operator job; the normal hosted dispatch endpoint returned `submitted`. The actual Postmark message API reports a `Delivered` event at 19:35:08 Europe/Paris, correct sender `info@commandglows.com`, subject “Test d’alerte CommandGlows” and transactional stream `outbound`. The durable quota is exactly **1/1**. No second request to send was made.
+
+The canonical message remains `submitted` because a provider delivery webhook has not been configured for this test. The direct Postmark API result is provider-delivery evidence, not webhook ingestion or inbox rendering proof. Inbox confirmation has been requested from the operator. Private recipient, provider/message identifiers and credentials are deliberately omitted from repository evidence. Seven-day cleanup is due September 14; there is no automatic erasure mechanism or scheduled deletion in this checkpoint.
+
+Validation: 331 tests across 36 suites passed, then four targeted acceptance tests passed after the additional route-freezing regression was added. Convex TypeScript and Astro (296 files, zero errors/warnings, one pre-existing hint) passed. The shared-target dry run and post-deploy metadata checks are distinct from these local tests. This closes the bounded operator transport test at provider-delivery level, not public activation, commerce-event acceptance, callbacks, independent monitoring or the full email chantier.
 
 ## Unresolved activation and dependent lots
 

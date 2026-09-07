@@ -21,7 +21,7 @@ linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
 evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "244 synthetic tests across 28 suites, Convex TypeScript and Astro checks passed.", "Hosted administrator login and incident visibility verified; payment-linked access and notification receipt remain pending."]
-next_step: "Complete Stripe sign-in and operator alert destination, then verify Stripe test mode and end-to-end recovery; reconcile historical shared-dev schema drift."
+next_step: "Complete Stripe sign-in, then verify Stripe test mode, actual commerce alert delivery and end-to-end recovery; historical email indexes were restored September 7."
 ---
 
 # Title
@@ -33,6 +33,8 @@ Commerce launch readiness
 Implemented and verified with local synthetic evidence. Commercial opening remains blocked on hosted test-mode proof.
 
 The September 7 central email continuation adds an opt-in durable commerce alert channel on its isolated work branch. Queue/submission/provider delivery remain separate; unknown submissions cannot be re-alerted blindly, and a late hard bounce remains visible. See `central-email-completion-plan.md` and `central-email-operations.md`. This local implementation does not close the hosted notification, Stripe, protected-access, fallback or historical index acceptance gaps recorded here.
+
+September 7 follow-up: `d31760a` is now deployed to shared development; all four historical email index definitions were recovered from the original deployment receipt, restored additively and verified in the live schema. The index blocker below is therefore resolved at index-definition scope; historical document validators remain unknown. One explicitly authorized synthetic operator email traversed the central outbox/hosted worker and Postmark reports Delivered, quota 1/1. It created no commerce incident and does not close the actual commerce incident→email, provider-webhook, Stripe, fallback or protected-access acceptance gaps. The global commerce email channel remains disabled.
 
 ## User Story
 
@@ -248,7 +250,7 @@ silently included in the site migration.
   reuse that lookup across issuers without verified legacy issuer provenance.
 - No production tenant is inferred from a development-looking tenant name.
 - Capture and reconcile shared backend schema/index/function/cron inventory before
-  deployment. The previously recorded email index incident remains open.
+  deployment. The historical email indexes were restored and verified September 7; refresh live parity before any further shared deployment.
 
 ### Execution batches
 

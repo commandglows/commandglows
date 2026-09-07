@@ -21,7 +21,7 @@ linked_systems: [CommandGlows, Convex, Astro, Postmark, Resend, CommunityGlows, 
 depends_on: [shipglows_data/workflow/specs/unified-identity-email-consent-and-delivery.md, shipglows_data/workflow/specs/commerce-launch-readiness.md, shipglows_data/technical/central-email-operations.md]
 supersedes: []
 evidence: [commandglows_site/convex/email.ts, commandglows_site/convex/emailDelivery.ts, commandglows_site/convex/commerceAlerts.ts, commandglows_site/src/lib/email/central/transport.ts, commandglows_site/src/lib/email/central/worker.ts, commandglows_site/tests/email/centralLifecycle.test.ts]
-next_step: Resolve the historical index incident and missing private activation configuration, refresh shared parity, then verify the separately authorized hosted operator alert; no default shared deployment.
+next_step: Confirm inbox receipt and seven-day test-data cleanup; separately validate commerce linkage, callbacks and independent monitoring before broader activation.
 next_review: "2026-10-07"
 ---
 
@@ -239,6 +239,8 @@ Les lots de rétention/effacement automatique et d’import/bascule dépendent t
 Préparation achevée → lancement backend/API autorisé en nouvelle tâche → revue de disponibilité et lot 0 → lots 1/2/3 pour commerce → lots 4/5 newsletters → lots 6/7/8 par business → raccordements UI puis recette et activation distinctes. Les migrations d’authentification restent suspendues. Les preuves de rendu des UI ne sont pas remplacées par les seuls tests API.
 
 ## Skill Run History
+
+September 7, 17:35 UTC result: `d31760a` deployed to the shared development target and protected branch preview; four historical indexes restored and verified with no index deletion. One authorized operator test was submitted through the normal hosted worker; Postmark reports Delivered and the durable quota is 1/1. No campaign, default scheduler dispatch or commerce channel was activated. Inbox confirmation is pending; seven-day trace cleanup has no automatic implementation. The preceding preparation notes remain chronological evidence, superseded by this result.
 
 The operator subsequently authorized the exact controlled test, specified the CommandGlows sender/reply address and private recipient, and chose seven-day evidence retention. Four historical index definitions were recovered from the original deployment receipt; additive restoration and an internal idempotent acceptance producer are prepared. The shared-target dry run reports no index deletion. Scheduled dispatch and the commerce channel stay disabled while the single test is manually driven through authenticated preview access. No public activation is implied.
 
