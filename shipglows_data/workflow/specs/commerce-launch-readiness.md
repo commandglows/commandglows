@@ -172,6 +172,28 @@ The direct design drift command stops on Windows CRLF conversion of immutable ba
 
 ### Superseding operator direction — Clerk retained
 
+Hosted acceptance follow-up: preview `commandglows-j3o9panne-diane-ds-projects.vercel.app`
+is Ready. The cancellation response contains the corrected uncertainty statement
+and purchase-recovery link. Anonymous commerce API returns HTTP 401 `auth_required`
+with `Cache-Control: no-store`; protected licences redirects to sign-in and the
+Clerk development widget renders. Browser automation is available again. The
+operator login tab is retained for handoff. Stripe dashboard access is verified
+on the Diane Defores account in explicit test mode; this alone does not establish
+that the deployed API credential belongs to that account. No test payment was
+created in this follow-up. Remaining proof gates:
+
+| Gate | Current evidence / missing proof |
+| --- | --- |
+| Clerk buyer/admin | Widget and anonymous denial verified; current-preview authenticated account and admin queue pending |
+| Stripe binding | Test dashboard reachable; match a real checkout/session from this deployment before financial scenario actions |
+| Payment/access | Paid, declined, abandoned and delayed flows still require hosted receipts and protected-access checks |
+| Refund/dispute | Partial then full refund and won/lost dispute transitions require provider-backed events and access checks |
+| Incident recovery | Ownership, exhaustion, verified recovery and watchdog coverage require hosted acceptance |
+| Alert reception | Operator destination remains unconfirmed; no outbound message sent |
+
+Commercial opening remains blocked by these gates. Local passing tests are not
+substituted for the missing provider, authenticated or human-reception evidence.
+
 The operator subsequently suspended the Auth0 switch and explicitly requested
 completion of hosted commerce acceptance with Clerk. Auth0 code remains dormant;
 its activation is not a prerequisite for this acceptance. No paid Auth0 plan or
