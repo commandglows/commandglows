@@ -17,7 +17,7 @@
     "pricing": {
       "title": "3. Pricing",
       "items": [
-        "All prices are displayed in USD and include applicable taxes.",
+        "The reference price for Windows Mastery is set in EUR and includes applicable taxes. Stripe may display and charge the equivalent amount in the buyer's local currency before payment confirmation.",
         "CommandGlows offers a Free tier and paid Pro subscription plans (monthly or yearly billing).",
         "Prices may be updated at any time. The price applicable is the one displayed at the time of purchase."
       ]
