@@ -350,11 +350,22 @@ and created one active sandbox entitlement for `commandglows_formation`, plan
 proving idempotent fulfillment for this event. This proves the hosted test path from
 paid Stripe Checkout through signed webhook processing to backend entitlement.
 
-The buyer then signed in with the canonical account attached to the Checkout handoff.
-Direct navigation to the protected module rendered `LECON DEBLOQUEE` and the complete
-Windows lesson rather than the public excerpt. This completes the hosted signed-in
-access proof for the successful-card scenario.
+The account attached to the Checkout handoff then signed in successfully. Direct
+navigation to the protected module rendered `LECON DEBLOQUEE` and the complete
+Windows lesson. Live backend inspection subsequently confirmed that this account has
+the administrator role, which independently grants formation access. This proves the
+hosted session and administrator access path, but does not prove entitlement-based
+access for an ordinary buyer.
+
+The operator then authorized a full 49.00 EUR test refund. Stripe marked the payment
+refunded and delivered both `refund.created` and `refund.updated`. Convex applied both
+receipts with reason `commerce_full_refund` and changed the formation entitlement and
+its commerce-managed status to `revoked`. Reloading the protected lesson correctly
+kept it available to this administrator; that intentional administrator override
+means a separate non-administrator account is required to prove the customer-facing
+lock after refund.
 
 Commercial opening remains blocked on production provider activation, buyer receipt
-observation, and the remaining decline, abandonment, delayed-payment,
-refund, dispute, alert and recovery scenarios required by this specification.
+observation, non-administrator paid-access and refund-lock proof, and the remaining
+decline, abandonment, delayed-payment, dispute, alert and recovery scenarios required
+by this specification.
