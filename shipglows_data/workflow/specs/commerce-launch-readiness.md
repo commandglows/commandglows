@@ -326,3 +326,31 @@ bridge with the same subject and proves it cannot adopt a site account. The
 transitional checkout-only adapter was superseded by the complete site session
 boundary and removed. Design drift scan passed: 33 source files, zero findings,
 using unchanged policy and verified canonical baseline bytes in an isolated snapshot.
+
+### Hosted Stripe test checkpoint — 2026-09-08
+
+The operator authorized and completed one Stripe test purchase of Windows Mastery
+for 49.00 EUR, including 8.17 EUR VAT, using the dedicated private test recipient.
+Stripe recorded the Checkout Session as complete and paid, with Managed Payments
+and Adaptive Pricing enabled. The session carried the expected preview environment,
+canonical global-user, offer, product and plan metadata.
+
+The first fulfillment attempt exposed a provider configuration gap: the Stripe test
+account only had an unrelated legacy WooCommerce destination, so CommandGlows had
+received no event. A dedicated active test destination now targets the stable Vercel
+branch alias and listens to the ten required checkout, refund and dispute events.
+Its signing secret is stored as a Vercel Preview secret. Vercel Authentication then
+returned 401 before the route; the destination now uses an authorized existing
+Protection Bypass for Automation query parameter while keeping the Preview protected.
+
+Exact replay of Stripe event `evt_1UDAOoKGNKOAEali1Jb14ngQ` then returned HTTP 200.
+Convex recorded one applied receipt with status `granted`, resolved the purchase,
+and created one active sandbox entitlement for `commandglows_formation`, plan
+`formation`. A second replay left the same single receipt and entitlement in place,
+proving idempotent fulfillment for this event. This proves the hosted test path from
+paid Stripe Checkout through signed webhook processing to backend entitlement.
+
+Commercial opening remains blocked on production provider activation, a signed-in
+browser proof of the protected training resource, buyer receipt observation, and the
+remaining decline, abandonment, delayed-payment, refund, dispute, alert and recovery
+scenarios required by this specification.
