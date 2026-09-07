@@ -15,6 +15,38 @@ function runtimeEnvironment(env: Record<string, string | undefined>) {
   return env.VERCEL_ENV ?? env.NODE_ENV ?? 'production'
 }
 
+function escapeHtmlAttribute(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+}
+
+function stripeCheckoutPage(checkoutUrl: string, lang: 'en' | 'fr') {
+  let target: URL
+  try {
+    target = new URL(checkoutUrl)
+  } catch {
+    return new Response('Invalid Stripe checkout URL', { status: 502 })
+  }
+  if (target.protocol !== 'https:' || !target.hostname.startsWith('checkout.stripe.')) {
+    return new Response('Invalid Stripe checkout URL', { status: 502 })
+  }
+
+  const safeTarget = escapeHtmlAttribute(target.toString())
+  const title = lang === 'fr' ? 'Ouverture du paiement sécurisé' : 'Opening secure checkout'
+  const action = lang === 'fr' ? 'Continuer vers Stripe' : 'Continue to Stripe'
+  return new Response(`<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="refresh" content="0;url=${safeTarget}"><title>${title}</title></head><body><main><h1>${title}</h1><p><a href="${safeTarget}" rel="noreferrer">${action}</a></p></main></body></html>`, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'Content-Security-Policy': "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; style-src 'unsafe-inline'",
+    },
+  })
+}
+
 export const GET: APIRoute = async () =>
   new Response(null, { status: 405, headers: { Allow: 'POST' } })
 
@@ -90,5 +122,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   if (!result.ok) {
     return new Response(result.message, { status: result.status })
   }
-  return redirect(result.checkoutUrl)
+  return stripeCheckoutPage(result.checkoutUrl, url.searchParams.get('lang') === 'fr' ? 'fr' : 'en')
 }

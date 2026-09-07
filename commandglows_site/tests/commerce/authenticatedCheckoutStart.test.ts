@@ -46,7 +46,7 @@ describe('authenticated checkout start route', () => {
     expect(response.headers.get('location')).not.toContain('identityToken')
   })
 
-  test('keeps the handoff server-side and redirects directly to Stripe', async () => {
+  test('keeps the handoff server-side and returns a recoverable Stripe transition page', async () => {
     mockCheckout.mockResolvedValueOnce({
       ok: true,
       provider: 'stripe',
@@ -61,10 +61,14 @@ describe('authenticated checkout start route', () => {
       locals: { siteAuth: () => ({ userId: 'gu_formation' }) },
       redirect,
     })
-    expect(response.headers.get('location')).toBe('https://checkout.stripe.test/formation')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    const body = await response.text()
+    expect(body).toContain('href="https://checkout.stripe.test/formation"')
+    expect(body).toContain('Continuer vers Stripe')
     const checkoutArgs = mockCheckout.mock.calls[0]?.[0]
     expect(checkoutArgs.identityToken).toEqual(expect.any(String))
     expect(verifyCommerceCheckoutIdentityToken(checkoutArgs.identityToken, process.env.SUITE_COMMERCE_CHECKOUT_SECRET!)).toMatchObject({ globalUserId: 'gu_formation', productId: 'commandglows_formation' })
-    expect(response.headers.get('location')).not.toContain(checkoutArgs.identityToken)
+    expect(body).not.toContain(checkoutArgs.identityToken)
   })
 })
