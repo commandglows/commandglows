@@ -170,6 +170,23 @@ The direct design drift command stops on Windows CRLF conversion of immutable ba
 
 ## Auth0 migration continuation — approved 2026-09-07
 
+### Superseding operator direction — Clerk retained
+
+The operator subsequently suspended the Auth0 switch and explicitly requested
+completion of hosted commerce acceptance with Clerk. Auth0 code remains dormant;
+its activation is not a prerequisite for this acceptance. No paid Auth0 plan or
+tenant creation is authorized by this continuation.
+
+Acceptance resumed against preview `commandglows-52ucelzrh-diane-ds-projects.vercel.app`.
+Anonymous `/dashboard/licences` redirects to Clerk sign-in with its return path.
+The operator's older preview has a displayed signed-in dashboard, which is not
+evidence for this newer deployment. Current-preview login and the destination for
+actual alert delivery have been requested and remain pending. Browser automation
+then repeatedly timed out, preventing further interactive Stripe/access proof.
+The resumed local regression run passes 271 tests in 32 suites. A cancellation-page
+copy defect was repaired: a browser cancellation return no longer asserts that no
+payment occurred, and now offers account/support recovery before another payment.
+
 The operator explicitly approved replacing the CommandGlows site login with Auth0,
 keeping the authentication provider replaceable, preserving internal accounts and
 purchases, and committing verified milestones. This continuation belongs to this

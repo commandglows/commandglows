@@ -23,7 +23,12 @@ const returnUrl = isCommandGlowsAppOffer
 
 			<h1 class="mb-4 text-3xl font-bold text-content-text-primary dark:text-content-text-primary">Checkout cancelled</h1>
 			<p class="mb-8 text-lg text-content-text-tertiary dark:text-content-text-muted">
-				No payment was completed. You can return to the offer when you are ready.
+				You left checkout. This page does not confirm whether a payment was completed.
+				If you submitted a payment or see a charge, check your account or contact support before trying again.
+			</p>
+			<p class="mb-8 text-content-text-secondary">
+				<a href="/dashboard/licences" class="underline">Check my purchases</a>
+				 · <a href="/contact" class="underline">Contact support</a>
 			</p>
 
 			<a href={returnUrl} class="btn-primary inline-flex items-center justify-center">
