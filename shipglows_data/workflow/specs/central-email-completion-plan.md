@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: CommandGlows
 created: "2026-09-07"
 created_at: "2026-09-07 11:53:25 UTC"
@@ -21,13 +21,21 @@ linked_systems: [CommandGlows, Convex, Astro, Postmark, Resend, CommunityGlows, 
 depends_on: [shipglows_data/workflow/specs/unified-identity-email-consent-and-delivery.md, shipglows_data/workflow/specs/commerce-launch-readiness.md, shipglows_data/technical/central-email-operations.md]
 supersedes: []
 evidence: [commandglows_site/convex/email.ts, commandglows_site/convex/emailDelivery.ts, commandglows_site/convex/commerceAlerts.ts, commandglows_site/src/lib/email/central/transport.ts, commandglows_site/src/lib/email/central/worker.ts, commandglows_site/tests/email/centralLifecycle.test.ts]
-next_step: Validate the proposed completion scope, then reconcile the existing implementation before executing lot 1.
+next_step: Start the authorized backend/API work in a new task, checking readiness and existing contracts before implementation.
 next_review: "2026-10-07"
 ---
 
 # Service email commun : plan d’achèvement à valider
 
 ## Status
+
+### Correction de périmètre autorisée le 7 septembre
+
+L’opératrice demande le lancement dans une nouvelle tâche du **backend et des API**. Les UI existantes de ContentGlows et ShipGlows seront les clientes de composition et de pilotage ; aucun nouvel éditeur de newsletters ni nouvelle console email n’est à construire dans CommandGlows. Les références à une console ci-dessous décrivent les besoins servis par les API, pas une nouvelle surface à implémenter dans ce dépôt.
+
+Ce lancement autorise l’audit de disponibilité puis l’implémentation locale vérifiée du périmètre corrigé, avec commits progressifs. Le statut draft conserve les décisions d’activation encore ouvertes : ce n’est pas une garantie de perfection ni une autorisation d’envoi public. Les modifications d’UI des autres dépôts restent des lots de raccordement ultérieurs. Lire leurs interfaces existantes est permis pour concevoir les contrats compatibles. La recette doit exercer ces contrats via clients de test en attendant les UI.
+
+Livrables API explicites : catalogue/versions de modèles, aperçu rendu HTML/texte, création/version de campagne, estimation d’audience expurgée, approbation, programmation/fuseau, pause/annulation, statut paginé, diagnostic et opérations autorisées. Publier schémas, exemples sans secrets, erreurs, idempotence et tests de compatibilité. Une UI ne reçoit aucun jeton fournisseur ni credential global ; authentification utilisateur et autorisation business sont vérifiées par le backend ou un relais serveur déclaré. Ne pas embarquer un secret machine dans Flutter ou le navigateur.
 
 Plan d’exécution complémentaire du contrat `unified-identity-email-consent-and-delivery.md`, qui reste l’autorité du modèle métier. Ce document ne crée ni second registre de contacts ni architecture concurrente. Il couvre les manques de la tranche locale déjà écrite, son activation maîtrisée et son déploiement progressif dans les business.
 
@@ -83,7 +91,7 @@ Preuve d’agnosticisme : mêmes commandes/domaines testés avec Postmark et un 
 1. Emails de service : achat confirmé, accès disponible, attente/anomalie d’accès et autres événements enregistrés au catalogue.
 2. Alertes opérateur : incident commerce, échec d’envoi, file bloquée, surveillance manquante, seuils de coût/volume.
 3. Newsletter : inscription anonyme ou connectée, confirmation, préférences, désinscription, campagne, programmation et suivi.
-4. Console commune, onboarding d’un business par configuration, diagnostic, export et opérations auditées.
+4. API de pilotage pour les UI existantes, onboarding d’un business par configuration, diagnostic, export et opérations auditées.
 5. Modèles versionnés HTML/texte, FR/EN, marques et adresses de réponse propres aux business.
 6. Déploiement, reprise, migrations Resend et intégration progressive des applications sélectionnées.
 
@@ -120,7 +128,7 @@ Chaque modèle déclare : déclencheur, public, classe (`service`, `operator`, `
 | 0 — P0, réconciliation | Comparer contrat, `convex/email*.ts`, API v1, tests, déploiement et appels Resend. Produire inventaire source→modèle→transport et delta de schéma/index | Plan validé | Aucun appel actif oublié dans les trois premiers produits ; incohérences et fonctions désactivées identifiées |
 | 1 — P0, distribution commune | Durcir contrat de transport et politique de configuration, jobs/tentatives/callbacks, idempotence et état inconnu ; séparer mode application et mode fournisseur | 0 | Capture locale et Postmark passent la même suite ; arrêt/reprise sans perte ; aucun secret frontend |
 | 2 — P0, tranche commerce utile | Connecter l’outbox commerce à la file email via une commande authentifiée/durable ; reprendre un cycle d’alerte explicitement identifié ; ajouter messages d’achat/accès selon catalogue | 1, expéditeur/recette déclarés | Incident→demande email→preuve fournisseur→réception ; pas de boucle de notifications ni changement de droits |
-| 3 — P0, opérations minimales | Console liste/détail/recherche, statut du canal, prise en charge, inconnus, preuves et arrêt par business/classe ; alertes de surveillance sur canal indépendant | 1–2 | Une opératrice diagnostique et traite une panne sans SQL ni secret ; panne du mail signalée ailleurs |
+| 3 — P0, opérations minimales | API liste/détail/recherche, statut du canal, prise en charge, inconnus, preuves et arrêt par business/classe ; contrat utilisable par les UI existantes et surveillance indépendante | 1–2 | Clients de test prouvent diagnostic et résolution via API sans accès DB ni secret fournisseur ; intégration visuelle ultérieure explicitement distinguée |
 | 4 — P1, préférences et contacts | Finaliser confirmation, retrait, réinscription, changement d’adresse, export/effacement/rétention et preuves par finalité | 1, politiques retenues | Retrait bloque un message préparé ; même adresse dans deux marques sans fuite ni fusion d’identité |
 | 5 — P1, campagnes complètes | Aperçu HTML/texte, test, audience et exclusion estimées, approbation versionnée, programmation/fuseau, fan-out paginé, pause/annulation, compte rendu | 3–4 | Gros lot interrompu/repris sans doublon ; nouvelle inscription non ajoutée silencieusement à un instantané approuvé |
 | 6 — P1, onboarding réutilisable | Fiche/config validée, test de connexion, modèles et checklist réutilisables ; raccorder CommandGlows puis un deuxième business | 2–5 selon classe | Deux business fonctionnent avec leur marque et leurs autorisations sans copie du moteur |
@@ -199,7 +207,7 @@ Sources relues le 7 septembre 2026 : [Postmark Sandbox](https://postmarkapp.com/
 
 ## Execution Notes / Current Chantier Flow
 
-Préparation et audit ciblé → plan draft à valider → lot 0 → lots 1/2/3 pour commerce → lots 4/5 newsletters → lots 6/7/8 par business → recette et activation distinctes. Cette préparation n’exécute aucun lot ni mutation fournisseur. Les migrations d’authentification restent suspendues.
+Préparation achevée → lancement backend/API autorisé en nouvelle tâche → revue de disponibilité et lot 0 → lots 1/2/3 pour commerce → lots 4/5 newsletters → lots 6/7/8 par business → raccordements UI puis recette et activation distinctes. Les migrations d’authentification restent suspendues. Les preuves de rendu des UI ne sont pas remplacées par les seuls tests API.
 
 ## Skill Run History
 
