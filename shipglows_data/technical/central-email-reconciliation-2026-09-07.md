@@ -58,6 +58,16 @@ The environment system query confirms that `EMAIL_CONTROL_CONFIG`, `EMAIL_DISPAT
 
 GitHub reports the Vercel preview of `a92de91` successfully deployed. This is a hosting receipt, not authenticated email API, provider or inbox acceptance. The historical index incident remains open. Cron inventory is now captured; compare fresh shared metadata again immediately before any later deployment because this backend is shared.
 
+### Historical index recovery and controlled acceptance preparation
+
+The original September 6 deployment receipt (20:27:23 UTC) identifies the exact four removed indexes: `emailConsentEvents.by_idempotencyKey(idempotencyKey)`, `emailConsentEvents.by_emailTopic(emailNormalized, topic)`, `emailSubscriptions.by_emailTopic(emailNormalized, topic)`, and `emailSubscriptions.by_syncStatus(providerSyncStatus)`. Convex appends `_creationTime` automatically. Their historical document validators were not recovered. `emailLegacySchema.ts` therefore restores only these indexes on `v.any()` tables, preserving the existing unconstrained legacy documents rather than inventing field types.
+
+Fresh metadata still has 32 declared tables, the same 69 function contracts, and the same three crons. Additional raw schema properties are empty staged-index arrays; no semantic schema drift was found. The authenticated dry run against the exact shared development URL reports **no index deletions** and includes all four recovered additions. This is preparation evidence, not a claim of applied restoration.
+
+Postmark read-only verification confirms `commandglows.com` DKIM and Return-Path, Live server 20723143, transactional `outbound`, and Postmark-managed `broadcast`. The operator authorized CommandGlows sender/reply address `info@commandglows.com`, one private recipient, one attempt in a 24-hour profile, and seven-day retention for test evidence (automatic erasure remains absent). No recipient or token belongs in repository artifacts.
+
+The internal `emailAcceptance.enqueue` command requires scoped `operator_test` permission and the one-recipient/one-attempt Live-test profile. It pins the route at creation and deduplicates by profile, creates no commerce incident or consent, and uses the normal outbox/worker/quota pipeline. Preview access uses existing authenticated Vercel tooling. The scheduled dispatch credential and global commerce email channel remain disabled for this one-shot acceptance; historical alerts and campaigns are not activated. Provider callbacks and independent monitoring remain separate acceptance work.
+
 ## Unresolved activation and dependent lots
 
 - Legal entity, markets, retention per data class, volume/budget and independent fallback channel remain operator decisions. No automatic expiry/erasure/import policy is invented.

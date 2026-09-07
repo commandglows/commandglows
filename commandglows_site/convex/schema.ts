@@ -1,5 +1,6 @@
 import { emailCampaignTables } from './emailCampaignSchema'
 import { emailTables } from './emailSchema'
+import { emailLegacyTables } from './emailLegacySchema'
 import { emailOperationsTables } from './emailOperationsSchema'
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
@@ -7,6 +8,7 @@ import { commerceEventEnvelope } from './commerceEventContract'
 import { commerceOperationsTables } from './commerceOperationsSchema'
 
 export default defineSchema({
+  ...emailLegacyTables,
   ...emailCampaignTables,
   ...commerceOperationsTables,
   ...emailTables,

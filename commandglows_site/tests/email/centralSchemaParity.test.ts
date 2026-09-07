@@ -3,6 +3,29 @@ import { readFileSync } from 'node:fs'
 import schema from '../../convex/schema'
 import crons from '../../convex/crons'
 
+test('recovered legacy indexes keep records unconstrained and restore exact fields', () => {
+  const local = JSON.parse(schema.export())
+  const expected = {
+    emailConsentEvents: {
+      by_idempotencyKey: ['idempotencyKey'],
+      by_emailTopic: ['emailNormalized', 'topic'],
+    },
+    emailSubscriptions: {
+      by_emailTopic: ['emailNormalized', 'topic'],
+      by_syncStatus: ['providerSyncStatus'],
+    },
+  }
+  for (const [name, indexes] of Object.entries(expected)) {
+    const table = local.tables.find((t: any) => t.tableName === name)
+    expect(table.documentType).toEqual({ type: 'any' })
+    expect(
+      Object.fromEntries(
+        table.indexes.map((i: any) => [i.indexDescriptor, i.fields])
+      )
+    ).toEqual(indexes)
+  }
+})
+
 test('local schedules preserve every captured shared cron without additions', () => {
   const captured = JSON.parse(
     readFileSync(

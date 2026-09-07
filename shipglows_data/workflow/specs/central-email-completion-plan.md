@@ -240,6 +240,8 @@ Préparation achevée → lancement backend/API autorisé en nouvelle tâche →
 
 ## Skill Run History
 
+The operator subsequently authorized the exact controlled test, specified the CommandGlows sender/reply address and private recipient, and chose seven-day evidence retention. Four historical index definitions were recovered from the original deployment receipt; additive restoration and an internal idempotent acceptance producer are prepared. The shared-target dry run reports no index deletion. Scheduled dispatch and the commerce channel stay disabled while the single test is manually driven through authenticated preview access. No public activation is implied.
+
 Continuation at 16:57 UTC: the authenticated dashboard cron inventory now matches all three local schedules (300/60/900 seconds). The four core email/commerce-email configuration variables are absent/empty; a redacted readiness snapshot and cron parity regression are retained. Vercel reports the `a92de91` preview successfully deployed. No shared deployment, configuration mutation or real email was performed. Historical index recovery and private activation settings still block hosted acceptance; the earlier incomplete-cron note above records the preceding checkpoint.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
