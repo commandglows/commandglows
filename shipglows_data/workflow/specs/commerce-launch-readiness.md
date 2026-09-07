@@ -172,6 +172,17 @@ The direct design drift command stops on Windows CRLF conversion of immutable ba
 
 ### Superseding operator direction — Clerk retained
 
+Clerk hosted login subsequently succeeded through the operator's existing Google
+session on the j3o9panne preview. Protected dashboard and canonical administrator
+licences/commerce console both rendered successfully. The sandbox queue shows
+three overdue escalated missing-checkout cases, each with exhausted notification
+cycles (`alert_channel_not_configured`, five attempts per cycle). Opening a case
+shows its payment remains unverified and receipt processing attempt count is zero:
+notification exhaustion is not payment-processing exhaustion. Its audit history
+contains watchdog opening and deadline escalation. These observations prove current
+admin access and visible watchdog escalation, not payment fulfillment or human
+alert reception. The operator notification destination is still unconfirmed.
+
 Hosted acceptance follow-up: preview `commandglows-j3o9panne-diane-ds-projects.vercel.app`
 is Ready. The cancellation response contains the corrected uncertainty statement
 and purchase-recovery link. Anonymous commerce API returns HTTP 401 `auth_required`
