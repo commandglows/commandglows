@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-09-07T16:57:05.450Z",
+  "deployment": "beaming-cow-328",
+  "url": "https://beaming-cow-328.eu-west-1.convex.cloud",
+  "source": "Authenticated Convex CLI system queries: _system/frontend/listCronJobs and _system/cli/queryEnvironmentVariables; configuration values excluded",
+  "crons": [
+    { "name": "commerce alert recovery", "cronSpec": { "cronSchedule": { "seconds": "300", "type": "interval" }, "udfArgs": {}, "udfPath": "commerceAlerts.js:sweep" } },
+    { "name": "email outbox", "cronSpec": { "cronSchedule": { "seconds": "60", "type": "interval" }, "udfArgs": {}, "udfPath": "emailDelivery.js:poll" } },
+    { "name": "expired site sessions", "cronSpec": { "cronSchedule": { "seconds": "900", "type": "interval" }, "udfArgs": {}, "udfPath": "siteSessions.js:cleanup" } }
+  ],
+  "presence": {
+    "EMAIL_CONTROL_CONFIG": false,
+    "EMAIL_DISPATCH_CREDENTIAL": false,
+    "COMMERCE_ALERT_CHANNEL": false,
+    "COMMERCE_ALERT_EMAIL_CONFIG": false
+  }
+}

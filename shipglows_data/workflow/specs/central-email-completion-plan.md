@@ -21,7 +21,7 @@ linked_systems: [CommandGlows, Convex, Astro, Postmark, Resend, CommunityGlows, 
 depends_on: [shipglows_data/workflow/specs/unified-identity-email-consent-and-delivery.md, shipglows_data/workflow/specs/commerce-launch-readiness.md, shipglows_data/technical/central-email-operations.md]
 supersedes: []
 evidence: [commandglows_site/convex/email.ts, commandglows_site/convex/emailDelivery.ts, commandglows_site/convex/commerceAlerts.ts, commandglows_site/src/lib/email/central/transport.ts, commandglows_site/src/lib/email/central/worker.ts, commandglows_site/tests/email/centralLifecycle.test.ts]
-next_step: Complete live cron and configuration parity, resolve activation policies, then verify the separately authorized hosted operator alert; no default shared deployment.
+next_step: Resolve the historical index incident and missing private activation configuration, refresh shared parity, then verify the separately authorized hosted operator alert; no default shared deployment.
 next_review: "2026-10-07"
 ---
 
@@ -239,6 +239,8 @@ Les lots de rétention/effacement automatique et d’import/bascule dépendent t
 Préparation achevée → lancement backend/API autorisé en nouvelle tâche → revue de disponibilité et lot 0 → lots 1/2/3 pour commerce → lots 4/5 newsletters → lots 6/7/8 par business → raccordements UI puis recette et activation distinctes. Les migrations d’authentification restent suspendues. Les preuves de rendu des UI ne sont pas remplacées par les seuls tests API.
 
 ## Skill Run History
+
+Continuation at 16:57 UTC: the authenticated dashboard cron inventory now matches all three local schedules (300/60/900 seconds). The four core email/commerce-email configuration variables are absent/empty; a redacted readiness snapshot and cron parity regression are retained. Vercel reports the `a92de91` preview successfully deployed. No shared deployment, configuration mutation or real email was performed. Historical index recovery and private activation settings still block hosted acceptance; the earlier incomplete-cron note above records the preceding checkpoint.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 | --- | --- | --- | --- | --- | --- |

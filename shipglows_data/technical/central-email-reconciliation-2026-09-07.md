@@ -17,7 +17,7 @@ linked_systems: [CommandGlows, ContentGlows, ShipGlows, Convex, Postmark]
 depends_on: [shipglows_data/workflow/specs/central-email-completion-plan.md]
 supersedes: []
 evidence: [commandglows_site/convex/email.ts, commandglows_site/convex/resend.ts, commandglows_site/src/pages/api/newsletter/subscribe.ts]
-next_step: Capture complete shared backend schema/index/cron inventory and resolve activation policies before hosted mutation.
+next_step: Resolve the historical index incident and private activation configuration before shared deployment.
 next_review: "2026-10-07"
 ---
 
@@ -49,6 +49,14 @@ Current tool catalog has no exposed Convex/Vercel connector. The installed authe
 Calling the dashboard system schema query through ordinary `convex run` was rejected as function-not-found; this was a CLI surface mismatch. The CLI's read-only metadata surface then captured 32 declared table schemas/indexes successfully. Its process disabled data, logs, environment and mutation tools and was stopped after reading. No codegen/push was enabled. Snapshots are `central-email-live-schema-2026-09-07.json` and `central-email-live-functions-2026-09-07.json` (69 function contracts). They contain schemas and contracts, not table records or secret values. `centralSchemaParity.test.ts` verifies all captured fields/tables/indexes remain compatible; new fields in existing tables must be optional. Live cron capture remains incomplete, so shared backend deployment remains blocked. The historical index incident is still open; no index deletion or restoration was attempted.
 
 Local schema evolution is additive: optional route/attempt reservation fields, finite test quota ledger, operator control/case/action tables and scoped evidence index. Compare all deployed tables/functions/crons, including unrelated contracts, before any shared push. Do not infer that a local additive diff is sufficient parity proof.
+
+### Read-only readiness follow-up — 16:57 UTC
+
+The authenticated dashboard system query `_system/frontend/listCronJobs` confirms three crons, identical to local names, functions, arguments and intervals: commerce alert recovery (300 seconds), email outbox (60 seconds), expired site sessions (900 seconds). The ordinary one-off query of `ctx.db.system` returned an empty list and is **not** used as cron evidence; private system-table visibility differs. The definitive redacted capture is `central-email-live-readiness-2026-09-07.json`. A regression test compares the exported local schedules with this capture, normalizing minutes to seconds.
+
+The environment system query confirms that `EMAIL_CONTROL_CONFIG`, `EMAIL_DISPATCH_CREDENTIAL`, `COMMERCE_ALERT_CHANNEL` and `COMMERCE_ALERT_EMAIL_CONFIG` are absent/empty. Only presence booleans are retained; no configuration or credential values are persisted. This rules out the controlled email acceptance test now. Configure the explicit private business/route, sender/streams, scoped credentials and bounded operator recipient/quota/expiry only after the activation gate is cleared. Neither configuration nor a shared deployment was changed.
+
+GitHub reports the Vercel preview of `a92de91` successfully deployed. This is a hosting receipt, not authenticated email API, provider or inbox acceptance. The historical index incident remains open. Cron inventory is now captured; compare fresh shared metadata again immediately before any later deployment because this backend is shared.
 
 ## Unresolved activation and dependent lots
 

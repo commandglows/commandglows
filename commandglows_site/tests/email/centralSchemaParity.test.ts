@@ -1,6 +1,41 @@
 import { expect, test } from 'vitest'
 import { readFileSync } from 'node:fs'
 import schema from '../../convex/schema'
+import crons from '../../convex/crons'
+
+test('local schedules preserve every captured shared cron without additions', () => {
+  const captured = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../../shipglows_data/technical/central-email-live-readiness-2026-09-07.json',
+        import.meta.url
+      ),
+      'utf8'
+    )
+  )
+  const local = JSON.parse(crons.export())
+  expect(Object.keys(local).sort()).toEqual(
+    captured.crons.map((c: any) => c.name).sort()
+  )
+  for (const previous of captured.crons) {
+    const current = local[previous.name]
+    const seconds =
+      (current.schedule.seconds ?? 0) +
+      (current.schedule.minutes ?? 0) * 60 +
+      (current.schedule.hours ?? 0) * 3600
+    expect({
+      ...current,
+      schedule: { type: current.schedule.type, seconds },
+    }).toEqual({
+      name: previous.cronSpec.udfPath.replace('.js:', ':'),
+      args: [previous.cronSpec.udfArgs],
+      schedule: {
+        type: 'interval',
+        seconds: Number(previous.cronSpec.cronSchedule.seconds),
+      },
+    })
+  }
+})
 
 test('local schema retains every captured shared table, field and index', () => {
   const captured = JSON.parse(
