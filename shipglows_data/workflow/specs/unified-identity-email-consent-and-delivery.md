@@ -49,6 +49,8 @@ next_step: "Configure an authorized isolated email pilot after controller and ma
 
 Approved target contract. It defines the complete CommandGlows control plane for identities, email addresses, consents, audiences, suppressions, entitlements and delivery events. Implementation is intentionally phased. Until a phase has matching code and proof, the existing Resend routes remain the runtime truth.
 
+September 7 local continuation is tracked by `central-email-completion-plan.md`: delivery profiles, durable commerce operator emails, operator APIs and paginated campaigns extend the existing foundation. `central-email-api-contract.md` and `central-email-reconciliation-2026-09-07.md` describe the implemented surface and current evidence. The historical producer inventory below is not hosted truth; ContentGlows now has a generic server proxy in the inspected source. No UI, identity-provider migration, real contact import or commercial activation is implied.
+
 ## Problem
 
 CommandGlows already owns a provider-neutral identity graph and product entitlements in Convex, while email state is split across direct Resend integrations:

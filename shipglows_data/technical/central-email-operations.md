@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: CommandGlows
 created: "2026-09-05"
-updated: "2026-09-05"
+updated: "2026-09-07"
 status: reviewed
 source_skill: sg-development
 scope: central-email-pilot-operations
@@ -34,17 +34,17 @@ next_review: "2026-10-05"
 
 ## What exists
 
-Local additive implementation, not a deployed migration. Convex owns normalized addresses, consent history, audience membership, opaque-token records, suppression state, idempotency, outbox, attempts and delivery events. Astro exposes authenticated v1 controllers and a Postmark adapter. Existing Resend callers, commerce and entitlements are unchanged.
+Local additive implementation, not a deployed migration. Convex owns normalized addresses, consent history, audience membership, opaque-token records, suppression state, idempotency, outbox, attempts and delivery events. Astro exposes authenticated v1 controllers and a Postmark adapter. Existing Resend callers and entitlements are unchanged. Commerce alerts now have an explicitly configured durable email channel; its acceptance boundaries are described below. New API contracts are in `central-email-api-contract.md`.
 
 CommunityGlows is the first pilot. Its static Astro site uses a same-origin Vercel function under `site/api/newsletter/subscribe.js`; adding an Astro POST route to the static build would not provide a server. Its coordinated `site/NEWSLETTER.md` owns product configuration. The form remains disabled until its versioned notice and controller are configured explicitly. Hosting a static build alone does not prove the function exists.
 
-The initial send workflow previews and approves one immutable recipient draft at a time. One marketing purpose per business Broadcast stream is enforced. This is a bounded pilot, not an audience campaign engine. Other purposes must not be added to that stream implicitly. No automatic cross-business identity merge, verified identity-linking adapter, global suppression administration, automatic retention cleanup, analytics dashboard or general campaign editor is included.
+The legacy send workflow previews and approves one immutable recipient draft at a time. The additive campaigns API now supports immutable content versions, paginated audience snapshots, approval, scheduling and pause/cancel; see `central-email-api-contract.md`. One marketing purpose per business Broadcast stream is still enforced. Other purposes must not be added to that stream implicitly. No automatic cross-business identity merge, verified identity-linking adapter, global suppression administration, automatic retention cleanup, analytics dashboard or general campaign editor is included.
 
 ## Environment and configuration
 
 Do not paste credentials into a conversation, commit them, put them in PUBLIC variables or store them in configuration JSON. Use the selected Convex deployment settings and hosting environment settings. Do not infer a deployment name from a URL or use production credentials locally.
 
-`EMAIL_CONTROL_CONFIG` is the same non-secret JSON configuration in the selected Convex deployment and CommandGlows server environment. A disabled starting configuration is:
+`EMAIL_CONTROL_CONFIG` is the same private server-side JSON configuration in the selected Convex deployment and CommandGlows server environment. It contains credential variable names, never credential values; recipient allowlists are private and must not be published. A disabled starting configuration is:
 
 ```json
 {"environment":"sandbox","clients":[],"businesses":[]}
@@ -75,6 +75,24 @@ Configure client records `{id,credentialEnv,businessIds,operations}` with separa
 All credential variable names referenced by clients start with `EMAIL_`; values must contain at least 32 characters. Configure `EMAIL_TOKEN_SIGNING_KEY` (at least 32 random characters) only in Astro. Configure `EMAIL_SUPPRESSION_HASH_KEY` only in Convex, preserve it across deployments, and treat rotation as a tombstone migration: losing/changing it can invalidate erased-address suppression lookup. `EMAIL_CONVEX_URL` on Astro selects the exact isolated Convex deployment; it deliberately does not fall back to the existing production public URL.
 
 Production dispatch additionally requires `EMAIL_ALLOW_PRODUCTION_SEND=true` in an actual `VERCEL_ENV=production` runtime. These gates do not authorize a production send. The worker reads `/server` and `/message-streams` before claiming a job and checks actual Server ID, Sandbox/Live mode, stream types and Postmark-managed unsubscribe policy. A config label alone cannot turn a Live token into a sandbox.
+
+### Explicit transport and bounded Preview Live test
+
+Application `environment` remains sandbox/production. Optional business `transport` is postmark (default) or capture; `providerMode` is Sandbox or Live, defaulting compatibly from application environment. Capture simulates local acceptance only, does not call a provider and does not prove reception. Postmark transport capabilities explicitly report no provider idempotency or automatic evidence lookup.
+
+Sandbox application + Live provider requires a private `liveTest` object `{id,expiresAt,maxAttempts,recipients}`. `expiresAt` is an absolute Unix timestamp in milliseconds; maxAttempts is a positive bounded integer. Both this profile and `allowedRecipients` must admit the recipient. Only an internally created `operator` message can use this profile; newsletter, confirmation and generic service calls cannot. Configuration changes do not grant authority to add a recipient, reset a profile ID or increase the authorized budget.
+
+Each actual dispatch reserves the finite total quota in a Convex mutation before provider submission. Concurrent workers cannot overspend. A repeated final recheck cannot reserve/send twice; a stable profile ID cannot replenish its quota by editing the configured maximum. Unknown attempts retain the consumed budget. Never delete or restore an older quota record to repeat a test. Route identity is persisted and compared at claim and final recheck; configuration drift fails closed. The serialized route contains private profile information and is excluded from operator responses. Previously uncertain routes must be reconciled before provider migration; this is not automatic historical-provider credential routing.
+
+The worker verifies actual Postmark mode/server/streams before claiming and disables HTTP redirects for provider calls. A final policy or suppression check still precedes submission. No profile has been installed and no test email has been sent by these local changes.
+
+### Commerce operator channel
+
+Webhook stays the default. The email choice is explicit: `COMMERCE_ALERT_CHANNEL=email` and private `COMMERCE_ALERT_EMAIL_CONFIG` containing `{businessId,recipient,locale}`. It must resolve to an authorized email business and the same application environment. Configuration failure does not fall back to a second transport.
+
+The outbox links atomically to one immutable operator message. It retains `emailState` separately from alert delivery status; queued/submitted/unknown are not delivered. Scheduled synchronization and authenticated provider events reconcile it; late hard bounce/complaint dominates delivery. An obsolete incident version blocks its unsent alert. Each cycle pins its channel, so changing configuration cannot silently resend it elsewhere. Manual re-alert refuses unresolved linked sends; an older delivered cycle does not prevent retrying a later definitive failure. Existing buyer-message ownership still needs reconciliation; no new purchase/access email was introduced.
+
+The authenticated operations API can pause each business/class and inspect safe queue/attempt/event evidence. Independent watchdog monitoring and a non-email fallback remain required before public operation. Local configuration-presence indicators are not provider health checks.
 
 ## API and scheduling
 

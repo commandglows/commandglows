@@ -21,11 +21,11 @@ linked_systems: [CommandGlows, Convex, Astro, Postmark, Resend, CommunityGlows, 
 depends_on: [shipglows_data/workflow/specs/unified-identity-email-consent-and-delivery.md, shipglows_data/workflow/specs/commerce-launch-readiness.md, shipglows_data/technical/central-email-operations.md]
 supersedes: []
 evidence: [commandglows_site/convex/email.ts, commandglows_site/convex/emailDelivery.ts, commandglows_site/convex/commerceAlerts.ts, commandglows_site/src/lib/email/central/transport.ts, commandglows_site/src/lib/email/central/worker.ts, commandglows_site/tests/email/centralLifecycle.test.ts]
-next_step: Start the authorized backend/API work in a new task, checking readiness and existing contracts before implementation.
+next_step: Complete live cron and configuration parity, resolve activation policies, then verify the separately authorized hosted operator alert; no default shared deployment.
 next_review: "2026-10-07"
 ---
 
-# Service email commun : plan d’achèvement à valider
+# Service email commun : achèvement backend et API
 
 ## Status
 
@@ -39,7 +39,24 @@ Livrables API explicites : catalogue/versions de modèles, aperçu rendu HTML/te
 
 Plan d’exécution complémentaire du contrat `unified-identity-email-consent-and-delivery.md`, qui reste l’autorité du modèle métier. Ce document ne crée ni second registre de contacts ni architecture concurrente. Il couvre les manques de la tranche locale déjà écrite, son activation maîtrisée et son déploiement progressif dans les business.
 
-La demande du 7 septembre autorise la préparation de ce chantier. Ce plan reste à valider pour l’implémentation étendue. Aucun envoi, achat, changement DNS, abonnement fournisseur, migration de contacts ou activation publique n’est effectué par cette préparation. Le destinataire de recette autorisé dans la conversation sera fourni par configuration privée, jamais inscrit dans le code ou les exemples publics.
+La demande du 7 septembre autorise l’implémentation locale du backend et des API décrite dans la correction ci-dessus, ainsi que les commits et push progressifs. Les décisions d’activation restent ouvertes. Aucun achat, changement DNS, abonnement fournisseur, import réel ou activation publique n’est autorisé automatiquement. Le destinataire de recette autorisé dans la conversation sera fourni par configuration privée, jamais inscrit dans le code ou les exemples publics.
+
+### Disponibilité et exécution locale — 7 septembre
+
+Checkpoint vérifié : `34b4e68`, branche isolée `codex/central-email-backend`. Socle installé avec le lockfile ; 48 tests email existants passent avant modification. Contrats et runbook lus. Les lots locaux indépendants sont prêts ; aucun déploiement partagé n’est prêt tant que schéma/index/fonctions/crons réels ne sont pas capturés et comparés. Aucun outil Convex ou Vercel n’est exposé dans le catalogue de cette tâche ; leur installation sur Windows ne constitue pas une connexion à la recette.
+
+Classification : backend, domaine partagé, documentation. Invariants de validation : autorisation business côté serveur, idempotence et concurrence Convex, aucune reprise aveugle des inconnus, suppressions préservées, schéma additif, aucun secret client. La configuration de recette Live n’autorise que la classe opérateur et réserve durablement un quota avant soumission. Une activation reste un acte distinct.
+
+### Execution Batches
+
+| Lot local | Propriété d’écriture exclusive | Dépendance et preuves | Intégration |
+| --- | --- | --- | --- |
+| Distribution | `convex/email.ts`, `emailConfig.ts`, `emailSchema.ts`, `central/worker.ts`, `central/transport.ts`, tests distribution existants/nouveaux | Socle ; tests Convex et HTTP quota, inconnus, routes et suppressions | Agent principal |
+| Opérations et contrats | Nouveaux modules `emailOperations*`, `convex/schema.ts`, contrôleurs/routes opérateur, `central/api.ts`, tests opérations, gouvernance | Contrats existants ; intégration finale avec distribution ; authz, isolation, pagination, arrêt et audit | Agent principal |
+
+Les écritures de ces deux lots sont disjointes. Le raccordement commerce intervient après la distribution, sans modification concurrente de ses fichiers. Les interfaces des autres dépôts restent en lecture seule.
+
+Après validation locale distribution/commerce, le lot campagnes possède exclusivement les nouveaux `emailCampaign*`, contrôleur/routes campagnes, tests campagnes et les raccordements limités `email.ts`, `emailSchema.ts`, `schema.ts`, `emailDelivery.ts`. L’agent principal conserve revue, documentation, API opérateur/catalogue et intégration finale. Il réutilise la politique de consentement existante ; aucun import réel, élargissement de destinataires actifs ou politique de rétention n’est inclus. Preuves : instantané paginé, version/approbation, retrait, pause/annulation et reprise sans double job.
 
 ## User Story
 
@@ -168,7 +185,7 @@ Surveillance indépendante du fournisseur email indispensable : alerte de worker
 
 Ordre de preuve : suites `tests/email` et régressions commerce/identité → typecheck Astro/Convex → environnement hébergé borné → fournisseur sandbox → envoi réel autorisé → HTML/texte et en-têtes reçus → accès/préférences/console authentifiés → pilote surveillé.
 
-Un serveur Postmark Sandbox ne livre pas en boîte. Le worker actuel couple `environment=sandbox` à `DeliveryType=Sandbox` et exige un runtime production pour l’envoi Live : la recette réelle depuis une prévisualisation est donc un manque explicite du lot 1. Concevoir un profil de recette Live à liste blanche stricte, quota dur et activation explicite, plutôt que désactiver une protection globale ou maquiller l’environnement. L’adresse fournie autorise l’alerte ciblée, pas une campagne ni l’envoi à d’autres contacts.
+Un serveur Postmark Sandbox ne livre pas en boîte. Le checkpoint initial couplait `environment=sandbox` à `DeliveryType=Sandbox` : ce couplage est maintenant remplacé localement par un mode fournisseur distinct et un profil Live de recette limité à la classe opérateur, liste blanche privée, quota atomique et expiration. Il n’est pas configuré ni vérifié en hébergé. L’adresse fournie autorise l’alerte ciblée, pas une campagne ni l’envoi à d’autres contacts.
 
 Réception : Gmail/Outlook et un client WebKit représentatif, mobile/desktop, images bloquées, liens, contraste et texte alternatif. Utiliser les composants/tokens de marque existants ; le HTML email demande des tests dédiés de compatibilité, pas une copie des styles du site. La boîte de recette fournie peut agréger/différer les messages : distinguer acceptation SMTP et disponibilité à la lecture.
 
@@ -207,6 +224,18 @@ Sources relues le 7 septembre 2026 : [Postmark Sandbox](https://postmarkapp.com/
 
 ## Execution Notes / Current Chantier Flow
 
+### Local milestone evidence — September 7
+
+- Lot 0 : interfaces des trois clients inspectées ; producteurs source inventoriés ; 32 schémas/index de tables et 69 contrats de fonctions capturés en lecture seule sur la recette. Test de compatibilité additive passé. Inventaire live des crons et incident historique d’index encore ouverts.
+- Lot 1 : Postmark/capture, mode fournisseur distinct, profil de recette opérateur à quota durable, route figée, relecture des suppressions et inconnus sans renvoi automatique ; aucune configuration/envoi réel.
+- Lot 2 : liaison atomique alertes commerce→email et état fournisseur distinct, canal figé, obsolescence/rebonds tardifs, relance des cycles en échec sans duplication d’inconnu. Aucun nouveau message acheteur faute de déclencheur/ownership de confirmation réconciliés.
+- Lot 3 : API opérateur paginée/expurgée, relais admin du site, contrôle de pause et actions versionnées/idempotentes, preuves fournisseur et catalogue/aperçu. Audit au niveau client technique ; attribution individuelle des relais externes et surveillance indépendante encore à compléter.
+- Lot 5 local indépendant : versions de contenu, instantané paginé par génération de consentement, approbation/horaire/fuseau, fanout paginé, pause/reprise/annulation et priorité opérateur/service. Le moteur réutilise les règles existantes ; il n’active aucun public nouveau. Blocs avancés, import/rétention et raccordements UI restent exclus de ce jalon.
+- Preuves intégrées : **326 tests / 35 suites** email/commerce/auth/bridge passent ; TypeScript Convex passe ; Astro **296 fichiers, 0 erreur, 0 avertissement, 1 hint préexistant**. Revue indépendante et corrections des pauses après claim, du budget de retry et du blocage des anciens cycles livrés. Les métadonnées de sept documents passent leur validation.
+- Implementation Excellence Gate : backend/shared pass pour les surfaces locales exercées (authz/isolation, idempotence, pagination, concurrence, arrêts, schéma additif et secrets hors clients). UI non modifiée. Hosted/fournisseur/réception/restauration restent non prouvés ; aucune conformité globale ni clôture d’activation revendiquée.
+
+Les lots de rétention/effacement automatique et d’import/bascule dépendent toujours des décisions opérateur et de preuves spécifiques. Aucun compte, credential fournisseur, abonnement, DNS, import réel ou migration Clerk/Auth0 n’a été modifié. Les nouveaux contrats publics décrivent le backend local et ne prouvent pas leur déploiement.
+
 Préparation achevée → lancement backend/API autorisé en nouvelle tâche → revue de disponibilité et lot 0 → lots 1/2/3 pour commerce → lots 4/5 newsletters → lots 6/7/8 par business → raccordements UI puis recette et activation distinctes. Les migrations d’authentification restent suspendues. Les preuves de rendu des UI ne sont pas remplacées par les seuls tests API.
 
 ## Skill Run History
@@ -214,3 +243,4 @@ Préparation achevée → lancement backend/API autorisé en nouvelle tâche →
 | Date UTC | Skill | Model | Action | Result | Next step |
 | --- | --- | --- | --- | --- | --- |
 | 2026-09-07 | sg-planning / sg-engineering | GPT-6 | Réconcilier contrat et socle local, identifier limites de recette et écrire le plan complet | Draft complémentaire, pas d’activation | Validation du périmètre puis lot 0 |
+| 2026-09-07 | sg-development | GPT-6 | Réconciliation, distribution, commerce, opérations et campagnes locales ; revue indépendante et corrections | 326 tests/35 suites, Convex et Astro passent ; source isolée, aucune activation | Parité crons/configuration, décisions opérateur et recette hébergée bornée |

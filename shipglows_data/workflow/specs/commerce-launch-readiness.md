@@ -32,6 +32,8 @@ Commerce launch readiness
 
 Implemented and verified with local synthetic evidence. Commercial opening remains blocked on hosted test-mode proof.
 
+The September 7 central email continuation adds an opt-in durable commerce alert channel on its isolated work branch. Queue/submission/provider delivery remain separate; unknown submissions cannot be re-alerted blindly, and a late hard bounce remains visible. See `central-email-completion-plan.md` and `central-email-operations.md`. This local implementation does not close the hosted notification, Stripe, protected-access, fallback or historical index acceptance gaps recorded here.
+
 ## User Story
 
 As a buyer, a completed payment gives me the correct access or an identifiable support case. As the operator, I can find, own and resolve every blocked purchase, including cases without a known user and cases whose retries are exhausted.

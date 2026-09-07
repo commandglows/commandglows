@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: commandglows
 created: "2026-09-06"
-updated: "2026-09-06"
+updated: "2026-09-07"
 status: reviewed
 source_skill: sg-development
 scope: commerce-operations
@@ -32,6 +32,10 @@ Open `/dashboard/licences` with an existing Clerk account whose canonical Convex
 Queue state and access state are independent. An externally resolved support case does not rewrite the receipt, reset attempts, grant a license or revoke access. Resolve only after the buyer's outcome has actually been handled; retain the non-secret ticket or provider evidence reference so the backup operator can verify it.
 
 ## Alert and watchdog configuration
+
+The default channel remains the HTTPS webhook below. An explicitly selected central email channel now exists locally: `COMMERCE_ALERT_CHANNEL=email` plus private `COMMERCE_ALERT_EMAIL_CONFIG` with the authorized business, recipient and locale. See `central-email-operations.md` for the finite Preview Live profile and `central-email-api-contract.md` for redacted operations. Do not put the authorized recipient in this document.
+
+Email outbox `emailState` distinguishes queued, sending, submitted, unknown and provider delivery; only actual normalized delivery makes the alert delivered. Hard bounce or complaint can supersede that result. Each outbox cycle pins its transport and links one message atomically. No fallback sends the same cycle by both channels. A version-obsolete incident email is suppressed before dispatch; a current resolved-phase notice remains eligible. Do not reset/re-alert a linked uncertain or in-flight submission. An older delivered cycle does not block retry of a later definitive failure. Buyer purchase/access notices remain outside this connector until verified trigger and confirmation ownership are reconciled.
 
 `COMMERCE_ALERT_WEBHOOK_URL` is a server-side Convex environment value pointing to an operator-controlled HTTPS notification receiver. No default recipient or newsletter service is inferred. The receiver must deliver to the named on-call operator and deduplicate `deduplicationKey` / `Idempotency-Key`. Configure its destination and credentials through the deployment's authorized secret workflow; never place the URL or credentials in client code, a document or a test fixture.
 
