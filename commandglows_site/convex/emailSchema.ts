@@ -32,7 +32,8 @@ export const emailTables = {
     updatedAt: v.number(),
   })
     .index('scope', ['businessId', 'email', 'audienceId'])
-    .index('email', ['email']),
+    .index('email', ['email'])
+    .index('audience', ['businessId', 'audienceId']),
   emailSuppressions: defineTable({
     ...scope,
     email: v.optional(v.string()),
@@ -74,14 +75,19 @@ export const emailTables = {
     audienceId: v.optional(v.string()),
     purpose: v.optional(v.string()),
     kind: v.string(),
+    campaignId: v.optional(v.id('emailCampaigns')),
+    campaignVersionId: v.optional(v.id('emailCampaignVersions')),
+    campaignRecipientId: v.optional(v.id('emailCampaignRecipients')),
     rendered: v.any(),
     state: v.string(),
     createdAt: v.number(),
     nextAt: v.number(),
     leaseUntil: v.optional(v.number()),
     providerMessageId: v.optional(v.string()),
+    route: v.optional(v.string()),
   })
     .index('queue', ['businessId', 'state', 'nextAt'])
+    .index('queue_kind', ['businessId', 'state', 'kind', 'nextAt'])
     .index('provider', ['providerMessageId'])
     .index('contact', ['businessId', 'email']),
   emailAttempts: defineTable({
@@ -90,6 +96,8 @@ export const emailTables = {
     state: v.string(),
     at: v.number(),
     errorCode: v.optional(v.string()),
+    route: v.optional(v.string()),
+    dispatchReservedAt: v.optional(v.number()),
   }).index('message', ['messageId']),
   emailEvents: defineTable({
     businessId: v.string(),
@@ -99,7 +107,15 @@ export const emailTables = {
     providerMessageId: v.optional(v.string()),
     occurredAt: v.optional(v.number()),
     at: v.number(),
-  }).index('scope', ['businessId', 'eventId']),
+  })
+    .index('scope', ['businessId', 'eventId'])
+    .index('message', ['businessId', 'messageId']),
+  emailTestQuotas: defineTable({
+    businessId: v.string(),
+    profileId: v.string(),
+    maxAttempts: v.number(),
+    attempts: v.number(),
+  }).index('scope', ['businessId', 'profileId']),
   emailRateLimits: defineTable({
     businessId: v.string(),
     key: v.string(),

@@ -1,3 +1,4 @@
+import { commerceOperatorConfig } from './emailConfig'
 import { siteAuthorityArgs, requireSiteAdmin, type SiteAuthority } from './siteAuthority'
 import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
@@ -74,11 +75,15 @@ export const listIncidents = query({
     const page = await Promise.all(result.page.map(async (incident) => {
       const alerts = await ctx.db.query('commerceAlertOutbox').withIndex('by_incident', (q) => q.eq('incidentId', incident._id)).order('desc').take(10)
       return { ...incident, overdue: incident.active && incident.dueAt < Date.now(),
-        alerts: alerts.map((alert) => ({ id: alert._id, status: alert.status, attempts: alert.attempts, error: alert.lastError ?? null, phase: alert.phase })) }
+        alerts: alerts.map((alert) => ({ id: alert._id, status: alert.status, attempts: alert.attempts, error: alert.lastError ?? null, phase: alert.phase, transportChannel: alert.transportChannel ?? 'webhook', emailState: alert.emailState ?? null })) }
     }))
     const checkpoint = await ctx.db.query('commerceOperationsCheckpoints').withIndex('by_environment',
       (q) => q.eq('environment', environment)).unique()
-    return { ...result, page, environment, alertChannelConfigured: Boolean(process.env.COMMERCE_ALERT_WEBHOOK_URL),
+    let alertChannelConfigured = Boolean(process.env.COMMERCE_ALERT_WEBHOOK_URL)
+    if (process.env.COMMERCE_ALERT_CHANNEL === 'email') {
+      try { commerceOperatorConfig(environment); alertChannelConfigured = true } catch { alertChannelConfigured = false }
+    }
+    return { ...result, page, environment, alertChannelConfigured,
       watchdog: { lastScanAt: checkpoint?.updatedAt ?? null, stale: !checkpoint || checkpoint.updatedAt < Date.now() - 15 * 60_000,
         scanInProgress: Boolean(checkpoint?.cursor) } }
   },
@@ -162,6 +167,13 @@ export const retryAlert = mutation({
     await ctx.db.patch(incident._id, { version, updatedAt: Date.now() })
     await ctx.db.insert('commerceIncidentActions', { incidentId: incident._id, action: 'retry_alert',
       operatorId: authority.operatorId, reason, version, createdAt: Date.now() })
+    const linkedAlerts = await ctx.db.query('commerceAlertOutbox').withIndex('by_incident', q => q.eq('incidentId', incident._id)).collect()
+    for (const alert of linkedAlerts) {
+      if (!alert.emailMessageId) continue
+      const message = await ctx.db.get(alert.emailMessageId)
+      if (!message || ['queued', 'sending', 'submitted', 'unknown'].includes(message.state) ||
+        (message.state === 'delivered' && alert.incidentVersion === incident.version)) throw new Error('email_alert_retry_requires_resolution')
+    }
     // New audited delivery cycle; old failure and its counter are preserved.
     await enqueueCommerceAlert(ctx, incident._id, authority.environment, 'operator_retry', version)
     return { status: 'queued', version }

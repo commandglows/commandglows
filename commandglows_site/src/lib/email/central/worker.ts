@@ -1,5 +1,7 @@
 import {
   parseEmailConfig,
+  deliveryRoute,
+  requiresLiveTest,
   type EmailConfig,
 } from '../../../../convex/emailConfig'
 import { getServerEnv } from '../../serverEnv'
@@ -13,7 +15,11 @@ import {
   signPreference,
 } from './security'
 import { renderEmail, type EmailContent } from './templates'
-import { sendPostmark, type TransportMessage } from './transport'
+import {
+  createCaptureTransport,
+  sendPostmark,
+  type TransportMessage,
+} from './transport'
 
 export function authorizeHttp(
   env: Record<string, string | undefined>,
@@ -42,12 +48,13 @@ export function authorizeHttp(
 type Business = EmailConfig['businesses'][number]
 async function verifyProvider(
   business: Business,
-  environment: EmailConfig['environment'],
+  providerMode: 'Sandbox' | 'Live',
   token: string,
   fetcher: typeof fetch
 ) {
   const read = async (path: string) => {
     const response = await fetcher(`https://api.postmarkapp.com${path}`, {
+      redirect: 'error',
       headers: { Accept: 'application/json', 'X-Postmark-Server-Token': token },
       signal: AbortSignal.timeout(10_000),
     })
@@ -55,10 +62,7 @@ async function verifyProvider(
     return response.json()
   }
   const server = await read('/server')
-  if (
-    server.ID !== business.serverId ||
-    server.DeliveryType !== (environment === 'sandbox' ? 'Sandbox' : 'Live')
-  )
+  if (server.ID !== business.serverId || server.DeliveryType !== providerMode)
     throw new EmailHttpError('provider_environment_mismatch', 503)
   const streams = await read('/message-streams')
   const transaction = streams.MessageStreams?.find(
@@ -82,6 +86,7 @@ async function verifyProvider(
 
 interface Job extends TransportMessage {
   attemptId: string
+  route: string
   content?: EmailContent & {
     confirmationNonce: string
     unsubscribeNonce: string
@@ -107,6 +112,14 @@ export async function handleDispatch(
     const allowProduction =
       env.EMAIL_ALLOW_PRODUCTION_SEND === 'true' &&
       env.VERCEL_ENV === 'production'
+    const liveTest = requiresLiveTest(config, business)
+    const route = deliveryRoute(config, business)
+    const capture = business.transport === 'capture'
+    if (
+      liveTest &&
+      (!business.liveTest || business.liveTest.expiresAt <= Date.now())
+    )
+      throw new EmailHttpError('transport_not_enabled', 503)
     if (
       !business.activated ||
       (config.environment === 'production' && !allowProduction)
@@ -114,8 +127,7 @@ export async function handleDispatch(
       throw new EmailHttpError('transport_not_enabled', 503)
     const token = business.serverTokenEnv && env[business.serverTokenEnv]
     if (
-      !token ||
-      !business.serverId ||
+      (!capture && (!token || !business.serverId)) ||
       !business.publicBaseUrl ||
       !env.EMAIL_TOKEN_SIGNING_KEY
     )
@@ -123,16 +135,26 @@ export async function handleDispatch(
     const baseUrl = new URL(business.publicBaseUrl)
     if (baseUrl.protocol !== 'https:' || baseUrl.username || baseUrl.password)
       throw new EmailHttpError('configuration_unavailable', 503)
-    await verifyProvider(business, config.environment, token, fetcher)
+    if (!capture)
+      await verifyProvider(
+        business,
+        business.providerMode ??
+          (config.environment === 'sandbox' ? 'Sandbox' : 'Live'),
+        token!,
+        fetcher
+      )
     const mutate = injected ?? convexMutation(env)
     const jobs = (await mutate('email:claim', {
       credential,
       businessId: business.id,
+      expectedRoute: route,
     })) as Job[]
     if (!Array.isArray(jobs))
       throw new EmailHttpError('invalid_job_receipt', 503)
     const results: { message_id: string; status: string }[] = []
     for (const job of jobs) {
+      if (job.route !== route)
+        throw new EmailHttpError('delivery_route_changed', 503)
       let content = job
       try {
         if (job.content) {
@@ -169,20 +191,25 @@ export async function handleDispatch(
         businessId: business.id,
         messageId: job.messageId,
         attemptId: job.attemptId,
+        expectedRoute: route,
       })) as { eligible: boolean }
       if (!eligible?.eligible) {
-        results.push({ message_id: job.messageId, status: 'cancelled' })
+        results.push({ message_id: job.messageId, status: 'not_dispatched' })
         continue
       }
-      const outcome = await sendPostmark(
-        content,
-        {
-          serverToken: token,
-          environment: config.environment,
-          allowProduction,
-        },
-        fetcher
-      )
+      const outcome = capture
+        ? await createCaptureTransport(() => {}).send(content)
+        : await sendPostmark(
+            content,
+            {
+              serverToken: token!,
+              providerMode: business.providerMode,
+              liveTestReserved: liveTest,
+              environment: config.environment,
+              allowProduction,
+            },
+            fetcher
+          )
       // If persistence fails after send, the lease becomes unknown; never resend here.
       await mutate('email:settle', {
         credential,

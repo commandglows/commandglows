@@ -1,12 +1,16 @@
+import { emailCampaignTables } from './emailCampaignSchema'
 import { emailTables } from './emailSchema'
+import { emailOperationsTables } from './emailOperationsSchema'
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { commerceEventEnvelope } from './commerceEventContract'
 import { commerceOperationsTables } from './commerceOperationsSchema'
 
 export default defineSchema({
+  ...emailCampaignTables,
   ...commerceOperationsTables,
   ...emailTables,
+  ...emailOperationsTables,
   siteLoginAttempts: defineTable({
     attemptId: v.string(), environment: v.string(),
     status: v.union(v.literal('pending'), v.literal('active'), v.literal('revoked')),

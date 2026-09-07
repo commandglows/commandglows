@@ -1,3 +1,4 @@
+import { deliveryRoute, parseEmailConfig } from '../../convex/emailConfig'
 import { handleCommand } from '../../src/lib/email/central/api'
 import { handlePreferences } from '../../src/lib/email/central/preferences'
 import {
@@ -296,6 +297,10 @@ describe('dispatch environment and consent checks', () => {
       .fn()
       .mockResolvedValueOnce([
         {
+          route: deliveryRoute(
+            parseEmailConfig(env.EMAIL_CONTROL_CONFIG),
+            parseEmailConfig(env.EMAIL_CONTROL_CONFIG).businesses[0]
+          ),
           messageId: 'm1',
           attemptId: 'a1',
           subject: 'News',
@@ -319,7 +324,7 @@ describe('dispatch environment and consent checks', () => {
     expect(response.status).toBe(200)
     expect(fetcher).toHaveBeenCalledTimes(2)
     expect(await response.json()).toMatchObject({
-      results: [{ status: 'cancelled' }],
+      results: [{ status: 'not_dispatched' }],
     })
   })
 })

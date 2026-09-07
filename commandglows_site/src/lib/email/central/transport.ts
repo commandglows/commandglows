@@ -17,7 +17,14 @@ export interface TransportMessage {
   text: string
 }
 
+export interface TransportCapabilities {
+  provider: 'postmark' | 'capture'
+  deliversToInbox: boolean
+  supportsIdempotency: boolean
+  supportsDeliveryEvents: boolean
+}
 export interface EmailTransport {
+  capabilities: TransportCapabilities
   send(message: TransportMessage): Promise<DeliveryOutcome>
 }
 
@@ -25,6 +32,8 @@ export interface PostmarkOptions {
   serverToken: string
   environment: 'sandbox' | 'production'
   allowProduction: boolean
+  providerMode?: 'Sandbox' | 'Live'
+  liveTestReserved?: boolean
 }
 
 /** No recipient, token or provider response body is returned in diagnostics. */
@@ -35,7 +44,10 @@ export async function sendPostmark(
 ): Promise<DeliveryOutcome> {
   if (
     !options.serverToken ||
-    (options.environment === 'production' && !options.allowProduction)
+    (options.environment === 'production' && !options.allowProduction) ||
+    (options.environment === 'sandbox' &&
+      options.providerMode === 'Live' &&
+      !options.liveTestReserved)
   ) {
     return { status: 'permanent_failure', reasonCode: 'transport_not_enabled' }
   }
@@ -55,6 +67,7 @@ export async function sendPostmark(
   try {
     response = await fetcher('https://api.postmarkapp.com/email', {
       method: 'POST',
+      redirect: 'error',
       signal: AbortSignal.timeout(15_000),
       headers: {
         'Content-Type': 'application/json',
@@ -123,5 +136,37 @@ export async function sendPostmark(
 export function createPostmarkTransport(
   options: PostmarkOptions
 ): EmailTransport {
-  return { send: (message) => sendPostmark(message, options) }
+  return {
+    capabilities: {
+      provider: 'postmark',
+      deliversToInbox:
+        (options.providerMode ??
+          (options.environment === 'sandbox' ? 'Sandbox' : 'Live')) === 'Live',
+      supportsIdempotency: false,
+      supportsDeliveryEvents: true,
+    },
+    send: (message) => sendPostmark(message, options),
+  }
+}
+
+/** Explicit local adapter: acceptance here is capture evidence, never delivery evidence. */
+export function createCaptureTransport(
+  capture: (message: TransportMessage) => void
+): EmailTransport {
+  return {
+    capabilities: {
+      provider: 'capture',
+      deliversToInbox: false,
+      supportsIdempotency: false,
+      supportsDeliveryEvents: false,
+    },
+    async send(message) {
+      capture(structuredClone(message))
+      return {
+        status: 'submitted',
+        providerMessageId: `capture-${message.messageId}`,
+        reasonCode: 'captured_locally',
+      }
+    },
+  }
 }

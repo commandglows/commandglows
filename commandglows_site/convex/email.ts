@@ -1,10 +1,21 @@
+import { campaignDispatchState } from './emailCampaignPolicy'
+import { commerceEmailCurrent, syncCommerceEmail } from './commerceEmail'
+import { emailChannelPaused } from './emailOperationsPolicy'
 import {
   renderEmail,
   type EmailContent,
 } from '../src/lib/email/central/templates'
 import { mutation } from './_generated/server'
 import { v } from 'convex/values'
-import { authorize, canonical, fail, normalizeEmail } from './emailConfig'
+import {
+  authorize,
+  canonical,
+  fail,
+  normalizeEmail,
+  deliveryRoute,
+  dispatchAllowed,
+  requiresLiveTest,
+} from './emailConfig'
 function safeRender(content: EmailContent) {
   try {
     return renderEmail(content)
@@ -72,7 +83,7 @@ async function suppressionDigest(email: string) {
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 }
-async function suppressed(
+export async function suppressed(
   ctx: any,
   businessId: string,
   email: string,
@@ -614,7 +625,11 @@ export const command = mutation({
   },
 })
 export const claim = mutation({
-  args: { credential: v.string(), businessId: v.string() },
+  args: {
+    credential: v.string(),
+    businessId: v.string(),
+    expectedRoute: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const { business, config } = authorize(
       args.credential,
@@ -622,6 +637,12 @@ export const claim = mutation({
       'dispatch'
     )
     const now = Date.now()
+    const route = deliveryRoute(config, business)
+    if (
+      (args.expectedRoute && args.expectedRoute !== route) ||
+      (requiresLiveTest(config, business) && args.expectedRoute !== route)
+    )
+      fail('delivery_route_changed')
     const expired = await ctx.db
       .query('emailMessages')
       .withIndex('queue', (q) =>
@@ -639,21 +660,39 @@ export const claim = mutation({
           if (attempt.state === 'sending')
             await ctx.db.patch(attempt._id, { state: 'unknown' })
       }
-    const messages = await ctx.db
-      .query('emailMessages')
-      .withIndex('queue', (q) =>
-        q
-          .eq('businessId', args.businessId)
-          .eq('state', 'queued')
-          .lte('nextAt', now)
+    // Bounded independent lanes keep a large marketing queue from starving service alerts.
+    const messages = (
+      await Promise.all(
+        ['operator', 'transactional', 'confirmation', 'broadcast'].map((kind) =>
+          ctx.db
+            .query('emailMessages')
+            .withIndex('queue_kind', (q) =>
+              q
+                .eq('businessId', args.businessId)
+                .eq('state', 'queued')
+                .eq('kind', kind)
+                .lte('nextAt', now)
+            )
+            .take(25)
+        )
       )
-      .take(10)
+    ).flat()
     const jobs = []
     for (const m of messages) {
       const streamId =
         m.kind === 'broadcast'
           ? business.broadcastStream
           : business.transactionalStream
+      const campaignState = await campaignDispatchState(ctx, m, business)
+      if (campaignState !== 'eligible') {
+        await ctx.db.patch(
+          m._id,
+          campaignState === 'cancelled'
+            ? { state: 'cancelled' }
+            : { nextAt: now + 60_000 }
+        )
+        continue
+      }
       const member = m.audienceId
         ? await membership(ctx, m.businessId, m.email, m.audienceId)
         : null
@@ -667,20 +706,33 @@ export const claim = mutation({
         await ctx.db.patch(m._id, { state: 'cancelled' })
         continue
       }
-      if (!business.activated || !business.allowedRecipients?.includes(m.email))
+      if (
+        (await emailChannelPaused(ctx, business.id, m.kind)) ||
+        !dispatchAllowed(config, business, m.email, m.kind, now) ||
+        (m.route && m.route !== route)
+      ) {
+        // Rotate policy-blocked rows so a bounded page cannot starve later work.
+        await ctx.db.patch(m._id, { nextAt: now + 60_000 })
         continue
+      }
       if (config.environment === 'production' && !business.retentionDays)
         continue
       const attemptId = await ctx.db.insert('emailAttempts', {
         businessId: m.businessId,
         messageId: m._id,
         state: 'sending',
+        route,
         at: now,
       })
-      await ctx.db.patch(m._id, { state: 'sending', leaseUntil: now + 60000 })
+      await ctx.db.patch(m._id, {
+        state: 'sending',
+        leaseUntil: now + 60000,
+        route,
+      })
       jobs.push({
         messageId: m._id,
         attemptId,
+        route,
         businessId: m.businessId,
         to: m.email,
         from: business.from,
@@ -754,10 +806,13 @@ export const settle = mutation({
       .query('emailAttempts')
       .withIndex('message', (q) => q.eq('messageId', m._id))
       .collect()
+    const submittedAttempts = attempts.filter(
+      (attempt) => attempt.state !== 'cancelled'
+    ).length
     await ctx.db.patch(m._id, {
       state:
         a.outcome === 'retryable_failure'
-          ? attempts.length < 5
+          ? submittedAttempts < 5
             ? 'queued'
             : 'permanent_failure'
           : a.outcome,
@@ -765,7 +820,7 @@ export const settle = mutation({
         Date.now() +
         Math.max(
           a.retryAfterMs || 0,
-          Math.min(3600000, 30000 * 2 ** attempts.length)
+          Math.min(3600000, 30000 * 2 ** submittedAttempts)
         ),
       ...(a.providerMessageId
         ? { providerMessageId: str(a.providerMessageId) }
@@ -932,6 +987,15 @@ export const webhook = mutation({
       ...(a.occurredAt !== undefined ? { occurredAt: a.occurredAt } : {}),
       at: Date.now(),
     })
+    if (correlatedMessage) {
+      const alert = await ctx.db
+        .query('commerceAlertOutbox')
+        .withIndex('by_email_message', (q) =>
+          q.eq('emailMessageId', correlatedMessage._id)
+        )
+        .unique()
+      if (alert) await syncCommerceEmail(ctx, alert)
+    }
     return { status: 'accepted' }
   },
 })
@@ -943,9 +1007,14 @@ export const recheckDispatch = mutation({
     businessId: v.string(),
     messageId: v.id('emailMessages'),
     attemptId: v.id('emailAttempts'),
+    expectedRoute: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { business } = authorize(args.credential, args.businessId, 'dispatch')
+    const { business, config } = authorize(
+      args.credential,
+      args.businessId,
+      'dispatch'
+    )
     const message = await ctx.db.get(args.messageId)
     const attempt = await ctx.db.get(args.attemptId)
     if (
@@ -954,7 +1023,8 @@ export const recheckDispatch = mutation({
       message.businessId !== args.businessId ||
       attempt.messageId !== message._id ||
       message.state !== 'sending' ||
-      attempt.state !== 'sending'
+      attempt.state !== 'sending' ||
+      attempt.dispatchReservedAt !== undefined
     )
       return { eligible: false }
     const member = message.audienceId
@@ -969,18 +1039,71 @@ export const recheckDispatch = mutation({
       message.kind === 'broadcast'
         ? business.broadcastStream
         : business.transactionalStream
-    const eligible = Boolean(
-      business.activated &&
-      business.allowedRecipients?.includes(message.email) &&
-      (message.leaseUntil || 0) > Date.now() &&
+    const route = deliveryRoute(config, business)
+    const campaignState = await campaignDispatchState(ctx, message, business)
+    const consentEligible = Boolean(
+      campaignState !== 'cancelled' &&
+      (message.kind !== 'operator' ||
+        (await commerceEmailCurrent(ctx, message._id))) &&
       !(await suppressed(ctx, message.businessId, message.email, stream)) &&
       (message.kind !== 'broadcast' || member?.state === 'subscribed') &&
       (message.kind !== 'confirmation' ||
         (member?.state === 'pending' &&
           member.generation === message.rendered.generation))
     )
+    let eligible = Boolean(
+      consentEligible &&
+      campaignState === 'eligible' &&
+      !(await emailChannelPaused(ctx, business.id, message.kind)) &&
+      dispatchAllowed(
+        config,
+        business,
+        message.email,
+        message.kind,
+        Date.now()
+      ) &&
+      message.route === route &&
+      attempt.route === route &&
+      (!args.expectedRoute || args.expectedRoute === route) &&
+      (!requiresLiveTest(config, business) || args.expectedRoute === route) &&
+      (message.leaseUntil || 0) > Date.now()
+    )
+    if (eligible && requiresLiveTest(config, business)) {
+      const profile = business.liveTest!
+      const quota = await ctx.db
+        .query('emailTestQuotas')
+        .withIndex('scope', (q) =>
+          q.eq('businessId', business.id).eq('profileId', profile.id)
+        )
+        .unique()
+      // A stable profile cannot replenish its budget through configuration edits.
+      const limit = Math.min(
+        quota?.maxAttempts ?? profile.maxAttempts,
+        profile.maxAttempts
+      )
+      if ((quota?.attempts ?? 0) >= limit) eligible = false
+      else if (quota)
+        await ctx.db.patch(quota._id, {
+          attempts: quota.attempts + 1,
+          maxAttempts: limit,
+        })
+      else
+        await ctx.db.insert('emailTestQuotas', {
+          businessId: business.id,
+          profileId: profile.id,
+          maxAttempts: limit,
+          attempts: 1,
+        })
+    }
+    if (eligible)
+      await ctx.db.patch(attempt._id, { dispatchReservedAt: Date.now() })
     if (!eligible) {
-      await ctx.db.patch(message._id, { state: 'cancelled' })
+      // No reservation has occurred: temporary policy pauses may safely resume this same message.
+      await ctx.db.patch(message._id, {
+        state: consentEligible ? 'queued' : 'cancelled',
+        leaseUntil: undefined,
+        nextAt: Date.now() + 60_000,
+      })
       await ctx.db.patch(attempt._id, { state: 'cancelled' })
     }
     return { eligible }

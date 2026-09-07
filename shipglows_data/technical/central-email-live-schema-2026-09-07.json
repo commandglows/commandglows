@@ -1,0 +1,2913 @@
+{
+  "deployment": "beaming-cow-328",
+  "url": "https://beaming-cow-328.eu-west-1.convex.cloud",
+  "tables": {
+    "apiKeys": {
+      "tableName": "apiKeys",
+      "indexes": [
+        {
+          "indexDescriptor": "by_userId",
+          "fields": [
+            "userId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "isRevoked": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "key": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "userId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "users"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "commerceAlertOutbox": {
+      "tableName": "commerceAlertOutbox",
+      "indexes": [
+        {
+          "indexDescriptor": "by_deduplication",
+          "fields": [
+            "deduplicationKey",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_due",
+          "fields": [
+            "environment",
+            "status",
+            "nextAttemptAt",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_incident",
+          "fields": [
+            "incidentId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "attempts": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "deduplicationKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "deliveredAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "incidentId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "commerceIncidents"
+            },
+            "optional": false
+          },
+          "lastError": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "leaseUntil": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "nextAttemptAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "phase": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "delivering"
+                },
+                {
+                  "type": "literal",
+                  "value": "delivered"
+                },
+                {
+                  "type": "literal",
+                  "value": "failed"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "commerceCheckoutHandoffs": {
+      "tableName": "commerceCheckoutHandoffs",
+      "indexes": [
+        {
+          "indexDescriptor": "by_expiresAt",
+          "fields": [
+            "expiresAt",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_idempotencyKey",
+          "fields": [
+            "idempotencyKey",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_jtiHash",
+          "fields": [
+            "jtiHash",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_paymentIntent",
+          "fields": [
+            "providerPaymentIntentId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_providerOrderId",
+          "fields": [
+            "providerOrderId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "checkoutUrl": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "idempotencyKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "jtiHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "offerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerOrderId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerPaymentIntentId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "commerceEventReceipts": {
+      "tableName": "commerceEventReceipts",
+      "indexes": [
+        {
+          "indexDescriptor": "by_environmentIdempotency",
+          "fields": [
+            "envelope.environment",
+            "envelope.idempotencyKey",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_eventKey",
+          "fields": [
+            "eventKey",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_purchase",
+          "fields": [
+            "envelope.provider",
+            "envelope.environment",
+            "envelope.productId",
+            "envelope.sourceRef",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_status",
+          "fields": [
+            "status",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "attempts": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "envelope": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "chargeAmount": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "currency": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "customerEmail": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "disputeStatus": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "environment": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "eventType": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "paid"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "refunded"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "revoked"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "pending_review"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "refund_updated"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "dispute_updated"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "checkout_pending"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "checkout_failed"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "checkout_expired"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "globalUserId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "idempotencyKey": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "offerId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "plan": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "productId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "provider": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "providerCreatedAt": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "providerCustomerId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "providerDisputeId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "providerEventId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "providerEventType": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "providerInvoiceId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "providerOrderId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "providerPayloadHash": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "providerPaymentIntentId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "providerRefundId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "providerSourceRef": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "refundAmount": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "refundStatus": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "sourceRef": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "status": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "applied"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "pending_review"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "ignored"
+                      }
+                    ]
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          },
+          "eventKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "purchaseResolved": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": true
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "commerceEventReviewAttempts": {
+      "tableName": "commerceEventReviewAttempts",
+      "indexes": [
+        {
+          "indexDescriptor": "by_receipt",
+          "fields": [
+            "receiptId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "attempt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "operatorId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "previousReason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "previousStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "receiptId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "commerceEventReceipts"
+            },
+            "optional": false
+          },
+          "resultingReason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "resultingStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "commerceIncidentActions": {
+      "tableName": "commerceIncidentActions",
+      "indexes": [
+        {
+          "indexDescriptor": "by_incident",
+          "fields": [
+            "incidentId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "action": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "evidenceReference": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "incidentId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "commerceIncidents"
+            },
+            "optional": false
+          },
+          "operatorId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "version": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "commerceIncidents": {
+      "tableName": "commerceIncidents",
+      "indexes": [
+        {
+          "indexDescriptor": "by_checkout_reference",
+          "fields": [
+            "environment",
+            "sourceRef",
+            "kind",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_deadline",
+          "fields": [
+            "environment",
+            "queueState",
+            "dueAt",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_provider_event",
+          "fields": [
+            "environment",
+            "providerEventId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_queue",
+          "fields": [
+            "environment",
+            "active",
+            "createdAt",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_receipt",
+          "fields": [
+            "receiptId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "active": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "attempts": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "checkoutHandoffId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "commerceCheckoutHandoffs"
+            },
+            "optional": true
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "dueAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "evidenceReference": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "ingressAttempts": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "kind": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "ownerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerEventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerEventType": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerPayloadHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "queueState": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "open"
+                },
+                {
+                  "type": "literal",
+                  "value": "escalated"
+                },
+                {
+                  "type": "literal",
+                  "value": "resolved"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "receiptId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "commerceEventReceipts"
+            },
+            "optional": true
+          },
+          "resolution": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "version": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "commerceOperationsCheckpoints": {
+      "tableName": "commerceOperationsCheckpoints",
+      "indexes": [
+        {
+          "indexDescriptor": "by_environment",
+          "fields": [
+            "environment",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "cursor": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "scanBefore": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "communityGlowsAccountRetentions": {
+      "tableName": "communityGlowsAccountRetentions",
+      "indexes": [
+        {
+          "indexDescriptor": "by_deletedProviderEnvironment",
+          "fields": [
+            "deletedProviderAccountDigest",
+            "environment",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_emailEnvironment",
+          "fields": [
+            "emailDigest",
+            "environment",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_globalUserId",
+          "fields": [
+            "globalUserId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "deletedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "deletedProviderAccountDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "emailDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": false
+          },
+          "relinkedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "retainedEntitlementIds": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "id",
+                "tableName": "productEntitlements"
+              }
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "retained"
+                },
+                {
+                  "type": "literal",
+                  "value": "relinked"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "trialAttempts": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailAddresses": {
+      "tableName": "emailAddresses",
+      "indexes": [
+        {
+          "indexDescriptor": "email",
+          "fields": [
+            "email",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": true
+          }
+        }
+      }
+    },
+    "emailAttempts": {
+      "tableName": "emailAttempts",
+      "indexes": [
+        {
+          "indexDescriptor": "message",
+          "fields": [
+            "messageId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "at": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "errorCode": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "messageId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "emailMessages"
+            },
+            "optional": false
+          },
+          "state": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailAudiences": {
+      "tableName": "emailAudiences",
+      "indexes": [
+        {
+          "indexDescriptor": "scope",
+          "fields": [
+            "businessId",
+            "audienceId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "audienceId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "purpose": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailConsents": {
+      "tableName": "emailConsents",
+      "indexes": [
+        {
+          "indexDescriptor": "scope",
+          "fields": [
+            "businessId",
+            "email",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "action": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "at": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "audienceId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "locale": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "noticeVersion": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "occurredAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "purpose": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailEvents": {
+      "tableName": "emailEvents",
+      "indexes": [
+        {
+          "indexDescriptor": "scope",
+          "fields": [
+            "businessId",
+            "eventId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "at": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "eventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "messageId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "emailMessages"
+            },
+            "optional": true
+          },
+          "occurredAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "providerMessageId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "type": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailMemberships": {
+      "tableName": "emailMemberships",
+      "indexes": [
+        {
+          "indexDescriptor": "email",
+          "fields": [
+            "email",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "scope",
+          "fields": [
+            "businessId",
+            "email",
+            "audienceId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "audienceId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "generation": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "purpose": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "state": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailMessages": {
+      "tableName": "emailMessages",
+      "indexes": [
+        {
+          "indexDescriptor": "contact",
+          "fields": [
+            "businessId",
+            "email",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "provider",
+          "fields": [
+            "providerMessageId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "queue",
+          "fields": [
+            "businessId",
+            "state",
+            "nextAt",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "audienceId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "kind": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "leaseUntil": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "nextAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "providerMessageId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "purpose": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "rendered": {
+            "fieldType": {
+              "type": "any"
+            },
+            "optional": false
+          },
+          "state": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailRateLimits": {
+      "tableName": "emailRateLimits",
+      "indexes": [
+        {
+          "indexDescriptor": "scope",
+          "fields": [
+            "businessId",
+            "key",
+            "window",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "count": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "key": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "window": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailRequests": {
+      "tableName": "emailRequests",
+      "indexes": [
+        {
+          "indexDescriptor": "contact",
+          "fields": [
+            "businessId",
+            "email",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "scope",
+          "fields": [
+            "businessId",
+            "clientId",
+            "key",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "at": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clientId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "fingerprint": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "key": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "result": {
+            "fieldType": {
+              "type": "any"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "emailSuppressions": {
+      "tableName": "emailSuppressions",
+      "indexes": [
+        {
+          "indexDescriptor": "digest",
+          "fields": [
+            "businessId",
+            "emailDigest",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "scope",
+          "fields": [
+            "businessId",
+            "email",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "at": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "emailDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "streamId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      }
+    },
+    "emailTokens": {
+      "tableName": "emailTokens",
+      "indexes": [
+        {
+          "indexDescriptor": "digest",
+          "fields": [
+            "digest",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "scope",
+          "fields": [
+            "businessId",
+            "email",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "audienceId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "digest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "generation": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "kind": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "locale": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "noticeVersion": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "purpose": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "usedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          }
+        }
+      }
+    },
+    "featureSuggestions": {
+      "tableName": "featureSuggestions",
+      "indexes": [
+        {
+          "indexDescriptor": "by_globalUserId",
+          "fields": [
+            "globalUserId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_globalUserTitle",
+          "fields": [
+            "globalUserId",
+            "titleNormalized",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_status",
+          "fields": [
+            "status",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "description": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": false
+          },
+          "projectId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "title": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "titleNormalized": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "featureVotes": {
+      "tableName": "featureVotes",
+      "indexes": [
+        {
+          "indexDescriptor": "by_featureUser",
+          "fields": [
+            "featureId",
+            "globalUserId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_globalUserId",
+          "fields": [
+            "globalUserId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "featureId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "features"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "features": {
+      "tableName": "features",
+      "indexes": [
+        {
+          "indexDescriptor": "by_key",
+          "fields": [
+            "key",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_projectId",
+          "fields": [
+            "projectId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_status",
+          "fields": [
+            "status",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "description": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "key": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "projectId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "title": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "votes": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "globalUsers": {
+      "tableName": "globalUsers",
+      "indexes": [
+        {
+          "indexDescriptor": "by_globalUserId",
+          "fields": [
+            "globalUserId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_primaryEmail",
+          "fields": [
+            "primaryEmail",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "imageUrl": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "primaryEmail": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "identityAccounts": {
+      "tableName": "identityAccounts",
+      "indexes": [
+        {
+          "indexDescriptor": "by_email",
+          "fields": [
+            "email",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_globalUserId",
+          "fields": [
+            "globalUserId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_providerAccount",
+          "fields": [
+            "provider",
+            "providerAccountId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_providerAccountId",
+          "fields": [
+            "providerAccountId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_scopedProviderAccount",
+          "fields": [
+            "provider",
+            "issuer",
+            "providerAccountId",
+            "environment",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": false
+          },
+          "issuer": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "productAccessEvents": {
+      "tableName": "productAccessEvents",
+      "indexes": [
+        {
+          "indexDescriptor": "by_eventId",
+          "fields": [
+            "eventId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_globalUserId",
+          "fields": [
+            "globalUserId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_idempotencyKey",
+          "fields": [
+            "idempotencyKey",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_sourceRef",
+          "fields": [
+            "source",
+            "sourceRef",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "customerEmail": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "customerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "eventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "eventType": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": true
+          },
+          "idempotencyKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "webhookId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      }
+    },
+    "productActivationCodes": {
+      "tableName": "productActivationCodes",
+      "indexes": [
+        {
+          "indexDescriptor": "by_codeNormalized",
+          "fields": [
+            "codeNormalized",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_idempotencyKey",
+          "fields": [
+            "idempotencyKey",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_productStatus",
+          "fields": [
+            "productId",
+            "status",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "codeNormalized": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "idempotencyKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "redeemedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "redeemedByGlobalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": true
+          },
+          "redeemedEntitlementId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "productEntitlements"
+            },
+            "optional": true
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "productEntitlements": {
+      "tableName": "productEntitlements",
+      "indexes": [
+        {
+          "indexDescriptor": "by_globalUserId",
+          "fields": [
+            "globalUserId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_idempotencyKey",
+          "fields": [
+            "idempotencyKey",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_productStatus",
+          "fields": [
+            "productId",
+            "status",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_sourceRef",
+          "fields": [
+            "sourceRef",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "commerceManagedStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": false
+          },
+          "grantedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "idempotencyKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "trialAttempt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "trialExpiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "trialStartedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "productTrialInstallations": {
+      "tableName": "productTrialInstallations",
+      "indexes": [
+        {
+          "indexDescriptor": "by_globalUserProduct",
+          "fields": [
+            "globalUserId",
+            "productId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_productEnvironmentInstallation",
+          "fields": [
+            "productId",
+            "environment",
+            "installationHash",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "firstSeenAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": false
+          },
+          "installationHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "lastSeenAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "trialConsumedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          }
+        }
+      }
+    },
+    "productTrialRiskWindows": {
+      "tableName": "productTrialRiskWindows",
+      "indexes": [
+        {
+          "indexDescriptor": "by_expiresAt",
+          "fields": [
+            "expiresAt",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_productEnvironmentNetworkWindow",
+          "fields": [
+            "productId",
+            "environment",
+            "networkHash",
+            "windowStartedAt",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "grantCount": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "networkHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "windowStartedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "siteLoginAttempts": {
+      "tableName": "siteLoginAttempts",
+      "indexes": [
+        {
+          "indexDescriptor": "by_attemptEnvironment",
+          "fields": [
+            "attemptId",
+            "environment",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_expiresAt",
+          "fields": [
+            "expiresAt",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "attemptId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "createdAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "active"
+                },
+                {
+                  "type": "literal",
+                  "value": "revoked"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "updatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      }
+    },
+    "users": {
+      "tableName": "users",
+      "indexes": [
+        {
+          "indexDescriptor": "by_clerkId",
+          "fields": [
+            "clerkId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_email",
+          "fields": [
+            "email",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_globalUserId",
+          "fields": [
+            "globalUserId",
+            "_creationTime"
+          ]
+        },
+        {
+          "indexDescriptor": "by_polarCustomerId",
+          "fields": [
+            "polarCustomerId",
+            "_creationTime"
+          ]
+        }
+      ],
+      "searchIndexes": [],
+      "vectorIndexes": [],
+      "documentType": {
+        "type": "object",
+        "value": {
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "courseEntitlements": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "string"
+              }
+            },
+            "optional": true
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "id",
+              "tableName": "globalUsers"
+            },
+            "optional": true
+          },
+          "imageUrl": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "polarCustomerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "role": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "subscriptionStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "subscriptionTier": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      }
+    }
+  }
+}

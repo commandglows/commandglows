@@ -20,7 +20,10 @@ export function convexMutation(
   env: Record<string, string | undefined>
 ): Mutation {
   const url = env.EMAIL_CONVEX_URL
-  if (!url || !/^https:\/\/[a-z0-9-]+\.convex\.cloud$/.test(url))
+  if (
+    !url ||
+    !/^https:\/\/[a-z0-9-]+(?:\.[a-z]{2}-[a-z]+-\d+)?\.convex\.cloud$/.test(url)
+  )
     throw new EmailHttpError('configuration_unavailable', 503)
   const client = new ConvexHttpClient(url)
   return (name, args) => client.mutation(name as never, args as never)
@@ -78,6 +81,7 @@ export function errorResponse(error: unknown) {
     invalid_token: 400,
     invalid_state: 409,
     idempotency_conflict: 409,
+    version_conflict: 409,
     rate_limited: 429,
     retention_unconfigured: 503,
     configuration_unavailable: 503,

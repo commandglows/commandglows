@@ -1,0 +1,3633 @@
+{
+  "url": "https://beaming-cow-328.eu-west-1.convex.cloud",
+  "functions": [
+    {
+      "functionType": "HttpAction",
+      "method": "POST",
+      "path": "/clerk/events"
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "imageUrl": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "users.js:upsertFromClerk",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "users.js:getByClerkId",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "users.js:getFormationAccessByClerkId",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "users.js:deleteByClerkId",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "userId": {
+            "fieldType": {
+              "tableName": "users",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "apiKeys.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "userId": {
+            "fieldType": {
+              "tableName": "users",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "apiKeys.js:generate",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "apiKeys",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "apiKeys.js:revoke",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "jtiHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "offerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:claimCommerceCheckoutHandoff",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "checkoutUrl": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "jtiHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "offerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerOrderId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:completeCommerceCheckoutHandoff",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "code": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:disableCommunityGlowsActivationCode",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "installationHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "networkHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "trialAction": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "start"
+                },
+                {
+                  "type": "literal",
+                  "value": "restart"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:ensureCommunityGlowsEntitlementSnapshotByProviderAccount",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "installationHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "networkHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "trialAction": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "start"
+                },
+                {
+                  "type": "literal",
+                  "value": "restart"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:ensureReplayGlowzEntitlementSnapshotByClerkId",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "installationHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "networkHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "trialAction": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "start"
+                },
+                {
+                  "type": "literal",
+                  "value": "restart"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:ensureSuiteProductTrialByGlobalUserId",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "installationHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "networkHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "trialAction": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "start"
+                },
+                {
+                  "type": "literal",
+                  "value": "restart"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:ensureTemuShoppingListsEntitlementSnapshotByProviderAccount",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "bridge.js:getCheckoutIdentityByClerkAccount",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "bridge.js:getEntitlementSnapshotByGlobalUser",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "bridge.js:getReplayGlowzEntitlementSnapshotByClerkId",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:manualGrantCommunityGlowsAccess",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "emailDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:prepareCommunityGlowsAccountDeletion",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "chargeAmount": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "currency": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "customerEmail": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "disputeStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "eventType": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "paid"
+                },
+                {
+                  "type": "literal",
+                  "value": "refunded"
+                },
+                {
+                  "type": "literal",
+                  "value": "revoked"
+                },
+                {
+                  "type": "literal",
+                  "value": "pending_review"
+                },
+                {
+                  "type": "literal",
+                  "value": "refund_updated"
+                },
+                {
+                  "type": "literal",
+                  "value": "dispute_updated"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_failed"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_expired"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "idempotencyKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "metadata": {
+            "fieldType": {
+              "keys": {
+                "type": "string"
+              },
+              "type": "record",
+              "values": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": false
+              }
+            },
+            "optional": true
+          },
+          "offerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerCreatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "providerCustomerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerDisputeId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerEventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerEventType": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerInvoiceId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerOrderId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerPayloadHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerPaymentIntentId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerRefundId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerSourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "refundAmount": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "refundStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "applied"
+                },
+                {
+                  "type": "literal",
+                  "value": "pending_review"
+                },
+                {
+                  "type": "literal",
+                  "value": "ignored"
+                }
+              ]
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:processCommerceEvent",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "chargeAmount": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "currency": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "customerEmail": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "disputeStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "eventType": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "paid"
+                },
+                {
+                  "type": "literal",
+                  "value": "refunded"
+                },
+                {
+                  "type": "literal",
+                  "value": "revoked"
+                },
+                {
+                  "type": "literal",
+                  "value": "pending_review"
+                },
+                {
+                  "type": "literal",
+                  "value": "refund_updated"
+                },
+                {
+                  "type": "literal",
+                  "value": "dispute_updated"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_failed"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_expired"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "idempotencyKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "metadata": {
+            "fieldType": {
+              "keys": {
+                "type": "string"
+              },
+              "type": "record",
+              "values": {
+                "fieldType": {
+                  "type": "string"
+                },
+                "optional": false
+              }
+            },
+            "optional": true
+          },
+          "offerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerCreatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "providerCustomerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerDisputeId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerEventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerEventType": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerInvoiceId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerOrderId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerPayloadHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerPaymentIntentId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerRefundId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerSourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "refundAmount": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "refundStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "applied"
+                },
+                {
+                  "type": "literal",
+                  "value": "pending_review"
+                },
+                {
+                  "type": "literal",
+                  "value": "ignored"
+                }
+              ]
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:processCommunityGlowsCommerceEvent",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "code": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:redeemCommunityGlowsActivationCodeByProviderAccount",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:refundCommunityGlowsAccessByProviderAccount",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "emailDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountDigest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:relinkCommunityGlowsAccount",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "forceRestart": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": true
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:restartCommandGlowsTrialByGlobalUserId",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "dryRun": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "expectedAttempts": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "operatorId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "receiptId": {
+            "fieldType": {
+              "tableName": "commerceEventReceipts",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:retryPendingCommerceEvent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerAccountId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:revokeCommunityGlowsAccessByProviderAccount",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "code": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "available"
+                },
+                {
+                  "type": "literal",
+                  "value": "disabled"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:upsertCommunityGlowsActivationCode",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "auth0Email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "auth0Subject": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:upsertContentGlowsAuth0Identity",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "firebaseEmail": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "firebaseUid": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "installationHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "networkHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "trialAction": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "start"
+                },
+                {
+                  "type": "literal",
+                  "value": "restart"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bridge.js:upsertFirebaseIdentity",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "projectId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "features.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "key": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "features.js:vote",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "description": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "projectId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "title": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "features.js:suggest",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "resend.js:addBuyerToNewsletter",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "search": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "licenseAdministration.js:searchLicenses",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "licenseAdministration.js:getLicenseDetail",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "licenseAdministration.js:manualGrant",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "licenseAdministration.js:manualRevoke",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "alertId": {
+            "fieldType": {
+              "tableName": "commerceAlertOutbox",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceAlerts.js:claim",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "alertId": {
+            "fieldType": {
+              "tableName": "commerceAlertOutbox",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "attempt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "error": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceAlerts.js:finish",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "alertId": {
+            "fieldType": {
+              "tableName": "commerceAlertOutbox",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "commerceAlerts.js:deliver",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {}
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceAlerts.js:sweep",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "commerceOperations.js:authorize",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerEventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerEventType": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerPayloadHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceOperations.js:recordCommerceIngressFailure",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "chargeAmount": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "currency": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "customerEmail": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "disputeStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "eventType": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "paid"
+                },
+                {
+                  "type": "literal",
+                  "value": "refunded"
+                },
+                {
+                  "type": "literal",
+                  "value": "revoked"
+                },
+                {
+                  "type": "literal",
+                  "value": "pending_review"
+                },
+                {
+                  "type": "literal",
+                  "value": "refund_updated"
+                },
+                {
+                  "type": "literal",
+                  "value": "dispute_updated"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_failed"
+                },
+                {
+                  "type": "literal",
+                  "value": "checkout_expired"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "idempotencyKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "offerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "plan": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerCreatedAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "providerCustomerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerDisputeId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerEventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerEventType": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerInvoiceId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerOrderId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerPayloadHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerPaymentIntentId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerRefundId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "providerSourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "refundAmount": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "refundStatus": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "applied"
+                },
+                {
+                  "type": "literal",
+                  "value": "pending_review"
+                },
+                {
+                  "type": "literal",
+                  "value": "ignored"
+                }
+              ]
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceOperations.js:reconcileEvent",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "active": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "paginationOpts": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "cursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "endCursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "id": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumBytesRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumRowsRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "numItems": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "commerceOperations.js:listIncidents",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "incidentId": {
+            "fieldType": {
+              "tableName": "commerceIncidents",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "commerceOperations.js:getIncident",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "action": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "claim"
+                },
+                {
+                  "type": "literal",
+                  "value": "escalate"
+                },
+                {
+                  "type": "literal",
+                  "value": "resolve"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "dueAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "evidenceReference": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "expectedVersion": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "incidentId": {
+            "fieldType": {
+              "tableName": "commerceIncidents",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceOperations.js:updateIncident",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "dryRun": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "expectedAttempts": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "expectedVersion": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "incidentId": {
+            "fieldType": {
+              "tableName": "commerceIncidents",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceOperations.js:retryIncident",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "expectedAttempts": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "expectedVersion": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "incidentId": {
+            "fieldType": {
+              "tableName": "commerceIncidents",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "providerEventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerPayloadHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceOperations.js:recoverIncident",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "expectedVersion": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "incidentId": {
+            "fieldType": {
+              "tableName": "commerceIncidents",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceOperations.js:retryAlert",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "paginationOpts": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "cursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "endCursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "id": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumBytesRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumRowsRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "numItems": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "commerceOperations.js:listMissingWebhooks",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "actorGlobalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "checkoutUrl": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "globalUserId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "offerId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "productId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "providerOrderId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sourceRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "commerceOperations.js:repairCheckout",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credential": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "idempotencyKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "input": {
+            "fieldType": {
+              "type": "any"
+            },
+            "optional": false
+          },
+          "operation": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "email.js:command",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "credential": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "email.js:claim",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "attemptId": {
+            "fieldType": {
+              "tableName": "emailAttempts",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "credential": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "errorCode": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "messageId": {
+            "fieldType": {
+              "tableName": "emailMessages",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "outcome": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "submitted"
+                },
+                {
+                  "type": "literal",
+                  "value": "retryable_failure"
+                },
+                {
+                  "type": "literal",
+                  "value": "permanent_failure"
+                },
+                {
+                  "type": "literal",
+                  "value": "unknown"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "providerMessageId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "retryAfterMs": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "email.js:settle",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "credential": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "eventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "internalMessageId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "occurredAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "providerMessageId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "streamId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "type": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "email.js:webhook",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "attemptId": {
+            "fieldType": {
+              "tableName": "emailAttempts",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "businessId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "credential": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "messageId": {
+            "fieldType": {
+              "tableName": "emailMessages",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "email.js:recheckDispatch",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {}
+      },
+      "functionType": "Action",
+      "identifier": "emailDelivery.js:poll",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "issuer": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "subject": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "siteIdentity.js:resolve",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "siteIdentity.js:resolveClerk",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "imageUrl": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "issuer": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "subject": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "siteIdentity.js:upsert",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "clerkId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "issuer": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "subject": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "siteIdentity.js:linkVerifiedClerk",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "attemptId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "siteSessions.js:register",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "attemptId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "siteSessions.js:activate",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "attemptId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "siteSessions.js:isActive",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "attemptId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "bridgeSecret": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "siteSessions.js:revoke",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {}
+      },
+      "functionType": "Mutation",
+      "identifier": "siteSessions.js:cleanup",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    }
+  ]
+}
