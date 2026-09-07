@@ -350,7 +350,11 @@ and created one active sandbox entitlement for `commandglows_formation`, plan
 proving idempotent fulfillment for this event. This proves the hosted test path from
 paid Stripe Checkout through signed webhook processing to backend entitlement.
 
-Commercial opening remains blocked on production provider activation, a signed-in
-browser proof of the protected training resource, buyer receipt observation, and the
-remaining decline, abandonment, delayed-payment, refund, dispute, alert and recovery
-scenarios required by this specification.
+The buyer then signed in with the canonical account attached to the Checkout handoff.
+Direct navigation to the protected module rendered `LECON DEBLOQUEE` and the complete
+Windows lesson rather than the public excerpt. This completes the hosted signed-in
+access proof for the successful-card scenario.
+
+Commercial opening remains blocked on production provider activation, buyer receipt
+observation, and the remaining decline, abandonment, delayed-payment,
+refund, dispute, alert and recovery scenarios required by this specification.
