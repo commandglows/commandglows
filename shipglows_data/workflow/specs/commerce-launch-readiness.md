@@ -4,9 +4,9 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: commandglows
 created: "2026-09-06"
-updated: "2026-09-07"
+updated: "2026-09-08"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-06T21:44:34Z"
+updated_at: "2026-09-07T23:57:42Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -20,8 +20,8 @@ docs_impact: yes
 linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
-evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "244 synthetic tests across 28 suites, Convex TypeScript and Astro checks passed.", "Hosted administrator login and incident visibility verified; payment-linked access and notification receipt remain pending."]
-next_step: "Complete Stripe sign-in, then verify Stripe test mode, actual commerce alert delivery and end-to-end recovery; historical email indexes were restored September 7."
+evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "Hosted full-refund revocation was verified for the first purchase; buyer receipt, remaining payment states, alerts, recovery and production activation remain pending."]
+next_step: "Verify the ordinary customer's refund lock for the second test purchase, then complete buyer receipt, decline, abandonment, delayed-payment, dispute, alert and recovery acceptance before production activation."
 ---
 
 # Title
@@ -30,7 +30,7 @@ Commerce launch readiness
 
 ## Status
 
-Implemented and verified with local synthetic evidence. Commercial opening remains blocked on hosted test-mode proof.
+Implemented with local synthetic evidence and a hosted ordinary-customer purchase/access proof. Commercial opening remains blocked on the remaining hosted acceptance scenarios and production provider activation.
 
 The September 7 central email continuation adds an opt-in durable commerce alert channel on its isolated work branch. Queue/submission/provider delivery remain separate; unknown submissions cannot be re-alerted blindly, and a late hard bounce remains visible. See `central-email-completion-plan.md` and `central-email-operations.md`. This local implementation does not close the hosted notification, Stripe, protected-access, fallback or historical index acceptance gaps recorded here.
 
@@ -369,3 +369,29 @@ Commercial opening remains blocked on production provider activation, buyer rece
 observation, non-administrator paid-access and refund-lock proof, and the remaining
 decline, abandonment, delayed-payment, dispute, alert and recovery scenarios required
 by this specification.
+
+### Ordinary customer purchase proof — 2026-09-08
+
+The dedicated non-administrator Clerk account for the private test recipient was
+linked to the provider-neutral sandbox identity `gu_1788823301079_ps6g89pf` after
+repairing the disabled Clerk development webhook destination and its Convex signing
+secret. Before payment, the account displayed Plan Free and navigation to the private
+Windows Mastery lesson returned to the public preview, which showed `LECON PRIVEE`
+and the unlock action.
+
+The natural unlock action created the expected Stripe test Checkout for Windows
+Mastery at 49.00 EUR, including 8.17 EUR VAT. A cross-origin redirect compatibility
+failure in the application POST was repaired by returning a no-store Stripe transition
+page with an HTTPS host allowlist and visible fallback link. The focused checkout and
+identity tests pass (33 tests), and the full Astro production build passes. Commit
+`c94a1b3` is deployed READY on the stable branch preview.
+
+The operator explicitly authorized the final test payment. Stripe accepted the
+standard test card and returned to the CommandGlows purchase verification page. After
+the signed event reached the backend, opening the requested private route with the
+same non-administrator session rendered `LECON DEBLOQUEE` and the complete lesson.
+Direct read-only inspection of the shared development backend also found the account's
+`commandglows_formation` / `formation` sandbox entitlement in active status. This
+closes the ordinary-customer paid-access gate. The second transaction has not been
+refunded; its customer-facing refund lock still requires a separately authorized
+refund and post-refund access check.
