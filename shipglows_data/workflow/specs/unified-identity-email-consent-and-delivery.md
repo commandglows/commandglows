@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "CommandGlows"
 created: "2026-09-04"
 created_at: "2026-09-04 01:52:00 UTC"
-updated: "2026-09-05"
-updated_at: "2026-09-05 12:14:00 UTC"
+updated: "2026-09-07"
+updated_at: "2026-09-07 11:53:25 UTC"
 status: ready
 source_skill: sg-engineering
 source_model: "GPT-5 Codex"
@@ -630,6 +630,8 @@ No production-ready claim is permitted while legal retention durations, hosted w
 - ContentGlows launch-protection documentation updates only when its direct Resend integration is actually replaced.
 
 ## Current Chantier Flow
+
+- `2026-09-07 — completion planning`: [Central email completion plan](central-email-completion-plan.md) adds a proposed phased delivery/operations/migration programme after the existing local implementation. The domain contract remains approved; the expanded execution plan is draft awaiting operator validation. No provider mutation or send occurred during planning. Clerk remains the current site authentication provider.
 
 - `2026-09-04 — architecture`: exhaustive contract approved and documented from the existing Convex identity/entitlement spine, direct Resend routes and ContentGlows Auth0 bridge. No runtime behavior or provider configuration changed.
 
