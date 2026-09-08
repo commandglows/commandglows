@@ -304,6 +304,7 @@ describe('dispatch environment and consent checks', () => {
         },
       ])
       .mockResolvedValueOnce({ eligible: false })
+      .mockResolvedValueOnce([])
     const fetcher = vi
       .fn()
       .mockResolvedValueOnce(

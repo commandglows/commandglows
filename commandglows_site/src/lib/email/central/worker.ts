@@ -94,6 +94,7 @@ export async function handleDispatch(
   injected?: Mutation,
   fetcher: typeof fetch = fetch
 ) {
+  const startedAt = Date.now()
   try {
     const credential = bearer(request)
     const body = await readJson(request, 1024)
@@ -125,14 +126,18 @@ export async function handleDispatch(
       throw new EmailHttpError('configuration_unavailable', 503)
     await verifyProvider(business, config.environment, token, fetcher)
     const mutate = injected ?? convexMutation(env)
-    const jobs = (await mutate('email:claim', {
-      credential,
-      businessId: business.id,
-    })) as Job[]
-    if (!Array.isArray(jobs))
-      throw new EmailHttpError('invalid_job_receipt', 503)
     const results: { message_id: string; status: string }[] = []
-    for (const job of jobs) {
+    // Only lease the next recipient after settling the previous one. One bounded
+    // drain shares provider verification, with no transaction held across HTTP.
+    for (let n = 0; n < 10 && Date.now() - startedAt < 25_000; n++) {
+      const jobs = (await mutate('email:claim', {
+        credential,
+        businessId: business.id,
+      })) as Job[]
+      if (!Array.isArray(jobs) || jobs.length > 1)
+        throw new EmailHttpError('invalid_job_receipt', 503)
+      if (!jobs.length) break
+      const job = jobs[0]
       let content = job
       try {
         if (job.content) {
@@ -197,6 +202,11 @@ export async function handleDispatch(
         ...(outcome.retryAfterMs ? { retryAfterMs: outcome.retryAfterMs } : {}),
       })
       results.push({ message_id: job.messageId, status: outcome.status })
+      if (
+        outcome.status === 'unknown' ||
+        outcome.status === 'retryable_failure'
+      )
+        break
     }
     return json(200, { results })
   } catch (error) {

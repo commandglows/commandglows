@@ -1,0 +1,51 @@
+---
+import { requireEmailAdmin } from '@/lib/email/central/campaignApi'
+import { EmailHttpError } from '@/lib/email/central/security'
+import { getServerEnv } from '@/lib/serverEnv'
+
+const { lang = 'en' } = Astro.props
+const french = lang === 'fr'
+let permitted = false
+let unavailable = false
+try {
+  await requireEmailAdmin(Astro.locals)
+  permitted = true
+} catch (error) {
+  Astro.response.status = error instanceof EmailHttpError ? error.status : 503
+  unavailable = Astro.response.status >= 500
+}
+const installed = getServerEnv().EMAIL_ENGINE_WEB_ENABLED === 'true'
+Astro.response.headers.set('Cache-Control', 'no-store')
+Astro.response.headers.set('Referrer-Policy', 'same-origin')
+---
+
+<section aria-label={french ? 'Newsletters' : 'Newsletters'}>
+  <h1 class="text-content-text-primary mb-4 text-3xl font-bold">Newsletters</h1>
+  {!permitted ? (
+    <p role="status" class="text-content-text-secondary">
+      {unavailable
+        ? (french ? 'Le service de newsletters est momentanément indisponible.' : 'The newsletter service is temporarily unavailable.')
+        : (french ? 'Cet espace nécessite un compte administrateur autorisé.' : 'This workspace requires an authorized administrator account.')}
+    </p>
+  ) : !installed ? (
+    <p role="status" class="text-content-text-secondary">
+      {french ? 'Le studio de newsletters n’est pas encore disponible dans cet environnement.' : 'The newsletter studio is not yet available in this environment.'}
+    </p>
+  ) : (
+    <>
+      <p class="text-content-text-secondary mb-4">
+        {french ? 'Préparez vos campagnes, vérifiez leur audience et suivez les livraisons.' : 'Prepare campaigns, review their audience and follow deliveries.'}
+      </p>
+      <iframe
+        src="/email-engine/index.html"
+        title={french ? 'Studio de newsletters ShipGlows' : 'ShipGlows newsletter studio'}
+        class="border-dashboard-border h-dvh w-full rounded-xl border"
+        referrerpolicy="same-origin"
+        allow="clipboard-write 'self'"
+      />
+      <noscript>
+        {french ? 'Le studio interactif nécessite JavaScript. Aucun envoi ne sera déclenché sans votre confirmation.' : 'The interactive studio requires JavaScript. Sending always requires your confirmation.'}
+      </noscript>
+    </>
+  )}
+</section>

@@ -1,3 +1,4 @@
+import { patchEmailMessage, campaignAllowsDispatch } from './emailCampaignState'
 import {
   renderEmail,
   type EmailContent,
@@ -72,7 +73,7 @@ async function suppressionDigest(email: string) {
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 }
-async function suppressed(
+export async function suppressed(
   ctx: any,
   businessId: string,
   email: string,
@@ -83,12 +84,15 @@ async function suppressed(
     .withIndex('scope', (q: any) =>
       q.eq('businessId', businessId).eq('email', email)
     )
-    .collect()
+    .take(100)
+  if (raw.length === 100) fail('service_unavailable')
   if (!process.env.EMAIL_SUPPRESSION_HASH_KEY) {
     const records = await ctx.db
       .query('emailSuppressions')
-      .withIndex('digest', (q: any) => q.eq('businessId', businessId))
-      .collect()
+      .withIndex('digest', (q: any) =>
+        q.eq('businessId', businessId).gt('emailDigest', undefined)
+      )
+      .take(1)
     if (records.some((record: any) => record.emailDigest))
       fail('configuration_unavailable')
   }
@@ -101,8 +105,9 @@ async function suppressed(
         .withIndex('digest', (q: any) =>
           q.eq('businessId', businessId).eq('emailDigest', awaitDigest)
         )
-        .collect()
+        .take(100)
     : []
+  if (hashed.length === 100) fail('service_unavailable')
   return [...raw, ...hashed].some(
     (s: any) => !s.streamId || s.streamId === streamId
   )
@@ -534,7 +539,7 @@ export const command = mutation({
         m.state !== 'draft'
       )
         fail('invalid_input')
-      await ctx.db.patch(m._id, { state: 'queued' } as any)
+      await patchEmailMessage(ctx, m._id, { state: 'queued' } as any)
       result = { status: 'queued', messageId: m._id }
     } else if (args.operation === 'erase') {
       if (!business.retentionDays) fail('retention_unconfigured')
@@ -569,7 +574,7 @@ export const command = mutation({
         )
         .collect())
         if (message.businessId === businessId && message.email === email)
-          await ctx.db.patch(message._id, {
+          await patchEmailMessage(ctx, message._id, {
             email: 'erased',
             rendered: {},
             state: 'erased',
@@ -630,7 +635,7 @@ export const claim = mutation({
       .take(100)
     for (const m of expired)
       if ((m.leaseUntil || 0) <= now) {
-        await ctx.db.patch(m._id, { state: 'unknown' })
+        await patchEmailMessage(ctx, m._id, { state: 'unknown' })
         const attempts = await ctx.db
           .query('emailAttempts')
           .withIndex('message', (q) => q.eq('messageId', m._id))
@@ -658,17 +663,26 @@ export const claim = mutation({
         ? await membership(ctx, m.businessId, m.email, m.audienceId)
         : null
       if (
+        !(await campaignAllowsDispatch(ctx, m)) ||
         (await suppressed(ctx, m.businessId, m.email, streamId)) ||
         (m.kind === 'broadcast' && member?.state !== 'subscribed') ||
         (m.kind === 'confirmation' &&
           (member?.state !== 'pending' ||
             member?.generation !== m.rendered.generation))
       ) {
-        await ctx.db.patch(m._id, { state: 'cancelled' })
+        await patchEmailMessage(ctx, m._id, { state: 'cancelled' })
         continue
       }
-      if (!business.activated || !business.allowedRecipients?.includes(m.email))
+      if (
+        !business.activated ||
+        !business.allowedRecipients?.includes(m.email)
+      ) {
+        if (m.campaignId)
+          await patchEmailMessage(ctx, m._id, { state: 'cancelled' })
+        else if (business.activated)
+          await ctx.db.patch(m._id, { nextAt: now + 60_000 })
         continue
+      }
       if (config.environment === 'production' && !business.retentionDays)
         continue
       const attemptId = await ctx.db.insert('emailAttempts', {
@@ -677,7 +691,10 @@ export const claim = mutation({
         state: 'sending',
         at: now,
       })
-      await ctx.db.patch(m._id, { state: 'sending', leaseUntil: now + 60000 })
+      await patchEmailMessage(ctx, m._id, {
+        state: 'sending',
+        leaseUntil: now + 60000,
+      })
       jobs.push({
         messageId: m._id,
         attemptId,
@@ -754,7 +771,7 @@ export const settle = mutation({
       .query('emailAttempts')
       .withIndex('message', (q) => q.eq('messageId', m._id))
       .collect()
-    await ctx.db.patch(m._id, {
+    await patchEmailMessage(ctx, m._id, {
       state:
         a.outcome === 'retryable_failure'
           ? attempts.length < 5
@@ -858,7 +875,7 @@ export const webhook = mutation({
         ) &&
         ['sending', 'unknown', 'submitted'].includes(correlatedMessage.state)
       ) {
-        await ctx.db.patch(correlatedMessage._id, {
+        await patchEmailMessage(ctx, correlatedMessage._id, {
           providerMessageId: str(a.providerMessageId),
           state: a.type === 'delivery' ? 'delivered' : 'submitted',
         })
@@ -971,6 +988,7 @@ export const recheckDispatch = mutation({
         : business.transactionalStream
     const eligible = Boolean(
       business.activated &&
+      (await campaignAllowsDispatch(ctx, message)) &&
       business.allowedRecipients?.includes(message.email) &&
       (message.leaseUntil || 0) > Date.now() &&
       !(await suppressed(ctx, message.businessId, message.email, stream)) &&
@@ -980,7 +998,7 @@ export const recheckDispatch = mutation({
           member.generation === message.rendered.generation))
     )
     if (!eligible) {
-      await ctx.db.patch(message._id, { state: 'cancelled' })
+      await patchEmailMessage(ctx, message._id, { state: 'cancelled' })
       await ctx.db.patch(attempt._id, { state: 'cancelled' })
     }
     return { eligible }

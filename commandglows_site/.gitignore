@@ -1,4 +1,5 @@
 # build output
+/public/email-engine/
 dist/
 .output/
 .vercel/

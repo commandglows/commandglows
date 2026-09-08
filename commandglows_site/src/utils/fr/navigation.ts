@@ -14,6 +14,11 @@ export async function getNavigation(lang: Language = 'fr'): Promise<Navigation> 
   return {
     dashboard: [
       {
+        name: 'Newsletters',
+        href: lang === 'fr' ? '/fr/dashboard/newsletters' : '/dashboard/newsletters',
+        icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5h16v14H4zM4 5l8 7 8-7" /></svg>`
+      },
+      {
         name: lang === 'fr' ? "Vue d'ensemble" : "Overview",
         href: '/dashboard',
         icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
