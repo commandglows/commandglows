@@ -20,7 +20,7 @@ Astro.response.headers.set('Referrer-Policy', 'same-origin')
 ---
 
 <section aria-label={french ? 'Newsletters' : 'Newsletters'}>
-  <h1 class="text-content-text-primary mb-4 text-3xl font-bold">Newsletters</h1>
+  <h1 class="text-content-text-primary mb-4 text-3xl font-bold">Email Engine</h1>
   {!permitted ? (
     <p role="status" class="text-content-text-secondary">
       {unavailable
@@ -34,7 +34,7 @@ Astro.response.headers.set('Referrer-Policy', 'same-origin')
   ) : (
     <>
       <p class="text-content-text-secondary mb-4">
-        {french ? 'Préparez vos campagnes, vérifiez leur audience et suivez les livraisons.' : 'Prepare campaigns, review their audience and follow deliveries.'}
+        {french ? 'Retrouvez vos sources, vos conversations clients et vos campagnes.' : 'Your sources, customer conversations and campaigns in one workspace.'}
       </p>
       <iframe
         src="/email-engine/index.html"
