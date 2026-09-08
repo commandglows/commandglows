@@ -20,8 +20,8 @@ docs_impact: yes
 linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
-evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "Hosted full-refund revocation was verified for the first purchase; buyer receipt, remaining payment states, alerts, recovery and production activation remain pending."]
-next_step: "Verify the ordinary customer's refund lock for the second test purchase, then complete buyer receipt, decline, abandonment, delayed-payment, dispute, alert and recovery acceptance before production activation."
+evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access; buyer receipt, remaining payment states, alerts, recovery and production activation remain pending."]
+next_step: "Complete buyer receipt, decline, abandonment, delayed-payment, dispute, alert and recovery acceptance before production activation."
 ---
 
 # Title
@@ -392,6 +392,12 @@ the signed event reached the backend, opening the requested private route with t
 same non-administrator session rendered `LECON DEBLOQUEE` and the complete lesson.
 Direct read-only inspection of the shared development backend also found the account's
 `commandglows_formation` / `formation` sandbox entitlement in active status. This
-closes the ordinary-customer paid-access gate. The second transaction has not been
-refunded; its customer-facing refund lock still requires a separately authorized
-refund and post-refund access check.
+closes the ordinary-customer paid-access gate.
+
+The operator then explicitly authorized a full refund of this second 49.00 EUR test
+transaction. Stripe displayed the payment as refunded and the full refunded amount.
+Convex changed the same sandbox entitlement's `status` and `commerceManagedStatus`
+to `revoked`. Direct navigation to the private lesson with the unchanged ordinary
+customer session redirected to the public preview, which again displayed `LECON
+PRIVEE`, `APERCU PUBLIC` and the unlock action. This closes the ordinary-customer
+full-refund lock gate.
