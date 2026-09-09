@@ -13,16 +13,33 @@ export default function AuthNavAction({ className, overviewLabel, settingsLabel,
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
   const french = signInUrl.startsWith('/fr/')
   useEffect(() => {
-    const controller = new AbortController()
-    fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
+    let controller: AbortController | null = null
+    const refreshSession = () => {
+      controller?.abort()
+      const currentController = new AbortController()
+      controller = currentController
+      fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store', signal: currentController.signal })
       .then(async (response) => {
         if (!response.ok) return false
         const session: unknown = await response.json()
         return Boolean(session && typeof session === 'object' && 'userId' in session && typeof session.userId === 'string' && session.userId.length > 0)
       })
-      .then((value) => { if (!controller.signal.aborted) setSignedIn(value) })
-      .catch(() => { if (!controller.signal.aborted) setSignedIn(false) })
-    return () => controller.abort()
+      .then((value) => { if (!currentController.signal.aborted) setSignedIn(value) })
+      .catch(() => { if (!currentController.signal.aborted) setSignedIn(false) })
+    }
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refreshSession()
+    }
+    refreshSession()
+    window.addEventListener('pageshow', refreshSession)
+    window.addEventListener('focus', refreshSession)
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    return () => {
+      controller?.abort()
+      window.removeEventListener('pageshow', refreshSession)
+      window.removeEventListener('focus', refreshSession)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+    }
   }, [])
 
   if (signedIn === null) return <span className={className} role="status">{french ? 'Chargement…' : 'Loading…'}</span>
@@ -34,7 +51,7 @@ export default function AuthNavAction({ className, overviewLabel, settingsLabel,
         <a className="flex min-h-11 items-center rounded-lg px-3 hover:underline" href="/dashboard">{overviewLabel}</a>
         <a className="flex min-h-11 items-center rounded-lg px-3 hover:underline" href="/dashboard/taches">{tasksLabel}</a>
         <a className="flex min-h-11 items-center rounded-lg px-3 hover:underline" href="/dashboard/parametres">{settingsLabel}</a>
-        <form method="post" action="/api/auth/logout">
+        <form method="post" action="/api/auth/logout" onSubmit={() => setSignedIn(false)}>
           <button type="submit" className="min-h-11 w-full rounded-lg px-3 text-left hover:underline">{french ? 'Se déconnecter' : 'Sign out'}</button>
         </form>
       </div>
