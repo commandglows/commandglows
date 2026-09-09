@@ -83,9 +83,13 @@ Le parcours acheteur carte bancaire a été exercé sur la preview stable avec l
 compte de recette ordinaire : achat réussi et accès débloqué, carte refusée sans
 accès, abandon Checkout sans accès, remboursement partiel avec accès conservé,
 puis remboursement cumulé total avec accès retiré. Le paiement différé reste non
-applicable au Checkout actuel, qui ne propose que la carte. Les litiges Stripe,
-l'alerte opérateur réelle, la récupération incident et l'activation production
-restent ouverts.
+applicable au Checkout actuel, qui ne propose que la carte. Les litiges Stripe
+ouvert et perdu gardent l'accès bloqué comme prévu. Le cas `litige gagné` reste
+non prouvé en hébergé : Stripe Managed Payments affiche encore `Preuves envoyées`
+et une décision émetteur en attente après soumission de preuve. Une session
+Checkout fraîche a ensuite confirmé que l'achat normal débloque toujours la leçon.
+L'alerte opérateur réelle, la récupération incident et l'activation production
+restent ouvertes.
 
 Les événements activés dans Stripe doivent couvrir completed, async_payment_succeeded, async_payment_failed, expired, refund.created, refund.updated, refund.failed et charge.dispute.created/updated/closed. Les événements charge.refunded et funds_reinstated ne remplacent pas les faits détaillés de remboursement/litige de ce contrat. Le runbook impose la comparaison aux événements Stripe et leur réimportation exacte lors d'une anomalie.
 

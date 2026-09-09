@@ -20,8 +20,8 @@ docs_impact: yes
 linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
-evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access.", "Hosted buyer-path edge cases observed in conversation on 2026-09-09: card decline showed Stripe refusal with no access, abandoned checkout kept access locked, partial refund preserved access, and cumulative full refund removed access. Buyer receipt, disputes, alerts, recovery and production activation remain pending."]
-next_step: "Complete buyer receipt, dispute, alert and recovery acceptance before production activation; delayed payment remains not applicable while card-only Checkout is configured."
+evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access.", "Hosted buyer-path edge cases observed in conversation on 2026-09-09: card decline showed Stripe refusal with no access, abandoned checkout kept access locked, partial refund preserved access, and cumulative full refund removed access.", "Hosted dispute acceptance on 2026-09-09 proved open/pending dispute keeps access locked and lost dispute keeps access locked; a separate normal card checkout later restored access on a clean session. Buyer receipt, dispute-won restoration, alerts, recovery and production activation remain pending."]
+next_step: "Complete buyer receipt, dispute-won restoration if Stripe test evidence becomes available, alert and recovery acceptance before production activation; delayed payment remains not applicable while card-only Checkout is configured."
 ---
 
 # Title
@@ -424,3 +424,22 @@ cumulative full refund removed private lesson access again.
 The hosted Checkout currently exposes card payment only. Delayed-payment flows
 therefore remain not applicable to the current buyer experience unless a banking
 method such as SEPA is intentionally activated and separately accepted.
+
+### Hosted dispute checkpoint — 2026-09-09
+
+The operator used Stripe test card `4000 0000 0000 2685` on the stable branch
+preview. Stripe opened a product-not-received dispute and CommandGlows showed the
+public locked lesson state, proving that an open dispute prevents private access.
+The operator then accepted or closed one dispute path as lost; CommandGlows kept
+the lesson locked, matching the required lost-dispute behavior.
+
+A second disputed payment was used for the won-dispute path. The operator submitted
+evidence from Stripe Dashboard, but Stripe still displayed `Preuves envoyées` and
+stated that the issuer decision remained pending. CommandGlows correctly kept the
+lesson locked while Stripe had not yet produced a won/closed event. Restoration
+after a won dispute is therefore not proven in hosted Managed Payments.
+
+After the disputed session, a fresh Checkout session with a normal successful test
+payment restored access to the private Windows Mastery lesson. That confirms the
+ordinary paid-access path still works independently of the unresolved won-dispute
+case.
