@@ -66,6 +66,8 @@ describe('authenticated checkout start route', () => {
     const body = await response.text()
     expect(body).toContain('href="https://checkout.stripe.test/formation"')
     expect(body).toContain('Continuer vers Stripe')
+    expect(body).toContain('Stripe va s’ouvrir dans un instant')
+    expect(body).toContain('class="spinner"')
     const checkoutArgs = mockCheckout.mock.calls[0]?.[0]
     expect(checkoutArgs.identityToken).toEqual(expect.any(String))
     expect(verifyCommerceCheckoutIdentityToken(checkoutArgs.identityToken, process.env.SUITE_COMMERCE_CHECKOUT_SECRET!)).toMatchObject({ globalUserId: 'gu_formation', productId: 'commandglows_formation' })

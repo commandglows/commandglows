@@ -9,7 +9,71 @@ const { action, class: className = '', formClass = '' } = Astro.props
 ---
 
 <form method="post" action={action} class={formClass}>
-	<button type="submit" class={className}>
-		<slot />
+	<button type="submit" class={`commerce-checkout-button ${className}`}>
+		<span class="commerce-checkout-label"><slot /></span>
+		<span class="commerce-checkout-loading" aria-hidden="true">
+			<span class="commerce-checkout-spinner"></span>
+			<span data-lang="fr">Ouverture du paiement...</span>
+			<span data-lang="en">Opening checkout...</span>
+		</span>
 	</button>
 </form>
+
+<script>
+	document.querySelectorAll<HTMLFormElement>('form').forEach((form) => {
+		const button = form.querySelector<HTMLButtonElement>('.commerce-checkout-button')
+		if (!button) return
+		form.addEventListener('submit', () => {
+			button.dataset.loading = 'true'
+			button.setAttribute('aria-busy', 'true')
+			button.disabled = true
+		})
+	})
+</script>
+
+<style>
+	.commerce-checkout-button {
+		position: relative;
+		gap: 0.625rem;
+	}
+
+	.commerce-checkout-loading {
+		display: none;
+		align-items: center;
+		gap: 0.625rem;
+	}
+
+	.commerce-checkout-spinner {
+		width: 1rem;
+		height: 1rem;
+		border: 2px solid currentColor;
+		border-right-color: transparent;
+		border-radius: 999px;
+		animation: commerce-checkout-spin 0.8s linear infinite;
+	}
+
+	.commerce-checkout-button[data-loading='true'] .commerce-checkout-label {
+		display: none;
+	}
+
+	.commerce-checkout-button[data-loading='true'] .commerce-checkout-loading {
+		display: inline-flex;
+	}
+
+	:global(html[lang='fr']) .commerce-checkout-loading [data-lang='en'],
+	:global(html:not([lang='fr'])) .commerce-checkout-loading [data-lang='fr'] {
+		display: none;
+	}
+
+	@keyframes commerce-checkout-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.commerce-checkout-spinner {
+			animation: none;
+		}
+	}
+</style>
