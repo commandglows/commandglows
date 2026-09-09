@@ -115,7 +115,10 @@ test('a revoked login attempt cannot reach identity mutation or issue a cookie',
 })
 test('logout revokes pending and active attempts before deleting cookies', async () => {
   const ctx = context('/api/auth/logout', 'POST')
-  expect((await logout(ctx as never)).status).toBe(303)
+  const response = await logout(ctx as never)
+  expect(response.status).toBe(303)
+  expect(response.headers.get('Cache-Control')).toBe('no-store')
+  expect(response.headers.get('Clear-Site-Data')).toBe('"storage"')
   expect(mocks.mutate).toHaveBeenCalledWith('siteSessions:revoke', expect.objectContaining({ attemptId: 'active-attempt' }))
   expect(mocks.mutate).toHaveBeenCalledWith('siteSessions:revoke', expect.objectContaining({ attemptId: 'pending-attempt' }))
   expect(mocks.mutate.mock.invocationCallOrder[1]).toBeLessThan(ctx.cookies.delete.mock.invocationCallOrder[0])

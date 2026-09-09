@@ -52,10 +52,11 @@ test('keeps login available when session lookup fails', async () => {
   expect(container.textContent).toBe('Connexion')
 })
 test('hides private navigation as soon as sign out is submitted', async () => {
-  const { container } = await renderSession({ userId: 'global_test' })
+  const { container, fetchMock } = await renderSession({ userId: 'global_test' })
   await act(async () => container.querySelector('form')?.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true })))
   expect(container.querySelector('form')).toBeNull()
   expect(container.querySelector('a')?.getAttribute('href')).toBe('/fr/signin')
+  expect(fetchMock).toHaveBeenLastCalledWith('/api/auth/logout', expect.objectContaining({ method: 'POST', credentials: 'same-origin', cache: 'no-store' }))
 })
 test('refreshes session when a cached page is shown again', async () => {
   const { container, fetchMock } = await renderSessionSequence([{ userId: 'global_test' }, null])

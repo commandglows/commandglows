@@ -11,6 +11,7 @@ interface AuthNavActionProps {
 
 export default function AuthNavAction({ className, overviewLabel, settingsLabel, signInLabel, signInUrl, tasksLabel }: AuthNavActionProps) {
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
+  const [signingOut, setSigningOut] = useState(false)
   const french = signInUrl.startsWith('/fr/')
   useEffect(() => {
     let controller: AbortController | null = null
@@ -42,6 +43,17 @@ export default function AuthNavAction({ className, overviewLabel, settingsLabel,
     }
   }, [])
 
+  const submitSignOut = async (event: { preventDefault: () => void }) => {
+    event.preventDefault()
+    setSigningOut(true)
+    setSignedIn(false)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'text/html' } })
+    } finally {
+      window.location.replace(french ? '/fr' : '/')
+    }
+  }
+
   if (signedIn === null) return <span className={className} role="status">{french ? 'Chargement…' : 'Loading…'}</span>
   if (!signedIn) return <a href={signInUrl} className={className}>{signInLabel}</a>
   return (
@@ -51,8 +63,8 @@ export default function AuthNavAction({ className, overviewLabel, settingsLabel,
         <a className="flex min-h-11 items-center rounded-lg px-3 hover:underline" href="/dashboard">{overviewLabel}</a>
         <a className="flex min-h-11 items-center rounded-lg px-3 hover:underline" href="/dashboard/taches">{tasksLabel}</a>
         <a className="flex min-h-11 items-center rounded-lg px-3 hover:underline" href="/dashboard/parametres">{settingsLabel}</a>
-        <form method="post" action="/api/auth/logout" onSubmit={() => setSignedIn(false)}>
-          <button type="submit" className="min-h-11 w-full rounded-lg px-3 text-left hover:underline">{french ? 'Se déconnecter' : 'Sign out'}</button>
+        <form method="post" action="/api/auth/logout" onSubmit={submitSignOut}>
+          <button type="submit" disabled={signingOut} className="min-h-11 w-full rounded-lg px-3 text-left hover:underline disabled:opacity-60">{french ? 'Se déconnecter' : 'Sign out'}</button>
         </form>
       </div>
     </details>
