@@ -77,6 +77,16 @@ Un résultat de reçu est historique : une relivraison peut retourner son ancien
 
 Dans une étape séparément autorisée, vérifier chaque ligne pertinente en mode Stripe test, avec comptes autorisés : session réelle, signature, base Convex, connexion puis ressource protégée, actualisation de l'application, retour acheteur, console administrateur accessible et utilisable au clavier, réception et échec d'alerte, balayage actif et reprise après panne. Vérifier aussi le refus bancaire réel, l'abandon et le délai des moyens de paiement autorisés. Conserver les références de preuves et le résultat attendu/obtenu. Une ligne bloquée garde l'ouverture commerciale bloquée.
 
+### État hébergé au 9 septembre 2026
+
+Le parcours acheteur carte bancaire a été exercé sur la preview stable avec le
+compte de recette ordinaire : achat réussi et accès débloqué, carte refusée sans
+accès, abandon Checkout sans accès, remboursement partiel avec accès conservé,
+puis remboursement cumulé total avec accès retiré. Le paiement différé reste non
+applicable au Checkout actuel, qui ne propose que la carte. Les litiges Stripe,
+l'alerte opérateur réelle, la récupération incident et l'activation production
+restent ouverts.
+
 Les événements activés dans Stripe doivent couvrir completed, async_payment_succeeded, async_payment_failed, expired, refund.created, refund.updated, refund.failed et charge.dispute.created/updated/closed. Les événements charge.refunded et funds_reinstated ne remplacent pas les faits détaillés de remboursement/litige de ce contrat. Le runbook impose la comparaison aux événements Stripe et leur réimportation exacte lors d'une anomalie.
 
 Sources vérifiées : [types d'événements Stripe](https://docs.stripe.com/api/events/types), [objet remboursement](https://docs.stripe.com/api/refunds/object), [objet litige](https://docs.stripe.com/api/disputes/object), [webhooks et reprises](https://docs.stripe.com/webhooks). Les règles de droits sont les décisions CommandGlows validées ; Stripe fournit les faits financiers.

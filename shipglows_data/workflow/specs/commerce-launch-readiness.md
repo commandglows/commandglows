@@ -4,9 +4,9 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: commandglows
 created: "2026-09-06"
-updated: "2026-09-08"
+updated: "2026-09-09"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-07T23:57:42Z"
+updated_at: "2026-09-09T00:00:00Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -20,8 +20,8 @@ docs_impact: yes
 linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
-evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access; buyer receipt, remaining payment states, alerts, recovery and production activation remain pending."]
-next_step: "Complete buyer receipt, decline, abandonment, delayed-payment, dispute, alert and recovery acceptance before production activation."
+evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access.", "Hosted buyer-path edge cases observed in conversation on 2026-09-09: card decline showed Stripe refusal with no access, abandoned checkout kept access locked, partial refund preserved access, and cumulative full refund removed access. Buyer receipt, disputes, alerts, recovery and production activation remain pending."]
+next_step: "Complete buyer receipt, dispute, alert and recovery acceptance before production activation; delayed payment remains not applicable while card-only Checkout is configured."
 ---
 
 # Title
@@ -401,3 +401,26 @@ to `revoked`. Direct navigation to the private lesson with the unchanged ordinar
 customer session redirected to the public preview, which again displayed `LECON
 PRIVEE`, `APERCU PUBLIC` and the unlock action. This closes the ordinary-customer
 full-refund lock gate.
+
+### Buyer payment edge-case proof — 2026-09-09
+
+The operator exercised the remaining card-based buyer-path cases on the stable
+branch preview with the same ordinary test account. Stripe Checkout rejected test
+card `4000 0000 0000 0002` with the visible refusal message "Votre carte de
+crédit a été refusée"; CommandGlows stayed on the public locked lesson state, so
+no right was granted after a declined payment.
+
+The operator then opened Checkout and abandoned it without paying. Returning to
+CommandGlows kept the Windows Mastery lesson locked, confirming that an opened or
+left Checkout session does not grant access without a confirmed Stripe payment.
+
+A new successful 49.00 EUR test card payment restored access to the protected
+lesson. The operator then performed a 10.00 EUR partial refund from Stripe
+Dashboard; reloading CommandGlows kept the lesson unlocked, confirming that a
+partial successful refund preserves access. The operator subsequently refunded
+the remaining balance; returning to the public module page confirmed that the
+cumulative full refund removed private lesson access again.
+
+The hosted Checkout currently exposes card payment only. Delayed-payment flows
+therefore remain not applicable to the current buyer experience unless a banking
+method such as SEPA is intentionally activated and separately accepted.
