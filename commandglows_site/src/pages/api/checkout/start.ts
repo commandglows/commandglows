@@ -51,10 +51,28 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   }
 
   const convex = new ConvexHttpClient(convexUrl)
-  const identity = await convex.query(
+  let identity = await convex.query(
     'bridge:getCheckoutIdentityByClerkAccount' as never,
     { clerkId: auth.userId, bridgeSecret } as never
   ) as { globalUserId?: string } | null
+  if (!identity?.globalUserId) {
+    const claims = (auth as { sessionClaims?: Record<string, unknown> }).sessionClaims
+    const email = typeof claims?.email === 'string'
+      ? claims.email
+      : typeof claims?.primary_email_address === 'string'
+        ? claims.primary_email_address
+        : undefined
+    identity = await convex.mutation(
+      'bridge:upsertClerkIdentityForCheckout' as never,
+      {
+        clerkId: auth.userId,
+        email,
+        environment: runtimeEnvironment(env),
+        sourceRef: url.searchParams.get('sourceRef')?.trim() || url.pathname,
+        bridgeSecret,
+      } as never
+    ) as { globalUserId?: string } | null
+  }
   if (!identity?.globalUserId) {
     return new Response('Suite identity is not available', { status: 409 })
   }

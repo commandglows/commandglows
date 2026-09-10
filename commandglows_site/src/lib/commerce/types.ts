@@ -1,4 +1,4 @@
-export type CommerceProviderId = "stripe"
+export type CommerceProviderId = "stripe" | "appsumo"
 
 export type CommerceOfferId = `${string}/${string}`
 
@@ -15,7 +15,7 @@ export type CommerceOffer = {
 
 export type CommerceEnvironment = "production" | "sandbox" | "development"
 
-export type CommerceProviderName = "stripe"
+export type CommerceProviderName = "stripe" | "appsumo"
 
 export type CommerceCheckoutErrorContext =
   | "offer"

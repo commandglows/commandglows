@@ -48,4 +48,30 @@ describe("Vercel security headers", () => {
     expect(directives.get("worker-src")).toEqual(["'self'", "blob:"]);
     expect(csp).not.toContain(formerClerkHost);
   });
+
+  test("keeps the server-to-server CommunityGlows bridge free of page CSP headers", () => {
+    const config = JSON.parse(
+      readFileSync(resolve(process.cwd(), "vercel.json"), "utf8")
+    ) as {
+      headers: Array<{
+        source: string;
+        headers: Array<{ key: string; value: string }>;
+      }>;
+    };
+
+    const bridge = config.headers.find(
+      (entry) => entry.source === "/api/bridge/communityglows"
+    );
+
+    expect(bridge?.headers).toEqual(expect.arrayContaining([
+      { key: "Cache-Control", value: "no-store" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      {
+        key: "Strict-Transport-Security",
+        value: "max-age=31536000; includeSubDomains; preload",
+      },
+    ]));
+    expect(bridge?.headers.some((header) => header.key === "Content-Security-Policy")).toBe(false);
+    expect(config.headers[0]?.source).toContain("(?!api/bridge/communityglows$)");
+  });
 });

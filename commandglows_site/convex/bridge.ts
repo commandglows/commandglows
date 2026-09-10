@@ -781,6 +781,95 @@ function requireBridgeSecret(providedSecret: string) {
   }
 }
 
+
+export const upsertClerkIdentityForCheckout = mutation({
+  args: {
+    clerkId: v.string(),
+    email: v.optional(v.string()),
+    environment: v.optional(v.string()),
+    sourceRef: v.optional(v.string()),
+    bridgeSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+    const providerAccountId = args.clerkId.trim()
+    if (!providerAccountId) {
+      throw new Error('provider_account_id_required')
+    }
+
+    const now = Date.now()
+    const environment = args.environment ?? 'production'
+    let identity = await ctx.db
+      .query('identityAccounts')
+      .withIndex('by_providerAccount', (q) =>
+        q.eq('provider', 'clerk').eq('providerAccountId', providerAccountId)
+      )
+      .first()
+
+    let globalUserDocId = identity?.globalUserId
+    if (!globalUserDocId) {
+      globalUserDocId = await ctx.db.insert(
+        'globalUsers',
+        withoutUndefined({
+          globalUserId: createGlobalUserId(),
+          primaryEmail: args.email,
+          createdAt: now,
+          updatedAt: now,
+        })
+      )
+      await ctx.db.insert(
+        'identityAccounts',
+        withoutUndefined({
+          globalUserId: globalUserDocId,
+          provider: 'clerk',
+          providerAccountId,
+          email: args.email,
+          source: 'checkout_start',
+          sourceRef: args.sourceRef,
+          environment,
+          createdAt: now,
+          updatedAt: now,
+        })
+      )
+    } else if (identity) {
+      await ctx.db.patch(
+        identity._id,
+        withoutUndefined({
+          email: args.email,
+          sourceRef: args.sourceRef,
+          environment,
+          updatedAt: now,
+        })
+      )
+    }
+
+    identity = await ctx.db
+      .query('identityAccounts')
+      .withIndex('by_providerAccount', (q) =>
+        q.eq('provider', 'clerk').eq('providerAccountId', providerAccountId)
+      )
+      .first()
+    if (!identity) {
+      throw new Error('clerk_identity_link_failed')
+    }
+
+    const globalUser = await ctx.db.get(identity.globalUserId)
+    if (!globalUser) {
+      throw new Error('global_user_not_found')
+    }
+    if (args.email && !globalUser.primaryEmail) {
+      await ctx.db.patch(globalUser._id, {
+        primaryEmail: args.email,
+        updatedAt: now,
+      })
+    } else {
+      await ctx.db.patch(globalUser._id, { updatedAt: now })
+    }
+
+    return { globalUserId: globalUser.globalUserId }
+  },
+})
+
 export const getCheckoutIdentityByClerkAccount = query({
   args: {
     clerkId: v.string(),

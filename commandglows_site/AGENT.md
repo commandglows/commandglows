@@ -60,7 +60,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 - Deployment: Vercel server output
 - Auth: Clerk middleware and webhook sync
 - Data: Convex schema, queries, mutations, HTTP actions
-- Billing: signed suite handoff, Stripe Managed Payments checkout, central webhook, and Convex fulfillment
+- Billing: signed suite handoff, Stripe Managed Payments checkout, AppSumo pending-review intake, central webhooks, and Convex fulfillment
 - Email: Resend subscription and unsubscribe endpoints
 - Content: Astro content collections for docs, blog, products, services
 
@@ -68,7 +68,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 
 - Keep English routes unprefixed and French routes under `/fr`.
 - Preserve route translation integrity between `src/pages/[...lang]`, `src/i18n/*`, and routing helpers.
-- Treat `src/pages/api/checkout/start.ts`, `src/pages/api/commerce/checkout.ts`, `src/pages/api/commerce/webhooks/stripe.ts`, and `convex/bridge.ts` as one coupled purchase flow.
+- Treat `src/pages/api/checkout/start.ts`, `src/pages/api/commerce/checkout.ts`, `src/pages/api/commerce/webhooks/stripe.ts`, `src/pages/api/commerce/webhooks/appsumo.ts`, `src/pages/api/commerce/oauth/appsumo.ts`, and `convex/bridge.ts` as one coupled purchase flow.
 - Treat Clerk webhook sync and Convex user records as a coupled identity flow.
 - Do not document or introduce dead-end commerce CTAs.
 - If changing content schemas, update `src/content/config.ts` and audit affected content folders.
@@ -78,6 +78,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 - `src/middleware/i18n.ts`: route canonicalization and locale redirects
 - `src/pages/api/checkout/start.ts`: Clerk auth and product-bound identity handoff
 - `src/pages/api/commerce/checkout.ts`: Stripe-only offer and Price-ID validation
+- `src/pages/api/commerce/webhooks/appsumo.ts` and `src/pages/api/commerce/oauth/appsumo.ts`: AppSumo licenses are recorded as `pending_review` until offer/tier mappings are explicitly approved
 - `convex/http.ts`: webhook verification and entitlement updates
 - `src/pages/api/newsletter/*.ts`: external email audience side effects
 - `convex/schema.ts`: persistent data contract

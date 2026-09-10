@@ -1,0 +1,42 @@
+---
+import { getLatestPublishedUpdate, getUpdateUrl } from '@/lib/publicUpdates'
+import type { Language } from '@/types'
+
+interface Props {
+  lang: Language
+  forceDark?: boolean
+}
+
+const { lang, forceDark = false } = Astro.props
+const latestUpdate = getLatestPublishedUpdate()
+const updatesUrl = getUpdateUrl(lang)
+const dateLabel = latestUpdate
+  ? new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(`${latestUpdate.date}T12:00:00Z`))
+  : null
+const label = latestUpdate
+  ? lang === 'fr'
+    ? `Dernière mise à jour connue : ${latestUpdate.title.fr} - ${dateLabel}`
+    : `Latest known update: ${latestUpdate.title.en} - ${dateLabel}`
+  : lang === 'fr'
+    ? 'Site et catalogue maintenus en continu'
+    : 'Site and catalog are maintained continuously'
+
+const shellClass = forceDark
+  ? 'inline-flex max-w-full items-center gap-2 rounded-full border border-content-border-strong bg-content-bg-strong px-3 py-1.5 text-left transition-colors hover:border-magenta/60 hover:text-content-text-over-dark'
+  : 'inline-flex max-w-full items-center gap-2 rounded-full border border-content-border bg-content-bg-subtle px-3 py-1.5 text-left transition-colors hover:border-magenta/60 hover:text-content-text-primary dark:border-content-border-strong dark:bg-content-bg-strong dark:hover:text-content-text-over-dark'
+
+const textClass = forceDark
+  ? 'truncate text-xs text-content-text-muted'
+  : 'truncate text-xs text-content-text-tertiary dark:text-content-text-muted'
+---
+
+<a href={updatesUrl} class={shellClass} aria-label={label}>
+  <span
+    class="site-footer-status-accent pulse-glow h-2 w-2 shrink-0 rounded-full"
+  ></span>
+  <span class={textClass}>{label}</span>
+</a>

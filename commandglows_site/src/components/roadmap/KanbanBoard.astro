@@ -1,106 +1,118 @@
 ---
-import type { Feature } from "@/types/roadmap";
-import FeatureCard from "./FeatureCard.astro";
+import type { Feature } from '@/types/roadmap'
+import FeatureCard from './FeatureCard.astro'
 
 interface Props {
-  features: (Feature & { projectName?: string })[];
-  showProjectName?: boolean;
+  features: (Feature & { projectName?: string })[]
+  showProjectName?: boolean
   translations: {
-    planned: string;
-    inProgress: string;
-    completed: string;
-    considering: string;
-    rejected: string;
-    vote: string;
-    votes: string;
+    planned: string
+    inProgress: string
+    completed: string
+    considering: string
+    rejected: string
+    vote: string
+    votes: string
+    loginToVote?: string
+    accountNotReady?: string
+    alreadyVoted?: string
+    voteFailed?: string
+    viewUpdate?: string
     emptyMessages?: {
-      considering: string;
-      planned: string;
-      inProgress: string;
-      completed: string;
-      rejected: string;
-    };
-  };
+      considering: string
+      planned: string
+      inProgress: string
+      completed: string
+      rejected: string
+    }
+  }
 }
 
-const { features, showProjectName = false, translations } = Astro.props;
+const { features, showProjectName = false, translations } = Astro.props
 
 // Grouper les features par status
 const featuresByStatus = {
-  considering: features.filter((f) => f.status === "considering"),
-  planned: features.filter((f) => f.status === "planned"),
-  inProgress: features.filter((f) => f.status === "in-development"),
-  completed: features.filter((f) => f.status === "completed"),
-  rejected: features.filter((f) => f.status === "rejected"),
-};
+  considering: features.filter((f) => f.status === 'considering'),
+  planned: features.filter((f) => f.status === 'planned'),
+  inProgress: features.filter((f) => f.status === 'in-development'),
+  completed: features.filter((f) => f.status === 'completed'),
+  rejected: features.filter((f) => f.status === 'rejected'),
+}
 
 // Configuration des colonnes
 const columns = [
   {
-    id: "considering",
+    id: 'considering',
     title: translations.considering,
     features: featuresByStatus.considering,
-    color: "bg-magenta",
-    emptyMessage: translations.emptyMessages?.considering ?? "No ideas yet"
+    color: 'bg-magenta',
+    emptyMessage: translations.emptyMessages?.considering ?? 'No ideas yet',
   },
   {
-    id: "planned",
+    id: 'planned',
     title: translations.planned,
     features: featuresByStatus.planned,
-    color: "bg-cyan",
-    emptyMessage: translations.emptyMessages?.planned ?? "No planned features"
+    color: 'bg-cyan',
+    emptyMessage: translations.emptyMessages?.planned ?? 'No planned features',
   },
   {
-    id: "inProgress",
+    id: 'inProgress',
     title: translations.inProgress,
     features: featuresByStatus.inProgress,
-    color: "bg-yellow",
-    emptyMessage: translations.emptyMessages?.inProgress ?? "No features in development"
+    color: 'bg-yellow',
+    emptyMessage:
+      translations.emptyMessages?.inProgress ?? 'No features in development',
   },
   {
-    id: "completed",
+    id: 'completed',
     title: translations.completed,
     features: featuresByStatus.completed,
-    color: "bg-green",
-    emptyMessage: translations.emptyMessages?.completed ?? "No completed features"
+    color: 'bg-green',
+    emptyMessage:
+      translations.emptyMessages?.completed ?? 'No completed features',
   },
   {
-    id: "rejected",
+    id: 'rejected',
     title: translations.rejected,
     features: featuresByStatus.rejected,
-    color: "bg-red",
-    emptyMessage: translations.emptyMessages?.rejected ?? "No rejected features"
-  }
-];
+    color: 'bg-red',
+    emptyMessage:
+      translations.emptyMessages?.rejected ?? 'No rejected features',
+  },
+]
 ---
 
-<div class="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:gap-8 lg:overflow-visible lg:pb-0">
-  {columns.map(column => (
-    <div class="flex w-11/12 max-w-sm shrink-0 snap-start flex-col rounded-xl border border-content-border bg-content-bg-secondary p-4 dark:border-content-text-secondary/50 dark:bg-content-bg-inverse lg:w-auto lg:max-w-none lg:min-w-0 lg:shrink lg:p-6">
-      <div class="mb-4 flex items-center justify-between lg:mb-6">
-        <h2 class="text-lg font-semibold text-content-text-primary dark:text-content-text-primary">
-          {column.title}
-          <span class="ml-2 text-sm font-normal text-content-text-muted">
-            ({column.features.length})
-          </span>
-        </h2>
+<div
+  class="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:gap-8 lg:overflow-visible lg:pb-0"
+>
+  {
+    columns.map((column) => (
+      <div class="border-content-border bg-content-bg-secondary dark:border-content-text-secondary/50 dark:bg-content-bg-inverse flex w-11/12 max-w-sm shrink-0 snap-start flex-col rounded-xl border p-4 lg:w-auto lg:max-w-none lg:min-w-0 lg:shrink lg:p-6">
+        <div class="mb-4 flex items-center justify-between lg:mb-6">
+          <h2 class="text-content-text-primary dark:text-content-text-primary text-lg font-semibold">
+            {column.title}
+            <span class="text-content-text-muted ml-2 text-sm font-normal">
+              ({column.features.length})
+            </span>
+          </h2>
+        </div>
+
+        <div class="flex-1 space-y-3 lg:space-y-4">
+          {column.features.length > 0 ? (
+            column.features.map((feature) => (
+              <FeatureCard
+                feature={feature}
+                translations={translations}
+                showProjectName={showProjectName}
+              />
+            ))
+          ) : (
+            <div class="border-content-border bg-content-bg-primary text-content-text-muted dark:border-content-text-secondary/50 dark:bg-content-bg-secondary dark:text-content-text-tertiary flex h-24 items-center justify-center rounded-lg border-2 border-dashed p-4 text-center text-sm">
+              <p>{column.emptyMessage}</p>
+            </div>
+          )}
+        </div>
       </div>
-      
-      <div class="flex-1 space-y-3 lg:space-y-4">
-        {column.features.length > 0 ? (
-          column.features.map(feature => (
-            <FeatureCard
-              feature={feature}
-              translations={translations}
-              showProjectName={showProjectName}
-            />
-          ))
-        ) : (
-          <div class="flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-content-border bg-content-bg-primary p-4 text-center text-sm text-content-text-muted dark:border-content-text-secondary/50 dark:bg-content-bg-secondary dark:text-content-text-tertiary">
-            <p>{column.emptyMessage}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  ))}
-</div> 
+    ))
+  }
+</div>

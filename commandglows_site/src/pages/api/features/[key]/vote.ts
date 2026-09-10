@@ -13,6 +13,10 @@ function jsonResponse(payload: Record<string, unknown>, status: number) {
   });
 }
 
+function hasConvexError(error: unknown, code: string) {
+  return error instanceof Error && error.message.includes(code);
+}
+
 export const POST: APIRoute = async ({ locals, params }) => {
   const auth = locals.auth();
   if (!auth.userId) {
@@ -39,10 +43,10 @@ export const POST: APIRoute = async ({ locals, params }) => {
 
     return jsonResponse(result, result.status === 'ok' ? 200 : 409);
   } catch (error) {
-    if (error instanceof Error && error.message === 'account_not_ready') {
+    if (hasConvexError(error, 'account_not_ready')) {
       return jsonResponse({ status: 'blocked', error: 'account_not_ready' }, 409);
     }
-    if (error instanceof Error && error.message === 'feature_not_found') {
+    if (hasConvexError(error, 'feature_not_found')) {
       return jsonResponse({ status: 'missing', error: 'feature_not_found' }, 404);
     }
     return jsonResponse({ status: 'error', error: 'vote_failed' }, 500);

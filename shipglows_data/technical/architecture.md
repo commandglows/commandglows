@@ -83,6 +83,8 @@ Describe the stable system boundaries for CommandGlows so technical and docs cha
 - `commandglows_site/src/pages/api/checkout/start.ts`
 - `commandglows_site/src/pages/api/commerce/checkout.ts`
 - `commandglows_site/src/pages/api/commerce/webhooks/stripe.ts`
+- `commandglows_site/src/pages/api/commerce/webhooks/appsumo.ts`
+- `commandglows_site/src/pages/api/commerce/oauth/appsumo.ts`
 - `commandglows_site/src/pages/api/bridge/firebase.ts`
 - `commandglows_site/src/pages/api/newsletter/subscribe.ts`
 - `commandglows_site/src/pages/api/clerk/webhook.ts`
@@ -132,6 +134,8 @@ Astro API routes act as thin integration controllers for:
   - `POST /api/checkout/start` authenticates Clerk-backed public or Formation purchases, keeps the product-bound handoff server-side, and redirects directly to Stripe.
   - `POST /api/commerce/checkout` accepts Stripe only; every offer requires a valid signed product/environment handoff in the request body and an environment-backed Price ID before creating a Stripe Managed Payments Checkout Session. Browser-visible GET handoffs are rejected.
   - `POST /api/commerce/webhooks/stripe` verifies the exact raw body and `Stripe-Signature`, then maps paid Checkout, successful full refund, and dispute events to the generic Convex commerce processor.
+  - `POST /api/commerce/webhooks/appsumo` accepts AppSumo validation requests, verifies AppSumo HMAC headers when the licensing key is configured, and forwards real license events to the generic Convex commerce processor as `pending_review`.
+  - `GET /api/commerce/oauth/appsumo` is the AppSumo OAuth redirect target; validation GETs return `200 OK`, while code callbacks exchange the code for a license key and record the license as `pending_review`.
 
 Flutter route authorization is fail-closed: direct product routes require a
 remote authenticated session and an active CommandGlows entitlement from the

@@ -35,7 +35,8 @@
     "loginToVote": "Connectez-vous pour voter",
     "alreadyVoted": "Vous avez déjà voté pour cette fonctionnalité",
     "accountNotReady": "Votre compte est en cours de synchronisation. Réessayez dans un instant.",
-    "voteFailed": "Le vote a échoué. Réessayez."
+    "voteFailed": "Le vote a échoué. Réessayez.",
+    "viewUpdate": "Voir la mise à jour"
   },
   "nav": {
     "projectsLabel": "Navigation des projets",
@@ -68,4 +69,4 @@
       "descriptionMinLength": "La description doit contenir au moins 10 caractères"
     }
   }
-} 
+}

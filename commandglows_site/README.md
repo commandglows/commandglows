@@ -99,6 +99,8 @@ commandglows_site/
 - `/api/checkout/start` — Clerk-authenticated purchase start for public and Formation surfaces
 - `/api/commerce/checkout` — signed-handoff Stripe Managed Payments checkout
 - `/api/commerce/webhooks/stripe` — central suite purchase, refund, and dispute webhook
+- `/api/commerce/webhooks/appsumo` — AppSumo licensing webhook intake, currently forwarded to Convex as `pending_review`
+- `/api/commerce/oauth/appsumo` — AppSumo OAuth callback, currently records resolved licenses as `pending_review`
 - `/api/bridge/firebase` — Firebase ID token bridge to suite identity snapshot
 - `/api/bridge/sync` — internal entitlement mirror sync by `globalUserId` + shared secret
 - `/api/bridge/communityglows` — CommunityGlows server-to-server entitlement, account-retention, and activation-code bridge
@@ -189,6 +191,20 @@ Account deletion preparation removes plaintext CommunityGlows identity fields an
 - `SUITE_COMMERCE_CHECKOUT_SECRET` (dedicated HMAC secret shared only by the Firebase bridge and checkout route)
 
 All Checkout Sessions explicitly set `managed_payments.enabled=true`. Every offer requires a short-lived signed handoff bound to its suite product and runtime environment; the checkout route never trusts a raw client-supplied global user ID. Handoffs travel only in POST bodies, carry a random ten-minute `jti`, and are atomically claimed in Convex with a stable Stripe idempotency key so retries cannot create independent sessions. Normalized offer, product, plan, environment, source, and global-user metadata is copied to both the Checkout Session and Payment Intent, but the handoff itself is never copied or logged. Access is granted only by a verified Stripe webhook. Full successful refunds and disputes revoke paid access; partial or pending refunds go to `pending_review`. Lemon Squeezy and Polar have no active runtime route or fallback.
+
+### AppSumo Licensing
+
+- `APPSUMO_API_KEY` (server-only licensing API key, also used for webhook HMAC verification when configured)
+- `APPSUMO_CLIENT_ID`
+- `APPSUMO_CLIENT_SECRET`
+- `APPSUMO_REDIRECT_URI` (optional override; must exactly match the Partner Portal redirect URL when configured)
+- `APPSUMO_PRODUCT_ID` (optional placeholder product id while offers are unresolved)
+- `APPSUMO_PLAN` (optional placeholder plan; default keeps licenses in `pending_review`)
+- `APPSUMO_OFFER_ID` (optional placeholder offer id while tiers are unresolved)
+- `APPSUMO_ENVIRONMENT` (optional; `production`, `sandbox`, or `development`)
+- `APPSUMO_OAUTH_SUCCESS_PATH` (optional post-callback redirect path)
+
+`POST /api/commerce/webhooks/appsumo` accepts AppSumo webhook validation requests with `success: true`, verifies `X-Appsumo-Signature` and `X-Appsumo-Timestamp` when `APPSUMO_API_KEY` is present, and forwards real license events to `bridge:processCommerceEvent`. `GET /api/commerce/oauth/appsumo` returns `200 OK` without a code for AppSumo Partner Portal validation; with a code, it exchanges the OAuth code, fetches the license key, and forwards that license to the same Convex commerce processor. Until AppSumo commercial offers and tier mappings are explicitly fixed, these routes send `provider=appsumo` and `status=pending_review`; the current Convex mutation records the event for review and does not grant access.
 
 ### Resend
 

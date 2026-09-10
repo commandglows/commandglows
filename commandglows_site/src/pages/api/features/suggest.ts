@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { ConvexHttpClient } from 'convex/browser';
 import { getServerEnv } from '@/lib/serverEnv';
+import { projects } from '@/types/roadmap';
 
 export const prerender = false;
 
@@ -11,6 +12,10 @@ function jsonResponse(payload: Record<string, unknown>, status: number) {
     status,
     headers: JSON_HEADERS,
   });
+}
+
+function hasConvexError(error: unknown, code: string) {
+  return error instanceof Error && error.message.includes(code);
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -34,6 +39,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return jsonResponse({ status: 'invalid', error: 'missing_fields' }, 400);
   }
 
+  if (!projects.some((project) => project.id === projectId)) {
+    return jsonResponse({ status: 'invalid', error: 'unknown_project' }, 400);
+  }
+
   const env = getServerEnv();
   const convexUrl = env.PUBLIC_CONVEX_URL;
   if (!convexUrl || convexUrl === 'https://PLACEHOLDER.convex.cloud') {
@@ -51,10 +60,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return jsonResponse({ status: 'ok' }, 200);
   } catch (error) {
-    if (error instanceof Error && error.message === 'account_not_ready') {
+    if (hasConvexError(error, 'account_not_ready')) {
       return jsonResponse({ status: 'blocked', error: 'account_not_ready' }, 409);
     }
-    if (error instanceof Error && error.message === 'duplicate_suggestion') {
+    if (hasConvexError(error, 'duplicate_suggestion')) {
       return jsonResponse({ status: 'duplicate', error: 'duplicate_suggestion' }, 409);
     }
     return jsonResponse({ status: 'error', error: 'suggestion_failed' }, 500);

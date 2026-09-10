@@ -35,7 +35,8 @@
     "loginToVote": "Please login to vote",
     "alreadyVoted": "You already voted for this feature",
     "accountNotReady": "Your account is still syncing. Retry in a moment.",
-    "voteFailed": "Vote failed. Please retry."
+    "voteFailed": "Vote failed. Please retry.",
+    "viewUpdate": "View update"
   },
   "nav": {
     "projectsLabel": "Projects navigation",
@@ -68,4 +69,4 @@
       "descriptionMinLength": "Description must be at least 10 characters long"
     }
   }
-} 
+}

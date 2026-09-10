@@ -16,6 +16,7 @@ export const prerender = false
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 const COMMUNITY_BRIDGE_SECRET_HEADER = 'x-communityglows-suite-secret'
+const COMMUNITY_BRIDGE_AUTHORIZATION_SCHEME = 'Bearer '
 
 type CommunityGlowsSnapshotRequest = {
   operation: 'snapshot' | 'restart_trial'
@@ -291,8 +292,11 @@ export const POST: APIRoute = async ({ request }) => {
     )
   }
 
-  const incomingSecret =
-    request.headers.get(COMMUNITY_BRIDGE_SECRET_HEADER)
+  const authorization = request.headers.get('authorization')
+  const incomingSecret = request.headers.get(COMMUNITY_BRIDGE_SECRET_HEADER) ??
+    (authorization?.startsWith(COMMUNITY_BRIDGE_AUTHORIZATION_SCHEME)
+      ? authorization.slice(COMMUNITY_BRIDGE_AUTHORIZATION_SCHEME.length)
+      : null)
   if (!incomingSecret || incomingSecret !== endpointSecret) {
     return jsonResponse(
       { status: 'unauthorized', error: 'invalid_communityglows_bridge_secret' },

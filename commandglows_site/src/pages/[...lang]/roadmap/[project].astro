@@ -1,10 +1,10 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro'
-import KanbanBoard from '../../components/roadmap/KanbanBoard.astro'
-import ProjectNav from '../../components/roadmap/ProjectNav.astro'
-import AddFeatureModal from '../../components/roadmap/AddFeatureModal.astro'
-import { projects } from '../../types/roadmap'
-import type { Feature } from '../../types/roadmap'
+import KanbanBoard from '../../../components/roadmap/KanbanBoard.astro'
+import ProjectNav from '../../../components/roadmap/ProjectNav.astro'
+import AddFeatureModal from '../../../components/roadmap/AddFeatureModal.astro'
+import { projects } from '../../../types/roadmap'
+import type { Feature } from '../../../types/roadmap'
 import { ROADMAP_DEFAULT_FEATURES } from '@/lib/roadmapDefaults'
 import { getLangFromUrl, useTranslations } from '@/utils/i18n'
 import { ConvexHttpClient } from 'convex/browser'
@@ -14,13 +14,12 @@ export const prerender = false
 
 const lang = getLangFromUrl(Astro.url)
 const t = await useTranslations(lang, 'roadmap')
-
-const segments = Astro.url.pathname.split('/')
-const projectId =
-  segments[segments.length - 1] === 'roadmap'
-    ? null
-    : segments[segments.length - 1]
+const projectId = Astro.params.project ?? null
 const project = projectId ? projects.find((p) => p.id === projectId) : null
+
+if (!project) {
+  return Astro.redirect(lang === 'fr' ? '/fr/roadmap' : '/roadmap', 302)
+}
 
 const defaultTranslations = {
   planned: 'Planned',
@@ -59,47 +58,39 @@ const convexUrl = env.PUBLIC_CONVEX_URL
 
 async function loadRoadmapFeatures(): Promise<Feature[]> {
   if (!convexUrl || convexUrl === 'https://PLACEHOLDER.convex.cloud') {
-    return projectId
-      ? ROADMAP_DEFAULT_FEATURES.filter(
-          (feature) => feature.projectId === projectId
-        )
-      : ROADMAP_DEFAULT_FEATURES
+    return ROADMAP_DEFAULT_FEATURES.filter(
+      (feature) => feature.projectId === projectId
+    )
   }
 
   try {
     const convex = new ConvexHttpClient(convexUrl)
-    const queryArgs = projectId ? { projectId } : {}
     const data = (await convex.query(
       'features:list' as never,
-      queryArgs as never
+      {
+        projectId,
+      } as never
     )) as Feature[]
 
     if (data.length > 0) {
       return data
     }
   } catch {
-    // Fallback to the legacy catalog when Convex is unavailable.
+    // Fallback to the public seeded roadmap when Convex is unavailable.
   }
 
-  return projectId
-    ? ROADMAP_DEFAULT_FEATURES.filter(
-        (feature) => feature.projectId === projectId
-      )
-    : ROADMAP_DEFAULT_FEATURES
+  return ROADMAP_DEFAULT_FEATURES.filter(
+    (feature) => feature.projectId === projectId
+  )
 }
 
 const features = await loadRoadmapFeatures()
-const featuresWithProjectNames =
-  features.map((feature) => ({
-    ...feature,
-    projectName:
-      projects.find((p) => p.id === feature.projectId)?.name ??
-      feature.projectId,
-  })) ?? []
+const featuresWithProjectNames = features.map((feature) => ({
+  ...feature,
+  projectName: project.name,
+}))
 
-const pageTitle: string = project
-  ? `${project.name} - ${t?.title || 'Roadmap'}`
-  : t?.title || 'Roadmap'
+const pageTitle: string = `${project.name} - ${t?.title || 'Roadmap'}`
 ---
 
 <MainLayout title={pageTitle} lang={lang}>
@@ -108,7 +99,7 @@ const pageTitle: string = project
     <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
       <KanbanBoard
         features={featuresWithProjectNames}
-        showProjectName={!project}
+        showProjectName={false}
         translations={translations}
       />
     </div>

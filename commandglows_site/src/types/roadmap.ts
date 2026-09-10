@@ -1,26 +1,27 @@
 export type FeatureStatus =
-  | "in-development"
-  | "planned"
-  | "considering"
-  | "completed"
-  | "rejected";
+  | 'in-development'
+  | 'planned'
+  | 'considering'
+  | 'completed'
+  | 'rejected'
 
 export type Feature = {
-  id: string;
-  key: string;
-  title: string;
-  description: string;
-  status: FeatureStatus;
-  votes: number;
-  projectId: string;
-  projectName?: string;
-};
+  id: string
+  key: string
+  title: string
+  description: string
+  status: FeatureStatus
+  votes: number
+  projectId: string
+  projectName?: string
+  updateSlug?: string
+}
 
 export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  features: Feature[];
+  id: string
+  name: string
+  description: string
+  features: Feature[]
 }
 
 export const projects: Project[] = [
@@ -28,18 +29,18 @@ export const projects: Project[] = [
     id: 'replayglowz',
     name: 'ReplayGlowz',
     description: 'YouTube automation tool',
-    features: []
+    features: [],
   },
   {
     id: 'mediaflowz',
     name: 'Mediaflowz',
     description: 'Social media automation',
-    features: []
+    features: [],
   },
   {
     id: 'commandglows',
     name: 'CommandGlows',
     description: 'Windows automation',
-    features: []
-  }
-]; 
+    features: [],
+  },
+]

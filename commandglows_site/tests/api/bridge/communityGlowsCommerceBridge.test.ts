@@ -114,7 +114,7 @@ describe('communityglows suite bridge', () => {
     expect(mockMutation).not.toHaveBeenCalled()
   })
 
-  test('accepts the CommunityGlows secret header for snapshot requests', async () => {
+  test('accepts the standard authorization header for snapshot requests', async () => {
     const { POST } = await import('@/pages/api/bridge/communityglows')
 
     process.env.COMMUNITYGLOWS_SUITE_BRIDGE_SECRET = 'community-secret'
@@ -137,7 +137,7 @@ describe('communityglows suite bridge', () => {
     const request = new Request('https://communityglows.com/api/bridge/communityglows', {
       method: 'POST',
       headers: {
-        'x-communityglows-suite-secret': 'community-secret',
+        Authorization: 'Bearer community-secret',
       },
       body: JSON.stringify({
         operation: 'snapshot',
