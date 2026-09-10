@@ -46,6 +46,26 @@ next_step: "Complete hosted Stripe/Convex lifecycle proof, retention/telemetry, 
 
 # Payment Activation And Entitlements
 
+## AppSumo protocol foundation (2026-09-10, local)
+
+`commandglows_site/src/lib/commerce/providers/appsumo.ts` verifies HMAC over
+timestamp plus exact body, rejects stale transport timestamps and validates
+base-deal event/key lineage fields. Test payloads normalize to non-granting state;
+add-ons are refused until their separate mapping is defined. The OAuth client
+exchanges a code once, fetches its license and returns no access/refresh token.
+Errors are redacted and automatic retry is prohibited for single-use codes.
+
+This module is not wired to a public endpoint or the entitlement ledger yet.
+The caller must consume authenticated single-use OAuth state before exchange.
+Durable lineage, ownership, tier mapping, webhook ACK persistence and API
+reconciliation remain required. No production activation is available from this
+foundation alone. Nine synthetic tests pass; no provider request was executed.
+
+Protocol references verified on 2026-09-10:
+- https://docs.licensing.appsumo.com/webhook/webhook__security.html
+- https://docs.licensing.appsumo.com/webhook/webhook__connect.html
+- https://docs.licensing.appsumo.com/licensing/licensing__connect.html
+
 ## Firebase trial expiration (2026-09-10, local)
 
 The server-owned mirror publishes `products.commandglows_app.trialExpiresAt`
