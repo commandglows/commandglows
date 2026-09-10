@@ -4,7 +4,7 @@ type Incident = {
   _id: string; receiptId?: string; kind?: string; providerEventId: string; productId: string; sourceRef?: string;
   status: string; reason?: string; attempts: number; ingressAttempts?: number; queueState: string;
   ownerId?: string; dueAt: number; version: number; overdue: boolean;
-  alerts: { id: string; status: string; error: string | null; attempts: number }[];
+  alerts: { id: string; status: string; error: string | null; attempts: number; emailState?: string | null }[];
 }
 type Candidate = { handoffId: string; productId: string; providerOrderId: string | null; sourceRef: string; checkoutState: string }
 type Action = { _id: string; action: string; reason: string; operatorId: string; createdAt: number }
@@ -14,6 +14,7 @@ const button = 'border-dashboard-border text-dashboard-text-primary hover:bg-das
 const input = 'border-dashboard-border bg-dashboard-bg-subtle text-dashboard-text-primary focus-visible:outline-navbar-ring min-h-11 w-full rounded-xl border p-3 focus-visible:outline-2 focus-visible:outline-offset-2'
 const date = (value: number) => new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).format(value)
 const label = (value: string) => ({ open: 'À traiter', escalated: 'Escaladé', resolved: 'Résolu', pending: 'À envoyer',
+  queued: 'À envoyer', sending: 'Envoi en cours', submitted: 'Transport accepté', unknown: 'Statut transport à vérifier',
   delivering: 'Envoi en cours', delivered: 'Transport accepté', failed: 'Échec de notification', pending_review: 'Vérification nécessaire',
   granted: 'Accès accordé', revoked: 'Accès retiré', suspended: 'Accès suspendu', awaiting_payment: 'Paiement en attente', ingress_failed: 'Événement à récupérer', checkout_unverified: 'Paiement non vérifié — consulter Stripe',
 }[value] ?? value)
@@ -121,7 +122,10 @@ export default function CommerceIncidentConsole() {
           <p className="text-dashboard-text-muted mt-2 break-all text-sm">{incident._id} · {incident.providerEventId}</p>
           <p className="text-dashboard-text-muted mt-2 text-sm">{label(incident.status)} · {incident.reason ?? 'Motif à vérifier'} · {incident.attempts} tentative(s)</p>
           <p className="text-dashboard-text-muted mt-2 text-sm">Responsable : {incident.ownerId ?? 'Permanence commerce — à affecter'} · Échéance : {date(incident.dueAt)}</p>
-          {incident.alerts?.map((alert) => <p key={alert.id} className="text-dashboard-text-muted mt-2 text-sm">Notification : {label(alert.status)} · {alert.attempts} essai(s){alert.error ? ` · ${alert.error}` : ''}</p>)}
+          {incident.alerts?.map((alert) => {
+            const transportState = alert.emailState && alert.emailState !== 'queued' ? alert.emailState : alert.status
+            return <p key={alert.id} className="text-dashboard-text-muted mt-2 text-sm">Notification : {label(transportState)} · {alert.attempts} essai(s){alert.error ? ` · ${alert.error}` : ''}</p>
+          })}
         </div><button className={button} disabled={busy} onClick={() => void select(incident)}>Ouvrir le dossier</button></div>
       </article>)}
     </div> : <div className="grid gap-3"><p className={panel}>Ces sessions anciennes n’ont pas de reçu de paiement. Un abandon est possible : vérifiez Stripe avant toute conclusion. Parcourez toutes les pages, y compris les pages vides.</p>
