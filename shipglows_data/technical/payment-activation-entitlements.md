@@ -55,11 +55,22 @@ add-ons are refused until their separate mapping is defined. The OAuth client
 exchanges a code once, fetches its license and returns no access/refresh token.
 Errors are redacted and automatic retry is prohibited for single-use codes.
 
-This module is not wired to a public endpoint or the entitlement ledger yet.
-The caller must consume authenticated single-use OAuth state before exchange.
-Durable lineage, ownership, tier mapping, webhook ACK persistence and API
-reconciliation remain required. No production activation is available from this
-foundation alone. Nine synthetic tests pass; no provider request was executed.
+`convex/appSumoFulfillment.ts` and `bridge:processAppSumoLicenseEvent` now add
+the first durable Convex fulfillment layer. A license is scoped by environment,
+recorded without raw webhook bodies or tokens, and can grant a normal
+`productEntitlements` row only when the server supplies a known global user and
+a supported internal `productId` / `offerId` / `plan` mapping. Test events and
+inactive purchases never grant. Active licenses can be revoked, reactivated and
+replaced by AppSumo upgrade/downgrade lineage without disturbing Stripe grants.
+Missing owner or missing tier-to-offer mapping remains `pending_review`.
+
+This is still not a public AppSumo launch path. The caller must consume
+authenticated single-use OAuth state before exchange, then forward only a
+server-owned owner/product mapping to Convex. Public webhook/OAuth routes,
+webhook ACK persistence, tier configuration, durable replay conflict handling
+around raw webhook hashes, API reconciliation and hosted provider proof remain
+required. No production activation is available from this local tranche alone.
+Fourteen synthetic AppSumo tests pass; no provider request was executed.
 
 Protocol references verified on 2026-09-10:
 - https://docs.licensing.appsumo.com/webhook/webhook__security.html

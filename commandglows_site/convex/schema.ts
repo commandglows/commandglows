@@ -195,6 +195,28 @@ export default defineSchema({
     createdAt: v.number(),
   }).index('by_receipt', ['receiptId']),
 
+  appSumoLicenses: defineTable({
+    licenseKey: v.string(),
+    environment: v.string(),
+    status: v.string(),
+    productId: v.optional(v.string()),
+    offerId: v.optional(v.string()),
+    plan: v.optional(v.string()),
+    tier: v.optional(v.number()),
+    globalUserId: v.optional(v.id('globalUsers')),
+    currentEntitlementId: v.optional(v.id('productEntitlements')),
+    previousLicenseKey: v.optional(v.string()),
+    lastEventId: v.string(),
+    lastEventType: v.string(),
+    lastEventTimestamp: v.number(),
+    test: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_licenseEnvironment', ['licenseKey', 'environment'])
+    .index('by_previousLicenseEnvironment', ['previousLicenseKey', 'environment'])
+    .index('by_globalUserId', ['globalUserId']),
+
   users: defineTable({
     clerkId: v.string(),
     email: v.string(),

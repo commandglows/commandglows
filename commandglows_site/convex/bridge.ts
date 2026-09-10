@@ -1,4 +1,5 @@
 import { commerceEnvironment, commerceEventFields, type CommerceEventEnvelope } from './commerceEventContract'
+import { receiveAppSumoLicenseEvent } from './appSumoFulfillment'
 import { receiveCommerceEvent, reviewCommerceEvent } from './commerceProcessor'
 import { internalMutation, mutation, query } from './_generated/server'
 import { v } from 'convex/values'
@@ -2948,6 +2949,39 @@ async function processVerifiedCommerceEvent(
 export const processCommerceEvent = mutation({
   args: commerceMutationArgs,
   handler: processVerifiedCommerceEvent,
+})
+
+export const processAppSumoLicenseEvent = mutation({
+  args: {
+    bridgeSecret: v.string(),
+    licenseKey: v.string(),
+    previousLicenseKey: v.optional(v.string()),
+    event: v.union(v.literal('purchase'), v.literal('activate'), v.literal('upgrade'),
+      v.literal('downgrade'), v.literal('deactivate')),
+    eventTimestamp: v.number(),
+    tier: v.optional(v.number()),
+    test: v.boolean(),
+    desiredStatus: v.union(v.literal('inactive'), v.literal('active'), v.literal('deactivated')),
+    environment: v.string(),
+    providerEventId: v.string(),
+    productId: v.optional(v.string()),
+    offerId: v.optional(v.string()),
+    plan: v.optional(v.string()),
+    globalUserId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    requireBridgeSecret(args.bridgeSecret)
+    const { bridgeSecret: _secret, ...event } = args
+    const result = await receiveAppSumoLicenseEvent(ctx, event, { supportsOffer: isSupportedSuiteCommerceOffer })
+    const { globalUserDocId, ...response } = result
+    return {
+      ...response,
+      ...(globalUserDocId && event.productId
+        ? { snapshot: await buildSuiteCommerceAccessSnapshot(ctx, globalUserDocId,
+          event.productId, normalizeCommerceEnvironment(event.environment)) }
+        : {}),
+    }
+  },
 })
 
 // Retained entrypoint for callers; all authorization and transitions have one owner.
