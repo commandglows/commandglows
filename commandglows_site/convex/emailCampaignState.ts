@@ -19,6 +19,12 @@ export async function patchEmailMessage(ctx: any, id: any, patch: any) {
   if (message?.campaignId && patch.state && patch.state !== message.state) {
     const campaign = await ctx.db.get(message.campaignId)
     if (campaign) {
+      if (!campaign.counters) {
+        if (message.campaignRecipientId)
+          await ctx.db.patch(message.campaignRecipientId, {
+            state: bucket(patch.state),
+          })
+      } else {
       const counters = { ...campaign.counters }
       const previous = bucket(message.state),
         next = bucket(patch.state)
@@ -37,6 +43,7 @@ export async function patchEmailMessage(ctx: any, id: any, patch: any) {
         state,
         updatedAt: Date.now(),
       })
+      }
     }
   }
   await ctx.db.patch(id, patch)

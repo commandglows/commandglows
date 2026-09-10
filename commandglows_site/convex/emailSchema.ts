@@ -2,59 +2,66 @@ import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 const scope = { businessId: v.string(), email: v.string() }
 export const emailTables = {
-  emailCampaignAudience: defineTable({
-    campaignId: v.id('emailCampaigns'),
-    version: v.number(),
-    membershipId: v.id('emailMemberships'),
-    generation: v.number(),
-  })
-    .index('campaign', ['campaignId', 'version'])
-    .index('membership', ['campaignId', 'version', 'membershipId']),
-  emailCampaignRecovery: defineTable({
-    state: v.string(),
-    cursor: v.union(v.string(), v.null()),
-  }).index('state', ['state']),
   emailCampaigns: defineTable({
     businessId: v.string(),
-    title: v.string(),
-    audienceId: v.string(),
-    locale: v.string(),
-    subject: v.string(),
-    preheader: v.string(),
-    blocks: v.any(),
-    version: v.number(),
+    revision: v.number(),
     state: v.string(),
+    versionId: v.optional(v.id('emailCampaignVersions')),
+    approvedVersionId: v.optional(v.id('emailCampaignVersions')),
+    approvedRoute: v.optional(v.string()),
+    resumeState: v.optional(v.string()),
+    blockReason: v.optional(v.string()),
+    operationId: v.optional(v.id('emailCampaignRequests')),
+    snapshotCursor: v.optional(v.string()),
+    snapshotComplete: v.boolean(),
+    scanned: v.number(),
+    eligible: v.number(),
+    excluded: v.number(),
+    fanoutCursor: v.optional(v.string()),
+    fanoutQueued: v.number(),
+    fanoutExcluded: v.number(),
+    nextAt: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    createdBy: v.string(),
-    updatedBy: v.string(),
-    scheduledAt: v.optional(v.number()),
-    reviewId: v.optional(v.string()),
-    reviewCutoff: v.optional(v.number()),
-    reviewCursor: v.optional(v.string()),
-    reviewCount: v.optional(v.number()),
-    reviewComplete: v.optional(v.boolean()),
-    rendered: v.optional(v.any()),
-    expansionCursor: v.optional(v.string()),
-    expansionComplete: v.boolean(),
-    counters: v.any(),
   })
     .index('business', ['businessId'])
-    .index('state', ['businessId', 'state'])
-    .index('pending', ['expansionComplete', 'state', 'scheduledAt']),
-  emailCampaignRecipients: defineTable({
-    campaignId: v.id('emailCampaigns'),
-    membershipId: v.id('emailMemberships'),
-    messageId: v.id('emailMessages'),
-  }).index('recipient', ['campaignId', 'membershipId']),
-  emailCampaignCommands: defineTable({
+    .index('due', ['businessId', 'state', 'nextAt']),
+  emailCampaignVersions: defineTable({
     businessId: v.string(),
-    actorId: v.string(),
+    campaignId: v.id('emailCampaigns'),
+    number: v.number(),
+    audienceId: v.string(),
+    purpose: v.string(),
+    locale: v.string(),
+    subject: v.string(),
+    paragraphs: v.array(v.string()),
+    scheduledAt: v.number(),
+    timezone: v.string(),
+    rendered: v.any(),
+    cutoff: v.number(),
+    route: v.string(),
+    createdAt: v.number(),
+  }).index('campaign', ['campaignId', 'number']),
+  emailCampaignRecipients: defineTable({
+    businessId: v.string(),
+    campaignId: v.id('emailCampaigns'),
+    versionId: v.id('emailCampaignVersions'),
+    membershipId: v.id('emailMemberships'),
+    generation: v.number(),
+    state: v.string(),
+    messageId: v.optional(v.id('emailMessages')),
+    reason: v.optional(v.string()),
+  })
+    .index('member', ['versionId', 'membershipId'])
+    .index('version', ['versionId']),
+  emailCampaignRequests: defineTable({
+    businessId: v.string(),
+    clientId: v.string(),
     key: v.string(),
     fingerprint: v.string(),
     result: v.any(),
     at: v.number(),
-  }).index('request', ['businessId', 'actorId', 'key']),
+  }).index('scope', ['businessId', 'clientId', 'key']),
   emailAddresses: defineTable({
     email: v.string(),
     globalUserId: v.optional(v.id('globalUsers')),
@@ -85,8 +92,8 @@ export const emailTables = {
     updatedAt: v.number(),
   })
     .index('scope', ['businessId', 'email', 'audienceId'])
-    .index('audience', ['businessId', 'audienceId', 'state'])
-    .index('email', ['email']),
+    .index('email', ['email'])
+    .index('audience', ['businessId', 'audienceId']),
   emailSuppressions: defineTable({
     ...scope,
     email: v.optional(v.string()),
@@ -124,22 +131,23 @@ export const emailTables = {
     .index('digest', ['digest'])
     .index('scope', ['businessId', 'email']),
   emailMessages: defineTable({
-    campaignId: v.optional(v.id('emailCampaigns')),
-    campaignMembershipGeneration: v.optional(v.number()),
     ...scope,
     audienceId: v.optional(v.string()),
     purpose: v.optional(v.string()),
     kind: v.string(),
+    campaignId: v.optional(v.id('emailCampaigns')),
+    campaignVersionId: v.optional(v.id('emailCampaignVersions')),
+    campaignRecipientId: v.optional(v.id('emailCampaignRecipients')),
     rendered: v.any(),
     state: v.string(),
     createdAt: v.number(),
     nextAt: v.number(),
     leaseUntil: v.optional(v.number()),
     providerMessageId: v.optional(v.string()),
+    route: v.optional(v.string()),
   })
     .index('queue', ['businessId', 'state', 'nextAt'])
     .index('queue_kind', ['businessId', 'state', 'kind', 'nextAt'])
-    .index('campaign', ['campaignId', 'state'])
     .index('provider', ['providerMessageId'])
     .index('contact', ['businessId', 'email']),
   emailAttempts: defineTable({
@@ -148,6 +156,8 @@ export const emailTables = {
     state: v.string(),
     at: v.number(),
     errorCode: v.optional(v.string()),
+    route: v.optional(v.string()),
+    dispatchReservedAt: v.optional(v.number()),
   }).index('message', ['messageId']),
   emailEvents: defineTable({
     businessId: v.string(),
@@ -157,7 +167,15 @@ export const emailTables = {
     providerMessageId: v.optional(v.string()),
     occurredAt: v.optional(v.number()),
     at: v.number(),
-  }).index('scope', ['businessId', 'eventId']),
+  })
+    .index('scope', ['businessId', 'eventId'])
+    .index('message', ['businessId', 'messageId']),
+  emailTestQuotas: defineTable({
+    businessId: v.string(),
+    profileId: v.string(),
+    maxAttempts: v.number(),
+    attempts: v.number(),
+  }).index('scope', ['businessId', 'profileId']),
   emailRateLimits: defineTable({
     businessId: v.string(),
     key: v.string(),

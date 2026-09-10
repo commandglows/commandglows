@@ -42,6 +42,8 @@ export type AppSumoEvent = {
   desiredStatus: 'inactive' | 'active' | 'deactivated'
 }
 
+type AppSumoEventName = AppSumoEvent['event']
+
 export type AppSumoOAuthParseResult =
   | {
       ok: true
@@ -69,7 +71,15 @@ type StrictWebhookInput = {
   toleranceMs?: number
 }
 
-const events = new Set(['purchase', 'activate', 'upgrade', 'downgrade', 'deactivate'])
+const events = new Set<AppSumoEventName>([
+  'purchase',
+  'activate',
+  'upgrade',
+  'downgrade',
+  'deactivate',
+])
+const isAppSumoEventName = (value: unknown): value is AppSumoEventName =>
+  typeof value === 'string' && events.has(value as AppSumoEventName)
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
 
 function nonEmpty(value: unknown): string | undefined {
@@ -219,7 +229,7 @@ function parseStrictAppSumoWebhook(input: StrictWebhookInput): AppSumoEvent {
   }
   if (!value || typeof value !== 'object' || Array.isArray(value) ||
     typeof value.license_key !== 'string' || !uuid.test(value.license_key) ||
-    typeof value.event !== 'string' || !events.has(value.event) ||
+    !isAppSumoEventName(value.event) ||
     !Number.isSafeInteger(value.event_timestamp) || Number(value.event_timestamp) <= 0 ||
     (value.test !== undefined && typeof value.test !== 'boolean') ||
     (value.tier !== undefined && (!Number.isSafeInteger(value.tier) || Number(value.tier) < 1))) {

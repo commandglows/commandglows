@@ -135,10 +135,14 @@ export function parseEmailConfig(raw: string | undefined): EmailConfig {
       new Set(c.businesses.map((b: any) => b.id)).size !== c.businesses.length
     )
       fail('configuration_unavailable')
-    const streams = c.businesses.flatMap((b: any) => [
-      `${b.serverId ?? 'unconfigured'}:${b.transactionalStream}`,
-      `${b.serverId ?? 'unconfigured'}:${b.broadcastStream}`,
-    ])
+    const streams = c.businesses.flatMap((b: any) =>
+      b.serverId === undefined
+        ? []
+        : [
+            `${b.serverId}:${b.transactionalStream}`,
+            `${b.serverId}:${b.broadcastStream}`,
+          ]
+    )
     if (new Set(streams).size !== streams.length)
       fail('configuration_unavailable')
     if (
