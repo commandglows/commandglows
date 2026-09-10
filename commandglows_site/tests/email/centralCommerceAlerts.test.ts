@@ -135,7 +135,6 @@ test('concurrent enqueue links one immutable operator message; enqueue and submi
     outcome: 'submitted',
     providerMessageId: 'provider-test',
   })
-  await f.enqueue()
   expect(await f.alert()).toMatchObject({
     status: 'pending',
     emailState: 'submitted',

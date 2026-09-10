@@ -826,6 +826,11 @@ export const settle = mutation({
         ? { providerMessageId: str(a.providerMessageId) }
         : {}),
     })
+    const commerceAlert = await ctx.db
+      .query('commerceAlertOutbox')
+      .withIndex('by_email_message', (q) => q.eq('emailMessageId', m._id))
+      .unique()
+    if (commerceAlert) await syncCommerceEmail(ctx, commerceAlert)
     return { status: 'accepted' }
   },
 })
