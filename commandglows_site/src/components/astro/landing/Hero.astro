@@ -10,18 +10,6 @@ const lang = getLangFromUrl(Astro.url)
 const windowsMasteryUrl = lang === 'fr' ? '/fr/maitrise-windows' : '/windows-mastery'
 const testimonialsUrl = getLocalizedPath(lang, 'recommendations')
 
-const stats = lang === 'fr'
-  ? [
-      { value: "8", label: "modules" },
-      { value: "2", label: "langues" },
-      { value: "3", label: "piliers de parcours" },
-    ]
-  : [
-      { value: "8", label: "modules" },
-      { value: "2", label: "languages" },
-      { value: "3", label: "core tracks" },
-    ]
-
 const heroText = lang === 'fr'
   ? {
       badge: "Formation Windows & outils de workflow",
@@ -124,15 +112,6 @@ const heroText = lang === 'fr'
       <LogoMarquee embedded />
     </div>
 
-    <!-- Stats -->
-    <div class="landing-hero-fade landing-hero-fade--stats landing-hero-stats mx-auto grid max-w-2xl grid-cols-2 sm:grid-cols-4">
-      {stats.map((stat) => (
-        <div class="landing-hero-stat relative text-center">
-          <div class="text-2xl font-bold text-content-text-primary dark:text-content-text-primary sm:text-3xl">{stat.value}</div>
-          <div class="landing-hero-stat-label text-xs text-content-text-muted dark:text-content-text-tertiary sm:text-sm">{stat.label}</div>
-        </div>
-      ))}
-    </div>
   </div>
 </section>
 
@@ -183,27 +162,16 @@ const heroText = lang === 'fr'
     animation-delay: var(--landing-hero-proof-delay);
   }
 
-  .landing-hero-fade--stats {
-    animation-delay: var(--landing-hero-stats-delay);
-  }
-
   .landing-hero-avatar {
     opacity: 0;
     transform: scale(0.5) translateX(-20px);
     animation: avatar-pop var(--landing-hero-avatar-duration) var(--landing-hero-ease) forwards;
   }
 
-  .landing-hero-stat {
-    opacity: 0;
-    transform: scale(0.8);
-    animation: hero-fade-up var(--landing-hero-stat-duration) var(--landing-hero-ease) forwards;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .landing-hero-text-line,
     .landing-hero-fade,
-    .landing-hero-avatar,
-    .landing-hero-stat {
+    .landing-hero-avatar {
       animation: none;
       opacity: 1;
       transform: none;

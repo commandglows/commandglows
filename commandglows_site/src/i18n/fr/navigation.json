@@ -13,7 +13,8 @@
       "links": [
         { "name": "Formations", "url": "/fr/formations/" },
         { "name": "Apps & Plugins", "url": "/fr/produits" },
-        { "name": "Roadmap", "url": "/fr/roadmap" }
+        { "name": "Roadmap", "url": "/fr/roadmap" },
+        { "name": "Nouveautés", "url": "/fr/nouveautes" }
       ]
     },
     {
@@ -36,11 +37,17 @@
     {
       "section": "Légal",
       "links": [
-        { "name": "Politique de confidentialité", "url": "/fr/confidentialite" },
+        {
+          "name": "Politique de confidentialité",
+          "url": "/fr/confidentialite"
+        },
         { "name": "CGU", "url": "/fr/cgu" },
         { "name": "Mentions légales", "url": "/fr/mentions-legales" },
         { "name": "Droits d'auteur", "url": "/fr/droits" },
-        { "name": "Clause de non-responsabilité", "url": "/fr/non-responsabilite" },
+        {
+          "name": "Clause de non-responsabilité",
+          "url": "/fr/non-responsabilite"
+        },
         { "name": "CGV", "url": "/fr/cgv" }
       ]
     }

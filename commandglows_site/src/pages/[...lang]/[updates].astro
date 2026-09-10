@@ -1,0 +1,131 @@
+---
+export const prerender = true
+
+import MainLayout from '@/layouts/MainLayout.astro'
+import { getPublishedUpdates } from '@/lib/publicUpdates'
+import { projects } from '@/types/roadmap'
+import type { Language } from '@/types'
+
+export function getStaticPaths() {
+  return [
+    {
+      params: { lang: undefined, updates: 'updates' },
+      props: { lang: 'en' as Language },
+    },
+    {
+      params: { lang: 'fr', updates: 'nouveautes' },
+      props: { lang: 'fr' as Language },
+    },
+  ]
+}
+
+interface Props {
+  lang: Language
+}
+
+const { lang } = Astro.props
+const updates = getPublishedUpdates()
+const copy = {
+  en: {
+    title: 'Updates',
+    eyebrow: 'Public changelog',
+    intro:
+      'The latest visible changes across CommandGlows products, training, and feedback surfaces.',
+    latest: 'Latest known state',
+    roadmap: 'Open roadmap',
+    statuses: {
+      shipped: 'Shipped',
+      improved: 'Improved',
+      'in-progress': 'In progress',
+    },
+  },
+  fr: {
+    title: 'Nouveautés',
+    eyebrow: 'Changelog public',
+    intro:
+      'Les derniers changements visibles sur les produits CommandGlows, les formations et les surfaces de feedback.',
+    latest: 'Dernier état connu',
+    roadmap: 'Voir la roadmap',
+    statuses: {
+      shipped: 'Publié',
+      improved: 'Amélioré',
+      'in-progress': 'En cours',
+    },
+  },
+}[lang]
+
+function productName(productId: string) {
+  return projects.find((project) => project.id === productId)?.name ?? productId
+}
+---
+
+<MainLayout title={copy.title} lang={lang}>
+  <main
+    class="bg-content-bg-elevated dark:bg-content-bg-elevated min-h-screen py-20"
+  >
+    <section class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <p class="text-magenta text-sm font-semibold uppercase">{copy.eyebrow}</p>
+      <div
+        class="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+      >
+        <div>
+          <h1
+            class="text-content-text-primary dark:text-content-text-over-dark text-4xl font-bold"
+          >
+            {copy.title}
+          </h1>
+          <p
+            class="text-content-text-muted dark:text-content-text-tertiary mt-4 max-w-2xl text-base"
+          >
+            {copy.intro}
+          </p>
+        </div>
+        <a
+          href={lang === 'fr' ? '/fr/roadmap' : '/roadmap'}
+          class="border-content-border text-content-text-primary hover:border-magenta hover:text-magenta dark:border-content-border-strong dark:text-content-text-over-dark inline-flex min-h-11 items-center justify-center rounded-lg border px-4 text-sm font-semibold transition-colors"
+        >
+          {copy.roadmap}
+        </a>
+      </div>
+
+      <ol class="mt-12 space-y-4">
+        {
+          updates.map((update, index) => (
+            <li
+              id={update.slug}
+              class="border-content-border bg-content-bg-primary dark:border-content-border-strong dark:bg-content-bg-inverse scroll-mt-24 rounded-lg border p-6"
+            >
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p class="text-content-text-tertiary dark:text-content-text-muted text-xs font-semibold uppercase">
+                    {index === 0 ? `${copy.latest} · ` : ''}
+                    {productName(update.productId)}
+                  </p>
+                  <h2 class="text-content-text-primary dark:text-content-text-over-dark mt-2 text-xl font-semibold">
+                    {update.title[lang]}
+                  </h2>
+                </div>
+                <time
+                  class="text-content-text-muted text-sm"
+                  datetime={update.date}
+                >
+                  {new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-US', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  }).format(new Date(`${update.date}T12:00:00Z`))}
+                </time>
+              </div>
+              <p class="text-green mt-3 text-xs font-semibold uppercase">
+                {copy.statuses[update.status]}
+              </p>
+              <p class="text-content-text-muted dark:text-content-text-tertiary mt-4 text-sm leading-6">
+                {update.summary[lang]}
+              </p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </main>
+</MainLayout>

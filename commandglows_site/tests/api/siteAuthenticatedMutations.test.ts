@@ -7,7 +7,7 @@ import { POST as licenses } from '@/pages/api/admin/licenses'
 import { POST as checkout } from '@/pages/api/checkout/start'
 vi.mock('@/pages/api/commerce/checkout', () => ({ createCommerceCheckout: vi.fn() }))
 const origin = 'https://app.example'
-const payload = { projectId: 'project', title: 'Useful feature', description: 'A useful improvement', actorGlobalUserId: 'attacker', bridgeSecret: 'attacker' }
+const payload = { projectId: 'commandglows', title: 'Useful feature', description: 'A useful improvement', actorGlobalUserId: 'attacker', bridgeSecret: 'attacker' }
 function context(incomingOrigin: string | null = origin) {
   return { request: new Request(`${origin}/api/features/suggest`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(incomingOrigin ? { Origin: incomingOrigin } : {}) }, body: JSON.stringify(payload) }), locals: { siteAuth: () => ({ userId: 'global-verified' }) }, params: { key: 'feature' } }
 }

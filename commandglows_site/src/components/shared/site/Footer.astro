@@ -2,6 +2,7 @@
 import { getLangFromUrl, useTranslations } from '@/utils/i18n'
 import { SITE } from '@/constants'
 import TextLogo from '@components/ui/TextLogo.astro'
+import LatestUpdateBadge from './LatestUpdateBadge.astro'
 
 interface FooterLink {
   name: string
@@ -69,10 +70,6 @@ const footerLinkClass = forceDark
   ? 'inline-flex min-h-11 min-w-11 items-center text-sm text-content-text-tertiary transition-colors hover:text-content-text-over-dark'
   : 'inline-flex min-h-11 min-w-11 items-center text-sm text-content-text-tertiary transition-colors hover:text-content-text-primary dark:text-content-text-muted dark:hover:text-content-text-over-dark'
 
-const statusShellClass = forceDark
-  ? 'inline-flex items-center gap-2 rounded-full border border-content-border-strong bg-content-bg-strong px-3 py-1.5'
-  : 'inline-flex items-center gap-2 rounded-full border border-content-border bg-content-bg-subtle px-3 py-1.5 dark:border-content-border-strong dark:bg-content-bg-strong'
-
 const dividerClass = forceDark
   ? 'reveal delay-3 mt-16 flex flex-col items-center justify-between gap-4 border-t border-content-border-strong pt-8 sm:flex-row'
   : 'reveal delay-3 mt-16 flex flex-col items-center justify-between gap-4 border-t border-content-border pt-8 dark:border-content-border-strong sm:flex-row'
@@ -101,18 +98,7 @@ const dividerClass = forceDark
             {newsletterDesc}
           </p>
         </div>
-        <div class={statusShellClass}>
-          <span
-            class="site-footer-status-accent pulse-glow h-2 w-2 rounded-full"
-          ></span>
-          <span
-            class={forceDark
-              ? 'text-xs text-content-text-muted'
-              : 'text-xs text-content-text-tertiary dark:text-content-text-muted'}
-          >
-            Site and catalog are maintained continuously
-          </span>
-        </div>
+        <LatestUpdateBadge lang={lang} forceDark={forceDark} />
       </div>
 
       {

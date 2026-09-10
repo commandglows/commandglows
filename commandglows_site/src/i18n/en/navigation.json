@@ -13,7 +13,8 @@
       "links": [
         { "name": "Courses", "url": "/en/formations/" },
         { "name": "Apps & Plugins", "url": "/products" },
-        { "name": "Roadmap", "url": "/roadmap" }
+        { "name": "Roadmap", "url": "/roadmap" },
+        { "name": "Updates", "url": "/updates" }
       ]
     },
     {

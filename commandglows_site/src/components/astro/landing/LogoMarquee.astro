@@ -2,6 +2,7 @@
 /* LogoMarquee — Astro wrapper with TestimonialCarousel React island */
 import { TestimonialCarousel } from '@components/react/landing/TestimonialCarousel'
 import { getLangFromUrl } from '@/utils/i18n'
+import { getLocalizedPath } from '@/utils/routing'
 
 interface Props {
   embedded?: boolean
@@ -10,15 +11,16 @@ interface Props {
 const { embedded = false } = Astro.props
 const lang = getLangFromUrl(Astro.url)
 
+const productsUrl = getLocalizedPath(lang, 'products')
 const tools = [
-  { name: "ObsiFlowz" },
-  { name: "ReplayGlowz" },
-  { name: "RSSFlowz" },
-  { name: "PluginFlowz" },
-  { name: "Windows Mastery" },
-  { name: "Obsidian" },
-  { name: "Chrome" },
-  { name: "CMDglows" },
+  { name: "ObsiFlowz", href: productsUrl + "/flowzsuite-obsidian" },
+  { name: "ReplayGlowz", href: productsUrl + "/replayglowz-extension" },
+  { name: "RSSFlowz", href: productsUrl + "/rssflowz-obsidian" },
+  { name: "PluginFlowz", href: productsUrl + "/pluginflowz-obsidian" },
+  { name: "Windows Mastery", href: getLocalizedPath(lang, 'windowsMastery') },
+  { name: "Obsidian", href: "https://obsidian.md/" },
+  { name: "Chrome", href: "https://www.google.com/chrome/" },
+  { name: "CMDglows", href: productsUrl + "/commandglows" },
 ]
 
 ---
@@ -41,23 +43,41 @@ const tools = [
     <div class="landing-marquee-fade-right pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-32"></div>
 
     <div class="flex animate-marquee">
-      {[...tools, ...tools].map((tool) => (
-        <div
-          class="landing-logo-marquee-item mx-8 flex h-16 items-center justify-center grayscale opacity-50 transition-all duration-300 hover:grayscale-0 hover:opacity-100"
+      {[...tools, ...tools].map((tool, index) => (
+        <a
+          href={tool.href}
+          tabindex={index >= tools.length ? -1 : undefined}
+          aria-hidden={index >= tools.length ? "true" : undefined}
+          class="landing-logo-marquee-item mx-8 flex h-16 items-center justify-center grayscale opacity-50 transition-all duration-300 hover:grayscale-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring focus-visible:ring-ring rounded-lg"
         >
           <div class="landing-badge flex items-center text-content-text-secondary dark:text-content-text-tertiary">
             <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-content-bg-subtle dark:bg-content-bg-strong">
-              <span class="text-xs font-bold">{tool.name[0]}</span>
+              <span aria-hidden="true" class="text-xs font-bold">{tool.name[0]}</span>
             </div>
             <span class="font-medium">{tool.name}</span>
           </div>
-        </div>
+        </a>
       ))}
     </div>
   </div>
 </section>
 
 <style>
+  .landing-testimonials-marquee:focus-within .animate-marquee {
+    animation: none;
+    transform: none;
+  }
+
+  .landing-testimonials-marquee:focus-within .landing-marquee-fade-left,
+  .landing-testimonials-marquee:focus-within .landing-marquee-fade-right {
+    visibility: hidden;
+  }
+
+  .landing-testimonials-marquee:hover .animate-marquee,
+  .landing-testimonials-marquee:focus-within .animate-marquee {
+    animation-play-state: paused;
+  }
+
   .landing-testimonials--embedded {
     padding-top: var(--landing-testimonials-embedded-padding-top);
     padding-bottom: var(--landing-testimonials-embedded-padding-bottom);
