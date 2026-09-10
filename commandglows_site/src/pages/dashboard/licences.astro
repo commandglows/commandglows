@@ -1,6 +1,7 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro'
 import LicenseAdminConsole from '@/components/admin/LicenseAdminConsole'
+import CommerceIncidentConsole from '@/components/admin/CommerceIncidentConsole'
 
 const auth = Astro.locals.auth()
 if (!auth.userId) {
@@ -18,5 +19,9 @@ if (!auth.userId) {
       l’autorité des accès.
     </p>
   </header>
-  <LicenseAdminConsole client:load />
+  <div class="grid gap-8">
+    <CommerceIncidentConsole client:load />
+    <noscript>Le suivi des incidents nécessite JavaScript. La permanence commerce doit consulter Stripe et le journal opérateur ; aucun dossier n’est considéré résolu par cette page.</noscript>
+    <LicenseAdminConsole client:load />
+  </div>
 </DashboardLayout>

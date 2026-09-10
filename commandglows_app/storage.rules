@@ -17,7 +17,17 @@ service firebase.storage {
           ) &&
           firestore.get(
             /databases/(default)/documents/suiteAccess/$(userId),
-          ).data.products.commandglows_app.active == true;
+          ).data.products.commandglows_app.active == true &&
+          hasUnexpiredProduct(firestore.get(
+            /databases/(default)/documents/suiteAccess/$(userId)
+          ).data.products.commandglows_app);
+    }
+
+    function hasUnexpiredProduct(product) {
+      return product.status == 'active' ||
+          (product.status == 'trialing' &&
+            product.trialExpiresAt is number &&
+            product.trialExpiresAt > request.time.toMillis());
     }
 
     function hasAllowedImageMetadata() {

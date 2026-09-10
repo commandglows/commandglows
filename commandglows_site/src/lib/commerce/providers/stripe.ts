@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { createHash } from 'node:crypto'
 import { buildCommerceCheckoutHints, getCommerceOffer, getOfferProviderConfig } from '../offers'
 import type {
   CommerceCheckoutRequest,
@@ -20,6 +21,8 @@ function stripeClient(secretKey: string, apiVersion?: string) {
   return new Stripe(secretKey, {
     apiVersion: (nonEmpty(apiVersion) ?? DEFAULT_STRIPE_API_VERSION) as Stripe.LatestApiVersion,
     httpClient: Stripe.createFetchHttpClient(),
+    timeout: 8000,
+    maxNetworkRetries: 0,
   })
 }
 
@@ -94,8 +97,8 @@ export async function createStripeManagedPaymentsCheckout(
       checkoutUrl: session.url,
       providerOrderId: session.id,
     }
-  } catch (error) {
-    console.error('Stripe Managed Payments checkout failed:', error)
+  } catch {
+    console.error('stripe_checkout_creation_failed')
     return { ok: false, code: 'provider_error', message: 'Stripe checkout creation failed' }
   }
 }
@@ -110,36 +113,58 @@ function customerId(value: string | Stripe.Customer | Stripe.DeletedCustomer | n
   return typeof value === 'string' ? value : value?.id
 }
 
+// Compare the signed snapshot, not mutable resources retrieved while enriching it.
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    return `{${Object.keys(record).sort().filter((key) => record[key] !== undefined)
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
+export function stripeEventPayloadHash(event: Stripe.Event): string {
+  // pending_webhooks changes as deliveries are acknowledged; it is not evidence.
+  const snapshot = { id: event.id, type: event.type, livemode: event.livemode,
+    created: event.created, api_version: event.api_version, account: event.account, data: event.data }
+  return createHash('sha256').update(canonicalJson(snapshot)).digest('hex')
+}
+
 function normalized(
   event: Stripe.Event,
   eventType: CommerceNormalizedEvent['eventType'],
   providerOrderId: string,
   metadata: Record<string, string>,
-  details: { email?: string; customer?: string; invoice?: string } = {},
+  details: { email?: string; customer?: string; invoice?: string; paymentIntent?: string } = {},
   status: CommerceNormalizedEvent['status'] = 'applied'
 ): CommerceNormalizedEvent | null {
   const offerId = nonEmpty(metadata.offer_id)
   const productId = nonEmpty(metadata.product_id)
   const plan = nonEmpty(metadata.plan)
-  if (!offerId || !productId || !plan) return null
+  const missingMetadata = !offerId || !productId || !plan
 
   return {
     provider: 'stripe',
-    offerId,
-    productId,
-    plan,
-    eventType,
+    offerId: offerId ?? 'unknown',
+    productId: productId ?? 'unknown',
+    plan: plan ?? 'unknown',
+    eventType: missingMetadata ? 'pending_review' : eventType,
     environment: event.livemode ? 'production' : 'sandbox',
     providerEventId: event.id,
     providerOrderId,
     idempotencyKey: `stripe:${event.type}:${event.id}`,
-    status,
+    status: missingMetadata ? 'pending_review' : status,
+    providerPayloadHash: stripeEventPayloadHash(event),
+    providerCreatedAt: event.created ?? 0,
+    providerEventType: event.type,
     customerEmail: details.email,
     providerCustomerId: details.customer,
     globalUserId: nonEmpty(metadata.global_user_id),
-    sourceRef: nonEmpty(metadata.source_ref) ?? providerOrderId,
+    sourceRef: nonEmpty(metadata.source_ref),
     providerSourceRef: providerOrderId,
     providerInvoiceId: details.invoice,
+    providerPaymentIntentId: details.paymentIntent,
     metadata,
   }
 }
@@ -174,49 +199,73 @@ export async function parseStripeManagedPaymentsWebhook(
     return { ok: false, ignored: false, reason: 'invalid_signature', message: 'Invalid Stripe webhook signature', status: 400 }
   }
 
+  return normalizeVerifiedStripeEvent(event, stripe)
+}
+
+// Only call with a verified webhook or an Event retrieved by the server's Stripe SDK.
+export async function normalizeVerifiedStripeEvent(
+  event: Stripe.Event,
+  stripe: Stripe
+): Promise<CommerceWebhookParseResult> {
+
   let result: CommerceNormalizedEvent | null = null
   try {
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
       const session = event.data.object
-      if (session.payment_status === 'paid') {
-        result = normalized(event, 'paid', session.id, metadataRecord(session.metadata), {
+      result = normalized(event, session.payment_status === 'paid' ? 'paid' : 'checkout_pending', session.id, metadataRecord(session.metadata), {
           email: nonEmpty(session.customer_details?.email) ?? nonEmpty(session.customer_email),
           customer: customerId(session.customer),
           invoice: typeof session.invoice === 'string' ? session.invoice : session.invoice?.id,
+          paymentIntent: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
+      })
+      if (result && session.amount_total != null) result.chargeAmount = session.amount_total
+      if (result && session.currency) result.currency = session.currency
+    } else if (event.type === 'checkout.session.async_payment_failed' || event.type === 'checkout.session.expired') {
+      const session = event.data.object
+      result = normalized(event, event.type === 'checkout.session.expired' ? 'checkout_expired' : 'checkout_failed',
+        session.id, metadataRecord(session.metadata), {
+          customer: customerId(session.customer),
+          paymentIntent: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
         })
-      }
-    } else if (event.type === 'refund.created' || event.type === 'refund.updated') {
+    } else if (event.type === 'refund.created' || event.type === 'refund.updated' || event.type === 'refund.failed') {
       const refund = event.data.object
       const charge = await chargeFor(stripe, refund.charge)
-      if (charge && refund.status !== 'failed' && refund.status !== 'canceled') {
-        const isFullSuccessfulRefund =
-          refund.status === 'succeeded' && charge.amount_refunded >= charge.amount
+      if (charge) {
         result = normalized(
           event,
-          isFullSuccessfulRefund ? 'refunded' : 'pending_review',
+          'refund_updated',
           charge.id,
           metadataRecord(charge.metadata),
-          { customer: customerId(charge.customer) },
-          isFullSuccessfulRefund ? 'applied' : 'pending_review'
+          { customer: customerId(charge.customer), paymentIntent: typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id }
         )
+        if (result) Object.assign(result, {
+          providerRefundId: refund.id, refundStatus: refund.status ?? 'unknown', refundAmount: refund.amount,
+          chargeAmount: charge.amount, currency: refund.currency,
+        })
       }
-    } else if (event.type === 'charge.dispute.created') {
+    } else if (event.type === 'charge.dispute.created' || event.type === 'charge.dispute.updated' || event.type === 'charge.dispute.closed') {
       const dispute = event.data.object
       const charge = await chargeFor(stripe, dispute.charge)
       if (charge) {
-        result = normalized(event, 'revoked', charge.id, metadataRecord(charge.metadata), {
+        result = normalized(event, 'dispute_updated', charge.id, metadataRecord(charge.metadata), {
           customer: customerId(charge.customer),
+          paymentIntent: typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id,
         })
+        if (result) Object.assign(result, { providerDisputeId: dispute.id, disputeStatus: dispute.status })
       }
     } else {
       return { ok: false, ignored: true, reason: 'ignored_event', message: 'Stripe event is not part of the entitlement lifecycle', eventType: event.type, status: 200 }
     }
   } catch {
-    return { ok: false, ignored: false, reason: 'invalid_event', message: 'Stripe event dependency could not be resolved', eventType: event.type, status: 500 }
+    return { ok: false, ignored: false, reason: 'invalid_event', message: 'Stripe event dependency could not be resolved', eventType: event.type, status: 500,
+      verifiedEvent: { providerEventId: event.id, providerPayloadHash: stripeEventPayloadHash(event),
+        providerEventType: event.type, environment: event.livemode ? 'production' : 'sandbox' } }
   }
 
   if (!result) {
-    return { ok: false, ignored: false, reason: 'invalid_event', message: 'Stripe event is unpaid or missing commerce metadata', eventType: event.type, status: 422 }
+    return { ok: false, ignored: false, reason: 'invalid_event', message: 'Stripe event dependency is missing', eventType: event.type, status: 422,
+      verifiedEvent: { providerEventId: event.id, providerPayloadHash: stripeEventPayloadHash(event),
+        providerEventType: event.type, environment: event.livemode ? 'production' : 'sandbox' } }
   }
   return { ok: true, parsed: true, ignored: false, normalizedEvent: result }
 }

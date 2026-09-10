@@ -1,4 +1,4 @@
-import { cronJobs } from 'convex/server'
+import { anyApi, cronJobs } from 'convex/server'
 import { internal } from './_generated/api'
 import { makeFunctionReference } from 'convex/server'
 
@@ -10,4 +10,5 @@ crons.interval(
   makeFunctionReference<'mutation'>('emailCampaigns:recover') as any,
   {}
 )
+crons.interval('commerce alert recovery', { minutes: 5 }, anyApi.commerceAlerts.sweep)
 export default crons

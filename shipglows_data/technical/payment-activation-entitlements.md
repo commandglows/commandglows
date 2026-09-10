@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.6.0"
 project: "CommandGlows"
 created: "2026-06-18"
-updated: "2026-08-11"
+updated: "2026-09-06"
 status: draft
 source_skill: "sg-docs"
 scope: "payment-activation-entitlements"
@@ -22,10 +22,10 @@ linked_systems:
   - "shipglows_data/technical/platforms/stripe-managed-payments.md"
 depends_on:
   - artifact: "shipglows_data/technical/platforms/stripe-managed-payments.md"
-    artifact_version: "1.0.0"
+    artifact_version: "1.1.0"
     required_status: "draft"
-  - artifact: "/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
-    artifact_version: "1.0.0"
+  - artifact: "C:/Users/Diane/ShipGlows/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
+    artifact_version: "1.3.1"
     required_status: "ready"
 supersedes: []
 evidence:
@@ -46,10 +46,55 @@ next_step: "Complete hosted Stripe/Convex lifecycle proof, retention/telemetry, 
 
 # Payment Activation And Entitlements
 
+## AppSumo protocol foundation (2026-09-10, local)
+
+`commandglows_site/src/lib/commerce/providers/appsumo.ts` verifies HMAC over
+timestamp plus exact body, rejects stale transport timestamps and validates
+base-deal event/key lineage fields. Test payloads normalize to non-granting state;
+add-ons are refused until their separate mapping is defined. The OAuth client
+exchanges a code once, fetches its license and returns no access/refresh token.
+Errors are redacted and automatic retry is prohibited for single-use codes.
+
+`convex/appSumoFulfillment.ts` and `bridge:processAppSumoLicenseEvent` now add
+the first durable Convex fulfillment layer. A license is scoped by environment,
+recorded without raw webhook bodies or tokens, and can grant a normal
+`productEntitlements` row only when the server supplies a known global user and
+a supported internal `productId` / `offerId` / `plan` mapping. Test events and
+inactive purchases never grant. Active licenses can be revoked, reactivated and
+replaced by AppSumo upgrade/downgrade lineage without disturbing Stripe grants.
+Missing owner or missing tier-to-offer mapping remains `pending_review`.
+
+This is still not a public AppSumo launch path. The caller must consume
+authenticated single-use OAuth state before exchange, then forward only a
+server-owned owner/product mapping to Convex. Public webhook/OAuth routes,
+webhook ACK persistence, tier configuration, durable replay conflict handling
+around raw webhook hashes, API reconciliation and hosted provider proof remain
+required. No production activation is available from this local tranche alone.
+Fourteen synthetic AppSumo tests pass; no provider request was executed.
+
+Protocol references verified on 2026-09-10:
+- https://docs.licensing.appsumo.com/webhook/webhook__security.html
+- https://docs.licensing.appsumo.com/webhook/webhook__connect.html
+- https://docs.licensing.appsumo.com/licensing/licensing__connect.html
+
+## Firebase trial expiration (2026-09-10, local)
+
+The server-owned mirror publishes `products.commandglows_app.trialExpiresAt`
+in epoch milliseconds for trial access. Firestore and Storage rules compare it
+with `request.time`; an expired or missing trial deadline denies protected access
+without waiting for a client refresh. Active paid access takes precedence over a
+concurrent trial. Deploy the mirror writer before the rules and refresh existing
+trial mirrors: old trial mirrors without the deadline will be denied.
+
+The mirror builder has synthetic regression coverage. Firebase emulator and
+hosted rule execution remain required before rollout. This change enforces trial
+expiration only; bounded freshness and prompt paid-refund propagation are still
+open and must not be reported as implemented.
+
 ## Active Suite Decision (2026-08-11)
 
 This document derives from the sole active cross-product authority:
-`/home/claude/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md`.
+`C:/Users/Diane/ShipGlows/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md`.
 
 Every current and future suite product uses exactly three maximum 30-day trial
 cycles: the initial cycle plus two user-triggered restarts. Purchase is
@@ -81,9 +126,137 @@ proof remains incomplete:
 - Every current sellable offer has a named environment-backed Stripe Price-ID
   placeholder; real values and price amounts remain intentionally unconfigured.
 
-No users or paid orders exist to preserve, so the planned migration is a clean
-reset without grandfathering or provider/customer transfer. If real hosted
-records are discovered, implementation stops for a migration amendment.
+The earlier no-user assumption is historical and has not been revalidated.
+Existing identities, orders and ledger history must be preserved. No destructive
+migration or hosted data change is authorized by local implementation.
+
+## Central commerce foundation (2026-09-06, local)
+
+Baseline `9016d47` was revalidated with its 20 focused trial/checkout tests before
+implementation. Both `bridge:processCommerceEvent` and the retained
+`bridge:processCommunityGlowsCommerceEvent` now call `commerceProcessor.ts`.
+The compatibility entrypoint accepts CommunityGlows only. There is one writer,
+not a second product-specific entitlement authority.
+
+A new grant requires a server-owned `commerceCheckoutHandoffs` record matching
+source reference, product, offer, identity and environment, plus the exact
+completed Checkout Session. A signed paid session binds its PaymentIntent once;
+refunds/disputes must carry that same PaymentIntent. Missing source metadata is
+never replaced with a Session/Charge ID. The provider contract is documented by
+Stripe's [Checkout Session object](https://docs.stripe.com/api/checkout/sessions/object)
+and [Charge object](https://docs.stripe.com/api/charges/object).
+
+Provider/environment/event identity and the first normalized envelope are
+bound in additive `commerceEventReceipts`. New receipts also retain a canonical
+hash of the verified Stripe snapshot (excluding mutable delivery counters).
+Identical provider evidence reuses the first envelope despite subsequent charge
+metadata changes; differing evidence under the same event ID remains a conflict.
+The grant key depends on provider,
+environment, product and purchase, never a marketing channel. A negative
+transition affects all matching historical duplicate commerce grants for that
+purchase, preserving other purchases, trials, manual grants and identities.
+Sandbox aliases (test/development/preview/staging) share one normalization;
+production is isolated in both directions, including response snapshots.
+Unknown environments fail closed. Customer identities are checked, never moved
+between environments or silently reassigned by commerce processing.
+
+Existing rows and their original audit fields are retained. Legacy raw
+CommunityGlows references and suite-prefixed references are read only with their
+corresponding ledger source/key family. Ambiguous ownership and purchases
+without a verified server/provider binding remain non-granting review cases;
+there is no bulk migration, deletion, backfill or inferred historical linkage.
+The earlier `missing_global_user_for_revoke` tombstone continues to block a
+late payment. Historical assumptions about absence of customers are not authority.
+
+### Controlled pending-review recovery
+
+Duplicate webhook delivery returns the stored result; it cannot change the
+envelope or retry fulfillment. New receipts have one initial attempt and retain
+no bridge secret, raw webhook body or arbitrary metadata.
+
+`internal.bridge.retryPendingCommerceEvent` is an internal Convex mutation with
+no public/customer route. It accepts only `receiptId`, `expectedAttempts`,
+`operatorId`, `reason`, and `dryRun`; it never accepts replacement event data.
+An authorized operator uses a concrete receipt and a non-secret review reason:
+
+1. Inspect the retained envelope and repair its server-owned prerequisite
+   through the existing authorized checkout/identity workflow.
+2. Call with `dryRun=true` to check eligibility without writes. This is an
+   eligibility check, not a simulated fulfillment result.
+3. Call with `dryRun=false` and the inspected attempt counter. The mutation
+   revalidates the original envelope in the runtime environment atomically.
+4. Read the resulting receipt and append-only `commerceEventReviewAttempts`
+   audit. A stale counter is rejected; completed receipts are no-ops.
+
+Only missing purchase/identity/completed checkout/payment binding and a pending
+negative transition are recoverable. Five normal processing attempts are allowed
+(initial plus four controlled retries), followed by a durable escalation. The
+administrator reconciliation route can perform one sixth attempt only after
+retrieving the original event from Stripe and matching its retained snapshot hash.
+Counters are never reset. Unsupported providers/offers, environment mismatches,
+identity conflicts, legacy partial-refund classifications and missing signed
+payment evidence cannot be promoted through this endpoint. They need separately
+verified evidence and a linked resolution, not a caller-supplied status override.
+Historical events predating retained envelopes are not reconstructed.
+
+If a refund arrives before its paid session, it stays pending while the signed
+session establishes the payment reference. The paid event also stays pending
+without granting access. Recover the negative event first, then the paid event;
+the latter remains revoked. Tests cover this order without contacting Stripe.
+
+### Launch lifecycle and operations (2026-09-06)
+
+The approved rules and every expected outcome/error exit are in
+[the launch matrix](commerce-launch-scenarios.md). The implementation stores
+individual refund/dispute facts, rather than reclassifying a past refund from
+the current charge.amount_refunded. Distinct successful refunds accumulate;
+partial refunds retain access and full refunds remove it. Failed/pending refunds
+do not contribute to the successful total; failed/requires_action states alert
+the operator. A later failed refund can restore the still-paid purchase while
+keeping that refund incident open.
+
+Open disputes suspend only the affected purchase. Won, warning_closed and
+prevented lift only their own block. Lost/other active disputes, full refunds,
+legacy revocations and externally changed entitlement states prevent unsafe
+restoration. Qualified immutable facts determine ordering; conflicting terminal
+dispute outcomes remain review cases even at different timestamps. The receipt's historic result is
+not the current access snapshot.
+
+`commerceOperations` exposes an admin-only, environment-scoped queue, ownership,
+deadlines, audited actions, bounded retry and authenticated provider-event
+reconciliation. `commerceIncidentLedger` records incidents and an alert outbox
+atomically with fulfillment. Verified normalization failures have incidents even
+before a receipt exists. A complete database outage retains HTTP 500 and emits
+only a redacted hosting alarm. Hosted monitoring of that fallback is mandatory.
+Scheduled sweeps recover alert leases, escalate overdue cases and inspect old
+handoffs using bounded pages. Age is never proof of payment. The operator must
+configure the HTTPS alert receiver and prove receipt during hosted acceptance;
+local fixtures send no real notifications. Resolving a support case changes
+neither its immutable receipt nor the customer's rights.
+
+The [operator runbook](commerce-operator-runbook.md) defines ownership, alert
+failure fallback, provider reconciliation and the hosted acceptance checklist.
+
+Local launch-preparation proof: 244 tests across 28 commerce, bridge, API and
+interface suites passed; Convex TypeScript and Astro check passed. Independent
+review regressions preserve legacy revocation audit provenance and reject
+contradictory closed dispute outcomes across timestamps. This is synthetic
+evidence; the hosted acceptance checklist remains pending.
+
+The purchase return page states verification is pending and links the account
+and support; browser return parameters cannot confirm payment or grant rights.
+
+### Earlier local proof and delivery boundary
+
+- Baseline: 20 tests passed before changing `9016d47`.
+- Earlier tranche: 151 tests across 18 commerce/bridge suites, including signed
+  synthetic parser-to-ledger paid/refund/dispute flows, concurrent deliveries,
+  immutable replays, bounded recovery, environment aliases and historical rows.
+- Convex TypeScript and Astro check pass; Astro retains one unrelated script hint.
+- No deployment, real provider data, hosted database mutation or production
+  purchase was used. Schema additions require a later authorized deployment.
+- The broader identity/recovery, AppSumo, CommunityGlows Windows and portfolio
+  adapter work remains open; these local commerce results do not prove it.
 
 ## Purpose
 
@@ -201,7 +374,7 @@ One shared checkout endpoint is acceptable for multiple products when all of the
 
 - The request contains an explicit allowlisted `offerId`.
 - The backend resolves the matching `productId`, `plan`, provider config, and redirect paths from the offer registry instead of trusting the client.
-- Product analytics can still distinguish the origin surface through fields such as `source` and `source_ref`.
+- Product analytics can distinguish the origin through `source`; `source_ref` identifies the server-owned checkout purchase.
 - Webhook fulfillment writes the canonical suite entitlement for the resolved product instead of a product-local duplicate ledger.
 
 Do not create a separate checkout endpoint per domain unless a product requires materially different provider, auth, risk, or deployment behavior. Domain count alone is not a reason to split the endpoint.
@@ -215,8 +388,8 @@ Do not create a separate checkout endpoint per domain unless a product requires 
 5. Unsupported, malformed, or incomplete signed events must become `pending_review` or `ignored`, never active access.
 6. The route forwards normalized data to Convex `bridge:processCommerceEvent`.
 7. Convex allowlists the product, offer, plan, environment, and idempotency key before writing.
-8. A paid event creates or refreshes an active `productEntitlements` row only when it can resolve a verified global user.
-9. A refund or revoke makes access non-granting without deleting identity.
+8. A paid event grants once only after its completed server-owned purchase and signed PaymentIntent resolve to the same identity, product and environment.
+9. A refund or revoke targets the same verified PaymentIntent and purchase without deleting identity or historical audit events.
 
 ## Identity Resolution
 
@@ -229,7 +402,7 @@ Supported resolution path for automatic grants:
 - Provider-account or source correlation may support negative transitions and
   manual review, but it never replaces the signed checkout identity for a new purchase.
 
-If identity cannot be resolved, the event goes to `pending_review`; support must reconcile it manually.
+If identity cannot be resolved, the event goes to `pending_review`; controlled recovery follows the retained-envelope procedure above.
 
 ## Device Activation Contract
 

@@ -2,10 +2,13 @@ import { emailTables } from './emailSchema'
 import { emailSupportTables } from './emailSupportSchema'
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import { commerceEventEnvelope } from './commerceEventContract'
+import { commerceOperationsTables } from './commerceOperationsSchema'
 
 export default defineSchema({
   ...emailTables,
   ...emailSupportTables,
+  ...commerceOperationsTables,
   globalUsers: defineTable({
     globalUserId: v.string(),
     primaryEmail: v.optional(v.string()),
@@ -43,6 +46,7 @@ export default defineSchema({
     environment: v.string(),
     idempotencyKey: v.string(),
     grantedAt: v.optional(v.number()),
+    commerceManagedStatus: v.optional(v.string()),
     trialStartedAt: v.optional(v.number()),
     trialExpiresAt: v.optional(v.number()),
     trialAttempt: v.optional(v.number()),
@@ -51,6 +55,7 @@ export default defineSchema({
   })
     .index('by_globalUserId', ['globalUserId'])
     .index('by_productStatus', ['productId', 'status'])
+    .index('by_sourceRef', ['sourceRef'])
     .index('by_idempotencyKey', ['idempotencyKey']),
 
   productTrialInstallations: defineTable({
@@ -141,6 +146,7 @@ export default defineSchema({
     reason: v.optional(v.string()),
     createdAt: v.number(),
   })
+    .index('by_eventId', ['eventId'])
     .index('by_idempotencyKey', ['idempotencyKey'])
     .index('by_globalUserId', ['globalUserId'])
     .index('by_sourceRef', ['source', 'sourceRef']),
@@ -155,12 +161,65 @@ export default defineSchema({
     idempotencyKey: v.string(),
     checkoutUrl: v.optional(v.string()),
     providerOrderId: v.optional(v.string()),
+    providerPaymentIntentId: v.optional(v.string()),
     expiresAt: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index('by_jtiHash', ['jtiHash'])
+    .index('by_idempotencyKey', ['idempotencyKey'])
+    .index('by_providerOrderId', ['providerOrderId'])
+    .index('by_paymentIntent', ['providerPaymentIntentId'])
     .index('by_expiresAt', ['expiresAt']),
+
+  commerceEventReceipts: defineTable({
+    eventKey: v.string(),
+    envelope: commerceEventEnvelope,
+    status: v.string(),
+    reason: v.optional(v.string()),
+    attempts: v.number(),
+    purchaseResolved: v.optional(v.boolean()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_eventKey', ['eventKey'])
+    .index('by_status', ['status'])
+    .index('by_purchase', ['envelope.provider', 'envelope.environment', 'envelope.productId', 'envelope.sourceRef'])
+    .index('by_environmentIdempotency', ['envelope.environment', 'envelope.idempotencyKey']),
+
+  commerceEventReviewAttempts: defineTable({
+    receiptId: v.id('commerceEventReceipts'),
+    attempt: v.number(),
+    operatorId: v.string(),
+    reason: v.string(),
+    previousStatus: v.string(),
+    previousReason: v.optional(v.string()),
+    resultingStatus: v.string(),
+    resultingReason: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index('by_receipt', ['receiptId']),
+
+  appSumoLicenses: defineTable({
+    licenseKey: v.string(),
+    environment: v.string(),
+    status: v.string(),
+    productId: v.optional(v.string()),
+    offerId: v.optional(v.string()),
+    plan: v.optional(v.string()),
+    tier: v.optional(v.number()),
+    globalUserId: v.optional(v.id('globalUsers')),
+    currentEntitlementId: v.optional(v.id('productEntitlements')),
+    previousLicenseKey: v.optional(v.string()),
+    lastEventId: v.string(),
+    lastEventType: v.string(),
+    lastEventTimestamp: v.number(),
+    test: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_licenseEnvironment', ['licenseKey', 'environment'])
+    .index('by_previousLicenseEnvironment', ['previousLicenseKey', 'environment'])
+    .index('by_globalUserId', ['globalUserId']),
 
   users: defineTable({
     clerkId: v.string(),

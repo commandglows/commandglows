@@ -127,7 +127,7 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
       global_user_id: verified.globalUserId,
       environment: verified.environment,
       source: data.source ?? 'direct',
-      source_ref: data.sourceRef,
+      source_ref: claim.idempotencyKey,
     },
     idempotencyHint: claim.idempotencyKey,
   }

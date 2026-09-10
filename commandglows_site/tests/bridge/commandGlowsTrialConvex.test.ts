@@ -1,6 +1,7 @@
 import { convexTest } from 'convex-test'
-import { api } from '../../convex/_generated/api'
+import { api, internal } from '../../convex/_generated/api'
 import schema from '../../convex/schema'
+import type { CommerceEventEnvelope } from '../../convex/commerceEventContract'
 
 const modules = import.meta.glob('../../convex/**/*.ts')
 const BRIDGE_SECRET = 'convex-trial-test-secret'
@@ -20,6 +21,25 @@ type TrialEntitlement = {
 
 function createTestBackend() {
   return convexTest(schema, modules)
+}
+
+async function deliverCommerce(t: ReturnType<typeof createTestBackend>, event: CommerceEventEnvelope & { bridgeSecret: string; metadata?: Record<string, string> }) {
+  if (event.globalUserId && event.sourceRef) {
+    await t.run(async (ctx) => {
+      const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
+      if (!rows.some((row) => row.idempotencyKey === event.sourceRef)) {
+        await ctx.db.insert('commerceCheckoutHandoffs', {
+          jtiHash: event.sourceRef, idempotencyKey: event.sourceRef,
+          globalUserId: event.globalUserId, productId: event.productId, offerId: event.offerId,
+          environment: 'test', status: 'completed', providerOrderId: event.providerOrderId,
+          expiresAt: Date.now() + 60_000, createdAt: Date.now(), updatedAt: Date.now(),
+        })
+      }
+    })
+  }
+  return t.mutation(api.bridge.processCommerceEvent, {
+    ...event, providerPaymentIntentId: `pi_${event.sourceRef}`,
+  })
 }
 
 async function bridgeIdentity(
@@ -48,8 +68,7 @@ async function commandGlowsTrials(t: ReturnType<typeof createTestBackend>) {
     const rows = await ctx.db.query('productEntitlements').collect()
     return rows.filter(
       (row) =>
-        row.productId === 'commandglows_app' &&
-        row.source === 'product_trial'
+        row.productId === 'commandglows_app' && row.source === 'product_trial'
     ) as TrialEntitlement[]
   })
 }
@@ -75,8 +94,8 @@ async function expireLatestTrial(
           row.productId === 'commandglows_app' &&
           row.source === 'product_trial'
       )
-      .sort((left, right) =>
-        (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0)
+      .sort(
+        (left, right) => (right.trialAttempt ?? 0) - (left.trialAttempt ?? 0)
       )[0]
     if (!trial) throw new Error('trial_not_found')
     await ctx.db.patch(trial._id, {
@@ -226,10 +245,9 @@ describe('CommandGlows trial Convex integration', () => {
       installationHash: 'installation-hash-device-b',
       trialAction: 'restart',
     })
-    expect((await commandGlowsTrials(t)).map((row) => row.trialAttempt)).toEqual([
-      1,
-      2,
-    ])
+    expect(
+      (await commandGlowsTrials(t)).map((row) => row.trialAttempt)
+    ).toEqual([1, 2])
   })
 
   test('ENT-TRIAL-007 paid access prevents trial creation', async () => {
@@ -306,12 +324,16 @@ describe('CommandGlows trial Convex integration', () => {
       metadata: { source: 'direct', managed_payments: 'true' },
       bridgeSecret: BRIDGE_SECRET,
     }
-    const first = await t.mutation(api.bridge.processCommerceEvent, paidEvent)
-    const replay = await t.mutation(api.bridge.processCommerceEvent, paidEvent)
-    expect(first).toMatchObject({ ok: true, status: 'granted', alreadyProcessed: false })
+    const first = await deliverCommerce(t, paidEvent)
+    const replay = await deliverCommerce(t, paidEvent)
+    expect(first).toMatchObject({
+      ok: true,
+      status: 'granted',
+      alreadyProcessed: false,
+    })
     expect(replay).toMatchObject({ ok: true, alreadyProcessed: true })
 
-    const revoked = await t.mutation(api.bridge.processCommerceEvent, {
+    const revoked = await deliverCommerce(t, {
       ...paidEvent,
       eventType: 'refunded',
       providerEventId: 'evt_stripe_refund',
@@ -319,11 +341,17 @@ describe('CommandGlows trial Convex integration', () => {
       idempotencyKey: 'stripe:refund.created:evt_stripe_refund',
       providerSourceRef: 'ch_stripe_paid',
     })
-    expect(revoked).toMatchObject({ ok: true, status: 'revoked', alreadyProcessed: false })
+    expect(revoked).toMatchObject({
+      ok: true,
+      status: 'revoked',
+      alreadyProcessed: false,
+    })
 
     const active = await t.run(async (ctx) => {
       const rows = await ctx.db.query('productEntitlements').collect()
-      return rows.filter((row) => row.productId === 'commandglows_app' && row.status === 'active')
+      return rows.filter(
+        (row) => row.productId === 'commandglows_app' && row.status === 'active'
+      )
     })
     expect(active).toHaveLength(0)
   })
@@ -348,17 +376,19 @@ describe('CommandGlows trial Convex integration', () => {
       bridgeSecret: BRIDGE_SECRET,
     }
 
-    const rejected = await t.mutation(api.bridge.processCommerceEvent, {
+    const rejected = await deliverCommerce(t, {
       ...baseEvent,
       provider: 'polar',
       providerEventId: 'evt_polar_formation',
       idempotencyKey: 'polar:formation:rejected',
     })
     expect(rejected).toMatchObject({
-      ok: false, status: 'pending_review', reason: 'provider_not_allowed',
+      ok: false,
+      status: 'pending_review',
+      reason: 'provider_not_allowed',
     })
 
-    const granted = await t.mutation(api.bridge.processCommerceEvent, {
+    const granted = await deliverCommerce(t, {
       ...baseEvent,
       provider: 'stripe',
       providerEventId: 'evt_stripe_formation',
@@ -366,10 +396,182 @@ describe('CommandGlows trial Convex integration', () => {
     })
     expect(granted).toMatchObject({ ok: true, status: 'granted' })
 
-    const rows = await t.run(async (ctx) => ctx.db.query('productEntitlements').collect())
-    expect(rows.filter((row) =>
-      row.productId === 'commandglows_formation' && row.status === 'active'
-    )).toHaveLength(1)
+    const rows = await t.run(async (ctx) =>
+      ctx.db.query('productEntitlements').collect()
+    )
+    expect(
+      rows.filter(
+        (row) =>
+          row.productId === 'commandglows_formation' && row.status === 'active'
+      )
+    ).toHaveLength(1)
+  })
+
+  test('revokes only the entitlement attached to the refunded purchase', async () => {
+    const t = createTestBackend()
+    const identity = await bridgeIdentity(t, {
+      uid: 'firebase-two-purchases',
+      installationHash: 'installation-hash-two-purchases',
+    })
+    const baseEvent = {
+      provider: 'stripe',
+      offerId: 'commandglows_app/power',
+      productId: 'commandglows_app',
+      plan: 'power',
+      eventType: 'paid' as const,
+      environment: 'test',
+      status: 'applied' as const,
+      globalUserId: identity.globalUserId,
+      metadata: { source: 'direct' },
+      bridgeSecret: BRIDGE_SECRET,
+    }
+
+    await deliverCommerce(t, {
+      ...baseEvent,
+      providerEventId: 'evt_purchase_a',
+      providerOrderId: 'cs_purchase_a',
+      idempotencyKey: 'stripe:checkout.session.completed:evt_purchase_a',
+      sourceRef: 'purchase:a',
+    })
+    await deliverCommerce(t, {
+      ...baseEvent,
+      providerEventId: 'evt_purchase_b',
+      providerOrderId: 'cs_purchase_b',
+      idempotencyKey: 'stripe:checkout.session.completed:evt_purchase_b',
+      sourceRef: 'purchase:b',
+    })
+
+    const refunded = await deliverCommerce(t, {
+      ...baseEvent,
+      eventType: 'refunded',
+      providerEventId: 'evt_refund_a',
+      providerOrderId: 'ch_purchase_a',
+      idempotencyKey: 'stripe:refund.created:evt_refund_a',
+      sourceRef: 'purchase:a',
+    })
+    expect(refunded).toMatchObject({ ok: true, status: 'revoked' })
+
+    const paidRows = await t.run(async (ctx) =>
+      (await ctx.db.query('productEntitlements').collect()).filter(
+        (row) =>
+          row.productId === 'commandglows_app' &&
+          row.sourceRef?.startsWith('commandglows_app:purchase:')
+      )
+    )
+    expect(paidRows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceRef: 'commandglows_app:purchase:a',
+          status: 'revoked',
+        }),
+        expect.objectContaining({
+          sourceRef: 'commandglows_app:purchase:b',
+          status: 'active',
+        }),
+      ])
+    )
+  })
+
+  test('keeps access unchanged for a pending-review commerce transition', async () => {
+    const t = createTestBackend()
+    const identity = await bridgeIdentity(t, {
+      uid: 'firebase-partial-refund',
+      installationHash: 'installation-hash-partial-refund',
+    })
+    const paidEvent = {
+      provider: 'stripe',
+      offerId: 'commandglows_app/power',
+      productId: 'commandglows_app',
+      plan: 'power',
+      environment: 'test',
+      globalUserId: identity.globalUserId,
+      sourceRef: 'purchase:partial-refund',
+      providerOrderId: 'cs_partial_refund',
+      metadata: { source: 'direct' },
+      bridgeSecret: BRIDGE_SECRET,
+    }
+    await deliverCommerce(t, {
+      ...paidEvent,
+      eventType: 'paid',
+      providerEventId: 'evt_partial_paid',
+      idempotencyKey: 'stripe:checkout.session.completed:evt_partial_paid',
+      status: 'applied',
+    })
+    const pending = await deliverCommerce(t, {
+      ...paidEvent,
+      eventType: 'pending_review',
+      providerEventId: 'evt_partial_refund',
+      idempotencyKey: 'stripe:refund.updated:evt_partial_refund',
+      status: 'pending_review',
+    })
+    expect(pending).toMatchObject({ ok: false, status: 'pending_review' })
+
+    const active = await t.run(async (ctx) =>
+      (await ctx.db.query('productEntitlements').collect()).filter(
+        (row) =>
+          row.sourceRef === 'commandglows_app:purchase:partial-refund' &&
+          row.status === 'active'
+      )
+    )
+    expect(active).toHaveLength(1)
+  })
+
+  test.each([true, false])('does not regrant after an earlier refund (known owner: %s)', async (knownOwner) => {
+    const t = createTestBackend()
+    const identity = await bridgeIdentity(t, {
+      uid: 'firebase-refund-first',
+      installationHash: 'installation-hash-refund-first',
+    })
+    const baseEvent = {
+      provider: 'stripe',
+      offerId: 'commandglows_app/power',
+      productId: 'commandglows_app',
+      plan: 'power',
+      environment: 'test',
+      status: 'applied' as const,
+      globalUserId: identity.globalUserId,
+      sourceRef: 'purchase:refund-first',
+      metadata: { source: 'direct' },
+      bridgeSecret: BRIDGE_SECRET,
+    }
+    await deliverCommerce(t, {
+      ...baseEvent,
+      eventType: 'refunded',
+      globalUserId: knownOwner ? identity.globalUserId : undefined,
+      providerEventId: 'evt_refund_first',
+      providerOrderId: 'ch_refund_first',
+      idempotencyKey: 'stripe:refund.created:evt_refund_first',
+    })
+    const delayedEvent = {
+      ...baseEvent,
+      eventType: 'paid' as const,
+      providerEventId: 'evt_delayed_paid',
+      providerOrderId: 'cs_delayed_paid',
+      idempotencyKey: 'stripe:checkout.session.completed:evt_delayed_paid',
+    }
+    // The completed session is independent of webhook delivery order.
+    await t.run(async (ctx) => {
+      const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
+      for (const row of rows) await ctx.db.patch(row._id, { providerOrderId: delayedEvent.providerOrderId })
+    })
+    const delayedPaid = await deliverCommerce(t, delayedEvent)
+    const receipts = await t.run((ctx) => ctx.db.query('commerceEventReceipts').collect())
+    for (const receipt of receipts.filter((row) => row.status === 'pending_review' && row.envelope.eventType === 'refunded')) {
+      await t.mutation(internal.bridge.retryPendingCommerceEvent, { receiptId: receipt._id, expectedAttempts: 1, operatorId: 'test-operator', reason: 'Payment reference now bound', dryRun: false })
+    }
+    const resolvedPaid = delayedPaid.status === 'pending_review'
+      ? await t.mutation(internal.bridge.retryPendingCommerceEvent, { receiptId: delayedPaid.receiptId, expectedAttempts: 1, operatorId: 'test-operator', reason: 'Negative transition reconciled', dryRun: false })
+      : delayedPaid
+    expect(resolvedPaid).toMatchObject({
+      ok: true,
+      status: 'revoked',
+      reason: 'purchase_already_revoked',
+    })
+    expect(await t.run(async (ctx) =>
+      (await ctx.db.query('productEntitlements').collect()).filter(
+        (row) => row.sourceRef === 'commandglows_app:purchase:refund-first'
+      )
+    )).toHaveLength(0)
   })
 
   test('ENT-TRIAL-011 temporarily denies the fourth network grant in 24 hours', async () => {

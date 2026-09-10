@@ -3,7 +3,7 @@ import { ConvexHttpClient } from 'convex/browser'
 import { getServerEnv } from '@/lib/serverEnv'
 import { parseStripeManagedPaymentsWebhook } from '@/lib/commerce/providers/stripe'
 
-const JSON_HEADERS = { 'Content-Type': 'application/json' }
+const JSON_HEADERS = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
 
 export const prerender = false
 
@@ -20,6 +20,17 @@ export const POST: APIRoute = async ({ request }) => {
   if (!env.SUITE_BRIDGE_CONVEX_SECRET) {
     return jsonResponse({ message: 'Convex bridge secret is not configured' }, 500)
   }
+  const convex = new ConvexHttpClient(convexUrl)
+  const recordFailure = async (event: { providerEventId: string; providerPayloadHash?: string; providerEventType?: string; environment: string }, reason: string) => {
+    try {
+      await convex.mutation('commerceOperations:recordCommerceIngressFailure' as never, {
+        ...event, reason, bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET,
+      } as never)
+    } catch {
+      // No payload or provider error details: this is the last-resort hosting alarm.
+      console.error('commerce_incident_persistence_failed', { eventId: event.providerEventId, environment: event.environment })
+    }
+  }
 
   const parsed = await parseStripeManagedPaymentsWebhook(
     {
@@ -32,38 +43,24 @@ export const POST: APIRoute = async ({ request }) => {
   )
 
   if (!parsed.ok) {
+    if (!parsed.ignored && parsed.verifiedEvent) await recordFailure(parsed.verifiedEvent, 'stripe_dependency_unavailable')
     return jsonResponse({ message: parsed.message }, parsed.status)
   }
 
   try {
-    const convex = new ConvexHttpClient(convexUrl)
     const event = parsed.normalizedEvent
     const result = await convex.mutation(
       'bridge:processCommerceEvent' as never,
       {
-        provider: event.provider,
-        offerId: event.offerId,
-        productId: event.productId,
-        plan: event.plan,
-        eventType: event.eventType,
-        environment: event.environment,
-        providerEventId: event.providerEventId,
-        providerOrderId: event.providerOrderId,
-        idempotencyKey: event.idempotencyKey,
-        status: event.status,
-        customerEmail: event.customerEmail,
-        providerCustomerId: event.providerCustomerId,
-        globalUserId: event.globalUserId,
-        sourceRef: event.sourceRef,
-        providerSourceRef: event.providerSourceRef,
-        providerInvoiceId: event.providerInvoiceId,
-        metadata: event.metadata,
+        ...event,
         bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET,
       } as never
     )
     return jsonResponse(result, 200)
-  } catch (error) {
-    console.error('Stripe webhook handler failed:', error)
+  } catch {
+    const event = parsed.normalizedEvent
+    await recordFailure({ providerEventId: event.providerEventId, providerPayloadHash: event.providerPayloadHash,
+      providerEventType: event.providerEventType, environment: event.environment }, 'commerce_fulfillment_failed')
     return jsonResponse({ message: 'Webhook fulfillment failed' }, 500)
   }
 }

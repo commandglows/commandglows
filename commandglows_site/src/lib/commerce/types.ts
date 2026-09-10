@@ -86,6 +86,11 @@ export type CommerceWebhookEventType =
   | "revoked"
   | "pending_review"
   | "ignored"
+  | "refund_updated"
+  | "dispute_updated"
+  | "checkout_pending"
+  | "checkout_failed"
+  | "checkout_expired"
 
 export type CommerceNormalizedEvent = {
   provider: CommerceProviderId
@@ -104,6 +109,17 @@ export type CommerceNormalizedEvent = {
   sourceRef?: string
   providerSourceRef?: string
   providerInvoiceId?: string
+  providerPaymentIntentId?: string
+  providerPayloadHash?: string
+  providerCreatedAt?: number
+  providerEventType?: string
+  providerRefundId?: string
+  refundStatus?: string
+  refundAmount?: number
+  chargeAmount?: number
+  currency?: string
+  providerDisputeId?: string
+  disputeStatus?: string
   metadata: CommerceWebhookPayloadMetadata
 }
 
@@ -124,6 +140,7 @@ export type CommerceWebhookParseResult =
         | "invalid_event"
       message: string
       eventType?: string
+      verifiedEvent?: { providerEventId: string; providerPayloadHash: string; providerEventType: string; environment: CommerceEnvironment }
       status: number
     }
   | {
@@ -142,6 +159,10 @@ export type CommerceWebhookParseResult =
 
 export type CommerceFulfillmentStatus =
   | "granted"
+  | "suspended"
+  | "awaiting_payment"
+  | "payment_failed"
+  | "checkout_expired"
   | "revoked"
   | "pending_review"
   | "ignored"

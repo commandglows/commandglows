@@ -10,6 +10,8 @@ type ServerEnv = Record<string, string | undefined>
 
 type AppSumoWebhookPayload = {
   license_key?: unknown
+  prev_license_key?: unknown
+  parent_license_key?: unknown
   event?: unknown
   license_status?: unknown
   event_timestamp?: unknown
@@ -21,15 +23,23 @@ type AppSumoWebhookPayload = {
 
 type AppSumoTokenResponse = {
   access_token?: unknown
-  error?: unknown
 }
 
 type AppSumoLicenseResponse = {
   license_key?: unknown
   status?: unknown
-  scopes?: unknown
   tier?: unknown
   [key: string]: unknown
+}
+
+export type AppSumoEvent = {
+  licenseKey: string
+  previousLicenseKey?: string
+  event: 'purchase' | 'activate' | 'upgrade' | 'downgrade' | 'deactivate'
+  eventTimestamp: number
+  tier?: number
+  test: boolean
+  desiredStatus: 'inactive' | 'active' | 'deactivated'
 }
 
 export type AppSumoOAuthParseResult =
@@ -50,6 +60,18 @@ export type AppSumoOAuthParseResult =
       status: number
     }
 
+type StrictWebhookInput = {
+  rawBody: string
+  timestamp: string
+  signature: string
+  apiKey: string
+  now?: number
+  toleranceMs?: number
+}
+
+const events = new Set(['purchase', 'activate', 'upgrade', 'downgrade', 'deactivate'])
+const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+
 function nonEmpty(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
@@ -61,9 +83,7 @@ function stringFrom(value: unknown): string | undefined {
 
 function configuredEnvironment(env: ServerEnv): CommerceEnvironment {
   const value = nonEmpty(env.APPSUMO_ENVIRONMENT) ?? nonEmpty(env.COMMERCE_ENVIRONMENT)
-  if (value === 'production' || value === 'sandbox' || value === 'development') {
-    return value
-  }
+  if (value === 'production' || value === 'sandbox' || value === 'development') return value
   return 'sandbox'
 }
 
@@ -78,14 +98,8 @@ function defaultOffer(env: ServerEnv, tier?: string) {
 }
 
 function eventTypeFor(eventName?: string): CommerceNormalizedEvent['eventType'] {
-  if (!eventName) return 'pending_review'
-  const normalized = eventName.toLowerCase()
-  if (normalized === 'deactivate') return 'revoked'
+  if (eventName?.toLowerCase() === 'deactivate') return 'revoked'
   return 'pending_review'
-}
-
-function statusFor(eventName?: string): CommerceNormalizedEvent['status'] {
-  return eventName?.toLowerCase() === 'deactivate' ? 'pending_review' : 'pending_review'
 }
 
 function metadataFromPayload(payload: AppSumoWebhookPayload): Record<string, string> {
@@ -96,15 +110,12 @@ function metadataFromPayload(payload: AppSumoWebhookPayload): Record<string, str
   )
 }
 
-function safeCompare(left: string, right: string) {
-  const leftBuffer = Buffer.from(left)
-  const rightBuffer = Buffer.from(right)
-  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer)
+function safeCompare(left: Buffer, right: Buffer) {
+  return left.length === right.length && timingSafeEqual(left, right)
 }
 
-function verifySignature(rawBody: string, timestamp: string, signature: string, apiKey: string) {
-  const expected = createHmac('sha256', apiKey).update(`${timestamp}${rawBody}`).digest('hex')
-  return safeCompare(expected, signature)
+function hmacHex(timestamp: string, rawBody: string, apiKey: string) {
+  return createHmac('sha256', apiKey).update(timestamp).update(rawBody).digest('hex')
 }
 
 function normalizedEventFromLicense(args: {
@@ -127,7 +138,7 @@ function normalizedEventFromLicense(args: {
     providerEventId: args.providerEventId,
     providerOrderId: args.licenseKey,
     idempotencyKey: `appsumo:${args.source}:${args.providerEventId}`,
-    status: statusFor(args.eventName),
+    status: 'pending_review',
     providerCustomerId: args.licenseKey,
     sourceRef: `appsumo:${args.licenseKey}`,
     providerSourceRef: args.licenseKey,
@@ -140,7 +151,104 @@ function normalizedEventFromLicense(args: {
   }
 }
 
-export function parseAppSumoWebhook(
+/** Server-only exchange. Caller must first consume an authenticated, single-use OAuth state. */
+export async function exchangeAppSumoCode(input: {
+  code: string
+  clientId: string
+  clientSecret: string
+  redirectUri: string
+}, fetcher: typeof fetch = fetch): Promise<{ licenseKey: string; status: string }> {
+  if (!input.code || !input.clientId || !input.clientSecret || !input.redirectUri.startsWith('https://')) {
+    throw new Error('appsumo_oauth_not_configured')
+  }
+  try {
+    const tokenResponse = await fetcher('https://appsumo.com/openid/token/', {
+      method: 'POST',
+      redirect: 'error',
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code: input.code,
+        client_id: input.clientId,
+        client_secret: input.clientSecret,
+        redirect_uri: input.redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    })
+    if (!tokenResponse.ok) throw new Error('token_failed')
+    const token = await tokenResponse.json() as AppSumoTokenResponse
+    if (typeof token.access_token !== 'string' || !token.access_token) throw new Error('token_missing')
+    const url = new URL('https://appsumo.com/openid/license_key/')
+    url.searchParams.set('access_token', token.access_token)
+    const response = await fetcher(url, {
+      redirect: 'error',
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!response.ok) throw new Error('license_failed')
+    const license = await response.json() as AppSumoLicenseResponse
+    if (typeof license.license_key !== 'string' || !uuid.test(license.license_key) ||
+      !['active', 'inactive', 'deactivated'].includes(String(license.status))) {
+      throw new Error('license_invalid')
+    }
+    return { licenseKey: license.license_key.toLowerCase(), status: String(license.status) }
+  } catch {
+    throw new Error('appsumo_oauth_exchange_failed')
+  }
+}
+
+function parseStrictAppSumoWebhook(input: StrictWebhookInput): AppSumoEvent {
+  const now = input.now ?? Date.now()
+  const tolerance = input.toleranceMs ?? 300_000
+  if (!input.apiKey || !/^\d{13}$/.test(input.timestamp) ||
+    !/^[a-f0-9]{64}$/i.test(input.signature) ||
+    !Number.isFinite(now) || !Number.isFinite(tolerance) || tolerance < 0 ||
+    Math.abs(now - Number(input.timestamp)) > tolerance) {
+    throw new Error('appsumo_invalid_signature')
+  }
+  const expected = Buffer.from(hmacHex(input.timestamp, input.rawBody, input.apiKey), 'hex')
+  if (!safeCompare(expected, Buffer.from(input.signature, 'hex'))) {
+    throw new Error('appsumo_invalid_signature')
+  }
+  let value: AppSumoWebhookPayload
+  try {
+    value = JSON.parse(input.rawBody) as AppSumoWebhookPayload
+  } catch {
+    throw new Error('appsumo_invalid_payload')
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value) ||
+    typeof value.license_key !== 'string' || !uuid.test(value.license_key) ||
+    typeof value.event !== 'string' || !events.has(value.event) ||
+    !Number.isSafeInteger(value.event_timestamp) || Number(value.event_timestamp) <= 0 ||
+    (value.test !== undefined && typeof value.test !== 'boolean') ||
+    (value.tier !== undefined && (!Number.isSafeInteger(value.tier) || Number(value.tier) < 1))) {
+    throw new Error('appsumo_invalid_payload')
+  }
+  if (value.parent_license_key !== undefined) throw new Error('appsumo_addon_requires_mapping')
+  const replacement = value.event === 'upgrade' || value.event === 'downgrade'
+  if ((replacement && !value.prev_license_key) ||
+    (value.prev_license_key !== undefined &&
+      (typeof value.prev_license_key !== 'string' || !uuid.test(value.prev_license_key) ||
+        value.prev_license_key.toLowerCase() === value.license_key.toLowerCase()))) {
+    throw new Error('appsumo_invalid_lineage')
+  }
+  return {
+    licenseKey: value.license_key.toLowerCase(),
+    previousLicenseKey: typeof value.prev_license_key === 'string' ? value.prev_license_key.toLowerCase() : undefined,
+    event: value.event,
+    eventTimestamp: Number(value.event_timestamp),
+    tier: typeof value.tier === 'number' ? value.tier : undefined,
+    test: value.test === true,
+    desiredStatus: value.test === true || value.event === 'purchase'
+      ? 'inactive'
+      : value.event === 'deactivate'
+        ? 'deactivated'
+        : 'active',
+  }
+}
+
+function parseRouteAppSumoWebhook(
   context: CommerceWebhookContext,
   env: ServerEnv
 ): CommerceWebhookParseResult {
@@ -159,7 +267,8 @@ export function parseAppSumoWebhook(
   const apiKey = nonEmpty(env.APPSUMO_API_KEY)
   const timestamp = nonEmpty(context.eventName)
   const signature = nonEmpty(context.signature)
-  if (apiKey && (!timestamp || !signature || !verifySignature(context.rawBody, timestamp, signature, apiKey))) {
+  if (apiKey && (!timestamp || !signature ||
+    !safeCompare(Buffer.from(hmacHex(timestamp, context.rawBody, apiKey), 'hex'), Buffer.from(signature, 'hex')))) {
     return { ok: false, ignored: false, reason: 'invalid_signature', message: 'Invalid AppSumo webhook signature', status: 400 }
   }
 
@@ -185,6 +294,16 @@ export function parseAppSumoWebhook(
   }
 }
 
+export function parseAppSumoWebhook(input: StrictWebhookInput): AppSumoEvent
+export function parseAppSumoWebhook(context: CommerceWebhookContext, env: ServerEnv): CommerceWebhookParseResult
+export function parseAppSumoWebhook(
+  input: StrictWebhookInput | CommerceWebhookContext,
+  env?: ServerEnv
+): AppSumoEvent | CommerceWebhookParseResult {
+  if (env) return parseRouteAppSumoWebhook(input as CommerceWebhookContext, env)
+  return parseStrictAppSumoWebhook(input as StrictWebhookInput)
+}
+
 export async function parseAppSumoOAuthCallback(
   requestUrl: URL,
   env: ServerEnv,
@@ -202,49 +321,53 @@ export async function parseAppSumoOAuthCallback(
     return { ok: false, message: 'AppSumo OAuth is not configured', status: 500 }
   }
 
-  const tokenBody = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    redirect_uri: redirectUri,
-    code,
-    grant_type: 'authorization_code',
-  })
-  const tokenResponse = await fetcher('https://appsumo.com/openid/token/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: tokenBody,
-  })
-  if (!tokenResponse.ok) {
+  try {
+    const tokenBody = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      code,
+      grant_type: 'authorization_code',
+    })
+    const tokenResponse = await fetcher('https://appsumo.com/openid/token/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: tokenBody,
+    })
+    if (!tokenResponse.ok) {
+      return { ok: false, message: 'AppSumo OAuth token exchange failed', status: 502 }
+    }
+    const token = await tokenResponse.json() as AppSumoTokenResponse
+    const accessToken = nonEmpty(token.access_token)
+    if (!accessToken) {
+      return { ok: false, message: 'AppSumo OAuth token response did not include an access token', status: 502 }
+    }
+
+    const licenseResponse = await fetcher(`https://appsumo.com/openid/license_key/?access_token=${encodeURIComponent(accessToken)}`)
+    if (!licenseResponse.ok) {
+      return { ok: false, message: 'AppSumo license lookup failed', status: 502 }
+    }
+    const license = await licenseResponse.json() as AppSumoLicenseResponse
+    const licenseKey = nonEmpty(license.license_key)
+    if (!licenseKey) {
+      return { ok: false, message: 'AppSumo license response did not include a license key', status: 502 }
+    }
+
+    return {
+      ok: true,
+      validationOnly: false,
+      redirectPath: nonEmpty(env.APPSUMO_OAUTH_SUCCESS_PATH) ?? '/purchase/success?provider=appsumo',
+      normalizedEvent: normalizedEventFromLicense({
+        env,
+        licenseKey,
+        providerEventId: `oauth:${licenseKey}:${code}`,
+        source: 'oauth',
+        eventName: nonEmpty(license.status) ?? 'oauth',
+        tier: stringFrom(license.tier),
+        metadata: metadataFromPayload(license),
+      }),
+    }
+  } catch {
     return { ok: false, message: 'AppSumo OAuth token exchange failed', status: 502 }
-  }
-  const token = await tokenResponse.json() as AppSumoTokenResponse
-  const accessToken = nonEmpty(token.access_token)
-  if (!accessToken) {
-    return { ok: false, message: 'AppSumo OAuth token response did not include an access token', status: 502 }
-  }
-
-  const licenseResponse = await fetcher(`https://appsumo.com/openid/license_key/?access_token=${encodeURIComponent(accessToken)}`)
-  if (!licenseResponse.ok) {
-    return { ok: false, message: 'AppSumo license lookup failed', status: 502 }
-  }
-  const license = await licenseResponse.json() as AppSumoLicenseResponse
-  const licenseKey = nonEmpty(license.license_key)
-  if (!licenseKey) {
-    return { ok: false, message: 'AppSumo license response did not include a license key', status: 502 }
-  }
-
-  return {
-    ok: true,
-    validationOnly: false,
-    redirectPath: nonEmpty(env.APPSUMO_OAUTH_SUCCESS_PATH) ?? '/purchase/success?provider=appsumo',
-    normalizedEvent: normalizedEventFromLicense({
-      env,
-      licenseKey,
-      providerEventId: `oauth:${licenseKey}:${code}`,
-      source: 'oauth',
-      eventName: nonEmpty(license.status) ?? 'oauth',
-      tier: stringFrom(license.tier),
-      metadata: metadataFromPayload(license),
-    }),
   }
 }

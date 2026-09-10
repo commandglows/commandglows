@@ -13,7 +13,15 @@ service cloud.firestore {
     function hasCommandGlowsAppAccess(userId) {
       return isOwner(userId) &&
           exists(/databases/$(database)/documents/suiteAccess/$(userId)) &&
-          get(/databases/$(database)/documents/suiteAccess/$(userId)).data.products.commandglows_app.active == true;
+          get(/databases/$(database)/documents/suiteAccess/$(userId)).data.products.commandglows_app.active == true &&
+          hasUnexpiredProduct(get(/databases/$(database)/documents/suiteAccess/$(userId)).data.products.commandglows_app);
+    }
+
+    function hasUnexpiredProduct(product) {
+      return product.status == 'active' ||
+          (product.status == 'trialing' &&
+            product.trialExpiresAt is number &&
+            product.trialExpiresAt > request.time.toMillis());
     }
 
     function hasValidRetentionHours(payload) {
