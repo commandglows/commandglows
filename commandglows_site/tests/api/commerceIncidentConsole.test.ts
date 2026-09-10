@@ -65,6 +65,23 @@ test('exhausted incidents expose alert failure and guard retry while requiring a
   expect(JSON.parse(String(post?.[1]?.body))).toMatchObject({ action: 'claim', incidentId: 'case_1', expectedVersion: 5, expectedAttempts: 5, reason: 'Verified operator follow-up' })
 })
 
+test('groups older notification failures and repeated missing-channel states', async () => {
+  const incident = {
+    ...fixture,
+    alerts: [
+      { id: 'alert_5', status: 'pending', attempts: 1 },
+      { id: 'alert_4', status: 'failed', error: 'alert_channel_not_configured', attempts: 5 },
+      { id: 'alert_3', status: 'failed', error: 'alert_channel_not_configured', attempts: 5 },
+      { id: 'alert_2', status: 'failed', error: 'alert_delivery_unavailable', attempts: 5 },
+      { id: 'alert_1', status: 'failed', error: 'alert_channel_not_configured', attempts: 5 },
+    ],
+  }
+  vi.mocked(fetch).mockResolvedValueOnce(response({ page: [incident], environment: 'sandbox', isDone: true, continueCursor: '', alertChannelConfigured: false }))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  expect(container.textContent).toContain('États antérieurs masqués : 2 notification(s) en erreur')
+  expect(container.textContent).toContain('Répétitions d’état canal non configuré regroupées : 2')
+})
+
 test('checkout uncertainty does not offer receipt retry or pretend its internal key is a Stripe event', async () => {
   const checkout = { ...fixture, receiptId: undefined, kind: 'checkout_verification', providerEventId: 'checkout:internal_1', sourceRef: 'suite-checkout:one', status: 'checkout_unverified', attempts: 0 }
   vi.mocked(fetch).mockImplementation(async (url) => String(url).includes('incidentId=')

@@ -2,6 +2,20 @@ import { internalAction } from './_generated/server'
 import { anyApi } from 'convex/server'
 import { authorize, parseEmailConfig } from './emailConfig'
 
+function workerHeaders(credential: string) {
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${credential}`,
+  })
+  const bypassToken =
+    process.env.EMAIL_WORKER_BYPASS_TOKEN ||
+    process.env.VERCEL_AUTOMATION_BYPASS_TOKEN ||
+    process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
+    process.env.VERCEL_BYPASS_TOKEN
+  if (bypassToken) headers.set('x-vercel-protection-bypass', bypassToken)
+  return headers
+}
+
 /** The scheduled poll recovers persisted outbox work after request/worker failures. */
 export const poll = internalAction({
   args: {},
@@ -48,10 +62,7 @@ export const poll = internalAction({
           method: 'POST',
           redirect: 'error',
           signal: AbortSignal.timeout(45_000),
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${credential}`,
-          },
+          headers: workerHeaders(credential),
           body: JSON.stringify({ business_id: business.id }),
         })
       } catch {

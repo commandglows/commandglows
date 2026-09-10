@@ -8,6 +8,28 @@ import { enqueueCommerceAlert } from './commerceIncidentLedger'
 const MAX_ATTEMPTS = 5
 const environment = () => commerceEnvironment(process.env.SUITE_BRIDGE_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV || '')
 
+function webhookHeaders() {
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+  })
+  const bypassToken = process.env.COMMERCE_ALERT_WEBHOOK_BYPASS_TOKEN ||
+    process.env.VERCEL_AUTOMATION_BYPASS_TOKEN ||
+    process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
+    process.env.VERCEL_BYPASS_TOKEN
+  if (bypassToken) headers.set('x-vercel-protection-bypass', bypassToken)
+  const webhookToken = process.env.COMMERCE_ALERT_WEBHOOK_TOKEN
+  if (webhookToken) headers.set('Authorization', `Bearer ${webhookToken}`)
+  const additional = process.env.COMMERCE_ALERT_WEBHOOK_HEADERS
+  if (additional) {
+    for (const pair of additional.split(',').map((value) => value.trim()).filter(Boolean)) {
+      const separator = pair.indexOf('=')
+      if (separator < 0) continue
+      headers.set(pair.slice(0, separator).trim(), pair.slice(separator + 1).trim())
+    }
+  }
+  return headers
+}
+
 export const claim = internalMutation({
   args: { alertId: v.id('commerceAlertOutbox') },
   handler: async (ctx, { alertId }) => {
@@ -64,8 +86,10 @@ export const deliver = internalAction({
     } catch { error = 'alert_channel_not_configured' }
     if (!error && destination) {
       try {
+        const headers = webhookHeaders()
+        headers.set('Idempotency-Key', claimed.payload.deduplicationKey)
         const response = await fetch(destination, { method: 'POST', redirect: 'error',
-          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': claimed.payload.deduplicationKey },
+          headers,
           body: JSON.stringify(claimed.payload), signal: AbortSignal.timeout(8000) })
         if (!response.ok) error = 'alert_delivery_rejected'
         // Never read/log a response body from an operator transport.

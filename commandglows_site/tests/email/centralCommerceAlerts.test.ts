@@ -276,6 +276,26 @@ test('HTTP webhook remains default and a claimed webhook never switches to email
   expect(fetcher).toHaveBeenCalledTimes(1)
 })
 
+test('HTTP webhook includes operator-configured transport headers', async () => {
+  const f = await fixture()
+  vi.stubEnv('COMMERCE_ALERT_CHANNEL', '')
+  vi.stubEnv('COMMERCE_ALERT_WEBHOOK_URL', 'https://example.test/hook')
+  vi.stubEnv('COMMERCE_ALERT_WEBHOOK_BYPASS_TOKEN', 'preview-bypass')
+  vi.stubEnv('COMMERCE_ALERT_WEBHOOK_TOKEN', 'webhook-secret')
+  vi.stubEnv('COMMERCE_ALERT_WEBHOOK_HEADERS', 'X-Trace=commerce-smoke, X-Operator = Diane')
+  const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
+  vi.stubGlobal('fetch', fetcher)
+  await f.t.action(anyApi.commerceAlerts.deliver, { alertId: f.alertId })
+  const [, init] = fetcher.mock.calls[0]
+  const headers = init?.headers as Headers
+  expect(headers.get('Content-Type')).toBe('application/json')
+  expect(headers.get('x-vercel-protection-bypass')).toBe('preview-bypass')
+  expect(headers.get('Authorization')).toBe('Bearer webhook-secret')
+  expect(headers.get('X-Trace')).toBe('commerce-smoke')
+  expect(headers.get('X-Operator')).toBe('Diane')
+  expect(headers.get('Idempotency-Key')).toBe(`${f.incidentId}:open:1`)
+})
+
 test('a current closure notification remains eligible and an invalid email environment never falls back', async () => {
   const f = await fixture()
   await f.t.run(async (ctx) => {

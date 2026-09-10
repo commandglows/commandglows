@@ -49,10 +49,16 @@ test('scheduled poll is disabled without configuration and reports safe worker f
     fetcher.mockResolvedValueOnce(
       new Response('private provider details', { status: 503 })
     )
+    vi.stubEnv('EMAIL_WORKER_BYPASS_TOKEN', 'preview-bypass')
     await expect(
       t.action(makeFunctionReference<'action'>('emailDelivery:poll'), {})
     ).rejects.toThrow('email_worker_unavailable')
     expect(fetcher).toHaveBeenCalledTimes(1)
+    const headers = fetcher.mock.calls[0]?.[1]?.headers as Headers
+    expect(headers.get('x-vercel-protection-bypass')).toBe('preview-bypass')
+    expect(headers.get('Authorization')).toBe(
+      'Bearer test-credential-at-least-32-characters'
+    )
   } finally {
     fetcher.mockRestore()
     vi.unstubAllEnvs()

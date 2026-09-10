@@ -4,19 +4,65 @@ import { convexMutation, errorResponse, json, type Mutation } from './api'
 import { bearer, EmailHttpError, readJson } from './security'
 import { authorizeHttp } from './worker'
 
+function webhookCredential(request: Request) {
+  const header = request.headers.get('x-commandglows-email-webhook-token')
+  if (header && /^[^\s]{32,4096}$/.test(header)) return header
+  const authorization = request.headers.get('authorization') ?? ''
+  const basic = /^Basic\s+(.+)$/i.exec(authorization)
+  if (basic) {
+    try {
+      const decoded = Buffer.from(basic[1], 'base64').toString('utf8')
+      const separator = decoded.indexOf(':')
+      const password = separator >= 0 ? decoded.slice(separator + 1) : ''
+      if (password && /^[^\s]{32,4096}$/.test(password)) return password
+    } catch {
+      throw new EmailHttpError('invalid_authorization', 401)
+    }
+  }
+  return bearer(request)
+}
+
+function isPostmarkVerificationProbe(event: Record<string, unknown>) {
+  return Number(event.ServerID) === 0
+}
+
 export async function handlePostmarkWebhook(
   request: Request,
   env = getServerEnv(),
   injected?: Mutation
 ) {
   try {
-    // Configured Authorization header on the Postmark webhook. Verify before reading PII.
-    const credential = bearer(request)
     const businessId = new URL(request.url).searchParams.get('business_id')
-    const { business } = authorizeHttp(env, credential, businessId, 'webhook')
     const event = await readJson(request, 32_768)
-    if (event.ServerID !== undefined && event.ServerID !== business.serverId)
-      throw new EmailHttpError('forbidden', 403)
+    let credential: string
+    try {
+      // Configured Authorization or HttpHeaders value on the Postmark webhook.
+      credential = webhookCredential(request)
+    } catch (error) {
+      if (isPostmarkVerificationProbe(event)) {
+        return json(200, { status: 'verified_probe' })
+      }
+      throw error
+    }
+    let business: ReturnType<typeof authorizeHttp>['business']
+    try {
+      ;({ business } = authorizeHttp(env, credential, businessId, 'webhook'))
+    } catch (error) {
+      if (isPostmarkVerificationProbe(event)) {
+        return json(200, { status: 'verified_probe' })
+      }
+      throw error
+    }
+    if (event.ServerID !== undefined) {
+      const serverId = Number(event.ServerID)
+      const postmarkVerificationProbe = isPostmarkVerificationProbe(event)
+      if (serverId !== business.serverId) {
+        const status = postmarkVerificationProbe
+          ? 'verified_probe'
+          : 'provider_server_mismatch'
+        return json(200, { status })
+      }
+    }
     if (
       typeof event.MessageStream !== 'string' ||
       ![business.broadcastStream, business.transactionalStream].includes(

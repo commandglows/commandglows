@@ -27,7 +27,14 @@ export function authorizeHttp(
   businessId: unknown,
   operation: string
 ) {
-  const config = parseEmailConfig(env.EMAIL_CONTROL_CONFIG)
+  if (!env.EMAIL_CONTROL_CONFIG)
+    throw new EmailHttpError('email_control_config_missing', 503)
+  let config: EmailConfig
+  try {
+    config = parseEmailConfig(env.EMAIL_CONTROL_CONFIG)
+  } catch {
+    throw new EmailHttpError('email_control_config_invalid', 503)
+  }
   const client = config.clients.find((value) => {
     const expected = env[value.credentialEnv]
     return (

@@ -221,18 +221,78 @@ describe('Postmark webhook boundary', () => {
         )
       ).status
     ).toBe(401)
+    const mismatch = await handlePostmarkWebhook(
+      request(
+        { ...event, ServerID: 99 },
+        'webhooks/postmark?business_id=communityglows'
+      ),
+      env,
+      mutation
+    )
+    expect(mismatch.status).toBe(200)
+    expect(await mismatch.json()).toEqual({
+      status: 'provider_server_mismatch',
+    })
+    expect(mutation).not.toHaveBeenCalled()
+  })
+  test('accepts Postmark server id as a string', async () => {
+    const mutation = vi.fn().mockResolvedValue({ status: 'accepted' })
     expect(
       (
         await handlePostmarkWebhook(
           request(
-            { ...event, ServerID: 99 },
+            { ...event, ServerID: '42' },
             'webhooks/postmark?business_id=communityglows'
           ),
           env,
           mutation
         )
       ).status
-    ).toBe(403)
+    ).toBe(200)
+    expect(mutation).toHaveBeenCalledTimes(1)
+  })
+  test('accepts Postmark verification server id probe', async () => {
+    const mutation = vi.fn().mockResolvedValue({ status: 'accepted' })
+    const response = await handlePostmarkWebhook(
+      request(
+        { ...event, ServerID: 0 },
+        'webhooks/postmark?business_id=communityglows'
+      ),
+      env,
+      mutation
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ status: 'verified_probe' })
+    expect(mutation).not.toHaveBeenCalled()
+  })
+  test('acknowledges unauthenticated Postmark verification probe without mutation', async () => {
+    const mutation = vi.fn().mockResolvedValue({ status: 'accepted' })
+    const response = await handlePostmarkWebhook(
+      request(
+        { ...event, ServerID: 0 },
+        'webhooks/postmark?business_id=communityglows',
+        { Authorization: '' }
+      ),
+      env,
+      mutation
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ status: 'verified_probe' })
+    expect(mutation).not.toHaveBeenCalled()
+  })
+  test('rejects unauthenticated real Postmark event', async () => {
+    const mutation = vi.fn().mockResolvedValue({ status: 'accepted' })
+    expect(
+      (
+        await handlePostmarkWebhook(
+          request(event, 'webhooks/postmark?business_id=communityglows', {
+            Authorization: '',
+          }),
+          env,
+          mutation
+        )
+      ).status
+    ).toBe(401)
     expect(mutation).not.toHaveBeenCalled()
   })
   test('nullable MessageID opt-out deduplicates semantically; reactivation grants nothing', async () => {
@@ -255,6 +315,49 @@ describe('Postmark webhook boundary', () => {
     expect(mutation.mock.calls[2][1].eventId).not.toBe(
       mutation.mock.calls[0][1].eventId
     )
+  })
+  test('accepts the dedicated Postmark webhook credential header', async () => {
+    const mutation = vi.fn().mockResolvedValue({ status: 'accepted' })
+    expect(
+      (
+        await handlePostmarkWebhook(
+          request(event, 'webhooks/postmark?business_id=communityglows', {
+            Authorization: '',
+            'x-commandglows-email-webhook-token': credential,
+          }),
+          env,
+          mutation
+        )
+      ).status
+    ).toBe(200)
+    expect(mutation).toHaveBeenCalledTimes(1)
+    expect(mutation.mock.calls[0][1]).toMatchObject({
+      businessId: 'communityglows',
+      type: 'unsubscribe',
+    })
+  })
+
+  test('accepts Postmark HTTP basic auth credentials', async () => {
+    const mutation = vi.fn().mockResolvedValue({ status: 'accepted' })
+    const token = Buffer.from(`postmark:${credential}`, 'utf8').toString(
+      'base64'
+    )
+    expect(
+      (
+        await handlePostmarkWebhook(
+          request(event, 'webhooks/postmark?business_id=communityglows', {
+            Authorization: `Basic ${token}`,
+          }),
+          env,
+          mutation
+        )
+      ).status
+    ).toBe(200)
+    expect(mutation).toHaveBeenCalledTimes(1)
+    expect(mutation.mock.calls[0][1]).toMatchObject({
+      businessId: 'communityglows',
+      type: 'unsubscribe',
+    })
   })
 })
 
