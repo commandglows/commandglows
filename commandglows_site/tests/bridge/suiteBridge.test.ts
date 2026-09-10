@@ -187,6 +187,7 @@ describe('suiteBridge helpers', () => {
           active: true,
           status: 'active',
           plan: 'pro',
+          trialExpiresAt: null,
         },
       },
     })
@@ -213,6 +214,7 @@ describe('suiteBridge helpers', () => {
       active: false,
       status: 'inactive',
       plan: null,
+      trialExpiresAt: null,
     })
 
     expect(
@@ -227,12 +229,27 @@ describe('suiteBridge helpers', () => {
       active: true,
       status: 'active',
       plan: 'pro',
+      trialExpiresAt: null,
     })
   })
 
   test('masks provider account identifiers', () => {
     expect(maskProviderAccountId('1234567890')).toBe('123***890')
     expect(maskProviderAccountId('abc12')).toBe('a***2')
+  })
+
+  test('mirrors trial expiry and prefers a paid purchase over a concurrent trial', () => {
+    const trial = {
+      productId: 'commandglows_app', status: 'trialing', plan: 'trial',
+      trialExpiresAt: Date.now() + 60_000,
+    }
+    const mirror = (entitlements: Parameters<typeof buildFirestoreSuiteAccessMirror>[0]['entitlements']) =>
+      buildFirestoreSuiteAccessMirror({ globalUserId: 'gu_test', entitlements }).products.commandglows_app
+    expect(mirror([trial])).toMatchObject({ active: true, status: 'trialing', trialExpiresAt: trial.trialExpiresAt })
+    expect(mirror([{ ...trial, trialExpiresAt: Date.now() - 1 }])).toMatchObject({ active: false })
+    expect(mirror([{ ...trial, trialExpiresAt: undefined }])).toMatchObject({ active: false })
+    expect(mirror([trial, { productId: 'commandglows_app', status: 'active', plan: 'power' }]))
+      .toEqual({ active: true, status: 'active', plan: 'power', trialExpiresAt: null })
   })
 
   test('resolves bridge endpoint secret with sync override first', () => {

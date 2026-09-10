@@ -46,6 +46,20 @@ next_step: "Complete hosted Stripe/Convex lifecycle proof, retention/telemetry, 
 
 # Payment Activation And Entitlements
 
+## Firebase trial expiration (2026-09-10, local)
+
+The server-owned mirror publishes `products.commandglows_app.trialExpiresAt`
+in epoch milliseconds for trial access. Firestore and Storage rules compare it
+with `request.time`; an expired or missing trial deadline denies protected access
+without waiting for a client refresh. Active paid access takes precedence over a
+concurrent trial. Deploy the mirror writer before the rules and refresh existing
+trial mirrors: old trial mirrors without the deadline will be denied.
+
+The mirror builder has synthetic regression coverage. Firebase emulator and
+hosted rule execution remain required before rollout. This change enforces trial
+expiration only; bounded freshness and prompt paid-refund propagation are still
+open and must not be reported as implemented.
+
 ## Active Suite Decision (2026-08-11)
 
 This document derives from the sole active cross-product authority:

@@ -483,7 +483,7 @@ function selectPreferredActiveEntitlement(
       entry.productId === productId && isActiveSuiteEntitlement(entry)
   )
   return (
-    activeEntitlements.find((entry) => entry.plan !== 'free') ??
+    activeEntitlements.find((entry) => entry.status === 'active') ??
     activeEntitlements[0]
   )
 }
@@ -662,6 +662,9 @@ export function buildFirestoreSuiteAccessMirror({
           active: entitlement != null,
           status: entitlement?.status ?? 'inactive',
           plan: entitlement?.plan ?? null,
+          trialExpiresAt: entitlement?.status === 'trialing'
+            ? entitlement.trialExpiresAt ?? null
+            : null,
         },
       ]
     })
