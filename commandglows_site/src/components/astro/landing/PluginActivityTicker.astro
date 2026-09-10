@@ -1,0 +1,41 @@
+---
+const pluginEvents = [
+  {
+    plugin: 'RSSFlowz',
+    action: 'synced',
+    color: 'var(--brand-cyan)',
+    textColor: 'var(--brand-cyan-text)',
+  },
+  {
+    plugin: 'PluginFlowz',
+    action: 'updated',
+    color: 'var(--brand-green)',
+    textColor: 'var(--brand-green-text)',
+  },
+  {
+    plugin: 'ContentFlowz',
+    action: 'indexed',
+    color: 'var(--brand-magenta)',
+    textColor: 'var(--brand-magenta-text)',
+  },
+]
+---
+
+<div class="plugin-activity-stack flex min-w-0 flex-col">
+  {
+    pluginEvents.map((event) => (
+      <div class="plugin-activity-row flex items-center text-xs">
+        <span
+          class="pulse-glow h-1.5 w-1.5 shrink-0 rounded-full"
+          style={`background-color: ${event.color}`}
+        />
+        <span class="truncate text-zinc-400">
+          <span class="font-medium" style={`color: ${event.textColor}`}>
+            {event.plugin}
+          </span>{' '}
+          {event.action}
+        </span>
+      </div>
+    ))
+  }
+</div>

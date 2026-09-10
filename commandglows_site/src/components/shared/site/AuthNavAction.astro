@@ -1,0 +1,13 @@
+---
+interface Props {
+  className: string
+  signInLabel: string
+  signInUrl: string
+}
+
+const { className, signInLabel, signInUrl } = Astro.props
+---
+
+<a href={signInUrl} class={className}>
+  {signInLabel}
+</a>

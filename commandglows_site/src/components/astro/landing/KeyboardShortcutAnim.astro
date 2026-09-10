@@ -1,0 +1,22 @@
+---
+const shortcut = {
+  keys: ['Ctrl', 'Space'],
+  label: 'Quick search',
+}
+---
+
+<div class="keyboard-shortcut-stack flex flex-col">
+  <div class="keyboard-shortcut-keys flex items-center">
+    {
+      shortcut.keys.map((key, index) => (
+        <kbd
+          class={`landing-keyboard-key landing-keyboard-key--${index + 1} rounded border px-2 py-1 font-mono text-xs`}
+          data-pressed={index === 0 ? 'true' : 'false'}
+        >
+          {key}
+        </kbd>
+      ))
+    }
+  </div>
+  <span class="landing-keyboard-label text-xs">{shortcut.label}</span>
+</div>

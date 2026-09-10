@@ -1,8 +1,7 @@
 ---
-/* BentoGrid — Astro wrapper with small React islands for animated widgets */
-import { PluginActivityTicker } from '@components/react/landing/PluginActivityTicker'
-import { KeyboardShortcutAnim } from '@components/react/landing/KeyboardShortcutAnim'
-import { SmartOrgAnim } from '@components/react/landing/SmartOrgAnim'
+import PluginActivityTicker from './PluginActivityTicker.astro'
+import KeyboardShortcutAnim from './KeyboardShortcutAnim.astro'
+import SmartOrgAnim from './SmartOrgAnim.astro'
 import { getLangFromUrl } from '@/utils/i18n'
 
 const lang = getLangFromUrl(Astro.url)
@@ -115,7 +114,7 @@ const bentoText =
           <div
             class="bento-side-anim w-1/2 max-w-48 min-w-0 shrink-0 md:w-full md:max-w-none"
           >
-            <PluginActivityTicker client:only="react" />
+            <PluginActivityTicker />
           </div>
         </div>
         <div class="landing-bento-metrics grid grid-cols-2 sm:grid-cols-4">
@@ -185,7 +184,7 @@ const bentoText =
           <div
             class="bento-side-anim w-1/2 max-w-48 min-w-0 shrink-0 md:w-full md:max-w-none"
           >
-            <KeyboardShortcutAnim client:only="react" />
+            <KeyboardShortcutAnim />
           </div>
         </div>
       </div>
@@ -375,7 +374,7 @@ const bentoText =
           <div
             class="bento-side-anim w-1/2 max-w-48 min-w-0 shrink-0 md:w-full md:max-w-none"
           >
-            <SmartOrgAnim client:only="react" />
+            <SmartOrgAnim />
           </div>
         </div>
       </div>

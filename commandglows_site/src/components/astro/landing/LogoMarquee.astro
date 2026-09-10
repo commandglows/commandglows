@@ -1,58 +1,162 @@
 ---
-/* LogoMarquee — Astro wrapper with TestimonialCarousel React island */
-import { TestimonialCarousel } from '@components/react/landing/TestimonialCarousel'
-import { getLangFromUrl } from '@/utils/i18n'
+import { testimonialPeople } from '@/data/testimonialPeople'
 
 interface Props {
   embedded?: boolean
 }
 
 const { embedded = false } = Astro.props
-const lang = getLangFromUrl(Astro.url)
+const featuredTestimonial = testimonialPeople[0]
+const testimonialPreview =
+  featuredTestimonial.quote.match(/^(.+?[.!?])(?:\s+|$)/)?.[1] ??
+  featuredTestimonial.quote
 
 const tools = [
-  { name: "ObsiFlowz" },
-  { name: "ReplayGlowz" },
-  { name: "RSSFlowz" },
-  { name: "PluginFlowz" },
-  { name: "Windows Mastery" },
-  { name: "Obsidian" },
-  { name: "Chrome" },
-  { name: "CMDglows" },
+  { name: 'ObsiFlowz' },
+  { name: 'ReplayGlowz' },
+  { name: 'RSSFlowz' },
+  { name: 'PluginFlowz' },
+  { name: 'Windows Mastery' },
+  { name: 'Obsidian' },
+  { name: 'Chrome' },
+  { name: 'CMDglows' },
 ]
-
 ---
 
-  <section
+<section
   id="testimonials"
   class:list={[
-    embedded ? 'landing-testimonials--embedded scroll-mt-20 overflow-hidden' : 'landing-testimonials-shell scroll-mt-20 overflow-hidden',
-    embedded ? 'bg-transparent' : 'bg-content-bg-subtle dark:bg-content-bg-inverse',
+    embedded
+      ? 'landing-testimonials--embedded scroll-mt-20 overflow-hidden'
+      : 'landing-testimonials-shell scroll-mt-20 overflow-hidden',
+    embedded
+      ? 'bg-transparent'
+      : 'bg-content-bg-subtle dark:bg-content-bg-inverse',
   ]}
 >
-  <!-- Testimonials carousel (React island) -->
-  <div class="landing-testimonials-carousel max-w-3xl mx-auto px-4">
-    <TestimonialCarousel client:load lang={lang} />
+  <!-- Testimonials -->
+  <div class="landing-testimonials-carousel mx-auto max-w-3xl px-4">
+    <div class="relative min-h-52 touch-pan-y">
+      <div
+        class="landing-testimonial-content landing-testimonial-content--visible text-center"
+      >
+        <div
+          class="landing-testimonial-rating flex items-center justify-center"
+        >
+          <div class="landing-testimonial-stars flex">
+            {
+              Array.from({ length: featuredTestimonial.rating }).map(() => (
+                <svg
+                  class="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="var(--brand-yellow)"
+                  stroke="var(--brand-yellow)"
+                  stroke-width="1"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              ))
+            }
+          </div>
+        </div>
+        {
+          featuredTestimonial.title && (
+            <h3 class="landing-testimonial-title text-content-text-primary dark:text-content-text-over-dark text-base font-semibold">
+              &ldquo;{featuredTestimonial.title}&rdquo;
+            </h3>
+          )
+        }
+        <p
+          class="landing-testimonial-excerpt text-content-text-secondary dark:text-content-text-tertiary text-sm leading-relaxed italic"
+        >
+          &ldquo;{testimonialPreview}&rdquo;
+        </p>
+        <div class="landing-testimonial-meta flex items-center justify-center">
+          {
+            featuredTestimonial.avatarRepresentation === 'appsumo-generic' ? (
+              <span
+                aria-hidden="true"
+                class="bg-content-bg-subtle text-content-text-secondary dark:bg-content-bg-strong dark:text-content-text-muted flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
+              >
+                {featuredTestimonial.name[0]}
+              </span>
+            ) : (
+              <img
+                src={featuredTestimonial.avatarSrc}
+                alt={`${featuredTestimonial.name} avatar`}
+                class="dark:ring-content-bg-strong h-8 w-8 rounded-full object-cover ring-2 ring-white"
+                loading="lazy"
+              />
+            )
+          }
+          <div class="text-left">
+            <p
+              class="text-content-text-secondary dark:text-content-text-muted text-sm font-medium"
+            >
+              {featuredTestimonial.name}
+            </p>
+            <p
+              class="text-content-text-tertiary dark:text-content-text-muted text-xs"
+            >
+              {featuredTestimonial.role}
+              {
+                featuredTestimonial.verified &&
+                  !featuredTestimonial.role
+                    .toLowerCase()
+                    .includes('verified purchaser') && (
+                    <span class="brand-text-green ml-1">
+                      Verified Purchaser
+                    </span>
+                  )
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="landing-carousel-dots flex items-center justify-center">
+      {
+        testimonialPeople.map((person, index) => (
+          <span
+            class:list={[
+              'landing-carousel-dots__button rounded-full transition-all duration-300',
+              index === 0
+                ? 'landing-carousel-dots__button--active'
+                : 'landing-carousel-dots__button--inactive',
+            ]}
+            aria-label={`${person.name} testimonial`}
+          />
+        ))
+      }
+    </div>
   </div>
 
   <!-- Marquee -->
   <div class="landing-testimonials-marquee relative">
-    <div class="landing-marquee-fade-left pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-32"></div>
-    <div class="landing-marquee-fade-right pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-32"></div>
+    <div
+      class="landing-marquee-fade-left pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-32"
+    >
+    </div>
+    <div
+      class="landing-marquee-fade-right pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-32"
+    >
+    </div>
 
-    <div class="flex animate-marquee">
-      {[...tools, ...tools].map((tool) => (
-        <div
-          class="landing-logo-marquee-item mx-8 flex h-16 items-center justify-center grayscale opacity-50 transition-all duration-300 hover:grayscale-0 hover:opacity-100"
-        >
-          <div class="landing-badge flex items-center text-content-text-secondary dark:text-content-text-tertiary">
-            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-content-bg-subtle dark:bg-content-bg-strong">
-              <span class="text-xs font-bold">{tool.name[0]}</span>
+    <div class="animate-marquee flex">
+      {
+        [...tools, ...tools].map((tool) => (
+          <div class="landing-logo-marquee-item mx-8 flex h-16 items-center justify-center opacity-50 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0">
+            <div class="landing-badge text-content-text-secondary dark:text-content-text-tertiary flex items-center">
+              <div class="bg-content-bg-subtle dark:bg-content-bg-strong flex h-8 w-8 items-center justify-center rounded-lg">
+                <span class="text-xs font-bold">{tool.name[0]}</span>
+              </div>
+              <span class="font-medium">{tool.name}</span>
             </div>
-            <span class="font-medium">{tool.name}</span>
           </div>
-        </div>
-      ))}
+        ))
+      }
     </div>
   </div>
 </section>

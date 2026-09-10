@@ -3,7 +3,7 @@ import ThemePicker from '@/components/ui/ThemePicker.astro'
 import NavLink from '@components/ui/links/NavLink.astro'
 import TextLogo from '@components/ui/TextLogo.astro'
 import { getLangFromUrl, useTranslations } from '@/utils/i18n'
-import AuthNavAction from './AuthNavAction'
+import AuthNavAction from './AuthNavAction.astro'
 
 interface NavItem {
   label: string
@@ -91,10 +91,6 @@ const altLangUrl = getTranslatedPath(Astro.url.pathname, altLang)
 
 const signInLabel = lang === 'fr' ? 'Connexion' : 'Sign In'
 const signInUrl = lang === 'fr' ? '/fr/signin' : '/signin'
-const overviewLabel = lang === 'fr' ? "Vue d'ensemble" : 'Overview'
-const tasksLabel = lang === 'fr' ? 'Tâches' : 'Tasks'
-const settingsLabel =
-  lang === 'fr' ? 'Profil et paramètres' : 'Profile and settings'
 const menuLabel = lang === 'fr' ? 'Ouvrir le menu' : 'Open menu'
 const closeMenuLabel = lang === 'fr' ? 'Fermer le menu' : 'Close menu'
 const darkModeLabel = lang === 'fr' ? 'Mode sombre' : 'Dark mode'
@@ -105,8 +101,8 @@ const mobileTagline =
     : 'Productivity Apps & Training'
 
 const navShellClass = forceDark
-  ? 'relative flex items-center justify-between rounded-full border border-navbar-border bg-navbar-force-shell-bg px-4 py-3 shadow-none backdrop-blur-md'
-  : 'relative flex items-center justify-between rounded-full border border-navbar-border/60 bg-navbar-bg/80 px-4 py-3 shadow-sm backdrop-blur-md dark:border-navbar-border dark:bg-navbar-bg dark:shadow-none'
+  ? 'relative flex items-center justify-between gap-x-2 gap-y-1 rounded-full border border-navbar-border bg-navbar-force-shell-bg px-4 py-3 shadow-none backdrop-blur-md md:flex-wrap'
+  : 'relative flex items-center justify-between gap-x-2 gap-y-1 rounded-full border border-navbar-border/60 bg-navbar-bg/80 px-4 py-3 shadow-sm backdrop-blur-md md:flex-wrap dark:border-navbar-border dark:bg-navbar-bg dark:shadow-none'
 
 const navLinkClass =
   'no-hover-animation relative inline-flex min-h-11 items-center rounded-full px-2 py-1.5 text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navbar-ring md:text-sm'
@@ -140,7 +136,7 @@ const ctaButtonClass = forceDark
     <a
       href={homeUrl}
       data-astro-reload
-      class="no-hover-animation flex items-center gap-2"
+      class="no-hover-animation flex flex-none items-center gap-2"
     >
       <TextLogo />
     </a>
@@ -152,7 +148,7 @@ const ctaButtonClass = forceDark
     </p>
 
     <div
-      class="hidden items-center gap-1 md:flex md:min-w-0 md:flex-1 md:justify-start md:overflow-x-auto md:pl-6"
+      class="hidden items-center gap-x-1 gap-y-0.5 md:flex md:min-w-0 md:flex-[1_1_24rem] md:flex-wrap md:justify-start md:pl-4"
     >
       {
         navItems.map((item) => (
@@ -167,7 +163,7 @@ const ctaButtonClass = forceDark
       }
     </div>
 
-    <div class="hidden items-center gap-1 md:ml-auto md:flex">
+    <div class="hidden flex-none items-center gap-1 md:ml-auto md:flex">
       <a href={altLangUrl} class={langLinkClass}>
         {altLangLabel}
       </a>
@@ -175,13 +171,9 @@ const ctaButtonClass = forceDark
     </div>
 
     <AuthNavAction
-      client:only="react"
       className={ctaButtonClass}
-      overviewLabel={overviewLabel}
-      settingsLabel={settingsLabel}
       signInLabel={signInLabel}
       signInUrl={signInUrl}
-      tasksLabel={tasksLabel}
     />
 
     <details class="mobile-menu relative md:hidden">

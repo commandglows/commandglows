@@ -105,7 +105,7 @@ describe('site design-system adapter contract', () => {
       'utf8'
     )
     const authNavAction = readFileSync(
-      join(sourceRoot, 'components/shared/site/AuthNavAction.tsx'),
+      join(sourceRoot, 'components/shared/site/AuthNavAction.astro'),
       'utf8'
     )
     const dashboard = readFileSync(
@@ -164,16 +164,15 @@ describe('site design-system adapter contract', () => {
     expect(leadMagnet).toContain('for="lead-magnet-email"')
     expect(leadMagnet).toContain('autocomplete="email"')
     expect(navLink).not.toMatch(/\sid=/)
-    expect(navbar).toContain("import AuthNavAction from './AuthNavAction'")
-    expect(
-      navbar.match(/<AuthNavAction[\s\S]*?client:only="react"/g)
-    ).toHaveLength(1)
-    expect(authNavAction).toContain("from '@clerk/astro/react'")
-    expect(authNavAction).toContain('when="signed-in"')
-    expect(authNavAction).toContain('<UserButton')
-    expect(authNavAction).toContain("href: '/dashboard'")
-    expect(authNavAction).toContain("href: '/dashboard/taches'")
-    expect(authNavAction).toContain("href: '/dashboard/parametres'")
+    expect(navbar).toContain(
+      "import AuthNavAction from './AuthNavAction.astro'"
+    )
+    expect(navbar).not.toContain('client:only="react"')
+    expect(authNavAction).toContain('href={signInUrl}')
+    expect(authNavAction).toContain('{signInLabel}')
+    expect(authNavAction).not.toContain('@clerk/astro/react')
+    expect(authNavAction).not.toContain('@clerk/astro/components')
+    expect(authNavAction).not.toContain('<UserButton')
     expect(authNavAction).not.toContain('/api/auth/signout')
     expect(dashboardLayout).toContain('aria-label={navigationLabel}')
     expect(dashboardLayout).toContain("aria-current={isActive ? 'page'")

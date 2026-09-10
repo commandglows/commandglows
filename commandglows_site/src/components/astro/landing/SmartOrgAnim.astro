@@ -1,0 +1,67 @@
+---
+const items = [
+  {
+    label: 'Categorize',
+    accentClass: 'landing-smart-org-accent-magenta',
+    active: true,
+    iconPath:
+      'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z',
+    extraPath: 'M2 10h20',
+  },
+  {
+    label: 'Discover',
+    accentClass: 'landing-smart-org-accent-cyan',
+    active: false,
+    circle: true,
+    extraPath: 'm21 21-4.3-4.3',
+  },
+  {
+    label: 'Save',
+    accentClass: 'landing-smart-org-accent-yellow',
+    active: false,
+    iconPath: 'm19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z',
+  },
+]
+---
+
+<div class="relative flex items-center gap-3">
+  {
+    items.map((item) => (
+      <div
+        class={`landing-smart-org-item flex flex-col items-center gap-1 ${item.accentClass}`}
+        data-active={item.active ? 'true' : 'false'}
+      >
+        <div
+          class={`landing-smart-org-icon rounded-lg border p-2 ${item.accentClass}`}
+          data-active={item.active ? 'true' : 'false'}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            {item.circle ? (
+              <circle cx="11" cy="11" r="8" />
+            ) : (
+              <path d={item.iconPath} />
+            )}
+            {item.extraPath && <path d={item.extraPath} />}
+          </svg>
+        </div>
+        <span
+          class={`landing-smart-org-label text-xs font-medium ${item.accentClass}`}
+          data-active={item.active ? 'true' : 'false'}
+        >
+          {item.label}
+        </span>
+      </div>
+    ))
+  }
+</div>
