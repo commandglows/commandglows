@@ -1,0 +1,9 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro'
+import NewsletterEngineHost from '@/components/NewsletterEngineHost.astro'
+export const prerender = false
+if (!Astro.locals.auth().userId) return Astro.redirect('/fr/signin')
+---
+<DashboardLayout title="Newsletters" currentPath="/fr/dashboard/newsletters" lang="fr">
+  <NewsletterEngineHost lang="fr" />
+</DashboardLayout>

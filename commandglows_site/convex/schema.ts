@@ -1,7 +1,11 @@
+import { emailTables } from './emailSchema'
+import { emailSupportTables } from './emailSupportSchema'
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 export default defineSchema({
+  ...emailTables,
+  ...emailSupportTables,
   globalUsers: defineTable({
     globalUserId: v.string(),
     primaryEmail: v.optional(v.string()),

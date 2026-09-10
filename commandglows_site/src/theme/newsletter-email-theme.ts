@@ -2,7 +2,7 @@ import {
   EMAIL_CLIENT_ADAPTATIONS,
   EMAIL_TOKENS,
   type EmailAdapterTokenSource,
-} from '@/theme/generated/email-tokens'
+} from './generated/email-tokens'
 
 type InlineStyleValue = string | number
 type InlineStyleObject = Record<string, InlineStyleValue>
