@@ -138,6 +138,7 @@ export const emailTables = {
     providerMessageId: v.optional(v.string()),
   })
     .index('queue', ['businessId', 'state', 'nextAt'])
+    .index('queue_kind', ['businessId', 'state', 'kind', 'nextAt'])
     .index('campaign', ['campaignId', 'state'])
     .index('provider', ['providerMessageId'])
     .index('contact', ['businessId', 'email']),

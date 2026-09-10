@@ -30,6 +30,11 @@ describe("Vercel security headers", () => {
     expect(directives.get("script-src")).toContain(
       "https://clerk.commandglows.com"
     );
+    // The declared preview instance loads both Clerk JS and Clerk UI here.
+    expect(directives.get("script-src")).toContain(
+      "https://stirred-elf-25.clerk.accounts.dev"
+    );
+    expect(directives.get("script-src")).not.toContain("https://*.clerk.accounts.dev");
     expect(directives.get("script-src")).toContain(
       "https://challenges.cloudflare.com"
     );

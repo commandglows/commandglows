@@ -24,6 +24,14 @@ export type EmailConfig = {
       sources: string[]
       noticeVersions: string[]
     }[]
+    transport?: 'postmark' | 'capture'
+    providerMode?: 'Sandbox' | 'Live'
+    liveTest?: {
+      id: string
+      expiresAt: number
+      maxAttempts: number
+      recipients: string[]
+    }
     activated?: boolean
     retentionDays?: number
     allowedRecipients?: string[]
@@ -61,6 +69,30 @@ export function parseEmailConfig(raw: string | undefined): EmailConfig {
           ))
       )
         fail('configuration_unavailable')
+      if (
+        b.transport !== undefined &&
+        !['postmark', 'capture'].includes(b.transport)
+      )
+        fail('configuration_unavailable')
+      if (
+        b.providerMode !== undefined &&
+        !['Sandbox', 'Live'].includes(b.providerMode)
+      )
+        fail('configuration_unavailable')
+      if (b.liveTest !== undefined) {
+        const p = b.liveTest
+        if (
+          !p ||
+          !/^[a-zA-Z0-9_-]{1,80}$/.test(p.id) ||
+          !Number.isSafeInteger(p.expiresAt) ||
+          !Number.isSafeInteger(p.maxAttempts) ||
+          p.maxAttempts < 1 ||
+          !Array.isArray(p.recipients) ||
+          p.recipients.length < 1 ||
+          p.recipients.some((email: unknown) => normalizeEmail(email) !== email)
+        )
+          fail('configuration_unavailable')
+      }
       if (b.publicBaseUrl !== undefined) {
         const url = new URL(b.publicBaseUrl)
         if (
@@ -200,4 +232,73 @@ export function canonical(value: any): string {
       '}'
     )
   return JSON.stringify(value)
+}
+
+/** Non-secret routing contract shared by the worker and transactional control plane. */
+export function deliveryRoute(
+  config: EmailConfig,
+  business: EmailConfig['businesses'][number]
+) {
+  return canonical({
+    environment: config.environment,
+    transport: business.transport ?? 'postmark',
+    providerMode:
+      business.providerMode ??
+      (config.environment === 'sandbox' ? 'Sandbox' : 'Live'),
+    serverId: business.serverId ?? null,
+    serverTokenEnv: business.serverTokenEnv ?? null,
+    from: business.from,
+    transactionalStream: business.transactionalStream,
+    broadcastStream: business.broadcastStream,
+    liveTest: business.liveTest ?? null,
+  })
+}
+export function requiresLiveTest(
+  config: EmailConfig,
+  business: EmailConfig['businesses'][number]
+) {
+  return (
+    config.environment === 'sandbox' &&
+    (business.transport ?? 'postmark') === 'postmark' &&
+    business.providerMode === 'Live'
+  )
+}
+export function dispatchAllowed(
+  config: EmailConfig,
+  business: EmailConfig['businesses'][number],
+  email: string,
+  kind: string,
+  now: number
+) {
+  if (!business.activated || !business.allowedRecipients?.includes(email))
+    return false
+  if (!requiresLiveTest(config, business)) return true
+  const profile = business.liveTest
+  return Boolean(
+    profile &&
+    profile.expiresAt > now &&
+    profile.recipients.includes(email) &&
+    kind === 'operator'
+  )
+}
+
+/** Server-only operator routing; caller payloads cannot select a destination. */
+export function commerceOperatorConfig(environment: string) {
+  const config = parseEmailConfig(process.env.EMAIL_CONTROL_CONFIG)
+  let route: { businessId: string; recipient: string; locale: 'fr' | 'en' }
+  try {
+    route = JSON.parse(process.env.COMMERCE_ALERT_EMAIL_CONFIG || '')
+  } catch {
+    return fail('configuration_unavailable')
+  }
+  const business = config.businesses.find((b) => b.id === route?.businessId)
+  if (
+    config.environment !== environment ||
+    !business ||
+    !['fr', 'en'].includes(route.locale) ||
+    normalizeEmail(route.recipient) !== route.recipient ||
+    !dispatchAllowed(config, business, route.recipient, 'operator', Date.now())
+  )
+    fail('configuration_unavailable')
+  return { config, business, recipient: route.recipient, locale: route.locale }
 }

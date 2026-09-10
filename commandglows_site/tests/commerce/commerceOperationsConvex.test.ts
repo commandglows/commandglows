@@ -16,7 +16,13 @@ const event = (overrides: Partial<CommerceEventEnvelope> = {}): CommerceEventEnv
   idempotencyKey: 'stripe:paid:evt_ops', globalUserId: 'gu_ops', providerPayloadHash: 'a'.repeat(64), ...overrides,
 })
 async function admin(t: Backend) {
-  await t.run((ctx) => ctx.db.insert('users', { clerkId: auth.clerkId, email: 'operator@example.test', role: 'admin' }))
+  await t.run(async (ctx) => {
+    for (const [clerkId, role] of [[auth.clerkId, 'admin'], ['member', 'member']]) {
+      const globalUserId = await ctx.db.insert('globalUsers', { globalUserId: `gu_${clerkId}`, createdAt: 1, updatedAt: 1 })
+      await ctx.db.insert('identityAccounts', { globalUserId, provider: 'clerk', providerAccountId: clerkId, environment: 'sandbox', createdAt: 1, updatedAt: 1 })
+      await ctx.db.insert('users', { clerkId, globalUserId, email: 'operator@example.test', role })
+    }
+  })
 }
 async function open(t: Backend, input = event()) {
   await t.mutation(anyApi.bridge.processCommerceEvent, { ...input, bridgeSecret: auth.bridgeSecret })
@@ -35,6 +41,15 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals() })
 
 describe('commerce operations', () => {
+  test('generic actor requires server authority and canonical role without mixed provider identifiers', async () => {
+    const t = backend(); await admin(t)
+    const input = { actorGlobalUserId: 'gu_admin_test', bridgeSecret: auth.bridgeSecret }
+    expect(await t.query(anyApi.commerceOperations.authorize, input)).toEqual({ operatorId: 'gu_admin_test', environment: 'sandbox' })
+    await expect(t.query(anyApi.commerceOperations.authorize, { ...input, bridgeSecret: 'wrong' })).rejects.toThrow('admin_forbidden')
+    await expect(t.query(anyApi.commerceOperations.authorize, { ...input, actorGlobalUserId: 'gu_member' })).rejects.toThrow('admin_forbidden')
+    await expect(t.query(anyApi.commerceOperations.authorize, { ...input, actorGlobalUserId: 'gu_missing' })).rejects.toThrow('account_not_ready')
+    await expect(t.query(anyApi.commerceOperations.authorize, { ...input, clerkId: auth.clerkId })).rejects.toThrow('account_identity_required')
+  })
   test('requires secret and canonical admin before reading incidents', async () => {
     const t = backend(); await admin(t)
     await expect(list(t, { bridgeSecret: 'wrong' })).rejects.toThrow('admin_forbidden')
@@ -48,7 +63,7 @@ describe('commerce operations', () => {
     expect(result.page[0].alerts).toHaveLength(1)
     expect(result.alertChannelConfigured).toBe(false)
     expect(JSON.stringify(result)).not.toContain('@')
-    expect(await t.run((ctx) => ctx.db.query('globalUsers').collect())).toHaveLength(0)
+    expect((await t.run((ctx) => ctx.db.query('globalUsers').collect())).map(row => row.globalUserId).sort()).toEqual(['gu_admin_test', 'gu_member'])
   })
   test('paginates independently of identity and isolates environments', async () => {
     const t = backend(); await admin(t)
@@ -74,8 +89,8 @@ describe('commerce operations', () => {
     expect(await t.mutation(anyApi.commerceOperations.updateIncident, input)).toMatchObject({ version: 2 })
     await expect(t.mutation(anyApi.commerceOperations.updateIncident, input)).rejects.toThrow('incident_version_conflict')
     const detail = await t.query(anyApi.commerceOperations.getIncident, { ...auth, incidentId: incident._id })
-    expect(detail.incident.ownerId).toBe(auth.clerkId)
-    expect(detail.actions[0]).toMatchObject({ operatorId: auth.clerkId, action: 'claim' })
+    expect(detail.incident.ownerId).toBe(`gu_${auth.clerkId}`)
+    expect(detail.actions[0]).toMatchObject({ operatorId: `gu_${auth.clerkId}`, action: 'claim' })
   })
   test('dry run is read only; five failed attempts escalate and retain counter', async () => {
     const t = backend(); await admin(t); let incident = await open(t)

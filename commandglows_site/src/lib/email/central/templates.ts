@@ -2,6 +2,7 @@ export interface EmailContent {
   templateKey:
     | 'subscription_confirmation'
     | 'service_notification'
+    | 'commerce_incident'
     | 'newsletter'
   locale: 'fr' | 'en'
   brand: string
@@ -61,6 +62,7 @@ export function renderEmail(content: EmailContent) {
     ![
       'subscription_confirmation',
       'service_notification',
+      'commerce_incident',
       'newsletter',
     ].includes(content.templateKey)
   ) {

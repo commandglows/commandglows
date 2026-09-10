@@ -2,17 +2,40 @@ import { anyApi } from 'convex/server'
 import { v } from 'convex/values'
 import { internalAction, internalMutation } from './_generated/server'
 import { commerceEnvironment } from './commerceEventContract'
+import { syncCommerceEmail } from './commerceEmail'
 import { enqueueCommerceAlert } from './commerceIncidentLedger'
 
 const MAX_ATTEMPTS = 5
 const environment = () => commerceEnvironment(process.env.SUITE_BRIDGE_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV || '')
+
+function webhookHeaders() {
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+  })
+  const bypassToken = process.env.COMMERCE_ALERT_WEBHOOK_BYPASS_TOKEN ||
+    process.env.VERCEL_AUTOMATION_BYPASS_TOKEN ||
+    process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
+    process.env.VERCEL_BYPASS_TOKEN
+  if (bypassToken) headers.set('x-vercel-protection-bypass', bypassToken)
+  const webhookToken = process.env.COMMERCE_ALERT_WEBHOOK_TOKEN
+  if (webhookToken) headers.set('Authorization', `Bearer ${webhookToken}`)
+  const additional = process.env.COMMERCE_ALERT_WEBHOOK_HEADERS
+  if (additional) {
+    for (const pair of additional.split(',').map((value) => value.trim()).filter(Boolean)) {
+      const separator = pair.indexOf('=')
+      if (separator < 0) continue
+      headers.set(pair.slice(0, separator).trim(), pair.slice(separator + 1).trim())
+    }
+  }
+  return headers
+}
 
 export const claim = internalMutation({
   args: { alertId: v.id('commerceAlertOutbox') },
   handler: async (ctx, { alertId }) => {
     const alert = await ctx.db.get(alertId)
     const now = Date.now()
-    if (!alert || alert.environment !== environment() || alert.status === 'delivered' || alert.status === 'failed' ||
+    if (!alert || alert.emailMessageId || alert.transportChannel === 'email' || alert.environment !== environment() || alert.status === 'delivered' || alert.status === 'failed' ||
       alert.nextAttemptAt > now || (alert.status === 'delivering' && (alert.leaseUntil ?? 0) > now)) return null
     if (alert.attempts >= MAX_ATTEMPTS) {
       await ctx.db.patch(alertId, { status: 'failed', lastError: 'delivery_attempts_exhausted', updatedAt: now })
@@ -21,7 +44,7 @@ export const claim = internalMutation({
     const incident = await ctx.db.get(alert.incidentId)
     if (!incident) return null
     const attempt = alert.attempts + 1
-    await ctx.db.patch(alertId, { status: 'delivering', attempts: attempt, leaseUntil: now + 60_000, updatedAt: now })
+    await ctx.db.patch(alertId, { status: 'delivering', transportChannel: 'webhook', attempts: attempt, leaseUntil: now + 60_000, updatedAt: now })
     // This allowlist deliberately excludes customer data, notes, provider objects and secrets.
     return { attempt, payload: { event: 'commerce.incident', id: String(alert.incidentId),
       environment: alert.environment, phase: alert.phase, queueState: incident.queueState,
@@ -52,6 +75,7 @@ export const finish = internalMutation({
 export const deliver = internalAction({
   args: { alertId: v.id('commerceAlertOutbox') },
   handler: async (ctx, { alertId }) => {
+    if (await ctx.runMutation(anyApi.commerceEmail.enqueue, { alertId })) return
     const claimed = await ctx.runMutation(anyApi.commerceAlerts.claim, { alertId })
     if (!claimed) return
     let error: string | undefined
@@ -62,8 +86,10 @@ export const deliver = internalAction({
     } catch { error = 'alert_channel_not_configured' }
     if (!error && destination) {
       try {
+        const headers = webhookHeaders()
+        headers.set('Idempotency-Key', claimed.payload.deduplicationKey)
         const response = await fetch(destination, { method: 'POST', redirect: 'error',
-          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': claimed.payload.deduplicationKey },
+          headers,
           body: JSON.stringify(claimed.payload), signal: AbortSignal.timeout(8000) })
         if (!response.ok) error = 'alert_delivery_rejected'
         // Never read/log a response body from an operator transport.
@@ -83,6 +109,7 @@ export const sweep = internalMutation({
       const alerts = await ctx.db.query('commerceAlertOutbox').withIndex('by_due',
         (q) => q.eq('environment', currentEnvironment).eq('status', status).lte('nextAttemptAt', now)).take(100)
       for (const alert of alerts) if ((alert.leaseUntil ?? 0) <= now) {
+        if (alert.emailMessageId) { await syncCommerceEmail(ctx, alert); continue }
         await ctx.scheduler.runAfter(0, anyApi.commerceAlerts.deliver, { alertId: alert._id })
       }
     }

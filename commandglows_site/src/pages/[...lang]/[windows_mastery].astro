@@ -131,13 +131,13 @@ const page =
 				testimonialRole: 'PDG et cofondateur | Squirrly',
 				offerTitle: "L'offre",
 				offerName: 'Formation Windows Mastery',
-				offerPrice: '49€',
+				offerPrice: '49 €',
 				offerPeriod: 'paiement unique',
 					offerBullets: ['8 modules', 'FR + EN', 'accès au parcours premium', 'mise en place continue'],
 					offerBody:
 						"Cette offre est faite pour vous si vous voulez une amélioration concrète de votre environnement de travail Windows sans devoir tout redécouvrir seul.",
 				checkoutNote:
-					'Connexion si nécessaire, puis validation du paiement et accès au parcours premium.',
+					'Connexion si nécessaire, puis paiement sécurisé. Stripe affiche la devise locale disponible avant validation.',
 				bundleTitle: 'Et si vous voulez aller plus loin',
 					bundleBody:
 						"Le Pack CMDglows existe pour les profils qui veulent aussi les outils complémentaires. Il apparaît ici comme un complément, pas comme message principal.",
@@ -275,13 +275,13 @@ const page =
 				testimonialRole: 'CEO and Co-Founder | Squirrly',
 				offerTitle: 'The offer',
 				offerName: 'Complete Windows course',
-				offerPrice: '$49',
+				offerPrice: '€49',
 				offerPeriod: 'one-time payment',
 				offerBullets: ['8 modules', 'FR + EN', 'access through course enrollment', 'focused implementation updates'],
 				offerBody:
 					'This offer is for you if you want a concrete improvement to your Windows work environment without having to rediscover everything alone.',
 				checkoutNote:
-					'Sign in if needed, then go through secure checkout and unlock the premium path directly.',
+					'Sign in if needed, then use secure checkout. Stripe shows the available local currency before confirmation.',
 				bundleTitle: 'If you want to go further',
 				bundleBody:
 					'The CMDglows bundle exists for people who also want the complementary tools. It appears here as an upsell, not as the primary message.',
@@ -403,7 +403,7 @@ const page =
 				</div>
 				<div class="grid gap-4 sm:grid-cols-2">
 					{page.paradigmBullets.map((item) => (
-						<div class="rounded-2xl border border-content-border bg-content-bg-elevated p-5 text-content-text-secondary shadow-sm dark:border-content-border-strong dark:bg-content-bg-inverse dark:text-content-text-muted">
+						<div class="rounded-2xl border border-content-border bg-content-bg-elevated p-5 text-content-text-secondary shadow-sm dark:border-content-border-strong dark:bg-content-bg-subtle dark:text-content-text-muted">
 							{item}
 						</div>
 					))}
@@ -447,7 +447,7 @@ const page =
 			</div>
 			<div class="grid gap-5 md:grid-cols-2">
 				{page.modules.map(([title, desc]) => (
-					<div class="rounded-3xl border border-content-border bg-content-bg-elevated p-6 shadow-sm dark:border-content-border-strong dark:bg-content-bg-inverse">
+					<div class="rounded-3xl border border-content-border bg-content-bg-elevated p-6 shadow-sm dark:border-content-border-strong dark:bg-content-bg-strong">
 						<h3 class="text-lg font-bold text-content-text-primary dark:text-content-text-over-dark">{title}</h3>
 						<p class="mt-3 text-content-text-secondary dark:text-content-text-tertiary">{desc}</p>
 					</div>
@@ -507,7 +507,7 @@ const page =
 				<p class="mt-5 max-w-2xl text-content-text-secondary dark:text-content-text-tertiary">{page.offerBody}</p>
 				<ul class="mt-6 grid gap-3 sm:grid-cols-2">
 					{page.offerBullets.map((item) => (
-						<li class="flex items-center gap-3 rounded-2xl bg-content-bg-subtle px-4 py-3 text-content-text-secondary dark:bg-content-bg-inverse dark:text-content-text-muted">
+						<li class="flex items-center gap-3 rounded-2xl bg-content-bg-subtle px-4 py-3 text-content-text-secondary dark:bg-content-bg-subtle dark:text-content-text-muted">
 							<span class="h-2.5 w-2.5 rounded-full bg-green"></span>
 							<span>{item}</span>
 						</li>

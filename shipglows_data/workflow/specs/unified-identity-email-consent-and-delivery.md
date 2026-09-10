@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "CommandGlows"
 created: "2026-09-04"
 created_at: "2026-09-04 01:52:00 UTC"
-updated: "2026-09-05"
-updated_at: "2026-09-05 12:14:00 UTC"
+updated: "2026-09-07"
+updated_at: "2026-09-07 11:53:25 UTC"
 status: ready
 source_skill: sg-engineering
 source_model: "GPT-5 Codex"
@@ -48,6 +48,8 @@ next_step: "Configure an authorized isolated email pilot after controller and ma
 ## Status
 
 Approved target contract. It defines the complete CommandGlows control plane for identities, email addresses, consents, audiences, suppressions, entitlements and delivery events. Implementation is intentionally phased. Until a phase has matching code and proof, the existing Resend routes remain the runtime truth.
+
+September 7 local continuation is tracked by `central-email-completion-plan.md`: delivery profiles, durable commerce operator emails, operator APIs and paginated campaigns extend the existing foundation. `central-email-api-contract.md` and `central-email-reconciliation-2026-09-07.md` describe the implemented surface and current evidence. The historical producer inventory below is not hosted truth; ContentGlows now has a generic server proxy in the inspected source. No UI, identity-provider migration, real contact import or commercial activation is implied.
 
 ## Problem
 
@@ -630,6 +632,8 @@ No production-ready claim is permitted while legal retention durations, hosted w
 - ContentGlows launch-protection documentation updates only when its direct Resend integration is actually replaced.
 
 ## Current Chantier Flow
+
+- `2026-09-07 — completion planning`: [Central email completion plan](central-email-completion-plan.md) adds a proposed phased delivery/operations/migration programme after the existing local implementation. The domain contract remains approved; the expanded execution plan is draft awaiting operator validation. No provider mutation or send occurred during planning. Clerk remains the current site authentication provider.
 
 - `2026-09-04 — architecture`: exhaustive contract approved and documented from the existing Convex identity/entitlement spine, direct Resend routes and ContentGlows Auth0 bridge. No runtime behavior or provider configuration changed.
 

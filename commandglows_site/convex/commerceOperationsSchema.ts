@@ -22,10 +22,13 @@ export const commerceOperationsTables = {
   commerceAlertOutbox: defineTable({
     incidentId: v.id('commerceIncidents'), environment: v.string(), deduplicationKey: v.string(),
     phase: v.string(), status: v.union(v.literal('pending'), v.literal('delivering'), v.literal('delivered'), v.literal('failed')),
+    emailMessageId: v.optional(v.id('emailMessages')), emailState: v.optional(v.string()),
+    transportChannel: v.optional(v.union(v.literal('webhook'), v.literal('email'))),
+    incidentVersion: v.optional(v.number()),
     attempts: v.number(), nextAttemptAt: v.number(), leaseUntil: v.optional(v.number()),
     lastError: v.optional(v.string()), deliveredAt: v.optional(v.number()), createdAt: v.number(), updatedAt: v.number(),
   }).index('by_deduplication', ['deduplicationKey']).index('by_incident', ['incidentId'])
-    .index('by_due', ['environment', 'status', 'nextAttemptAt']),
+    .index('by_due', ['environment', 'status', 'nextAttemptAt']).index('by_email_message', ['emailMessageId']),
   commerceOperationsCheckpoints: defineTable({
     environment: v.string(), cursor: v.optional(v.string()), scanBefore: v.number(), updatedAt: v.number(),
   }).index('by_environment', ['environment']),

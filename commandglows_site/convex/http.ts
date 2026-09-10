@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { commerceEnvironment } from "./commerceEventContract";
 
 const http = httpRouter();
 
@@ -11,6 +12,16 @@ http.route({
     const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
     if (!webhookSecret) {
       return new Response("Clerk webhook secret not configured", { status: 500 });
+    }
+
+    const environment = commerceEnvironment(
+      process.env.SUITE_BRIDGE_ENVIRONMENT ||
+        process.env.VERCEL_ENV ||
+        process.env.NODE_ENV ||
+        ""
+    );
+    if (!environment) {
+      return new Response("Clerk webhook environment not configured", { status: 500 });
     }
 
     const body = await request.text();
@@ -59,7 +70,7 @@ http.route({
             email: event.data.email_addresses?.[0]?.email_address ?? "",
             name: [event.data.first_name, event.data.last_name].filter(Boolean).join(" ") || undefined,
             imageUrl: event.data.image_url || undefined,
-            environment: "production",
+            environment,
             sourceRef: svixId,
           });
           break;

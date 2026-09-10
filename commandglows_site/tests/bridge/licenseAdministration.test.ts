@@ -34,13 +34,20 @@ async function seed(t: ReturnType<typeof backend>) {
       firstSeenAt: now,
       lastSeenAt: now,
     })
+    const adminId = await ctx.db.insert('globalUsers', { globalUserId: 'gu_admin', createdAt: now, updatedAt: now })
+    const memberId = await ctx.db.insert('globalUsers', { globalUserId: 'gu_member', createdAt: now, updatedAt: now })
+    for (const [clerkId, globalUserId] of [['clerk_admin', adminId], ['clerk_member', memberId]] as const) {
+      await ctx.db.insert('identityAccounts', { globalUserId, provider: 'clerk', providerAccountId: clerkId, environment: 'test', createdAt: now, updatedAt: now })
+    }
     await ctx.db.insert('users', {
       clerkId: 'clerk_admin',
+      globalUserId: adminId,
       email: 'admin@example.test',
       role: 'admin',
     })
     await ctx.db.insert('users', {
       clerkId: 'clerk_member',
+      globalUserId: memberId,
       email: 'member@example.test',
       role: 'member',
     })

@@ -3,7 +3,7 @@ import DashboardLayout from '@/layouts/DashboardLayout.astro'
 import LicenseAdminConsole from '@/components/admin/LicenseAdminConsole'
 import CommerceIncidentConsole from '@/components/admin/CommerceIncidentConsole'
 
-const auth = Astro.locals.auth()
+const auth = Astro.locals.siteAuth()
 if (!auth.userId) {
   return Astro.redirect('/signin?next=%2Fdashboard%2Flicences')
 }

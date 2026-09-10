@@ -37,8 +37,8 @@
       "title": "4. Authentication Services",
       "intro": "User authentication is provided by:",
       "items": [
-        "Provider: Clerk",
-        "Website: https://clerk.com",
+        "Providers: Auth0; Clerk for existing-account transition",
+        "Website: https://auth0.com ; https://clerk.com",
         "Data Processing: Compliant with GDPR regulations"
       ]
     },

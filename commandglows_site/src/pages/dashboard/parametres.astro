@@ -1,34 +1,29 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro'
-import { UserProfile } from '@clerk/astro/components'
-
-const auth = Astro.locals.auth()
-if (!auth.userId) {
-  return Astro.redirect('/signin')
-}
+const auth = Astro.locals.siteAuth()
+if (!auth.userId) return Astro.redirect('/signin?next=%2Fdashboard%2Fparametres')
 ---
-
-<DashboardLayout
-  title="Settings - Dashboard"
-  currentPath="/dashboard/parametres"
->
-  <div class="mx-auto max-w-4xl">
+<DashboardLayout title="Paramètres - Dashboard" currentPath="/dashboard/parametres" lang="fr">
+  <section class="mx-auto max-w-4xl">
     <div class="mb-8 flex items-center gap-4">
-      <a
-        href="/dashboard"
-        class="text-content-text-tertiary hover:text-content-text-secondary dark:text-content-text-muted dark:hover:text-content-text-muted text-sm"
-      >
-        &larr; Dashboard
-      </a>
-      <h1
-        class="text-content-text-primary dark:text-content-text-primary text-3xl font-bold"
-      >
-        Settings
-      </h1>
+      <a href="/dashboard" class="text-content-text-tertiary text-sm hover:underline">&larr; Tableau de bord</a>
+      <h1 class="text-content-text-primary text-3xl font-bold">Paramètres du compte</h1>
     </div>
-
-    <div class="flex justify-center">
-      <UserProfile routing="hash" />
+    <div class="rounded-xl border border-content-border bg-content-bg-elevated p-6">
+      <h2 class="text-content-text-primary text-lg font-semibold">Votre profil</h2>
+      <dl class="mt-4 grid gap-4 text-content-text-secondary">
+        <div><dt class="font-semibold">Nom</dt><dd>{auth.name || 'Non renseigné'}</dd></div>
+        <div><dt class="font-semibold">Adresse email</dt><dd>{auth.email || 'Non renseignée'}</dd></div>
+      </dl>
+      <p class="mt-4 text-sm text-content-text-secondary">Ces informations proviennent de votre connexion. Leur modification n’est pas encore disponible dans cet espace.</p>
+      {auth.provider === 'clerk' && <form method="post" action="/api/auth/link" class="mt-6">
+        <p class="mb-3 text-sm text-content-text-secondary">Reliez ce compte à la nouvelle connexion pour conserver vos achats et vos accès.</p>
+        <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-4 py-2 font-semibold">Relier mon compte à Auth0</button>
+      </form>}
+      <p class="mt-6"><a href="/fr/account/link-existing" class="brand-text-magenta underline">Retrouver mes achats existants</a></p>
+      <form method="post" action="/api/auth/logout" class="mt-6">
+        <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">Se déconnecter</button>
+      </form>
     </div>
-  </div>
+  </section>
 </DashboardLayout>

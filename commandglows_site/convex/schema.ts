@@ -1,5 +1,7 @@
 import { emailTables } from './emailSchema'
 import { emailSupportTables } from './emailSupportSchema'
+import { emailLegacyTables } from './emailLegacySchema'
+import { emailOperationsTables } from './emailOperationsSchema'
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { commerceEventEnvelope } from './commerceEventContract'
@@ -9,6 +11,13 @@ export default defineSchema({
   ...emailTables,
   ...emailSupportTables,
   ...commerceOperationsTables,
+  ...emailLegacyTables,
+  ...emailOperationsTables,
+  siteLoginAttempts: defineTable({
+    attemptId: v.string(), environment: v.string(),
+    status: v.union(v.literal('pending'), v.literal('active'), v.literal('revoked')),
+    expiresAt: v.number(), createdAt: v.number(), updatedAt: v.number(),
+  }).index('by_attemptEnvironment', ['attemptId', 'environment']).index('by_expiresAt', ['expiresAt']),
   globalUsers: defineTable({
     globalUserId: v.string(),
     primaryEmail: v.optional(v.string()),
@@ -24,6 +33,7 @@ export default defineSchema({
     globalUserId: v.id('globalUsers'),
     provider: v.string(),
     providerAccountId: v.string(),
+    issuer: v.optional(v.string()),
     email: v.optional(v.string()),
     source: v.optional(v.string()),
     sourceRef: v.optional(v.string()),
@@ -32,6 +42,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_providerAccount', ['provider', 'providerAccountId'])
+    .index('by_scopedProviderAccount', ['provider', 'issuer', 'providerAccountId', 'environment'])
     .index('by_globalUserId', ['globalUserId'])
     .index('by_email', ['email'])
     .index('by_providerAccountId', ['providerAccountId']),

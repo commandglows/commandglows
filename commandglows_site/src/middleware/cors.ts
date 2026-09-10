@@ -120,7 +120,9 @@ export const corsMiddleware: MiddlewareHandler = async (context, next) => {
   // Clone response headers and add CORS headers
   const responseHeaders = new Headers(response.headers)
   Object.entries(corsHeaders).forEach(([key, value]) => {
-    responseHeaders.set(key, value)
+    if (key.toLowerCase() === 'vary') {
+      responseHeaders.set(key, [...new Set([...(responseHeaders.get(key)?.split(',').map(v => v.trim()) ?? []), value])].join(', '))
+    } else responseHeaders.set(key, value)
   })
 
   // Return new response with CORS headers added
