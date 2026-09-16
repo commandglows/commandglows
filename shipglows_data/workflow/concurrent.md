@@ -9,6 +9,25 @@ scope: "inspirations formation, productivité et workflows IA pour WinGlows"
 confidence: medium
 ---
 
+https://github.com/CaptainASIC/reckoner
+https://github.com/timharris707/modeldeck
+https://altic.dev/fluid
+https://www.raycast.com/
+https://github.com/diimdeep/awesome-split-keyboards
+https://youtu.be/lG-TFEZwywc?t=274 clean my mac
+https://openwhispr.com/
+https://github.com/hrsh7th/vim-vsnip
+https://microsoftedge.microsoft.com/addons/detail/magical-text-expander-/mnclkclehoclnklignljjpkkkimlpemi?hl=fr-fr
+https://chromewebstore.google.com/detail/magical-text-expander-aut/iibninhmiggehlcdolcilmhacighjamp
+https://www.getmagical.com/
+https://chromewebstore.google.com/detail/text-blaze-templates-and/idgadaccgipmpannjkmfddolnnhmeklj
+https://chromewebstore.google.com/detail/writecream-ai-powered-wri/aabfjmnamlihmlicgeoogldnfaaklfon
+https://www.autohotkey.com/
+https://bestself.co/products/helm
+https://github.com/CrossCopy/clipboard
+
+
+
 # Concurrents et inspirations — WinGlows
 
 ## Lecture projet

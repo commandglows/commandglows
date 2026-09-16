@@ -655,13 +655,13 @@ describe('suiteBridge helpers', () => {
     ).toBe(false)
   })
 
-  test('builds a RS256 product token for ReplayGlowz with valid claims and signature', async () => {
+  test('builds a RS256 product token for ReplayGlows with canonical JWT env names', async () => {
     const keys = buildJwtRsaKeys()
     const env = {
-      REPLAYGLOWZ_PRODUCT_JWT_PRIVATE_KEY_PEM: keys.privateKey,
-      REPLAYGLOWZ_PRODUCT_JWT_KEY_ID: 'replayglowz-suite-2026-06-02',
-      REPLAYGLOWZ_PRODUCT_JWT_ISSUER: 'https://commandglows.com',
-      REPLAYGLOWZ_PRODUCT_JWT_AUDIENCE: 'replayglowz-convex',
+      REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM: keys.privateKey,
+      REPLAYGLOWS_PRODUCT_JWT_KEY_ID: 'replayglows-suite-2026-09-15',
+      REPLAYGLOWS_PRODUCT_JWT_ISSUER: 'https://commandglows.com',
+      REPLAYGLOWS_PRODUCT_JWT_AUDIENCE: 'replayglows-convex',
     }
 
     const now = Date.UTC(2026, 5, 2, 12, 0, 0)
@@ -687,7 +687,7 @@ describe('suiteBridge helpers', () => {
     const { header, payload, signature, signingInput } = decodeJwt(token)
     expect(header).toMatchObject({
       alg: 'RS256',
-      kid: 'replayglowz-suite-2026-06-02',
+      kid: 'replayglows-suite-2026-09-15',
     })
     expect(payload).toMatchObject({
       sub: 'clerk_abc',
@@ -698,7 +698,7 @@ describe('suiteBridge helpers', () => {
       productUserId: 'clerk_abc',
       productUserIdSource: 'clerk',
       iss: 'https://commandglows.com',
-      aud: 'replayglowz-convex',
+      aud: 'replayglows-convex',
     })
     expect(payload.iat).toBe(Math.floor(now / 1000))
     expect(payload.exp).toBe(Math.floor(now / 1000) + 600)
@@ -725,11 +725,11 @@ describe('suiteBridge helpers', () => {
     expect(valid).toBe(true)
   })
 
-  test('builds ReplayGlowz JWKS from public JWK env', async () => {
+  test('builds ReplayGlows JWKS from canonical public JWK env', async () => {
     const keys = buildJwtRsaKeys()
     const env = {
-      REPLAYGLOWZ_PRODUCT_JWT_PUBLIC_KEY_JWK: JSON.stringify(keys.publicJwk),
-      REPLAYGLOWZ_PRODUCT_JWT_KEY_ID: 'replayglowz-suite-2026-06-02',
+      REPLAYGLOWS_PRODUCT_JWT_PUBLIC_KEY_JWK: JSON.stringify(keys.publicJwk),
+      REPLAYGLOWS_PRODUCT_JWT_KEY_ID: 'replayglows-suite-2026-09-15',
     }
 
     const jwks = await getReplayGlowzProductTokenJwks(env)
@@ -739,13 +739,13 @@ describe('suiteBridge helpers', () => {
       kty: 'RSA',
       use: 'sig',
       alg: 'RS256',
-      kid: 'replayglowz-suite-2026-06-02',
+      kid: 'replayglows-suite-2026-09-15',
     })
     expect(jwks[0]).not.toHaveProperty('d')
     expect(jwks[0]).toHaveProperty('n')
   })
 
-  test('builds ReplayGlowz JWKS from public key PEM fallback', async () => {
+  test('keeps legacy ReplayGlowz JWT env names as a temporary fallback', async () => {
     const keys = buildJwtRsaKeys()
     const env = {
       REPLAYGLOWZ_PRODUCT_JWT_PUBLIC_KEY_PEM: keys.publicKey,

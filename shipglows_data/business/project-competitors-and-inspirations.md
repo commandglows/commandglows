@@ -42,7 +42,8 @@ supersedes:
 next_review: "2026-09-07"
 next_step: "/sf-market-study update shipglows_data/business/project-competitors-and-inspirations.md"
 ---
-
+https://github.com/y3owk1n/neru
+https://github.com/cactus-compute/needle
 # Concurrents et inspirations — CommandGlows
 
 ## Role
