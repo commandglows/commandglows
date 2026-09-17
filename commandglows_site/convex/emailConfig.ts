@@ -33,6 +33,7 @@ export type EmailConfig = {
       recipients: string[]
     }
     activated?: boolean
+    campaignPreflightRequired?: boolean
     retentionDays?: number
     allowedRecipients?: string[]
   }[]
@@ -112,6 +113,11 @@ export function parseEmailConfig(raw: string | undefined): EmailConfig {
       if (
         b.activated &&
         (!Number.isInteger(b.retentionDays) || b.retentionDays < 1)
+      )
+        fail('configuration_unavailable')
+      if (
+        b.campaignPreflightRequired !== undefined &&
+        typeof b.campaignPreflightRequired !== 'boolean'
       )
         fail('configuration_unavailable')
       for (const a of b.audiences)

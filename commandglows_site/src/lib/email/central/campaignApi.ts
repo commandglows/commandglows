@@ -190,7 +190,9 @@ export async function handleCampaignApi(
         ? ['title', 'audience_id', 'locale', 'subject', 'preheader', 'blocks']
         : []),
       ...(operation === 'test' ? ['recipient'] : []),
-      ...(operation === 'approve' ? ['review_id', 'scheduled_at'] : []),
+      ...(operation === 'approve'
+        ? ['review_id', 'report_id', 'challenge_id', 'scheduled_at']
+        : []),
     ])
     const businessId = string(body.business_id, 64)
     const input: Record<string, unknown> = match
@@ -207,6 +209,8 @@ export async function handleCampaignApi(
     if (operation === 'test') input.recipient = string(body.recipient, 320)
     if (operation === 'approve') {
       input.reviewId = string(body.review_id, 256)
+      input.reportId = string(body.report_id, 256)
+      input.challengeId = string(body.challenge_id, 256)
       if (body.scheduled_at !== undefined) {
         const date = string(body.scheduled_at, 40)
         if (

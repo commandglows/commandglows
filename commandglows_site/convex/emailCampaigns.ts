@@ -22,6 +22,12 @@ import {
   campaignContent,
   renderCampaign,
 } from '../src/lib/email/central/campaignContent'
+import {
+  createEvidenceReport,
+  consumeHumanChallenge,
+  currentReport,
+  evidenceScope,
+} from './emailCampaignEvidence'
 
 const SNAPSHOT_PAGE = 50
 const FANOUT_PAGE = 25
@@ -331,6 +337,7 @@ export const command = mutation({
               'campaignId',
               'expectedVersion',
               'reviewId',
+              'reportId',
               'challengeId',
               'recipient',
               'scheduledAt',
@@ -410,6 +417,32 @@ export const command = mutation({
           !c.snapshotComplete
         )
           fail('review_required')
+        if (config.environment === 'production' || business.campaignPreflightRequired) {
+          const report = await currentReport(ctx, c._id, c.revision ?? 0)
+          const expectedScope = evidenceScope({
+            businessId: business.id,
+            campaignId: c._id,
+            versionId: oldVersion._id,
+            audienceId: oldVersion.audienceId,
+            purpose: oldVersion.purpose,
+            route: oldVersion.route,
+          })
+          if (
+            !report ||
+            input.reportId !== report._id ||
+            report.status !== 'valid' ||
+            report.expiresAt <= now ||
+            report.scopeDigest !== expectedScope
+          )
+            fail('preflight_blocked')
+          await consumeHumanChallenge(ctx, {
+            challengeId: input.challengeId,
+            businessId: business.id,
+            action: 'approve',
+            scopeDigest: expectedScope,
+            now,
+          })
+        }
         if (
           c.state !== 'draft' ||
           requiresLiveTest(config, business) ||
@@ -532,6 +565,16 @@ export const command = mutation({
     let result: any = await currentReceipt(ctx, c._id)
     if (operation === 'snapshot') {
       const refreshed = (await ctx.db.get(c._id))!
+      const evidence = await createEvidenceReport(ctx, {
+        businessId: business.id,
+        campaignId: refreshed._id,
+        versionId: oldVersion!._id,
+        revision: refreshed.revision ?? 0,
+        audienceId: oldVersion!.audienceId,
+        purpose: oldVersion!.purpose,
+        route: oldVersion!.route,
+        now,
+      })
       result = {
         ...result,
         review: {
@@ -541,6 +584,9 @@ export const command = mutation({
           excluded_count: refreshed.excluded,
           html: oldVersion!.rendered.html,
           text: oldVersion!.rendered.text,
+          report_id: evidence.reportId,
+          expires_at: evidence.report?.expiresAt ?? null,
+          blocking_checks: evidence.report?.blockingChecks ?? [],
         },
       }
     }

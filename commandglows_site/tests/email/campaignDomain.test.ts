@@ -7,6 +7,7 @@ import {
   campaignContent,
   renderCampaign,
 } from '../../src/lib/email/central/campaignContent'
+import { evidenceScope, MANDATORY_EVIDENCE } from '../../convex/emailCampaignEvidence'
 const modules = import.meta.glob('../../convex/**/*.ts')
 const ref = (name: string) => makeFunctionReference<'mutation'>(name)
 const credential = 'campaign-test-credential'.repeat(2)
@@ -18,6 +19,7 @@ const business = {
   transactionalStream: 'service',
   broadcastStream: 'news',
   activated: true,
+  campaignPreflightRequired: true,
   retentionDays: 30,
   allowedRecipients: ['reader@example.test'],
   audiences: [
@@ -100,12 +102,83 @@ async function create(t: any) {
 async function review(t: any, c: any) {
   return command(t, 'review', { campaignId: c.id, expectedVersion: c.version })
 }
-async function approve(t: any, c: any) {
+async function seedPreflight(t: any, c: any) {
+  const version = await t.run(async (ctx: any) => {
+    const campaign = await ctx.db.get(c.id)
+    return ctx.db.get(campaign.versionId)
+  })
+  const scopeDigest = evidenceScope({
+    businessId: 'studio',
+    campaignId: c.id,
+    versionId: version._id,
+    audienceId: version.audienceId,
+    purpose: version.purpose,
+    route: version.route,
+  })
+  await t.run(async (ctx: any) => {
+    const policy = await ctx.db
+      .query('emailCampaignPolicies')
+      .withIndex('scope', (q: any) =>
+        q.eq('businessId', 'studio').eq('identityKey', version.route).eq('revision', 1)
+      )
+      .unique()
+    if (!policy)
+      await ctx.db.insert('emailCampaignPolicies', {
+        businessId: 'studio',
+        identityKey: version.route,
+        revision: 1,
+        status: 'approved',
+        evidenceMaxAge: Object.fromEntries(MANDATORY_EVIDENCE.map((kind) => [kind, 86_400_000])),
+        approvedAt: Date.now(),
+      })
+    for (const kind of MANDATORY_EVIDENCE)
+      if (
+        !(await ctx.db
+          .query('emailCampaignEvidence')
+          .withIndex('campaign', (q: any) =>
+            q.eq('campaignId', c.id).eq('versionId', version._id).eq('kind', kind)
+          )
+          .first())
+      )
+        await ctx.db.insert('emailCampaignEvidence', {
+          businessId: 'studio',
+          campaignId: c.id,
+          versionId: version._id,
+          kind,
+          source: 'fixture:campaign-domain',
+          owner: 'test-collector',
+          scopeDigest,
+          collectedAt: Date.now(),
+          validUntil: Date.now() + 86_400_000,
+          sourceRevision: 'fixture-1',
+          status: 'valid',
+          evidenceRef: `fixture-${kind}`,
+        })
+  })
+  return { version, scopeDigest }
+}
+async function approve(t: any, c: any, scheduledAt?: string) {
+  const { scopeDigest } = await seedPreflight(t, c)
   const r = await review(t, c)
+  const challengeId = `challenge-${c.id}`
+  await t.run((ctx: any) =>
+    ctx.db.insert('emailOperatorChallenges', {
+      challengeId,
+      actorId: 'user_admin',
+      sessionRef: 'session-test',
+      businessId: 'studio',
+      action: 'approve',
+      scopeDigest,
+      expiresAt: Date.now() + 60_000,
+    })
+  )
   return command(t, 'approve', {
     campaignId: c.id,
     expectedVersion: c.version,
     reviewId: r.review.id,
+    reportId: r.review.report_id,
+    challengeId,
+    ...(scheduledAt ? { scheduledAt } : {}),
   })
 }
 beforeEach(() => {
@@ -175,6 +248,36 @@ it('binds immutable approval and excludes withdrawal after approval', async () =
   )
   expect(detail.campaign.counters.cancelled).toBe(1)
 })
+
+it('blocks approval when evidence is unavailable and requires a human challenge', async () => {
+  const t = setup()
+  await member(t)
+  const c = await create(t)
+  const r = await review(t, c)
+  expect(r.review.blocking_checks.map((check: any) => check.kind)).toEqual(
+    expect.arrayContaining(['identity', 'route', 'suppression_sync'])
+  )
+  await expect(
+    command(t, 'approve', {
+      campaignId: c.id,
+      expectedVersion: c.version,
+      reviewId: r.review.id,
+      reportId: r.review.report_id,
+      challengeId: 'forged-challenge',
+    })
+  ).rejects.toThrow('preflight_blocked')
+
+  await seedPreflight(t, c)
+  const fresh = await review(t, c)
+  await expect(
+    command(t, 'approve', {
+      campaignId: c.id,
+      expectedVersion: c.version,
+      reviewId: fresh.review.id,
+      reportId: fresh.review.report_id,
+    })
+  ).rejects.toThrow('human_authority_required')
+})
 it('expands a large audience in bounded pages, resumes review, never duplicates recipients', async () => {
   const recipients = Array.from(
     { length: 121 },
@@ -184,6 +287,7 @@ it('expands a large audience in bounded pages, resumes review, never duplicates 
   for (const email of recipients) await member(t, email)
   vi.setSystemTime(Date.now() + 1000)
   const c = await create(t)
+  await seedPreflight(t, c)
   const r1 = await review(t, c)
   expect(r1.review.complete).toBe(false)
   expect(r1.review.eligible_count).toBe(50)
@@ -199,11 +303,7 @@ it('expands a large audience in bounded pages, resumes review, never duplicates 
   expect(r2.review.id).toBe(r1.review.id)
   expect(r3.review.complete).toBe(true)
   expect(r3.review.eligible_count).toBe(121)
-  await command(t, 'approve', {
-    campaignId: c.id,
-    expectedVersion: 1,
-    reviewId: r3.review.id,
-  })
+  await approve(t, c)
   await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   expect(
     (await t.run((ctx: any) => ctx.db.query('emailMessages').collect())).length
@@ -318,13 +418,7 @@ it('scheduled campaigns cannot expand early and deleted drafts leave no readable
   const t = setup()
   await member(t)
   const c = await create(t)
-  const r = await review(t, c)
-  await command(t, 'approve', {
-    campaignId: c.id,
-    expectedVersion: 1,
-    reviewId: r.review.id,
-    scheduledAt: '2026-09-09T12:00:00Z',
-  })
+  await approve(t, c, '2026-09-09T12:00:00Z')
   await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   expect(
     await t.run((ctx: any) => ctx.db.query('emailMessages').collect())
@@ -377,12 +471,27 @@ it('round trips the public HTTP wire into real Convex commands with blocks and a
     business_id: 'studio',
   })
   expect(created.campaign.blocks[2].source_id).toBe('source-1')
+  const { scopeDigest } = await seedPreflight(t, created.campaign)
   const base = { business_id: 'studio', expected_version: 1 }
   const r = await send(`campaigns/${created.campaign.id}/review`, base)
   expect(r.review.html).toContain('https://example.test/source')
+  const challengeId = `challenge-${created.campaign.id}`
+  await t.run((ctx: any) =>
+    ctx.db.insert('emailOperatorChallenges', {
+      challengeId,
+      actorId: 'user_admin',
+      sessionRef: 'session-test',
+      businessId: 'studio',
+      action: 'approve',
+      scopeDigest,
+      expiresAt: Date.now() + 60_000,
+    })
+  )
   const approved = await send(`campaigns/${created.campaign.id}/approve`, {
     ...base,
     review_id: r.review.id,
+    report_id: r.review.report_id,
+    challenge_id: challengeId,
   })
   expect(approved.campaign.state).toBe('sending')
 })

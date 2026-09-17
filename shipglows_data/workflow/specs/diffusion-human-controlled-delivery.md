@@ -30,7 +30,7 @@ evidence:
   - commandglows_site/convex/email.ts
   - commandglows_site/src/lib/email/central/campaignApi.ts
   - commandglows_site/src/lib/email/central/transport.ts
-next_step: Implémenter le lot 0 selon les contrats R01–R08 précisés ; réparer les tests du socle avant les lots dépendants ; aucune activation réelle.
+next_step: Implémenter le lot 2 selon les contrats R02–R04 ; aucune activation réelle.
 ---
 
 # Title
@@ -39,7 +39,7 @@ Diffusion : contrôle humain avant, pendant et après envoi
 
 ## Status
 
-Corrections documentaires R01–R08 intégrées le 16 septembre 2026 dans « Normative implementation contracts ». Les contrats sont définis pour préparer les lots locaux ; le socle incompatible reste à réparer au lot 0. La revue `not ready` ci-dessous est conservée comme constat historique antérieur aux corrections, et ne constitue pas un nouveau résultat de tests. Le contrat de suspension validé par Diane reste inchangé. Aucune implémentation ni activation effectuée dans ce chantier. Les paramètres métier de production restent explicitement non approuvés.
+Corrections documentaires R01–R08 intégrées le 16 septembre 2026 dans « Normative implementation contracts ». Les lots 0 et 1 sont clôturés localement : le contrat canonique est réconcilié, le catalogue de preuves et les rapports de préflight sont persistés, et l’approbation exige des preuves fraîches et un challenge humain borné lorsque le profil l’active. La revue `not ready` ci-dessous est conservée comme constat historique antérieur aux corrections, et ne constitue pas un nouveau résultat de tests. Aucune activation fournisseur, livraison réelle ou permission externe n’a été effectuée. Les paramètres métier de production restent explicitement non approuvés.
 
 Le livrable demandé dans cette tâche est cette spec et son emplacement. Cette spec n'est pas une autorisation de déploiement, d'envoi réel, de modification DNS, de consentement ou de fournisseur. Les autorisations historiques d'autres chantiers ne sont pas transférées automatiquement.
 
@@ -442,10 +442,11 @@ La vérification complète est terminée. R02–R08 décrivent des précisions d
 | Date | Owner | Résultat |
 | --- | --- | --- |
 | 2026-09-17 | sg-development / lot 0 | Lot 0 local clôturé : contrats lecture/commande, blocs structurés, reçus, expansion authentifiée, outbox borné et rejeu concurrent réconciliés ; 66 tests campagne/politique/API/contenu verts et `astro check` sans erreur. Aucune activation externe. |
+| 2026-09-17 | sg-development / lot 1 | Lot 1 local clôturé : catalogue de preuves R05, rapports de préflight liés à la version/route/audience, invalidation par fraîcheur et scope, challenge humain à usage unique et refus des preuves indisponibles ; 166 tests email verts et `astro check` sans erreur (un hint Astro préexistant). Aucune activation externe. |
 | 2026-09-16 | sg-development / préparation de spec | Audit antérieur repris et divergences clés revérifiées ; contrat rédigé ; checklist indépendante de 12 invariants intégrée ; aucune implémentation |
 | 2026-09-16 | sg-engineering / 101-sg-ready | Revue intégrale : `not ready`. Sections et lots 0–5 examinés ; décision de suspension conservée ; R01–R08 documentés. Tests email : 150 réussis / 15 échoués ; frontière HTTP/Convex réellement testée et en échec. Aucune implémentation ni activation. |
 | 2026-09-16 | sg-docs / correction ciblée | Contrats normatifs R01–R08 intégrés, A13 corrigé et A17–A27 ajoutés. Topologie conforme et lint des métadonnées réussi. Relecture des contradictions entre règles générales et contrats détaillés ; revue initiale conservée comme historique. Aucun test applicatif relancé, aucune implémentation, activation ou modification des fichiers étrangers. |
 
 ## Current Chantier Flow
 
-Préparation et revue historique terminées → lot 0 local clôturé : contrat campagne/routage, matrice/fencing, API, rendu structuré, expansion authentifiée, outbox borné et atomicité du rejeu prouvés → lot 1 prêt à démarrer → lots 1 à 5 non commencés et aucune activation réelle, preuve fournisseur, boîte de réception ou livraison revendiquée.
+Préparation et revue historique terminées → lots 0 et 1 locaux clôturés : contrat campagne/routage, API, rendu structuré, expansion authentifiée, outbox borné, catalogue de preuves, rapports de préflight et autorité humaine bornée prouvés par fixtures → lot 2 prêt à démarrer → aucune activation réelle, preuve fournisseur, boîte de réception ou livraison revendiquée.

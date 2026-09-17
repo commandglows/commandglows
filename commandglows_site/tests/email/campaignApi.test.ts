@@ -91,6 +91,8 @@ describe('campaign operator boundary', () => {
       business_id: 'shipglows',
       expected_version: 1,
       review_id: `campaign1:1:${'a'.repeat(128)}`,
+      report_id: 'report1',
+      challenge_id: 'challenge1',
     }
     expect(
       (
@@ -330,6 +332,8 @@ describe('campaign operator boundary', () => {
       business_id: 'shipglows',
       expected_version: 2,
       review_id: 'review1',
+      report_id: 'report1',
+      challenge_id: 'challenge1',
       scheduled_at: '2026-10-01T12:00:00+02:00',
     }
     expect(
@@ -349,6 +353,8 @@ describe('campaign operator boundary', () => {
           campaignId: 'campaign1',
           expectedVersion: 2,
           reviewId: 'review1',
+          reportId: 'report1',
+          challengeId: 'challenge1',
           scheduledAt: '2026-10-01T10:00:00.000Z',
         },
       })
