@@ -106,6 +106,12 @@ async function fixture(count = 3) {
         expected_version: campaign?.revision ?? 0,
         ...(campaign ? { campaign_id: campaign.campaign_id } : {}),
         ...input,
+        ...(operation === 'approve' && campaign
+          ? {
+              review_id:
+                campaign.review?.id ?? `${campaign.campaign_id}:${campaign.revision}`,
+            }
+          : {}),
       },
       key
     )
@@ -274,7 +280,7 @@ test('concurrent idempotent writes replay one receipt and concurrent pumps never
         expected_version: a.revision,
       })
     ).status
-  ).toBe(409)
+  ).toBe(200)
   expect(
     (
       await f.send(
@@ -354,7 +360,7 @@ test('schedule is approved as saved, edits invalidate approval, and dispatch req
         expected_version: c.revision,
       })
     ).status
-  ).toBe(409)
+  ).toBe(422)
   c = await f.post('approve', await f.snapshot(c))
   vi.setSystemTime(start + 89_000)
   expect(await f.pump()).toEqual({ processed: 0 })
@@ -452,7 +458,7 @@ test('tenant reads/writes denied; a route change invalidates approval and Live t
         expected_version: c.revision,
       })
     ).status
-  ).toBe(409)
+  ).toBe(422)
   expect(await f.pump()).toEqual({ processed: 0 })
 })
 

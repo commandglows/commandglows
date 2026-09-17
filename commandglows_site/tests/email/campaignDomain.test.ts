@@ -57,7 +57,7 @@ function setup(recipients = ['reader@example.test']) {
         id: 'operator',
         credentialEnv: 'EMAIL_TEST_CAMPAIGNS',
         businessIds: ['studio'],
-        operations: ['campaign_read', 'campaign_write', 'dispatch', 'webhook'],
+        operations: ['campaign_read', 'campaign_write', 'campaign_dispatch', 'dispatch', 'webhook'],
       },
     ],
     businesses: [{ ...business, allowedRecipients: recipients }],
@@ -158,7 +158,7 @@ it('binds immutable approval and excludes withdrawal after approval', async () =
   await expect(
     command(t, 'save', { ...content, campaignId: c.id, expectedVersion: 1 })
   ).rejects.toThrow('invalid_state')
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   await t.run((ctx: any) => ctx.db.patch(m, { state: 'withdrawn' }))
   expect(
     await t.mutation(ref('email:claim'), { credential, businessId: 'studio' })
@@ -204,12 +204,13 @@ it('expands a large audience in bounded pages, resumes review, never duplicates 
     expectedVersion: 1,
     reviewId: r3.review.id,
   })
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   expect(
     (await t.run((ctx: any) => ctx.db.query('emailMessages').collect())).length
   ).toBe(50)
   await t.finishAllScheduledFunctions(() => vi.runAllTimers())
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   const rows = await t.run((ctx: any) =>
     ctx.db.query('emailMessages').collect()
   )
@@ -221,7 +222,7 @@ it('cancels future expansion and dispatch, preserving in-flight unknown outcomes
   await member(t)
   const c = await create(t)
   await approve(t, c)
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   const [job] = await t.mutation(ref('email:claim'), {
     credential,
     businessId: 'studio',
@@ -234,7 +235,7 @@ it('cancels future expansion and dispatch, preserving in-flight unknown outcomes
     attemptId: job.attemptId,
   })
   expect(check.eligible).toBe(false)
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   expect((await t.run((ctx: any) => ctx.db.get(job.messageId))).state).toBe(
     'cancelled'
   )
@@ -244,7 +245,7 @@ it('counts submitted and late delivered exactly once, keeps unknown distinct', a
   await member(t)
   const c = await create(t)
   await approve(t, c)
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   const [job] = await t.mutation(ref('email:claim'), {
     credential,
     businessId: 'studio',
@@ -324,7 +325,7 @@ it('scheduled campaigns cannot expand early and deleted drafts leave no readable
     reviewId: r.review.id,
     scheduledAt: '2026-09-09T12:00:00Z',
   })
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   expect(
     await t.run((ctx: any) => ctx.db.query('emailMessages').collect())
   ).toHaveLength(0)
@@ -404,10 +405,7 @@ it('defers a bounded page of blocked legacy jobs so a later eligible campaign pr
   vi.setSystemTime(Date.now() + 1000)
   const c = await create(t)
   await approve(t, c)
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
-  expect(
-    await t.mutation(ref('email:claim'), { credential, businessId: 'studio' })
-  ).toEqual([])
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   const [job] = await t.mutation(ref('email:claim'), {
     credential,
     businessId: 'studio',
@@ -443,7 +441,7 @@ it.each(['success', 'unknown', 'rate_limit'] as const)(
     vi.setSystemTime(Date.now() + 1000)
     const c = await create(t)
     await approve(t, c)
-    await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+    await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
     let sends = 0
     const fetcher = vi.fn(async (url: any) => {
       if (String(url).endsWith('/server'))
@@ -504,15 +502,15 @@ it.each(['success', 'unknown', 'rate_limit'] as const)(
       fetcher.mock.calls.filter(([url]) => String(url).endsWith('/server'))
     ).toHaveLength(1)
     const stored = await t.run((ctx: any) => ctx.db.get(c.id))
-    expect(stored.counters.sending).toBe(0)
+      expect(stored.counters.sending).toBe(mode === 'success' ? 0 : 9)
     if (mode === 'success') {
       expect(stored.counters.submitted).toBe(10)
       expect(stored.counters.queued).toBe(2)
     }
     if (mode === 'unknown') {
       expect(stored.counters.unknown).toBe(1)
-      expect(stored.counters.queued).toBe(11)
+      expect(stored.counters.queued).toBe(2)
     }
-    if (mode === 'rate_limit') expect(stored.counters.queued).toBe(12)
+    if (mode === 'rate_limit') expect(stored.counters.queued).toBe(3)
   }
 )

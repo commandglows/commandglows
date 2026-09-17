@@ -18,8 +18,16 @@ import {
 import { suppressed } from './email'
 import { emailChannelPaused } from './emailOperationsPolicy'
 import { renderEmail } from '../src/lib/email/central/templates'
+import {
+  campaignContent,
+  renderCampaign,
+} from '../src/lib/email/central/campaignContent'
 
-const PAGE = 25
+const SNAPSHOT_PAGE = 50
+const FANOUT_PAGE = 25
+function reviewId(campaignId: Id<'emailCampaigns'>, version: number) {
+  return `${campaignId}:${version}`
+}
 const contentKeys = [
   'audienceId',
   'locale',
@@ -29,6 +37,24 @@ const contentKeys = [
   'timezone',
 ]
 function content(input: any) {
+  if (input?.blocks) {
+    try {
+      const value = campaignContent(input)
+      return {
+        audienceId: value.audienceId,
+        locale: value.locale,
+        subject: value.subject,
+        preheader: value.preheader,
+        paragraphs: value.blocks.map((block) => block.text).filter(Boolean),
+        blocks: value.blocks,
+        title: value.title,
+        scheduledAt: input.scheduledAt ?? Date.now(),
+        timezone: input.timezone ?? 'UTC',
+      }
+    } catch {
+      fail('invalid_input')
+    }
+  }
   if (
     !input ||
     typeof input !== 'object' ||
@@ -73,7 +99,34 @@ function receipt(
   c: Doc<'emailCampaigns'>,
   version?: Doc<'emailCampaignVersions'> | null
 ) {
+  const campaign = {
+    id: c._id,
+    version: c.revision,
+    business_id: c.businessId,
+    title: version?.title ?? '',
+    audience_id: version?.audienceId ?? null,
+    locale: version?.locale ?? null,
+    subject: version?.subject ?? '',
+    preheader: version?.preheader ?? '',
+    blocks: version?.blocks ?? [],
+    state: c.state,
+    scheduled_at: version?.scheduledAt
+      ? new Date(version.scheduledAt).toISOString()
+      : null,
+    updated_at: new Date(c.updatedAt).toISOString(),
+    counters: {
+      queued: c.fanoutQueued,
+      cancelled: c.counters?.cancelled ?? c.fanoutExcluded,
+      delivered: 0,
+      submitted: 0,
+      failed: 0,
+      unknown: 0,
+    },
+    eligible_count: c.eligible,
+    excluded_count: c.excluded,
+  }
   return {
+    campaign,
     campaign_id: c._id,
     business_id: c.businessId,
     revision: c.revision,
@@ -97,6 +150,8 @@ function receipt(
         c.state === 'fanout_complete' || c.resumeState === 'fanout_complete',
     },
     block_reason: c.blockReason ?? null,
+    eligible_count: c.eligible,
+    excluded_count: c.excluded,
   }
 }
 async function currentReceipt(
@@ -112,13 +167,20 @@ export const command = mutation({
   args: {
     credential: v.string(),
     businessId: v.string(),
-    key: v.string(),
+    key: v.optional(v.string()),
+    idempotencyKey: v.optional(v.string()),
+    actorId: v.optional(v.string()),
     operation: v.string(),
-    expectedVersion: v.number(),
+    expectedVersion: v.optional(v.number()),
     campaignId: v.optional(v.id('emailCampaigns')),
     input: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
+    const input = (args.input ?? {}) as Record<string, any>
+    const operation = args.operation === 'save' ? 'revise' : args.operation === 'review' ? 'snapshot' : args.operation
+    const key = args.key ?? args.idempotencyKey
+    const campaignId = args.campaignId ?? input.campaignId
+    const expectedVersion = args.expectedVersion ?? input.expectedVersion ?? 0
     const { config, business, client } = authorize(
       args.credential,
       args.businessId,
@@ -129,20 +191,23 @@ export const command = mutation({
         'create',
         'revise',
         'snapshot',
+        'test',
         'approve',
         'pause',
         'resume',
         'cancel',
-      ].includes(args.operation) ||
-      !/^[A-Za-z0-9_:-]{16,128}$/.test(args.key) ||
-      !Number.isSafeInteger(args.expectedVersion) ||
+        'delete',
+      ].includes(operation) ||
+      !key ||
+      !/^[A-Za-z0-9_:-]{16,128}$/.test(key) ||
+      !Number.isSafeInteger(expectedVersion) ||
       JSON.stringify(args.input ?? {}).length > 100_000
     )
       fail('invalid_input')
     const fingerprint = canonical({
-      operation: args.operation,
-      expectedVersion: args.expectedVersion,
-      campaignId: args.campaignId ?? null,
+      operation,
+      expectedVersion,
+      campaignId: campaignId ?? null,
       input: args.input ?? {},
     })
     const previous = await ctx.db
@@ -151,7 +216,7 @@ export const command = mutation({
         q
           .eq('businessId', business.id)
           .eq('clientId', client.id)
-          .eq('key', args.key)
+          .eq('key', key!)
       )
       .unique()
     if (previous) {
@@ -160,8 +225,8 @@ export const command = mutation({
     }
     const now = Date.now()
     let c: Doc<'emailCampaigns'>
-    if (args.operation === 'create') {
-      if (args.campaignId || args.expectedVersion !== 0)
+    if (operation === 'create') {
+      if (campaignId || expectedVersion !== 0)
         fail('version_conflict')
       const id = await ctx.db.insert('emailCampaigns', {
         businessId: business.id,
@@ -173,19 +238,29 @@ export const command = mutation({
         excluded: 0,
         fanoutQueued: 0,
         fanoutExcluded: 0,
+        counters: {
+          queued: 0,
+          sending: 0,
+          submitted: 0,
+          delivered: 0,
+          failed: 0,
+          unknown: 0,
+          cancelled: 0,
+        },
+        expansionComplete: false,
         nextAt: now,
         createdAt: now,
         updatedAt: now,
       })
       c = (await ctx.db.get(id))!
     } else {
-      c = await scoped(ctx, business.id, args.campaignId)
-      if (c.revision !== args.expectedVersion) fail('version_conflict')
+      c = await scoped(ctx, business.id, campaignId)
+      if ((c.revision ?? 0) !== expectedVersion) fail('version_conflict')
     }
     const oldVersion = c.versionId ? await ctx.db.get(c.versionId) : null
-    if (['create', 'revise'].includes(args.operation)) {
+    if (['create', 'revise'].includes(operation)) {
       if (
-        c.fanoutQueued > 0 ||
+        (c.fanoutQueued ?? 0) > 0 ||
         !['draft', 'scheduled', 'paused'].includes(c.state)
       )
         fail('invalid_state')
@@ -194,17 +269,30 @@ export const command = mutation({
       if (!audience) fail('invalid_input')
       let rendered: ReturnType<typeof renderEmail>
       try {
+        rendered = input.blocks
+          ? renderCampaign(campaignContent(input), business)
+          : renderEmail({
+              templateKey: 'newsletter',
+              locale: value.locale,
+              brand: business.brand,
+              legalFooter: business.legalFooter,
+              subject: value.subject,
+              paragraphs: value.paragraphs,
+              unsubscribeUrl: '{{{ pm:unsubscribe }}}',
+            })
+      } catch {
+        // Drafts may be incomplete; keep a safe placeholder render while the
+        // stored structured content remains the source of truth.
         rendered = renderEmail({
           templateKey: 'newsletter',
           locale: value.locale,
           brand: business.brand,
           legalFooter: business.legalFooter,
-          subject: value.subject,
-          paragraphs: value.paragraphs,
+          subject:
+            value.subject || ('title' in value ? value.title : '') || 'Brouillon',
+          paragraphs: value.paragraphs.length ? value.paragraphs : ['Brouillon incomplet'],
           unsubscribeUrl: '{{{ pm:unsubscribe }}}',
         })
-      } catch {
-        return fail('invalid_input')
       }
       const versionId = await ctx.db.insert('emailCampaignVersions', {
         ...value,
@@ -235,10 +323,27 @@ export const command = mutation({
         fanoutExcluded: 0,
       })
     } else {
-      if (args.input && Object.keys(args.input).length) fail('invalid_input')
+      if (
+        args.input &&
+        Object.keys(args.input).some(
+          (key) =>
+            ![
+              'campaignId',
+              'expectedVersion',
+              'reviewId',
+              'challengeId',
+              'recipient',
+              'scheduledAt',
+              'reason',
+            ].includes(key)
+        )
+      )
+        fail('invalid_input')
       if (!oldVersion) fail('invalid_state')
-      if (args.operation === 'snapshot') {
+      if (operation === 'snapshot') {
         if (c.state !== 'draft') fail('invalid_state')
+        if (!oldVersion.subject.trim() || !oldVersion.paragraphs.length)
+          fail('invalid_input')
         if (!c.snapshotComplete) {
           const batch = await ctx.db
             .query('emailMemberships')
@@ -248,7 +353,7 @@ export const command = mutation({
                 .eq('audienceId', oldVersion.audienceId)
                 .lte('_creationTime', oldVersion.cutoff)
             )
-            .paginate({ cursor: c.snapshotCursor ?? null, numItems: PAGE })
+            .paginate({ cursor: c.snapshotCursor ?? null, numItems: SNAPSHOT_PAGE })
           let eligible = 0
           for (const member of batch.page) {
             if (
@@ -292,15 +397,21 @@ export const command = mutation({
           await ctx.db.patch(c._id, {
             snapshotCursor: batch.isDone ? undefined : batch.continueCursor,
             snapshotComplete: batch.isDone,
-            scanned: c.scanned + batch.page.length,
-            eligible: c.eligible + eligible,
-            excluded: c.excluded + batch.page.length - eligible,
+            scanned: (c.scanned ?? 0) + batch.page.length,
+            eligible: (c.eligible ?? 0) + eligible,
+            excluded: (c.excluded ?? 0) + batch.page.length - eligible,
+            reviewCutoff: oldVersion.cutoff,
           })
         }
-      } else if (args.operation === 'approve') {
+      } else if (operation === 'approve') {
+        const requestedReviewId = input.reviewId
+        if (
+          requestedReviewId !== reviewId(c._id, c.revision ?? 0) ||
+          !c.snapshotComplete
+        )
+          fail('review_required')
         if (
           c.state !== 'draft' ||
-          !c.snapshotComplete ||
           requiresLiveTest(config, business) ||
           !business.activated ||
           !business.audiences.some(
@@ -311,13 +422,69 @@ export const command = mutation({
         )
           fail('invalid_state')
         await ctx.db.patch(c._id, {
-          state: 'scheduled',
+          state: oldVersion.scheduledAt > now ? 'scheduled' : 'sending',
           approvedVersionId: oldVersion._id,
           approvedRoute: oldVersion.route,
-          nextAt: oldVersion.scheduledAt,
+          nextAt:
+            typeof input.scheduledAt === 'string' && Number.isFinite(Date.parse(input.scheduledAt))
+              ? Date.parse(input.scheduledAt)
+              : oldVersion.scheduledAt,
+          approvedScheduledAt:
+            typeof input.scheduledAt === 'string' && Number.isFinite(Date.parse(input.scheduledAt))
+              ? Date.parse(input.scheduledAt)
+              : oldVersion.scheduledAt,
+          reviewCutoff: oldVersion.cutoff,
+          expansionComplete: false,
           blockReason: undefined,
         })
-      } else if (args.operation === 'pause') {
+      } else if (operation === 'test') {
+        const recipient = input.recipient
+        if (typeof recipient !== 'string') fail('invalid_input')
+        const normalized = recipient.trim().toLowerCase()
+        const audience = business.audiences.find(
+          (a) => a.id === oldVersion.audienceId && a.purpose === oldVersion.purpose
+        )
+        if (
+          !audience ||
+          !dispatchAllowed(config, business, normalized, 'broadcast', now) ||
+          (await suppressed(ctx, business.id, normalized, business.broadcastStream))
+        )
+          fail('recipient_not_eligible')
+        const messageId = await ctx.db.insert('emailMessages', {
+          businessId: business.id,
+          email: normalized,
+          audienceId: oldVersion.audienceId,
+          purpose: oldVersion.purpose,
+          kind: 'broadcast_test',
+          rendered: oldVersion.rendered,
+          state: 'queued',
+          createdAt: now,
+          nextAt: now,
+          route: oldVersion.route,
+          campaignId: c._id,
+          campaignVersionId: oldVersion._id,
+        })
+        ;(c as any).__test = {
+          message_id: messageId,
+          version: c.revision,
+          state: 'queued',
+        }
+      } else if (operation === 'delete') {
+        if (c.state !== 'draft' || (c.fanoutQueued ?? 0) > 0)
+          fail('invalid_state')
+        await ctx.db.delete(c._id)
+        const result = { deleted: true }
+        const operationId = await ctx.db.insert('emailCampaignRequests', {
+          businessId: business.id,
+          clientId: client.id,
+          key: key!,
+          fingerprint,
+          result,
+          at: now,
+        })
+        void operationId
+        return result
+      } else if (operation === 'pause') {
         if (!['scheduled', 'running', 'fanout_complete'].includes(c.state))
           fail('invalid_state')
         await ctx.db.patch(c._id, {
@@ -325,7 +492,7 @@ export const command = mutation({
           resumeState: c.state,
           blockReason: 'operator_paused',
         })
-      } else if (args.operation === 'resume') {
+      } else if (operation === 'resume') {
         if (
           c.state !== 'paused' ||
           !c.resumeState ||
@@ -340,7 +507,7 @@ export const command = mutation({
           blockReason: undefined,
           nextAt: Math.max(now, oldVersion.scheduledAt),
         })
-      } else if (args.operation === 'cancel') {
+      } else if (operation === 'cancel') {
         if (c.state === 'cancelled') fail('invalid_state')
         await ctx.db.patch(c._id, {
           state: 'cancelled',
@@ -351,19 +518,115 @@ export const command = mutation({
     const operationId = await ctx.db.insert('emailCampaignRequests', {
       businessId: business.id,
       clientId: client.id,
-      key: args.key,
+      key: key!,
       fingerprint,
       result: null,
       at: now,
     })
     await ctx.db.patch(c._id, {
-      revision: c.revision + 1,
+      revision:
+        (c.revision ?? 0) + (['create', 'revise'].includes(operation) ? 1 : 0),
       operationId,
       updatedAt: now,
     })
-    const result = await currentReceipt(ctx, c._id)
+    let result: any = await currentReceipt(ctx, c._id)
+    if (operation === 'snapshot') {
+      const refreshed = (await ctx.db.get(c._id))!
+      result = {
+        ...result,
+        review: {
+          id: reviewId(refreshed._id, refreshed.revision ?? 0),
+          complete: refreshed.snapshotComplete,
+          eligible_count: refreshed.eligible,
+          excluded_count: refreshed.excluded,
+          html: oldVersion!.rendered.html,
+          text: oldVersion!.rendered.text,
+        },
+      }
+    }
+    if (operation === 'test' && (c as any).__test)
+      result = { ...result, test: (c as any).__test }
     await ctx.db.patch(operationId, { result })
     return result
+  },
+})
+
+/** Each bounded page commits its recipient-to-message links and cursor together. */
+export const expand = mutation({
+  args: {
+    credential: v.string(),
+    businessId: v.string(),
+    campaignId: v.id('emailCampaigns'),
+  },
+  handler: async (ctx, args) => {
+    const { config, business } = authorize(
+      args.credential,
+      args.businessId,
+      'campaign_dispatch'
+    )
+    authorize(args.credential, args.businessId, 'dispatch')
+    const c = await scoped(ctx, business.id, args.campaignId)
+    const version = c.versionId && (await ctx.db.get(c.versionId))
+    if (!version || c.approvedVersionId !== version._id) return { processed: 0 }
+    if ((c.approvedScheduledAt ?? version.scheduledAt) > Date.now())
+      return { processed: 0 }
+    const page = await ctx.db
+      .query('emailCampaignRecipients')
+      .withIndex('version', (q) => q.eq('versionId', version._id))
+      .paginate({ cursor: c.fanoutCursor ?? null, numItems: SNAPSHOT_PAGE })
+    let queued = 0
+    let excluded = 0
+    for (const snapshot of page.page) {
+      if (snapshot.messageId || snapshot.state !== 'snapshot') continue
+      const member = await ctx.db.get(snapshot.membershipId)
+      if (
+        !member ||
+        member.state !== 'subscribed' ||
+        member.generation !== snapshot.generation ||
+        !dispatchAllowed(config, business, member.email, 'broadcast', Date.now()) ||
+        (await suppressed(ctx, business.id, member.email, business.broadcastStream))
+      ) {
+        await ctx.db.patch(snapshot._id, {
+          state: 'excluded',
+          reason: 'recipient_no_longer_eligible',
+        })
+        excluded++
+        continue
+      }
+      const messageId = await ctx.db.insert('emailMessages', {
+        businessId: business.id,
+        email: member.email,
+        audienceId: version.audienceId,
+        purpose: version.purpose,
+        kind: 'broadcast',
+        rendered: version.rendered,
+        state: 'queued',
+        createdAt: Date.now(),
+        nextAt: Date.now(),
+        route: version.route,
+        campaignId: c._id,
+        campaignVersionId: version._id,
+        campaignRecipientId: snapshot._id,
+        campaignMembershipGeneration: member.generation,
+      })
+      await ctx.db.patch(snapshot._id, { state: 'queued', messageId })
+      queued++
+    }
+    await ctx.db.patch(c._id, {
+      state: page.isDone ? 'fanout_complete' : 'running',
+      fanoutCursor: page.isDone ? undefined : page.continueCursor,
+      fanoutQueued: (c.fanoutQueued ?? 0) + queued,
+      fanoutExcluded: (c.fanoutExcluded ?? 0) + excluded,
+      expansionComplete: page.isDone,
+      counters: {
+        ...(c.counters ?? {}),
+        queued: (c.counters?.queued ?? 0) + queued,
+        cancelled: (c.counters?.cancelled ?? 0) + excluded,
+      },
+      nextAt: Date.now() + 1000,
+      updatedAt: Date.now(),
+    })
+    return { processed: queued }
   },
 })
 
@@ -387,7 +650,7 @@ export const pump = mutation({
     let processed = 0
     const candidates = (
       await Promise.all(
-        ['scheduled', 'running'].map((state) =>
+        ['scheduled', 'sending', 'running'].map((state) =>
           ctx.db
             .query('emailCampaigns')
             .withIndex('due', (q) =>
@@ -419,11 +682,11 @@ export const pump = mutation({
         })
         continue
       }
-      if (version.scheduledAt > now) continue
+      if ((c.approvedScheduledAt ?? version.scheduledAt) > now) continue
       const page = await ctx.db
         .query('emailCampaignRecipients')
         .withIndex('version', (q) => q.eq('versionId', version._id))
-        .paginate({ cursor: c.fanoutCursor ?? null, numItems: PAGE })
+        .paginate({ cursor: c.fanoutCursor ?? null, numItems: FANOUT_PAGE })
       let queued = 0,
         excluded = 0
       for (const snapshot of page.page) {
@@ -476,6 +739,7 @@ export const pump = mutation({
           campaignId: c._id,
           campaignVersionId: version._id,
           campaignRecipientId: snapshot._id,
+          campaignMembershipGeneration: member.generation,
         })
         await ctx.db.patch(snapshot._id, { state: 'queued', messageId })
         queued++
@@ -483,8 +747,22 @@ export const pump = mutation({
       await ctx.db.patch(c._id, {
         state: page.isDone ? 'fanout_complete' : 'running',
         fanoutCursor: page.isDone ? undefined : page.continueCursor,
-        fanoutQueued: c.fanoutQueued + queued,
-        fanoutExcluded: c.fanoutExcluded + excluded,
+        fanoutQueued: (c.fanoutQueued ?? 0) + queued,
+        fanoutExcluded: (c.fanoutExcluded ?? 0) + excluded,
+        counters: {
+          ...(c.counters ?? {
+            queued: 0,
+            sending: 0,
+            submitted: 0,
+            delivered: 0,
+            failed: 0,
+            unknown: 0,
+            cancelled: 0,
+          }),
+          queued: (c.counters?.queued ?? 0) + queued,
+          cancelled: (c.counters?.cancelled ?? 0) + excluded,
+        },
+        expansionComplete: page.isDone,
         nextAt: now + 1_000,
         updatedAt: now,
       })
@@ -498,25 +776,35 @@ export const read = query({
   args: {
     credential: v.string(),
     businessId: v.string(),
-    view: v.string(),
+    actorId: v.optional(v.string()),
+    view: v.optional(v.string()),
     campaignId: v.optional(v.id('emailCampaigns')),
-    paginationOpts: paginationOptsValidator,
+    paginationOpts: v.optional(paginationOptsValidator),
+    operation: v.optional(v.string()),
+    input: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
     authorize(args.credential, args.businessId, 'campaign_read')
+    const view = args.view ?? args.operation ?? 'list'
+    const input = (args.input ?? {}) as Record<string, any>
+    const campaignId = args.campaignId ?? input.campaignId
+    const paginationOpts = args.paginationOpts ?? {
+      numItems: Math.min(Number(input.limit ?? 20), 100),
+      cursor: input.cursor ?? null,
+    }
     if (
-      !Number.isSafeInteger(args.paginationOpts.numItems) ||
-      args.paginationOpts.numItems < 1 ||
-      args.paginationOpts.numItems > 100 ||
-      (args.paginationOpts.cursor?.length ?? 0) > 4096
+      !Number.isSafeInteger(paginationOpts.numItems) ||
+      paginationOpts.numItems < 1 ||
+      paginationOpts.numItems > 100 ||
+      (paginationOpts.cursor?.length ?? 0) > 4096
     )
       fail('invalid_input')
-    if (args.view === 'list') {
+    if (view === 'list') {
       const page = await ctx.db
         .query('emailCampaigns')
         .withIndex('business', (q) => q.eq('businessId', args.businessId))
         .order('desc')
-        .paginate(args.paginationOpts)
+        .paginate(paginationOpts)
       return {
         page: await Promise.all(
           page.page.map((c) => currentReceipt(ctx, c._id))
@@ -525,11 +813,11 @@ export const read = query({
         complete: page.isDone,
       }
     }
-    const c = await scoped(ctx, args.businessId, args.campaignId)
+    const c = await scoped(ctx, args.businessId, campaignId)
     const version = c.versionId && (await ctx.db.get(c.versionId))
     if (!version) fail('invalid_state')
-    if (args.view === 'status') return receipt(c, version)
-    if (args.view === 'preview')
+    if (view === 'status' || view === 'get') return receipt(c, version)
+    if (view === 'preview')
       return {
         ...receipt(c, version),
         template_key: 'newsletter',
@@ -539,11 +827,11 @@ export const read = query({
         paragraphs: version.paragraphs,
         rendered: version.rendered,
       }
-    if (args.view !== 'recipients') fail('invalid_input')
+    if (view !== 'recipients') fail('invalid_input')
     const page = await ctx.db
       .query('emailCampaignRecipients')
       .withIndex('version', (q) => q.eq('versionId', version._id))
-      .paginate(args.paginationOpts)
+      .paginate(paginationOpts)
     const counts: Record<string, number> = {}
     const rows = await Promise.all(
       page.page.map(async (row) => {

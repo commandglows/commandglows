@@ -155,6 +155,7 @@ export async function handleDispatch(
       credential,
       businessId: business.id,
       expectedRoute: route,
+      maxJobs: 10,
     })) as Job[]
     if (!Array.isArray(jobs))
       throw new EmailHttpError('invalid_job_receipt', 503)
@@ -231,6 +232,11 @@ export async function handleDispatch(
         ...(outcome.retryAfterMs ? { retryAfterMs: outcome.retryAfterMs } : {}),
       })
       results.push({ message_id: job.messageId, status: outcome.status })
+      if (
+        outcome.status === 'unknown' ||
+        outcome.status === 'retryable_failure'
+      )
+        break
     }
     return json(200, { results })
   } catch (error) {

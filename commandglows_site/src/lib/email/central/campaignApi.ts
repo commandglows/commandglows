@@ -160,6 +160,12 @@ export async function handleCampaignApi(
           ...(businessId ? { businessId } : {}),
           operation: path === 'context' ? 'context' : match ? 'get' : 'list',
           input,
+          view: path === 'context' ? 'context' : match ? 'get' : 'list',
+          ...(match ? { campaignId: match[1] } : {}),
+          paginationOpts: {
+            numItems: Number(input.limit ?? 20),
+            cursor: input.cursor ?? null,
+          },
         })
       )
     }

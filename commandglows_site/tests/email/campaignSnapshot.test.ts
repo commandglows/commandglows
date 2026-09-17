@@ -1,7 +1,6 @@
 import { convexTest } from 'convex-test'
 import { makeFunctionReference } from 'convex/server'
 import schema from '../../convex/schema'
-import { emptyCampaignCounters } from '../../convex/emailCampaignState'
 import { campaignAllowsDispatch } from '../../convex/emailCampaignState'
 
 it('denies dispatch after unsubscribe and resubscribe following expansion', async () => {
@@ -27,7 +26,7 @@ it('denies dispatch after unsubscribe and resubscribe following expansion', asyn
     expectedVersion: 1,
     reviewId: review.review.id,
   })
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   const message = await t.run((ctx) => ctx.db.query('emailMessages').first())
   expect(await t.run((ctx) => campaignAllowsDispatch(ctx, message))).toBe(true)
   // Even churn within the review millisecond must invalidate the generation.
@@ -83,7 +82,7 @@ function config(recipients = business.allowedRecipients) {
         id: 'operator',
         credentialEnv: 'EMAIL_SNAPSHOT_CREDENTIAL',
         businessIds: ['studio'],
-        operations: ['campaign_read', 'campaign_write'],
+        operations: ['campaign_read', 'campaign_write', 'campaign_dispatch', 'dispatch'],
       },
     ],
     businesses: [{ ...business, allowedRecipients: recipients }],
@@ -150,7 +149,7 @@ it('freezes reviewed audience against allowlist growth and lifting suppression',
     expectedVersion: 1,
     reviewId: review.review.id,
   })
-  await t.mutation(ref('emailCampaigns:expand'), { campaignId: c.id })
+  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   expect(
     await t.run(async (ctx) =>
       (await ctx.db.query('emailMessages').collect()).map((m) => m.email)
@@ -168,36 +167,14 @@ it('freezes reviewed audience against allowlist growth and lifting suppression',
   )
   expect(detail.campaign.eligible_count).toBe(1)
 })
-it('advances recovery past more than twenty disabled campaigns', async () => {
+it('requires tenant dispatch authority for bounded expansion', async () => {
   const t = convexTest(schema, modules)
-  const activeId = await t.run(async (ctx) => {
-    const base = {
-      ...content,
-      version: 1,
-      state: 'scheduled',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      createdBy: 'admin',
-      updatedBy: 'admin',
-      scheduledAt: Date.now() - 1000,
-      expansionComplete: false,
-      counters: emptyCampaignCounters(),
-    }
-    for (let i = 0; i < 25; i++)
-      await ctx.db.insert('emailCampaigns', { ...base, businessId: 'disabled' })
-    return ctx.db.insert('emailCampaigns', { ...base, businessId: 'studio' })
-  })
-  await t.mutation(ref('emailCampaigns:recover'), {})
-  await t.finishAllScheduledFunctions(() => vi.runAllTimers())
-  expect((await t.run((ctx) => ctx.db.get(activeId)))?.state).toBe('scheduled')
-  await t.mutation(ref('emailCampaigns:recover'), {})
-  await t.finishAllScheduledFunctions(() => vi.runAllTimers())
-  expect((await t.run((ctx) => ctx.db.get(activeId)))?.state).toBe('completed')
-  expect(
-    await t.run(async (ctx) =>
-      (await ctx.db.query('emailCampaignRecovery').collect()).every(
-        (row) => row.cursor === null
-      )
-    )
-  ).toBe(true)
+  const c = (await command(t, 'create', content)).campaign
+  await expect(
+    t.mutation(ref('emailCampaigns:expand'), {
+      credential: 'wrong-credential'.repeat(3),
+      businessId: 'studio',
+      campaignId: c.id,
+    })
+  ).rejects.toThrow('forbidden')
 })

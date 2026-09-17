@@ -73,6 +73,7 @@ export async function handleCampaigns(
       'paragraphs',
       'scheduled_at',
       'timezone',
+      'review_id',
     ])
     authorizeHttp(env, credential, body.business_id, 'campaign_write')
     const input: Record<string, unknown> = {}
@@ -86,6 +87,7 @@ export async function handleCampaigns(
     }
     for (const [external, internal] of Object.entries(mapping))
       if (body[external] !== undefined) input[internal] = body[external]
+    if (body.review_id !== undefined) input.reviewId = body.review_id
     return json(
       200,
       await (injected ?? backend(env)).mutation('emailCampaigns:command', {

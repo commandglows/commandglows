@@ -60,13 +60,21 @@ export async function campaignAllowsDispatch(ctx: any, message: any) {
         .eq('audienceId', message.audienceId)
     )
     .unique()
+  const generation = message.campaignMembershipGeneration ??
+    (message.campaignRecipientId
+      ? (await ctx.db.get(message.campaignRecipientId))?.generation
+      : undefined)
+  const cutoff = campaign.reviewCutoff ??
+    (message.campaignVersionId
+      ? (await ctx.db.get(message.campaignVersionId))?.cutoff
+      : undefined)
   return Boolean(
     campaign &&
     campaign.businessId === message.businessId &&
     member?.state === 'subscribed' &&
-    member.generation === message.campaignMembershipGeneration &&
-    campaign.reviewCutoff !== undefined &&
-    member.updatedAt <= campaign.reviewCutoff &&
-    ['sending', 'completed'].includes(campaign.state)
+    member.generation === generation &&
+    cutoff !== undefined &&
+    member.updatedAt <= cutoff &&
+    ['sending', 'fanout_complete', 'completed'].includes(campaign.state)
   )
 }

@@ -634,6 +634,7 @@ export const claim = mutation({
     credential: v.string(),
     businessId: v.string(),
     expectedRoute: v.optional(v.string()),
+    maxJobs: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { business, config } = authorize(
@@ -642,6 +643,9 @@ export const claim = mutation({
       'dispatch'
     )
     const now = Date.now()
+    const maxJobs = args.maxJobs ?? 1
+    if (!Number.isSafeInteger(maxJobs) || maxJobs < 1 || maxJobs > 10)
+      fail('invalid_input')
     const route = deliveryRoute(config, business)
     if (
       (args.expectedRoute && args.expectedRoute !== route) ||
@@ -744,7 +748,7 @@ export const claim = mutation({
         streamClass: m.kind === 'broadcast' ? 'broadcast' : 'transactional',
         ...(m.kind === 'confirmation' ? { content: m.rendered } : m.rendered),
       })
-      break // One lease per worker invocation; skipped ineligible rows do not stall the queue.
+      if (jobs.length >= maxJobs) break
     }
     return jobs
   },

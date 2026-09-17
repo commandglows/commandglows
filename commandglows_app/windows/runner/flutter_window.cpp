@@ -407,7 +407,7 @@ bool FlutterWindow::HideWindowsOverlay() {
   return hidden || GetLastError() == 0;
 }
 
-bool FlutterWindow::CopyTextToClipboard(const std::wstring& text) const {
+bool FlutterWindow::CopyTextToClipboard(const std::wstring& text) {
   if (!OpenClipboard(GetHandle())) {
     return false;
   }
@@ -435,7 +435,7 @@ bool FlutterWindow::CopyTextToClipboard(const std::wstring& text) const {
   return true;
 }
 
-bool FlutterWindow::DeliverClipboardToLastForeground() const {
+bool FlutterWindow::DeliverClipboardToLastForeground() {
   if (last_foreground_window_ == nullptr ||
       last_foreground_window_ == GetHandle()) {
     return false;

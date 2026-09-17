@@ -109,7 +109,7 @@ All JSON product commands require `Authorization: Bearer ...`, `Content-Type: ap
 | `POST /api/v1/email/messages/transactional` | Fixed `service_notification` template, `reason:service`, locale and recipient. Enable this permission only for a trusted service that verifies the underlying account operation; it is not a free-form mail endpoint. |
 | `POST /api/v1/email/broadcasts` | Creates a one-recipient draft from escaped subject/paragraphs, audience/purpose and locale; returns rendered HTML/text for review. No send. |
 | `POST /api/v1/email/broadcasts/approve` | `business_id,draft_id`; operator approves immutable content. Eligibility is rechecked before actual dispatch. |
-| `POST /api/v1/email/dispatch` | Worker-only, one message claim per invocation. No browser access or product signup credential. |
+| `POST /api/v1/email/dispatch` | Worker-only. Direct claims reserve one message by default; this authenticated HTTP drain explicitly requests at most ten and settles them sequentially. No browser access or product signup credential. |
 | `POST /api/v1/email/webhooks/postmark?business_id=...` | Authenticates before parsing, validates stream/server binding, stores semantic deduplication and normalized effects durably. |
 
 The Convex cron polls every minute once deployed; without configuration or worker credentials it is disabled. It calls the matching Astro dispatch endpoint. Queue persistence survives request failure. Confirmations expire after 24 hours; unsubscribe tokens after 365 days and on a later membership generation. Postmark-managed opt-out remains the visible newsletter link and receives the provider's native one-click headers; canonical signed preference tokens also support scoped withdrawal.
