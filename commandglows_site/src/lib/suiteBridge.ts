@@ -256,25 +256,16 @@ function stripPrivateFields(jwk: JsonWebKey): JsonWebKey {
 }
 
 function buildReplayGlowzProductTokenConfig(env: Record<string, string | undefined>) {
-  const privateKeyPem = normalizePem(
-    env.REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM ??
-      env.REPLAYGLOWZ_PRODUCT_JWT_PRIVATE_KEY_PEM
-  )
+  const privateKeyPem = normalizePem(env.REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM)
   const keyId = isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_KEY_ID)
     ? env.REPLAYGLOWS_PRODUCT_JWT_KEY_ID!.trim()
-    : isNonEmptyString(env.REPLAYGLOWZ_PRODUCT_JWT_KEY_ID)
-      ? env.REPLAYGLOWZ_PRODUCT_JWT_KEY_ID!.trim()
-      : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_KEY_ID
+    : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_KEY_ID
   const issuer = isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_ISSUER)
     ? env.REPLAYGLOWS_PRODUCT_JWT_ISSUER!.trim()
-    : isNonEmptyString(env.REPLAYGLOWZ_PRODUCT_JWT_ISSUER)
-      ? env.REPLAYGLOWZ_PRODUCT_JWT_ISSUER!.trim()
-      : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_ISSUER
+    : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_ISSUER
   const audience = isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_AUDIENCE)
     ? env.REPLAYGLOWS_PRODUCT_JWT_AUDIENCE!.trim()
-    : isNonEmptyString(env.REPLAYGLOWZ_PRODUCT_JWT_AUDIENCE)
-      ? env.REPLAYGLOWZ_PRODUCT_JWT_AUDIENCE!.trim()
-      : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_AUDIENCE
+    : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_AUDIENCE
 
   if (!privateKeyPem) {
     return null
@@ -291,19 +282,13 @@ function buildReplayGlowzProductTokenConfig(env: Record<string, string | undefin
 export function getReplayGlowzProductJwtPrivateKeyPem(
   env: Record<string, string | undefined>
 ): string | null {
-  return normalizePem(
-    env.REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM ??
-      env.REPLAYGLOWZ_PRODUCT_JWT_PRIVATE_KEY_PEM
-  )
+  return normalizePem(env.REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM)
 }
 
 export function getReplayGlowzProductJwtPublicKeyJwk(
   env: Record<string, string | undefined>
 ): JsonWebKey | null {
-  const publicKeyJwk = parseJsonWebKey(
-    env.REPLAYGLOWS_PRODUCT_JWT_PUBLIC_KEY_JWK ??
-      env.REPLAYGLOWZ_PRODUCT_JWT_PUBLIC_KEY_JWK
-  )
+  const publicKeyJwk = parseJsonWebKey(env.REPLAYGLOWS_PRODUCT_JWT_PUBLIC_KEY_JWK)
   if (publicKeyJwk) {
     return publicKeyJwk
   }
@@ -318,10 +303,7 @@ export async function getReplayGlowzProductJwtPublicKeyJwkOrNull(
     return direct
   }
 
-  const publicKeyPem = normalizePem(
-    env.REPLAYGLOWS_PRODUCT_JWT_PUBLIC_KEY_PEM ??
-      env.REPLAYGLOWZ_PRODUCT_JWT_PUBLIC_KEY_PEM
-  )
+  const publicKeyPem = normalizePem(env.REPLAYGLOWS_PRODUCT_JWT_PUBLIC_KEY_PEM)
   if (!publicKeyPem) {
     return null
   }
@@ -344,25 +326,19 @@ export async function getReplayGlowzProductJwtPublicKeyJwkOrNull(
 export function getReplayGlowzProductJwtKeyId(env: Record<string, string | undefined>) {
   return isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_KEY_ID)
     ? env.REPLAYGLOWS_PRODUCT_JWT_KEY_ID!.trim()
-    : isNonEmptyString(env.REPLAYGLOWZ_PRODUCT_JWT_KEY_ID)
-      ? env.REPLAYGLOWZ_PRODUCT_JWT_KEY_ID!.trim()
-      : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_KEY_ID
+    : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_KEY_ID
 }
 
 export function getReplayGlowzProductJwtIssuer(env: Record<string, string | undefined>) {
   return isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_ISSUER)
     ? env.REPLAYGLOWS_PRODUCT_JWT_ISSUER!.trim()
-    : isNonEmptyString(env.REPLAYGLOWZ_PRODUCT_JWT_ISSUER)
-      ? env.REPLAYGLOWZ_PRODUCT_JWT_ISSUER!.trim()
-      : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_ISSUER
+    : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_ISSUER
 }
 
 export function getReplayGlowzProductJwtAudience(env: Record<string, string | undefined>) {
   return isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_AUDIENCE)
     ? env.REPLAYGLOWS_PRODUCT_JWT_AUDIENCE!.trim()
-    : isNonEmptyString(env.REPLAYGLOWZ_PRODUCT_JWT_AUDIENCE)
-      ? env.REPLAYGLOWZ_PRODUCT_JWT_AUDIENCE!.trim()
-      : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_AUDIENCE
+    : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_AUDIENCE
 }
 
 export async function buildReplayGlowzProductToken(

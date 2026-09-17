@@ -745,24 +745,6 @@ describe('suiteBridge helpers', () => {
     expect(jwks[0]).toHaveProperty('n')
   })
 
-  test('keeps legacy ReplayGlowz JWT env names as a temporary fallback', async () => {
-    const keys = buildJwtRsaKeys()
-    const env = {
-      REPLAYGLOWZ_PRODUCT_JWT_PUBLIC_KEY_PEM: keys.publicKey,
-      REPLAYGLOWZ_PRODUCT_JWT_KEY_ID: 'replayglowz-suite-2026-06-02',
-    }
-
-    const jwks = await getReplayGlowzProductTokenJwks(env)
-
-    expect(jwks).toHaveLength(1)
-    expect(jwks[0]).toMatchObject({
-      kty: 'RSA',
-      use: 'sig',
-      alg: 'RS256',
-      kid: 'replayglowz-suite-2026-06-02',
-    })
-  })
-
   test('returns no ReplayGlowz JWKS when public key material is missing', async () => {
     const jwks = await getReplayGlowzProductTokenJwks({})
     expect(jwks).toHaveLength(0)
