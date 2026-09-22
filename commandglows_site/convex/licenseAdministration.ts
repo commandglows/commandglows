@@ -29,7 +29,7 @@ const SUPPORT_PLAN_ALLOWLIST = new Map<string, ReadonlySet<string>>([
   ['gocharbon', new Set(['pro', 'lifetime_deal'])],
   ['contentglowz', new Set(['pro', 'lifetime_deal'])],
   ['shipglows', new Set(['pro', 'lifetime_deal'])],
-  ['replayglowz', new Set(['pro', 'lifetime_deal'])],
+  ['replayglows', new Set(['pro', 'lifetime_deal'])],
   ['temu_shopping_lists', new Set(['pro', 'lifetime_deal'])],
 ])
 

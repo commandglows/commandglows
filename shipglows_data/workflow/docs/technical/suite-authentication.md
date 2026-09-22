@@ -16,7 +16,7 @@ docs_impact: yes
 linked_systems:
   - "Former suite domain for WinGlows Formation"
   - "WinGlows Android app"
-  - "ReplayGlowz"
+  - "ReplayGlows"
   - "VoiceFlowz legacy naming for WinGlows app"
   - "Clerk"
   - "Firebase Auth"
@@ -46,8 +46,8 @@ evidence:
   - "Implementation tranche 2026-05-21: `POST /api/bridge/sync` added so Polar grant/refund/revoke paths can recompute the Firestore `suiteAccess/{firebaseUid}` mirror from Convex by `globalUserId` outside the login bridge path."
   - "Implementation tranche 2026-05-21: `POST /api/bridge/firebase` now verifies Firebase ID tokens with Firebase Admin revocation checks enabled and rejects invalid issuer/audience/subject claims through a shared helper."
   - "Implementation tranche 2026-05-21: canonical support runbook added for operator triage, rollback, escalation and verification."
-  - "User correction 2026-05-23: ReplayGlowz is the canonical YouTube product and `product_id=replayglowz`; the old YouTube product naming is legacy only."
-  - "Implementation tranche 2026-05-23: `POST /api/bridge/entitlement` added on WinGlows to verify a Clerk session token and return a redacted ReplayGlowz entitlement snapshot."
+  - "User correction 2026-05-23: ReplayGlows is the canonical YouTube product and `product_id=replayglows`; the old YouTube product naming is legacy only."
+  - "Implementation tranche 2026-05-23: `POST /api/bridge/entitlement` added on WinGlows to verify a Clerk session token and return a redacted ReplayGlows entitlement snapshot."
   - "User decision 2026-06-10: because Diane is the sole operator and does not currently intend to sell separate businesses, the default access architecture is one suite-owned entitlement ledger with separate product ids, not one ledger per product."
 next_review: "2026-06-17"
 next_step: "/sf-spec unified-suite-authentication provider decision"
@@ -72,7 +72,7 @@ This document is the canonical decision for the suite. Product projects should l
 Clerk is the better long-term identity center for the WinGlows suite because the main web products already lean in that direction:
 
 - WinGlows Formation has existing Clerk, Convex and Polar work.
-- ReplayGlowz has Clerk/Convex/YouTube OAuth history under a former product name.
+- ReplayGlows has Clerk/Convex/YouTube OAuth history under a former product name.
 - Clerk provides strong web account UX: sign-in, sign-up, profile, sessions, dashboard and SSO/OIDC patterns.
 - Clerk fits a suite-of-products model better than Firebase as the customer account portal.
 - Clerk Billing may later reduce billing integration work, but it must not be treated as production-critical entitlement truth until the beta and business constraints are acceptable.
@@ -155,12 +155,12 @@ one of the exceptions above.
 - Uses backend-agnostic interfaces so the app can later migrate to Clerk or another IdP if that becomes safer.
 - Must not trust client-sent user ids or product ids.
 
-### ReplayGlowz
+### ReplayGlows
 
 - Uses suite identity for account recognition.
 - Keeps YouTube OAuth separate from suite identity: YouTube grants are product permissions, not the user's WinGlows identity.
-- Requires product entitlement checks for `product_id=replayglowz` before private ReplayGlowz data access.
-- Rejects old YouTube product ids at runtime; migrations must normalize historical records to `replayglowz` before entitlement checks.
+- Requires product entitlement checks for `product_id=replayglows` before private ReplayGlows data access.
+- Rejects old YouTube product ids at runtime; migrations must normalize historical records to `replayglows` before entitlement checks.
 
 ### Legacy Naming: VoiceFlowz / VoiceFlows
 
@@ -200,7 +200,7 @@ As of 2026-05-21, the first Formation/app bridge tranche has started:
 - The WinGlows Android app also gates Firestore-backed stores on `suiteIdentityProvider.hasAccessTo(winglowz_app)`. A signed-in Firebase user without suite entitlement stays on local stores instead of receiving remote product data.
 - Convex exposes a protected entitlement snapshot by `globalUserId`; the internal Formation endpoint `POST /api/bridge/sync` accepts only `{ globalUserId }` plus `x-suite-bridge-secret`, re-reads Convex entitlements, resolves linked Firebase UIDs, and rewrites the Firestore mirror with Firebase Admin.
 - Polar grant/refund/revoke webhook handling now calls the sync endpoint after entitlement changes. If the sync fails, webhook handling fails closed with retryable server error semantics instead of silently leaving stale product access.
-- `POST /api/bridge/entitlement` exists on the WinGlows Formation server for ReplayGlowz. It requires `x-suite-entitlement-secret`, `Authorization: Bearer <Clerk session token>`, `CLERK_SECRET_KEY`, `PUBLIC_CONVEX_URL` and `SUITE_BRIDGE_CONVEX_SECRET`; it verifies the Clerk token server-side, resolves the Clerk user in Convex, checks `product_id=replayglowz`, rejects old YouTube-product ids, and returns only `hasAccess`, `globalUserId`, `matchedProductId` and `reasonCode`.
+- `POST /api/bridge/entitlement` exists on the WinGlows Formation server for ReplayGlows. It requires `x-suite-entitlement-secret`, `Authorization: Bearer <Clerk session token>`, `CLERK_SECRET_KEY`, `PUBLIC_CONVEX_URL` and `SUITE_BRIDGE_CONVEX_SECRET`; it verifies the Clerk token server-side, resolves the Clerk user in Convex, checks `product_id=replayglows`, rejects old YouTube-product ids, and returns only `hasAccess`, `globalUserId`, `matchedProductId` and `reasonCode`.
 
 This is not a completed suite auth launch yet. Cross-product smoke tests with real Firebase/Convex provider payloads and deployed `SUITE_BRIDGE_SYNC_URL` proof remain open.
 
@@ -220,7 +220,7 @@ Before implementation starts, the suite spec must be updated so `/sf-ready` can 
 
 - provider gate resolved as `Clerk central + Firebase Android bridge`;
 - first proof pair selected, preferably WinGlows Formation + WinGlows Android app;
-- product id canon selected, with `replayglowz` as the only accepted YouTube product id.
+- product id canon selected, with `replayglows` as the only accepted YouTube product id.
 
 ## Support Runbook
 
@@ -228,7 +228,7 @@ Canonical operator guide:
 
 `/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication-support-runbook.md`
 
-Use that runbook for account recognition without access, duplicate-email linking, entitlement recovery, refund/revoke handling, provider outages, wrong-environment checks, Firebase bridge failures, stale mirror sync, revoked sessions, and ReplayGlowz YouTube OAuth confusion. This strategy document stays architectural.
+Use that runbook for account recognition without access, duplicate-email linking, entitlement recovery, refund/revoke handling, provider outages, wrong-environment checks, Firebase bridge failures, stale mirror sync, revoked sessions, and ReplayGlows YouTube OAuth confusion. This strategy document stays architectural.
 
 ## Source Links
 

@@ -26,8 +26,8 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    id: 'replayglowz',
-    name: 'ReplayGlowz',
+    id: 'replayglows',
+    name: 'ReplayGlows',
     description: 'YouTube automation tool',
     features: [],
   },

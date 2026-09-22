@@ -19,7 +19,7 @@ describe('shared suite product trial writer', () => {
     'gocharbon',
     'contentglowz',
     'shipglows',
-    'replayglowz',
+    'replayglows',
     'communityglows',
     'temu_shopping_lists',
   ])('makes the common trial reachable for registered product %s', async (productId) => {
@@ -75,7 +75,7 @@ describe('shared suite product trial writer', () => {
     }
   })
 
-  test('starts ReplayGlowz with the common 30-day policy and no free fallback', async () => {
+  test('starts ReplayGlows with the common 30-day policy and no free fallback', async () => {
     const t = convexTest(schema, modules)
     await t.run(async (ctx) => {
       const now = Date.now()
@@ -96,7 +96,7 @@ describe('shared suite product trial writer', () => {
 
     const before = Date.now()
     const snapshot = await t.mutation(
-      api.bridge.ensureReplayGlowzEntitlementSnapshotByClerkId,
+      api.bridge.ensureReplayGlowsEntitlementSnapshotByClerkId,
       {
         clerkId: 'clerk_replay_trial',
         bridgeSecret: BRIDGE_SECRET,
@@ -107,13 +107,13 @@ describe('shared suite product trial writer', () => {
     )
     expect(snapshot).toMatchObject({
       hasAccess: true,
-      matchedProductId: 'replayglowz',
+      matchedProductId: 'replayglows',
       reasonCode: 'active_entitlement',
     })
 
     const trials = await t.run(async (ctx) => {
       const rows = await ctx.db.query('productEntitlements').collect()
-      return rows.filter((row) => row.productId === 'replayglowz')
+      return rows.filter((row) => row.productId === 'replayglows')
     })
     expect(trials).toHaveLength(1)
     expect(trials[0]).toMatchObject({

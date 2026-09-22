@@ -42,7 +42,7 @@ evidence:
   - "2026-05-24: /home/claude/winglowz_app is clean on master...origin/master."
   - "2026-05-24: winglowz is an Astro/Vercel/pnpm site repository."
   - "2026-05-24: winglowz_app is a Flutter/Firebase app repository."
-  - "ReplayGlowz and ContentGlowz already use a canonical monorepo root with app/site subdirectories."
+  - "ReplayGlows and ContentGlowz already use a canonical monorepo root with app/site subdirectories."
   - "Vercel official monorepo docs confirm separate projects can target different root directories in the same repository."
 next_step: "/sf-end shipglows_data/workflow/specs/winglowz-monorepo-migration.md"
 ---
@@ -73,7 +73,7 @@ La migration transforme l'organisation du depot sans changer le comportement fon
 
 # Problem
 
-WinGlows est actuellement fragmente entre deux depots sibling: `winglowz` pour le site Astro et `winglowz_app` pour l'app Flutter. Cette separation fragmente les specs, bugs, docs techniques, workflows CI/deploiement et decisions produit. Le modele est aussi incoherent avec ReplayGlowz et ContentGlowz, qui utilisent deja un depot canonique par produit avec des sous-projets.
+WinGlows est actuellement fragmente entre deux depots sibling: `winglowz` pour le site Astro et `winglowz_app` pour l'app Flutter. Cette separation fragmente les specs, bugs, docs techniques, workflows CI/deploiement et decisions produit. Le modele est aussi incoherent avec ReplayGlows et ContentGlowz, qui utilisent deja un depot canonique par produit avec des sous-projets.
 
 # Solution
 
@@ -125,7 +125,7 @@ Si un worktree n'est pas propre, l'execution s'arrete avant tout deplacement. Si
 - Git local, avec support `git subtree` si disponible.
 - Depot source app: `/home/claude/winglowz_app`, branche `master`.
 - Depot cible monorepo: `/home/claude/winglowz`, branche `main`.
-- Precedents locaux: `/home/claude/replayglowz/README.md` et `/home/claude/contentglowz/README.md`.
+- Precedents locaux: `/home/claude/replayglows/README.md` et `/home/claude/contentglowz/README.md`.
 - Vercel monorepo/root directory behavior, confirme via documentation officielle.
 - Flutter SDK et pnpm pour les checks, si disponibles dans l'environnement.
 
@@ -187,7 +187,7 @@ winglowz/
 
 - Les projets Vercel devront utiliser des root directories distincts: `winglowz_site` pour le site, `winglowz_app` pour l'app web si elle reste deployee sur Vercel.
 - Le monorepo ne depend pas obligatoirement d'un workspace pnpm, car le site est Node/pnpm et l'app est Flutter/Dart.
-- Fresh docs verdict: `fresh-docs checked` pour Vercel monorepo/root directory; les autres decisions sont locales aux depots et precedents ReplayGlowz/ContentGlowz.
+- Fresh docs verdict: `fresh-docs checked` pour Vercel monorepo/root directory; les autres decisions sont locales aux depots et precedents ReplayGlows/ContentGlowz.
 
 # Risks
 
@@ -301,7 +301,7 @@ None.
 # Documentation Freshness
 
 - `fresh-docs checked`: Vercel official monorepo documentation consulted on 2026-05-24. It confirms that each project in a monorepo can be configured with its own Root Directory, and that root directory changes affect subsequent deployments.
-- `fresh-docs not needed`: GitHub Actions path updates, Flutter checks, pnpm checks, and ShipGlows governance consolidation are derived from local repository files and existing ReplayGlowz/ContentGlowz patterns.
+- `fresh-docs not needed`: GitHub Actions path updates, Flutter checks, pnpm checks, and ShipGlows governance consolidation are derived from local repository files and existing ReplayGlows/ContentGlowz patterns.
 
 # Current Chantier Flow
 

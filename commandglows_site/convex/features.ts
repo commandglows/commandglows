@@ -6,35 +6,35 @@ import type { Id } from "./_generated/dataModel";
 
 const DEFAULT_FEATURES = [
   {
-    key: "replayglowz-bookmarks",
+    key: "replayglows-bookmarks",
     title: "YouTube Timestamp Bookmarks",
     description: "Save and organize bookmarks at specific video timestamps with notes",
     status: "completed",
-    projectId: "replayglowz",
+    projectId: "replayglows",
     votes: 42,
   },
   {
-    key: "replayglowz-obsidian-export",
+    key: "replayglows-obsidian-export",
     title: "Annotation Export to Obsidian",
     description: "Export all video annotations directly into your Obsidian vault as structured notes",
     status: "in-development",
-    projectId: "replayglowz",
+    projectId: "replayglows",
     votes: 38,
   },
   {
-    key: "replayglowz-analytics",
+    key: "replayglows-analytics",
     title: "Playlist Analytics Dashboard",
     description: "Visual overview of your watch patterns, saved content, and learning progress",
     status: "planned",
-    projectId: "replayglowz",
+    projectId: "replayglows",
     votes: 25,
   },
   {
-    key: "replayglowz-ai-summaries",
+    key: "replayglows-ai-summaries",
     title: "AI-Powered Video Summaries",
     description: "Automatic chapter summaries using AI to capture key takeaways",
     status: "considering",
-    projectId: "replayglowz",
+    projectId: "replayglows",
     votes: 67,
   },
   {

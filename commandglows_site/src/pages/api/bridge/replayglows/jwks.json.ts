@@ -1,1 +1,23 @@
-export { GET, prerender } from "../replayglowz/jwks.json";
+import type { APIRoute } from "astro";
+import { getServerEnv } from "@/lib/serverEnv";
+import { getReplayGlowsProductTokenJwks } from "@/lib/suiteBridge";
+
+export const prerender = false;
+
+const JSON_HEADERS = { "Content-Type": "application/json" };
+
+export const GET: APIRoute = async () => {
+  const env = getServerEnv();
+  const keys = await getReplayGlowsProductTokenJwks(env);
+  if (!keys.length) {
+    return new Response(
+      JSON.stringify({ error: "product_token_public_jwks_not_configured" }),
+      { status: 503, headers: JSON_HEADERS }
+    );
+  }
+
+  return new Response(JSON.stringify({ keys }), {
+    status: 200,
+    headers: JSON_HEADERS,
+  });
+};

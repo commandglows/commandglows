@@ -6,7 +6,7 @@ import { v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx } from './_generated/server'
 import {
-  REPLAYGLOWZ_PRODUCT_ID,
+  REPLAYGLOWS_PRODUCT_ID,
   COMMUNITYGLOWS_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
   COMMANDGLOWS_APP_PRODUCT_ID,
@@ -440,7 +440,7 @@ function withoutUndefined<T extends Record<string, unknown>>(value: T): T {
   ) as T
 }
 
-function resolveReplayGlowzAccess(args: {
+function resolveReplayGlowsAccess(args: {
   globalUserId: string | null
   entitlements: SuiteEntitlementLike[]
   accountExists: boolean
@@ -458,13 +458,13 @@ function resolveReplayGlowzAccess(args: {
 
   const canonical = selectPreferredActiveProductEntitlement(
     args.entitlements,
-    REPLAYGLOWZ_PRODUCT_ID
+    REPLAYGLOWS_PRODUCT_ID
   )
   if (canonical) {
     return {
       hasAccess: true,
       globalUserId: args.globalUserId,
-      matchedProductId: REPLAYGLOWZ_PRODUCT_ID,
+      matchedProductId: REPLAYGLOWS_PRODUCT_ID,
       reasonCode: 'active_entitlement',
     }
   }
@@ -1620,7 +1620,7 @@ export const upsertFirebaseIdentity = mutation({
           : {}),
       }))
 
-    const replayGlowzProductUserId =
+    const replayGlowsProductUserId =
       (await getClerkIdentityAccountIdForGlobalUser(ctx, globalUserDocId)) ??
       null
 
@@ -1635,8 +1635,8 @@ export const upsertFirebaseIdentity = mutation({
           ),
         },
       ],
-      replayGlowzProductUserId,
-      replayGlowzProductUserIdSource: replayGlowzProductUserId
+      replayGlowsProductUserId,
+      replayGlowsProductUserIdSource: replayGlowsProductUserId
         ? ('clerk' as const)
         : null,
       entitlements,
@@ -2036,7 +2036,7 @@ export const restartCommandGlowsTrialByGlobalUserId = mutation({
   },
 })
 
-export const getReplayGlowzEntitlementSnapshotByClerkId = query({
+export const getReplayGlowsEntitlementSnapshotByClerkId = query({
   args: {
     clerkId: v.string(),
     bridgeSecret: v.string(),
@@ -2066,7 +2066,7 @@ export const getReplayGlowzEntitlementSnapshotByClerkId = query({
     const globalUserDocId =
       identity?.globalUserId ?? compatibilityUser?.globalUserId
     if (!globalUserDocId) {
-      return resolveReplayGlowzAccess({
+      return resolveReplayGlowsAccess({
         globalUserId: null,
         entitlements: [],
         accountExists: Boolean(identity || compatibilityUser),
@@ -2075,7 +2075,7 @@ export const getReplayGlowzEntitlementSnapshotByClerkId = query({
 
     const globalUser = await ctx.db.get(globalUserDocId)
     if (!globalUser) {
-      return resolveReplayGlowzAccess({
+      return resolveReplayGlowsAccess({
         globalUserId: null,
         entitlements: [],
         accountExists: true,
@@ -2089,7 +2089,7 @@ export const getReplayGlowzEntitlementSnapshotByClerkId = query({
       )
       .collect()
 
-    return resolveReplayGlowzAccess({
+    return resolveReplayGlowsAccess({
       globalUserId: globalUser.globalUserId,
       entitlements: rawEntitlements,
       accountExists: true,
@@ -2097,7 +2097,7 @@ export const getReplayGlowzEntitlementSnapshotByClerkId = query({
   },
 })
 
-export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
+export const ensureReplayGlowsEntitlementSnapshotByClerkId = mutation({
   args: {
     clerkId: v.string(),
     bridgeSecret: v.string(),
@@ -2131,7 +2131,7 @@ export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
     const globalUserDocId =
       identity?.globalUserId ?? compatibilityUser?.globalUserId
     if (!globalUserDocId) {
-      return resolveReplayGlowzAccess({
+      return resolveReplayGlowsAccess({
         globalUserId: null,
         entitlements: [],
         accountExists: Boolean(identity || compatibilityUser),
@@ -2140,7 +2140,7 @@ export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
 
     const globalUser = await ctx.db.get(globalUserDocId)
     if (!globalUser) {
-      return resolveReplayGlowzAccess({
+      return resolveReplayGlowsAccess({
         globalUserId: null,
         entitlements: [],
         accountExists: true,
@@ -2157,14 +2157,14 @@ export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
     const now = Date.now()
     const environment = args.environment ?? 'production'
     const installation = await registerProductTrialInstallation(ctx, {
-      productId: REPLAYGLOWZ_PRODUCT_ID,
+      productId: REPLAYGLOWS_PRODUCT_ID,
       globalUserDocId,
       installationHash: args.installationHash,
       environment,
       now,
     })
     const didStartTrial = await maybeStartProductTrialEntitlement(ctx, {
-      productId: REPLAYGLOWZ_PRODUCT_ID,
+      productId: REPLAYGLOWS_PRODUCT_ID,
       globalUserDocId,
       globalUserPublicId: globalUser.globalUserId,
       sourceRef: args.clerkId,
@@ -2192,7 +2192,7 @@ export const ensureReplayGlowzEntitlementSnapshotByClerkId = mutation({
           .collect()
       : rawEntitlements
 
-    return resolveReplayGlowzAccess({
+    return resolveReplayGlowsAccess({
       globalUserId: globalUser.globalUserId,
       entitlements: updatedEntitlements,
       accountExists: true,

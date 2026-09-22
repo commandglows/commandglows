@@ -22,7 +22,7 @@ linked_systems:
   - "commandglows_app"
   - "commandglows_formation"
   - "communityglows"
-  - "replayglowz"
+  - "replayglows"
   - "Firebase Auth"
   - "Clerk"
   - "Convex"
@@ -58,7 +58,7 @@ evidence:
   - "Hosted Flutter web auth debug 2026-05-23: `app.winglowz.com` renders the official Google Identity Services button, but Google rejects the current origin for the configured OAuth client ID."
   - "Firebase CI/rules migration 2026-05-23: GitHub Actions WIF, deploy service account, Firestore database, rules/index deploy, auth-config validation and debug APK build now pass against `winglowz-suite`."
   - "Legacy Google Cloud project `winglowz` deletion requested 2026-05-23 after migration to `winglowz-suite`."
-  - "User correction 2026-05-23: ReplayGlowz is the canonical YouTube product and `product_id=replayglowz`; the old YouTube product naming is legacy only."
+  - "User correction 2026-05-23: ReplayGlows is the canonical YouTube product and `product_id=replayglows`; the old YouTube product naming is legacy only."
   - "User decision 2026-06-10: Diane prefers one central ledger across her operated products because she is the sole operator and has no current plan to sell separate businesses."
   - "Operator decision 2026-08-11: active product IDs are commandglows_app, commandglows_formation, communityglows and the other canonical suite IDs; Stripe Managed Payments is the sole active direct-payment provider."
   - "Documentation reconciliation 2026-08-11: this legacy implementation chantier is superseded because its WinGlows branding, Polar routes and first-slice assumptions no longer describe the active runtime."
@@ -97,7 +97,7 @@ Acteurs secondaires:
 - utilisateur qui s'inscrit sur un produit puis essaie un autre produit;
 - utilisateur existant sur le site WinGlows Formation;
 - utilisateur existant ou futur de l'app WinGlows Android;
-- utilisateur existant ou futur de ReplayGlowz;
+- utilisateur existant ou futur de ReplayGlows;
 - opérateur support;
 - systèmes de paiement et d'entitlement: Polar, stores mobiles, grants manuels;
 - backends produit: Firebase/Firestore, Clerk/Convex, futurs backends.
@@ -119,7 +119,7 @@ La suite accepte une identité client globale et associe cette identité à des 
 # Success Behavior
 
 - Given un utilisateur crée un compte sur un produit, when il tente de se connecter à un autre produit de la suite avec le même identifiant, then le système reconnaît la même identité globale ou propose un linking explicite sans duplicat silencieux.
-- Given un utilisateur a un compte global mais aucun droit ReplayGlowz, when il ouvre ReplayGlowz, then il voit un état connecté sans accès produit, avec un CTA achat/waitlist/support selon le produit, et aucune donnée ReplayGlowz privée n'est lue.
+- Given un utilisateur a un compte global mais aucun droit ReplayGlows, when il ouvre ReplayGlows, then il voit un état connecté sans accès produit, avec un CTA achat/waitlist/support selon le produit, et aucune donnée ReplayGlows privée n'est lue.
 - Given un utilisateur a un entitlement actif `winglowz_app`, when il se connecte à l'app WinGlows, then l'app peut utiliser son identité globale et ses données restent sous un namespace produit protégé.
 - Given un webhook Polar ou store mobile confirme un achat, when l'événement est vérifié, then une ligne entitlement idempotente est créée ou mise à jour pour le bon `global_user_id`, le bon `product_id`, le bon plan et le bon statut.
 - Given un remboursement, expiration ou révocation arrive, when le backend entitlements le traite, then l'accès produit est retiré sans supprimer l'identité globale ni les données conservées selon la policy produit.
@@ -140,7 +140,7 @@ La suite accepte une identité client globale et associe cette identité à des 
 
 # Problem
 
-Les produits WinGlows ont grandi avec des stacks d'auth différentes: WinGlows app cible Firebase Auth/Firestore, le site WinGlows Formation a des traces Clerk/Convex/Polar, ReplayGlowz a des traces Clerk/Convex/YouTube OAuth issues de l'ancien nom produit, et le playbook auth workspace recommande surtout un propriétaire de session par runtime. Rien dans les documents locaux ne justifie une séparation durable des comptes par produit. À l'inverse, une séparation produit créerait des doublons de comptes, plus de support, plus de reset password, plus de surface de configuration auth et une expérience moins professionnelle.
+Les produits WinGlows ont grandi avec des stacks d'auth différentes: WinGlows app cible Firebase Auth/Firestore, le site WinGlows Formation a des traces Clerk/Convex/Polar, ReplayGlows a des traces Clerk/Convex/YouTube OAuth issues de l'ancien nom produit, et le playbook auth workspace recommande surtout un propriétaire de session par runtime. Rien dans les documents locaux ne justifie une séparation durable des comptes par produit. À l'inverse, une séparation produit créerait des doublons de comptes, plus de support, plus de reset password, plus de surface de configuration auth et une expérience moins professionnelle.
 
 Le risque opposé est de confondre "un compte" et "accès à tout". Une identité globale mal modélisée peut élargir les permissions, mélanger des données produit, casser les paiements, ou fusionner des utilisateurs historiques à tort.
 
@@ -172,8 +172,8 @@ L'implémentation doit être progressive. La première tranche ne migre pas tous
 - Canon initial `product_id`:
   - `winglowz_formation`;
   - `winglowz_app`;
-  - `replayglowz`.
-  - l'ancien product id YouTube n'est plus accepté au runtime; les migrations doivent normaliser les historiques vers `replayglowz`.
+  - `replayglows`.
+  - l'ancien product id YouTube n'est plus accepté au runtime; les migrations doivent normaliser les historiques vers `replayglows`.
   - Legacy VoiceFlowz / VoiceFlows references map to `winglowz_app`, not to a separate product id.
 - Contrats de token et backend:
   - issuer/audience/app id vérifiés;
@@ -280,7 +280,7 @@ Fresh-docs verdict: `fresh-docs checked`. The docs support the architecture dire
 - `lib/features/auth/application/auth_session_provider.dart`: may need a `SuiteIdentitySession` adapter or bridge.
 - `lib/features/*/application/*_store_provider.dart`: must continue selecting stores from auth state without trusting client-provided IDs.
 - WinGlows Formation site: Clerk/Convex/Polar user and entitlement model must be audited before linking to suite identity.
-- ReplayGlowz: Clerk/Convex/YouTube OAuth must remain separate from suite login; YouTube OAuth grants product permissions, not suite identity. Former YouTube product names are legacy aliases only.
+- ReplayGlows: Clerk/Convex/YouTube OAuth must remain separate from suite login; YouTube OAuth grants product permissions, not suite identity. Former YouTube product names are legacy aliases only.
 - Support/docs: account help must explain "same account, access depends on product" without advertising unrelated products prematurely.
 
 # Documentation Coherence
@@ -292,7 +292,7 @@ Update or create:
 - `docs/DECISIONS.md`: reviewed pointer for shared suite identity principle and selected provider/bridge.
 - `shipglows_data/technical/architecture.md`: linked suite identity architecture and data boundaries.
 - `shipglows_data/technical/guidelines.md`: coding rules for global identity, entitlement checks, provider boundaries and redaction.
-- Product docs for WinGlows app, WinGlows Formation and ReplayGlowz: login/access copy, setup env, smoke steps.
+- Product docs for WinGlows app, WinGlows Formation and ReplayGlows: login/access copy, setup env, smoke steps.
 - `.env.example` or equivalent per product: auth domain, audience, issuer, callback, webhook secret names, without real secrets.
 - Support runbook: duplicate email, account linking, entitlement missing, refund/revoke, provider outage.
 - Changelog entry only after an implementation tranche is actually shipped.
@@ -344,7 +344,7 @@ Update or create:
 
 - [ ] Tâche 4 : Auditer les comptes et IDs existants avant linking
   - Fichiers : `/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication.md`, `/home/claude/winglowz/convex/schema.ts`, `/home/claude/winglowz/convex/users.ts`, `/home/claude/winglowz/convex/http.ts`, `/home/claude/winglowz/src/pages/api/clerk/webhook.ts`, `/home/claude/winglowz/src/pages/api/polar/checkout.ts`
-  - Action : lister sources utilisateurs et paiements: Firebase Auth, Clerk users, Convex users/course entitlements, Polar customer/subscription/order ids, ReplayGlowz users, legacy YouTube product aliases et YouTube OAuth grants.
+  - Action : lister sources utilisateurs et paiements: Firebase Auth, Clerk users, Convex users/course entitlements, Polar customer/subscription/order ids, ReplayGlows users, legacy YouTube product aliases et YouTube OAuth grants.
   - User story link : empêche merge silencieux et perte d'accès.
   - Depends on : Tâche 2.
   - Validate with : inventaire documenté par produit; cas doublon email catégorisés; aucun secret exporté dans le repo.
@@ -384,10 +384,10 @@ Update or create:
   - Progress 2026-05-21 : endpoint interne `POST /api/bridge/sync` ajouté; il accepte seulement `{ globalUserId }` avec secret serveur, relit Convex, résout les Firebase UIDs liés et réécrit `suiteAccess/{firebaseUid}` avec Firebase Admin.
   - Progress 2026-05-21 : les chemins Polar grant/refund/revoke appellent maintenant le sync après mutation d'entitlement; un échec de sync retourne une erreur retryable au webhook au lieu de laisser un miroir stale en silence.
 
-- [ ] Tâche 8 : Adapter ReplayGlowz sans confondre YouTube OAuth et suite identity
-  - Fichiers : repo ReplayGlowz concerné; auth/session docs; YouTube OAuth routes.
-  - Action : connecter la session suite au produit ReplayGlowz, mais garder les tokens YouTube comme grants produit séparés et révocables.
-  - User story link : même compte pour entrer dans ReplayGlowz, mais YouTube reste une permission externe spécifique.
+- [ ] Tâche 8 : Adapter ReplayGlows sans confondre YouTube OAuth et suite identity
+  - Fichiers : repo ReplayGlows concerné; auth/session docs; YouTube OAuth routes.
+  - Action : connecter la session suite au produit ReplayGlows, mais garder les tokens YouTube comme grants produit séparés et révocables.
+  - User story link : même compte pour entrer dans ReplayGlows, mais YouTube reste une permission externe spécifique.
   - Depends on : Tâche 5, Tâche 7.
   - Validate with : login suite; no entitlement deny; entitlement allow; YouTube connect/disconnect; sign-out.
   - Notes : ne jamais utiliser un refresh token YouTube comme identité suite; cette tâche peut attendre la preuve WinGlows Formation + app Android.
@@ -424,13 +424,13 @@ Update or create:
 - [ ] CA 8 : Given un token session a le mauvais issuer/audience/environment, when un backend produit le reçoit, then la requête est refusée.
 - [ ] CA 9 : Given custom claims existent, when un entitlement change, then le backend continue de lire la source de vérité serveur et ne dépend pas d'un token stale pour autoriser une mutation sensible.
 - [ ] CA 10 : Given un utilisateur se déconnecte d'un produit, when il revient sur une route protégée, then la session locale produit et l'accès backend sont invalidés selon le provider choisi.
-- [ ] CA 11 : Given un utilisateur ReplayGlowz connecte YouTube, when il se déconnecte de YouTube, then son identité suite reste intacte mais les permissions YouTube produit sont retirées.
+- [ ] CA 11 : Given un utilisateur ReplayGlows connecte YouTube, when il se déconnecte de YouTube, then son identité suite reste intacte mais les permissions YouTube produit sont retirées.
 - [ ] CA 12 : Given la première tranche est proposée au ship, when `sf-verify` relit les preuves, then WinGlows Formation et WinGlows Android app prouvent compte, entitlement allow/deny, backend deny et sign-out.
 
 # Test Strategy
 
 - Unit tests:
-  - product id allowlist validation for `winglowz_formation`, `winglowz_app`, and `replayglowz`, with old YouTube product ids rejected at runtime;
+  - product id allowlist validation for `winglowz_formation`, `winglowz_app`, and `replayglows`, with old YouTube product ids rejected at runtime;
   - legacy VoiceFlowz / VoiceFlows references map to `winglowz_app` and cannot create a separate entitlement namespace;
   - entitlement model validation;
   - duplicate email/linking policy;
@@ -507,7 +507,7 @@ Resolved decisions:
 
 - Provider gate: Clerk central identity + Firebase Android bridge.
 - First proof pair: WinGlows Formation + WinGlows Android app.
-- Product ID canon: internal allowlist `winglowz_formation`, `winglowz_app`, `replayglowz`; old YouTube product ids are migration input only and must be normalized before runtime entitlement checks; historical VoiceFlowz / VoiceFlows references map to `winglowz_app`; external billing IDs are stored as `source_ref`, not used as canonical `product_id`.
+- Product ID canon: internal allowlist `winglowz_formation`, `winglowz_app`, `replayglows`; old YouTube product ids are migration input only and must be normalized before runtime entitlement checks; historical VoiceFlowz / VoiceFlows references map to `winglowz_app`; external billing IDs are stored as `source_ref`, not used as canonical `product_id`.
 - Ledger ownership: one suite-owned entitlement ledger is the default for Diane-operated products; future apps such as Temu Shopping Lists should add a `product_id` and product gates instead of creating a second durable ledger, unless a spec documents a sale, separate operator/legal boundary, hard platform/regulatory isolation, or temporary migration adapter.
 
 # Skill Run History
@@ -546,7 +546,7 @@ Resolved decisions:
 | 2026-05-23 13:09:13 UTC | sf-auth-debug | GPT-5 Codex | Retested hosted Flutter web email/password after Firebase provider activation | Passed preflight: `app.winglowz.com` now reaches Firebase Email/Password auth and returns controlled invalid-credential UX for a fake account instead of provider-disabled copy | push/redeploy `winglowz-app`, then retest Google web sign-in and a real email/password account smoke |
 | 2026-05-23 13:35:40 UTC | sf-auth-debug | GPT-5 Codex | Continued hosted Flutter web auth debug after deploy and Firebase Email/Password activation | Partial: live `app.winglowz.com` now renders the official GIS button, but Google returns `origin is not allowed for the given client ID`; local patch also prevents repeated Google Sign-In singleton init from masking email/password errors and maps Firebase REST invalid-login credentials to the proper UX | add `https://app.winglowz.com` to the Google OAuth Web client authorized JavaScript origins, push/redeploy `winglowz-app`, then rerun Google web and email/password smoke |
 | 2026-05-23 14:30:13 UTC | sf-auth-debug | GPT-5 Codex | Migrated Firebase CI/rules ownership from legacy `winglowz` project to `winglowz-suite` and retested GitHub Actions | Passed: created `winglowz-suite` WIF pool/provider, deploy service account, Firestore `(default)` in `nam5`, GitHub secrets/variable; workflow run `26335153138` passed auth config, Firestore rules/indexes deploy, analyze, tests and debug APK upload; legacy `winglowz` deletion requested | ship/redeploy local Flutter web auth patch, then rerun deployed Google web and email/password account smoke |
-| 2026-05-23 19:33:42 UTC | sf-auth-debug | GPT-5 Codex | Read-only verification of the current WinGlows Flutter web auth path after ReplayGlowz ClerkJS bridge discussion. | Confirmed: `winglowz_app` web currently uses Firebase Auth plus `google_sign_in_web` rendered GIS button, then maps the Firebase uid/id token through the suite identity bridge; no ClerkJS bridge exists in `web/index.html`, `auth_session_provider.dart`, or auth data code. | keep current Firebase web smoke path for WinGlows app unless a new spec explicitly migrates Flutter web to ClerkJS |
+| 2026-05-23 19:33:42 UTC | sf-auth-debug | GPT-5 Codex | Read-only verification of the current WinGlows Flutter web auth path after ReplayGlows ClerkJS bridge discussion. | Confirmed: `winglowz_app` web currently uses Firebase Auth plus `google_sign_in_web` rendered GIS button, then maps the Firebase uid/id token through the suite identity bridge; no ClerkJS bridge exists in `web/index.html`, `auth_session_provider.dart`, or auth data code. | keep current Firebase web smoke path for WinGlows app unless a new spec explicitly migrates Flutter web to ClerkJS |
 | 2026-05-24 14:08:24 UTC | sf-auth-debug | GPT-5 Codex | Verified hosted WinGlows Formation + Flutter web auth flows after env/DNS setup | Partial and patched locally: `app.winglowz.com` initializes Firebase, Email/Password reaches Firebase with controlled invalid-credential UX, Google GIS button renders and opens Google, and focused email/password fields expose browser autofill metadata; production `www.winglowz.com/fr/signin` is blocked by CSP for Clerk custom-domain scripts and `/api/bridge/firebase` still returns `firebase_admin_not_configured`. Local Formation patch now allows Clerk custom-domain CSP and reads bridge secrets through server runtime env. | push/redeploy `/home/claude/winglowz`, run `/sf-prod winglowz`, then rerun real account suite-auth smoke |
 | 2026-06-10 09:37:22 UTC | sf-spec | GPT-5 Codex | Formalized the operator decision for entitlement ledger ownership after Temu Shopping Lists entitlement planning | Updated the active suite-auth spec: one suite-owned ledger is the default across Diane-operated products, with second ledgers allowed only for documented separation or migration exceptions | `/sf-ready Entitlements and access model for Temu Shopping Lists`, then map `temu_shopping_lists` into the suite ledger before protected sync or monetization |
 | 2026-08-11 19:25:00 UTC | sg-docs | GPT-5 Codex | Reconciled the document after the CommandGlows identity reset and suite-wide Stripe migration. | Spec marked superseded; historical WinGlows and Polar implementation detail preserved, while active authority now points to current architecture and the canonical commercial contract. | Follow the successor documents; do not execute historical provider or route tasks from this record. |

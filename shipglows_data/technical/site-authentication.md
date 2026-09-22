@@ -33,7 +33,7 @@ email matching.
 
 `SITE_AUTH_PROVIDER` selects `auth0` or the transitional default `clerk`. Unknown
 values fail closed. Clerk remains an explicit rollback and account-recovery
-adapter, plus compatibility for ReplayGlowz bearer tokens and lifecycle webhooks;
+adapter, plus compatibility for ReplayGlows bearer tokens and lifecycle webhooks;
 those product integrations are not silently migrated with the site.
 
 Auth0 configuration is server-only:

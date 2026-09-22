@@ -150,7 +150,7 @@ identities. Configure `CONTENTGLOWS_AUTH0_DOMAIN`,
 the same environment as the entitlement ledger; ContentGlows access is filtered
 to that exact environment.
 
-`POST /api/bridge/entitlement` verifies ReplayGlowz Clerk sessions server-side and fails closed without an active paid entitlement or valid shared-policy trial. A recognized installation may receive one 30-day cycle and request at most two restarts; legacy free grants never unlock ReplayGlowz.
+`POST /api/bridge/entitlement` verifies ReplayGlows Clerk sessions server-side and fails closed without an active paid entitlement or valid shared-policy trial. A recognized installation may receive one 30-day cycle and request at most two restarts; legacy free grants never unlock ReplayGlows.
 
 `POST /api/bridge/communityglows` accepts:
 

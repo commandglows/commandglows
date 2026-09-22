@@ -4,7 +4,7 @@ export const SUITE_PRODUCT_ALLOWLIST = [
   'gocharbon',
   'contentglowz',
   'shipglows',
-  'replayglowz',
+  'replayglows',
   'communityglows',
   'temu_shopping_lists',
 ] as const
@@ -14,7 +14,7 @@ export const GOCHARBON_PRODUCT_ID = 'gocharbon'
 export const CONTENTGLOWZ_PRODUCT_ID = 'contentglowz'
 export const SHIPGLOWS_PRODUCT_ID = 'shipglows'
 export const LEGACY_SHIPGLOWZ_PRODUCT_ID = 'shipglowz'
-export const REPLAYGLOWZ_PRODUCT_ID = 'replayglowz'
+export const REPLAYGLOWS_PRODUCT_ID = 'replayglows'
 export const COMMUNITYGLOWS_PRODUCT_ID = 'communityglows'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
 export const SUITE_TRIAL_MAX_CYCLES = 3
@@ -65,36 +65,36 @@ export type BridgeEntitlementSnapshot = {
   status: string
 }
 
-export type ReplayGlowzEntitlementReasonCode =
+export type ReplayGlowsEntitlementReasonCode =
   | 'active_entitlement'
   | 'missing_product_entitlement'
   | 'account_not_found'
   | 'global_user_not_found'
 
-export type ReplayGlowzEntitlementSnapshot = {
+export type ReplayGlowsEntitlementSnapshot = {
   hasAccess: boolean
   globalUserId: string | null
   matchedProductId: string | null
-  reasonCode: ReplayGlowzEntitlementReasonCode
+  reasonCode: ReplayGlowsEntitlementReasonCode
 }
 
-export type ReplayGlowzProductUserIdSource = 'clerk' | 'globalUserId'
+export type ReplayGlowsProductUserIdSource = 'clerk' | 'globalUserId'
 
-export type ReplayGlowzProductJwtPayload = {
+export type ReplayGlowsProductJwtPayload = {
   sub: string
   globalUserId: string
-  productId: typeof REPLAYGLOWZ_PRODUCT_ID
+  productId: typeof REPLAYGLOWS_PRODUCT_ID
   matchedProductId: string
-  reasonCode: ReplayGlowzEntitlementReasonCode
+  reasonCode: ReplayGlowsEntitlementReasonCode
   productUserId: string
-  productUserIdSource: ReplayGlowzProductUserIdSource
+  productUserIdSource: ReplayGlowsProductUserIdSource
   iat: number
   exp: number
   iss: string
   aud: string
 }
 
-type ReplayGlowzProductTokenConfig = {
+type ReplayGlowsProductTokenConfig = {
   privateKeyPem: string
   keyId: string
   issuer: string
@@ -191,7 +191,7 @@ function toPemBytes(pem: string): ArrayBuffer {
   return bytes.buffer
 }
 
-async function importReplayGlowzProductSigningKey(
+async function importReplayGlowsProductSigningKey(
   privateKeyPem: string
 ): Promise<CryptoKey | null> {
   const subtle = globalThis.crypto?.subtle
@@ -216,7 +216,7 @@ async function importReplayGlowzProductSigningKey(
   }
 }
 
-async function importReplayGlowzProductVerificationKey(
+async function importReplayGlowsProductVerificationKey(
   publicKeyPem: string
 ): Promise<CryptoKey | null> {
   const subtle = globalThis.crypto?.subtle
@@ -255,7 +255,7 @@ function stripPrivateFields(jwk: JsonWebKey): JsonWebKey {
   return publicFields as JsonWebKey
 }
 
-function buildReplayGlowzProductTokenConfig(env: Record<string, string | undefined>) {
+function buildReplayGlowsProductTokenConfig(env: Record<string, string | undefined>) {
   const privateKeyPem = normalizePem(env.REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM)
   const keyId = isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_KEY_ID)
     ? env.REPLAYGLOWS_PRODUCT_JWT_KEY_ID!.trim()
@@ -276,16 +276,16 @@ function buildReplayGlowzProductTokenConfig(env: Record<string, string | undefin
     keyId,
     issuer,
     audience,
-  } as ReplayGlowzProductTokenConfig
+  } as ReplayGlowsProductTokenConfig
 }
 
-export function getReplayGlowzProductJwtPrivateKeyPem(
+export function getReplayGlowsProductJwtPrivateKeyPem(
   env: Record<string, string | undefined>
 ): string | null {
   return normalizePem(env.REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM)
 }
 
-export function getReplayGlowzProductJwtPublicKeyJwk(
+export function getReplayGlowsProductJwtPublicKeyJwk(
   env: Record<string, string | undefined>
 ): JsonWebKey | null {
   const publicKeyJwk = parseJsonWebKey(env.REPLAYGLOWS_PRODUCT_JWT_PUBLIC_KEY_JWK)
@@ -295,10 +295,10 @@ export function getReplayGlowzProductJwtPublicKeyJwk(
   return null
 }
 
-export async function getReplayGlowzProductJwtPublicKeyJwkOrNull(
+export async function getReplayGlowsProductJwtPublicKeyJwkOrNull(
   env: Record<string, string | undefined>
 ): Promise<JsonWebKey | null> {
-  const direct = getReplayGlowzProductJwtPublicKeyJwk(env)
+  const direct = getReplayGlowsProductJwtPublicKeyJwk(env)
   if (direct) {
     return direct
   }
@@ -308,7 +308,7 @@ export async function getReplayGlowzProductJwtPublicKeyJwkOrNull(
     return null
   }
 
-  const key = await importReplayGlowzProductVerificationKey(publicKeyPem)
+  const key = await importReplayGlowsProductVerificationKey(publicKeyPem)
   if (!key) {
     return null
   }
@@ -323,43 +323,43 @@ export async function getReplayGlowzProductJwtPublicKeyJwkOrNull(
   }
 }
 
-export function getReplayGlowzProductJwtKeyId(env: Record<string, string | undefined>) {
+export function getReplayGlowsProductJwtKeyId(env: Record<string, string | undefined>) {
   return isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_KEY_ID)
     ? env.REPLAYGLOWS_PRODUCT_JWT_KEY_ID!.trim()
     : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_KEY_ID
 }
 
-export function getReplayGlowzProductJwtIssuer(env: Record<string, string | undefined>) {
+export function getReplayGlowsProductJwtIssuer(env: Record<string, string | undefined>) {
   return isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_ISSUER)
     ? env.REPLAYGLOWS_PRODUCT_JWT_ISSUER!.trim()
     : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_ISSUER
 }
 
-export function getReplayGlowzProductJwtAudience(env: Record<string, string | undefined>) {
+export function getReplayGlowsProductJwtAudience(env: Record<string, string | undefined>) {
   return isNonEmptyString(env.REPLAYGLOWS_PRODUCT_JWT_AUDIENCE)
     ? env.REPLAYGLOWS_PRODUCT_JWT_AUDIENCE!.trim()
     : REPLAYGLOWS_PRODUCT_JWT_DEFAULT_AUDIENCE
 }
 
-export async function buildReplayGlowzProductToken(
+export async function buildReplayGlowsProductToken(
   args: {
     globalUserId: string
     productUserId: string
-    productUserIdSource: ReplayGlowzProductUserIdSource
+    productUserIdSource: ReplayGlowsProductUserIdSource
     matchedProductId: string
-    reasonCode: ReplayGlowzEntitlementReasonCode
+    reasonCode: ReplayGlowsEntitlementReasonCode
     issuer: string
     audience: string
     now?: number
   },
   env: Record<string, string | undefined>
 ): Promise<string | null> {
-  const config = buildReplayGlowzProductTokenConfig(env)
+  const config = buildReplayGlowsProductTokenConfig(env)
   if (!config) {
     return null
   }
 
-  const key = await importReplayGlowzProductSigningKey(config.privateKeyPem)
+  const key = await importReplayGlowsProductSigningKey(config.privateKeyPem)
   if (!key) {
     return null
   }
@@ -369,10 +369,10 @@ export async function buildReplayGlowzProductToken(
   const header = { alg: 'RS256', kid: config.keyId, typ: 'JWT' }
   const issuer = isNonEmptyString(args.issuer) ? args.issuer : config.issuer
   const audience = isNonEmptyString(args.audience) ? args.audience : config.audience
-  const payload: ReplayGlowzProductJwtPayload = {
+  const payload: ReplayGlowsProductJwtPayload = {
     sub: args.productUserId,
     globalUserId: args.globalUserId,
-    productId: REPLAYGLOWZ_PRODUCT_ID,
+    productId: REPLAYGLOWS_PRODUCT_ID,
     matchedProductId: args.matchedProductId,
     reasonCode: args.reasonCode,
     productUserId: args.productUserId,
@@ -403,7 +403,7 @@ export async function buildReplayGlowzProductToken(
   }
 }
 
-function buildReplayGlowzProductTokenJwks(
+function buildReplayGlowsProductTokenJwks(
   jwk: JsonWebKey,
   keyId: string
 ): JsonWebKey {
@@ -415,18 +415,18 @@ function buildReplayGlowzProductTokenJwks(
   } as JsonWebKey
 }
 
-export async function getReplayGlowzProductTokenJwks(
+export async function getReplayGlowsProductTokenJwks(
   env: Record<string, string | undefined>
 ): Promise<JsonWebKey[]> {
-  const keyId = getReplayGlowzProductJwtKeyId(env)
-  const direct = getReplayGlowzProductJwtPublicKeyJwk(env)
+  const keyId = getReplayGlowsProductJwtKeyId(env)
+  const direct = getReplayGlowsProductJwtPublicKeyJwk(env)
   if (direct) {
-    return [buildReplayGlowzProductTokenJwks(direct, keyId)]
+    return [buildReplayGlowsProductTokenJwks(direct, keyId)]
   }
 
-  const fromPublicPem = await getReplayGlowzProductJwtPublicKeyJwkOrNull(env)
+  const fromPublicPem = await getReplayGlowsProductJwtPublicKeyJwkOrNull(env)
   if (fromPublicPem) {
-    return [buildReplayGlowzProductTokenJwks(fromPublicPem, keyId)]
+    return [buildReplayGlowsProductTokenJwks(fromPublicPem, keyId)]
   }
 
   return []
@@ -601,7 +601,7 @@ export function resolveCommunityGlowsEntitlementSnapshot({
   }
 }
 
-export function resolveReplayGlowzEntitlementSnapshot({
+export function resolveReplayGlowsEntitlementSnapshot({
   globalUserId,
   entitlements,
   accountExists = true,
@@ -609,7 +609,7 @@ export function resolveReplayGlowzEntitlementSnapshot({
   globalUserId: string | null
   entitlements: BridgeEntitlement[]
   accountExists?: boolean
-}): ReplayGlowzEntitlementSnapshot {
+}): ReplayGlowsEntitlementSnapshot {
   if (!globalUserId) {
     return {
       hasAccess: false,
@@ -621,13 +621,13 @@ export function resolveReplayGlowzEntitlementSnapshot({
 
   const canonical = selectPreferredActiveEntitlement(
     entitlements,
-    REPLAYGLOWZ_PRODUCT_ID
+    REPLAYGLOWS_PRODUCT_ID
   )
   if (canonical) {
     return {
       hasAccess: true,
       globalUserId,
-      matchedProductId: REPLAYGLOWZ_PRODUCT_ID,
+      matchedProductId: REPLAYGLOWS_PRODUCT_ID,
       reasonCode: 'active_entitlement',
     }
   }

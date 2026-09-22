@@ -21,7 +21,7 @@
   <rect x="572" y="296" width="110" height="6" rx="3" fill="#52525b"/>
   <!-- Extension popup -->
   <rect x="560" y="428" width="180" height="120" rx="8" fill="#27272a" stroke="#ff00c8" stroke-width="2"/>
-  <text x="580" y="452" fill="#ff00c8" font-family="sans-serif" font-size="12" font-weight="bold">ReplayGlowz</text>
+  <text x="580" y="452" fill="#ff00c8" font-family="sans-serif" font-size="12" font-weight="bold">ReplayGlows</text>
   <rect x="572" y="464" width="156" height="28" rx="6" fill="#ff00c8" opacity="0.2"/>
   <text x="610" y="483" fill="#ff00c8" font-family="sans-serif" font-size="11">Save Bookmark</text>
   <rect x="572" y="500" width="156" height="28" rx="6" fill="#3f3f46"/>

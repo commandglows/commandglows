@@ -4,7 +4,7 @@ export const GOCHARBON_PRODUCT_ID = 'gocharbon'
 export const CONTENTGLOWZ_PRODUCT_ID = 'contentglowz'
 export const SHIPGLOWS_PRODUCT_ID = 'shipglows'
 export const LEGACY_SHIPGLOWZ_PRODUCT_ID = 'shipglowz'
-export const REPLAYGLOWZ_PRODUCT_ID = 'replayglowz'
+export const REPLAYGLOWS_PRODUCT_ID = 'replayglows'
 export const COMMUNITYGLOWS_PRODUCT_ID = 'communityglows'
 export const TEMU_SHOPPING_LISTS_PRODUCT_ID = 'temu_shopping_lists'
 
@@ -14,7 +14,7 @@ export const SUITE_PRODUCT_IDS = [
   GOCHARBON_PRODUCT_ID,
   CONTENTGLOWZ_PRODUCT_ID,
   SHIPGLOWS_PRODUCT_ID,
-  REPLAYGLOWZ_PRODUCT_ID,
+  REPLAYGLOWS_PRODUCT_ID,
   COMMUNITYGLOWS_PRODUCT_ID,
   TEMU_SHOPPING_LISTS_PRODUCT_ID,
 ] as const

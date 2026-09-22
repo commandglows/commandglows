@@ -6,16 +6,16 @@ import { getFirebaseAdminState } from "@/lib/firebaseAdmin";
 import { getServerEnv } from "@/lib/serverEnv";
 import {
   buildFirestoreSuiteAccessMirror,
-  buildReplayGlowzProductToken,
+  buildReplayGlowsProductToken,
   getBearerTokenFromAuthorizationHeader,
   getConvexBridgeSecret,
-  getReplayGlowzProductJwtAudience,
-  getReplayGlowzProductJwtIssuer,
+  getReplayGlowsProductJwtAudience,
+  getReplayGlowsProductJwtIssuer,
   isTrustedFirebaseIdTokenClaims,
   resolveBridgeEnvironment,
-  resolveReplayGlowzEntitlementSnapshot,
-  type ReplayGlowzEntitlementReasonCode,
-  type ReplayGlowzProductUserIdSource,
+  resolveReplayGlowsEntitlementSnapshot,
+  type ReplayGlowsEntitlementReasonCode,
+  type ReplayGlowsProductUserIdSource,
 } from "@/lib/suiteBridge";
 import { createCommerceCheckoutIdentityToken } from "@/lib/commerce/checkoutIdentity";
 
@@ -69,8 +69,8 @@ type BridgeSnapshot = {
     trialRestartsRemaining?: number | null;
     trialRestartEligible?: boolean;
   }>;
-  replayGlowzProductUserId: string | null;
-  replayGlowzProductUserIdSource: ReplayGlowzProductUserIdSource | null;
+  replayGlowsProductUserId: string | null;
+  replayGlowsProductUserIdSource: ReplayGlowsProductUserIdSource | null;
 };
 
 function isNonEmptyString(value: unknown): value is string {
@@ -93,9 +93,9 @@ function parseEpochMs(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function parseReplayGlowzJwtSource(
+function parseReplayGlowsJwtSource(
   value: unknown
-): ReplayGlowzProductUserIdSource | null {
+): ReplayGlowsProductUserIdSource | null {
   if (value === "clerk") {
     return "clerk";
   }
@@ -188,40 +188,40 @@ function parseBridgeSnapshot(value: unknown): BridgeSnapshot {
     globalUserId: parseNullableString(raw.globalUserId),
     accounts: parseBridgeAccounts(raw.accounts),
     entitlements: parseBridgeEntitlements(raw.entitlements),
-    replayGlowzProductUserId: parseNullableString(
-      raw.replayGlowzProductUserId
+    replayGlowsProductUserId: parseNullableString(
+      raw.replayGlowsProductUserId
     ),
-    replayGlowzProductUserIdSource: parseReplayGlowzJwtSource(
-      raw.replayGlowzProductUserIdSource
+    replayGlowsProductUserIdSource: parseReplayGlowsJwtSource(
+      raw.replayGlowsProductUserIdSource
     ),
   };
 }
 
-function buildReplayGlowzClientSnapshot(
+function buildReplayGlowsClientSnapshot(
   snapshot: BridgeSnapshot,
-  replayGlowz: {
+  replayGlows: {
     hasAccess: boolean;
     globalUserId: string | null;
     matchedProductId: string | null;
-    reasonCode: ReplayGlowzEntitlementReasonCode;
+    reasonCode: ReplayGlowsEntitlementReasonCode;
   }
 ) {
   const productUserId =
-    replayGlowz.hasAccess && snapshot.replayGlowzProductUserId
-      ? snapshot.replayGlowzProductUserId
+    replayGlows.hasAccess && snapshot.replayGlowsProductUserId
+      ? snapshot.replayGlowsProductUserId
       : snapshot.globalUserId;
-  const productUserIdSource: ReplayGlowzProductUserIdSource =
-    replayGlowz.hasAccess &&
-    snapshot.replayGlowzProductUserId &&
-    snapshot.replayGlowzProductUserIdSource === "clerk"
+  const productUserIdSource: ReplayGlowsProductUserIdSource =
+    replayGlows.hasAccess &&
+    snapshot.replayGlowsProductUserId &&
+    snapshot.replayGlowsProductUserIdSource === "clerk"
       ? "clerk"
       : "globalUserId";
 
   return {
-    hasAccess: replayGlowz.hasAccess,
-    globalUserId: replayGlowz.globalUserId,
-    matchedProductId: replayGlowz.matchedProductId,
-    reasonCode: replayGlowz.reasonCode,
+    hasAccess: replayGlows.hasAccess,
+    globalUserId: replayGlows.globalUserId,
+    matchedProductId: replayGlows.matchedProductId,
+    reasonCode: replayGlows.reasonCode,
     productUserId,
     productUserIdSource,
   };
@@ -357,30 +357,30 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const replayGlowzSnapshot = resolveReplayGlowzEntitlementSnapshot({
+    const replayGlowsSnapshot = resolveReplayGlowsEntitlementSnapshot({
       globalUserId: snapshot.globalUserId,
       entitlements: snapshot.entitlements,
     });
 
-    const replayGlowzForClient = buildReplayGlowzClientSnapshot(
+    const replayGlowsForClient = buildReplayGlowsClientSnapshot(
       snapshot,
-      replayGlowzSnapshot
+      replayGlowsSnapshot
     );
-    const replayGlowzGlobalUserId = snapshot.globalUserId;
-    const replayGlowzProductUserId = replayGlowzForClient.productUserId
-      ? replayGlowzForClient.productUserId
-      : replayGlowzGlobalUserId;
+    const replayGlowsGlobalUserId = snapshot.globalUserId;
+    const replayGlowsProductUserId = replayGlowsForClient.productUserId
+      ? replayGlowsForClient.productUserId
+      : replayGlowsGlobalUserId;
 
-    const productTokenPayload = replayGlowzSnapshot.hasAccess
+    const productTokenPayload = replayGlowsSnapshot.hasAccess
       ? {
-          globalUserId: replayGlowzGlobalUserId,
-          productUserId: replayGlowzProductUserId,
-          productUserIdSource: replayGlowzForClient.productUserIdSource,
+          globalUserId: replayGlowsGlobalUserId,
+          productUserId: replayGlowsProductUserId,
+          productUserIdSource: replayGlowsForClient.productUserIdSource,
           matchedProductId:
-            replayGlowzSnapshot.matchedProductId ?? "replayglowz",
-          reasonCode: replayGlowzSnapshot.reasonCode,
-          issuer: getReplayGlowzProductJwtIssuer(env),
-          audience: getReplayGlowzProductJwtAudience(env),
+            replayGlowsSnapshot.matchedProductId ?? "replayglows",
+          reasonCode: replayGlowsSnapshot.reasonCode,
+          issuer: getReplayGlowsProductJwtIssuer(env),
+          audience: getReplayGlowsProductJwtAudience(env),
         }
       : null;
 
@@ -388,7 +388,7 @@ export const POST: APIRoute = async ({ request }) => {
     let productTokenIssue: string | null = null;
 
     if (productTokenPayload && productTokenPayload.productUserId) {
-      productToken = await buildReplayGlowzProductToken(
+      productToken = await buildReplayGlowsProductToken(
         productTokenPayload,
         env
       );
@@ -428,7 +428,7 @@ export const POST: APIRoute = async ({ request }) => {
       globalUserId: snapshot.globalUserId,
       accounts: snapshot.accounts,
       entitlements: snapshot.entitlements,
-      replayGlowz: replayGlowzForClient,
+      replayGlows: replayGlowsForClient,
       ...(checkoutIdentityToken ? { checkoutIdentityToken } : {}),
       ...(productToken ? { productToken, product_token: productToken } : {}),
       ...(productTokenIssue ? { productTokenIssue } : {}),

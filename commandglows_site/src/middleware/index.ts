@@ -11,8 +11,8 @@ import { i18nMiddleware } from './i18n';
 const legacyRedirects = new Map<string, string>([
   ['/products/obsidian-plugins', '/products/flowzsuite-obsidian'],
   ['/fr/produits/obsidian-plugins', '/fr/produits/flowzsuite-obsidian'],
-  ['/products/chrome-extensions', '/products/replayglowz-extension'],
-  ['/fr/produits/chrome-extensions', '/fr/produits/replayglowz-extension'],
+  ['/products/chrome-extensions', '/products/replayglows-extension'],
+  ['/fr/produits/chrome-extensions', '/fr/produits/replayglows-extension'],
   ['/products/productivity-suite', '/products/commandglows'],
   ['/fr/produits/productivity-suite', '/fr/produits/commandglows'],
   ['/fr/blog/termux-customization', '/fr/blog/termux-personnalisation'],

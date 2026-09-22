@@ -461,7 +461,7 @@
         }
       },
       "functionType": "Mutation",
-      "identifier": "bridge.js:ensureReplayGlowzEntitlementSnapshotByClerkId",
+      "identifier": "bridge.js:ensureReplayGlowsEntitlementSnapshotByClerkId",
       "returns": null,
       "visibility": {
         "kind": "public"
@@ -678,7 +678,7 @@
         }
       },
       "functionType": "Query",
-      "identifier": "bridge.js:getReplayGlowzEntitlementSnapshotByClerkId",
+      "identifier": "bridge.js:getReplayGlowsEntitlementSnapshotByClerkId",
       "returns": null,
       "visibility": {
         "kind": "public"

@@ -1,16 +1,16 @@
 import {
   SUITE_PRODUCT_ALLOWLIST,
   buildFirestoreSuiteAccessMirror,
-  buildReplayGlowzProductToken,
+  buildReplayGlowsProductToken,
   getBridgeEndpointSecret,
   getConvexBridgeSecret,
   getBearerTokenFromAuthorizationHeader,
-  getReplayGlowzProductJwtAudience,
-  getReplayGlowzProductJwtIssuer,
+  getReplayGlowsProductJwtAudience,
+  getReplayGlowsProductJwtIssuer,
   getCommunityGlowsBridgeSecret,
   getTemuShoppingListsBridgeSecret,
   getSuiteEntitlementVerifySecret,
-  getReplayGlowzProductTokenJwks,
+  getReplayGlowsProductTokenJwks,
   hasActiveEntitlement,
   isActiveAccessStatus,
   isAllowedCommunityGlowsPlan,
@@ -20,7 +20,7 @@ import {
   isTrustedFirebaseIdTokenClaims,
   parseSyncRequestBody,
   maskProviderAccountId,
-  resolveReplayGlowzEntitlementSnapshot,
+  resolveReplayGlowsEntitlementSnapshot,
   resolveCommunityGlowsEntitlementSnapshot,
 } from '@/lib/suiteBridge'
 import { createPublicKey, generateKeyPairSync } from 'node:crypto'
@@ -111,7 +111,7 @@ describe('suiteBridge helpers', () => {
     expect(isAllowedSuiteProduct('shipglows')).toBe(true)
     expect(isAllowedSuiteProduct('shipglowz')).toBe(true)
     expect(normalizeSuiteProductId('shipglowz')).toBe('shipglows')
-    expect(isAllowedSuiteProduct('replayglowz')).toBe(true)
+    expect(isAllowedSuiteProduct('replayglows')).toBe(true)
     expect(isAllowedSuiteProduct('communityglows')).toBe(true)
     expect(isAllowedSuiteProduct('temu_shopping_lists')).toBe(true)
     expect(isAllowedSuiteProduct('commandglows_android')).toBe(false)
@@ -177,7 +177,7 @@ describe('suiteBridge helpers', () => {
         globalUserId: 'gu_123',
         entitlements: [
           { productId: 'commandglows_app', status: 'active', plan: 'pro' },
-          { productId: 'replayglowz', status: 'active', plan: 'pro' },
+          { productId: 'replayglows', status: 'active', plan: 'pro' },
         ],
       })
     ).toEqual({
@@ -524,14 +524,14 @@ describe('suiteBridge helpers', () => {
     })
   })
 
-  test('resolves ReplayGlowz access from canonical entitlement first', () => {
+  test('resolves ReplayGlows access from canonical entitlement first', () => {
     expect(
-      resolveReplayGlowzEntitlementSnapshot({
+      resolveReplayGlowsEntitlementSnapshot({
         globalUserId: 'gu_123',
         entitlements: [
           { productId: 'old_youtube_product', status: 'active', plan: 'legacy' },
           {
-            productId: 'replayglowz',
+            productId: 'replayglows',
             status: 'trialing',
             plan: 'trial',
             source: 'product_trial',
@@ -542,14 +542,14 @@ describe('suiteBridge helpers', () => {
     ).toEqual({
       hasAccess: true,
       globalUserId: 'gu_123',
-      matchedProductId: 'replayglowz',
+      matchedProductId: 'replayglows',
       reasonCode: 'active_entitlement',
     })
   })
 
-  test('ignores old ReplayGlowz aliases and fails closed', () => {
+  test('ignores unrelated product aliases and fails closed', () => {
     expect(
-      resolveReplayGlowzEntitlementSnapshot({
+      resolveReplayGlowsEntitlementSnapshot({
         globalUserId: 'gu_123',
         entitlements: [
           { productId: 'old_youtube_product', status: 'active', plan: 'legacy' },
@@ -563,12 +563,12 @@ describe('suiteBridge helpers', () => {
     })
   })
 
-  test('denies ReplayGlowz access without active product entitlement', () => {
+  test('denies ReplayGlows access without active product entitlement', () => {
     expect(
-      resolveReplayGlowzEntitlementSnapshot({
+      resolveReplayGlowsEntitlementSnapshot({
         globalUserId: 'gu_123',
         entitlements: [
-          { productId: 'replayglowz', status: 'refunded', plan: 'pro' },
+          { productId: 'replayglows', status: 'refunded', plan: 'pro' },
           { productId: 'commandglows_app', status: 'active', plan: 'pro' },
         ],
       })
@@ -580,9 +580,9 @@ describe('suiteBridge helpers', () => {
     })
   })
 
-  test('denies ReplayGlowz access when Clerk account is unknown', () => {
+  test('denies ReplayGlows access when Clerk account is unknown', () => {
     expect(
-      resolveReplayGlowzEntitlementSnapshot({
+      resolveReplayGlowsEntitlementSnapshot({
         globalUserId: null,
         entitlements: [],
         accountExists: false,
@@ -665,15 +665,15 @@ describe('suiteBridge helpers', () => {
     }
 
     const now = Date.UTC(2026, 5, 2, 12, 0, 0)
-    const token = await buildReplayGlowzProductToken(
+    const token = await buildReplayGlowsProductToken(
       {
         globalUserId: 'gu_123',
         productUserId: 'clerk_abc',
         productUserIdSource: 'clerk',
-        matchedProductId: 'replayglowz',
+        matchedProductId: 'replayglows',
         reasonCode: 'active_entitlement',
-        issuer: getReplayGlowzProductJwtIssuer(env),
-        audience: getReplayGlowzProductJwtAudience(env),
+        issuer: getReplayGlowsProductJwtIssuer(env),
+        audience: getReplayGlowsProductJwtAudience(env),
         now,
       },
       env
@@ -692,8 +692,8 @@ describe('suiteBridge helpers', () => {
     expect(payload).toMatchObject({
       sub: 'clerk_abc',
       globalUserId: 'gu_123',
-      productId: 'replayglowz',
-      matchedProductId: 'replayglowz',
+      productId: 'replayglows',
+      matchedProductId: 'replayglows',
       reasonCode: 'active_entitlement',
       productUserId: 'clerk_abc',
       productUserIdSource: 'clerk',
@@ -732,7 +732,7 @@ describe('suiteBridge helpers', () => {
       REPLAYGLOWS_PRODUCT_JWT_KEY_ID: 'replayglows-suite-2026-09-15',
     }
 
-    const jwks = await getReplayGlowzProductTokenJwks(env)
+    const jwks = await getReplayGlowsProductTokenJwks(env)
 
     expect(jwks).toHaveLength(1)
     expect(jwks[0]).toMatchObject({
@@ -745,8 +745,8 @@ describe('suiteBridge helpers', () => {
     expect(jwks[0]).toHaveProperty('n')
   })
 
-  test('returns no ReplayGlowz JWKS when public key material is missing', async () => {
-    const jwks = await getReplayGlowzProductTokenJwks({})
+  test('returns no ReplayGlows JWKS when public key material is missing', async () => {
+    const jwks = await getReplayGlowsProductTokenJwks({})
     expect(jwks).toHaveLength(0)
   })
 })

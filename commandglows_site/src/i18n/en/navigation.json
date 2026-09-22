@@ -21,7 +21,7 @@
       "section": "Products",
       "links": [
         { "name": "ObsiFlowz", "url": "/products/flowzsuite-obsidian" },
-        { "name": "ReplayGlowz", "url": "/products/replayglowz-extension" },
+        { "name": "ReplayGlows", "url": "/products/replayglows-extension" },
         { "name": "Windows Mastery", "url": "/windows-mastery" },
         { "name": "Productivity Suite", "url": "/products/commandglows" }
       ]

@@ -45,7 +45,7 @@ export function getFooterLinks(lang: Language = 'en'): FooterSection[] {
       section: lang === 'fr' ? 'Produits' : 'Products',
       links: [
         { name: 'ObsiFlowz', url: getLocalizedPath(lang, 'products') },
-        { name: 'ReplayGlowz', url: getLocalizedPath(lang, 'products') },
+        { name: 'ReplayGlows', url: getLocalizedPath(lang, 'products') },
         { name: 'Windows Mastery', url: getLocalizedPath(lang, 'products') },
         { name: lang === 'fr' ? 'Suite Productivité' : 'Productivity Suite', url: getLocalizedPath(lang, 'products') },
       ],

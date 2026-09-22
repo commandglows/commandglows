@@ -2,43 +2,43 @@ import type { Feature } from '@/types/roadmap'
 
 export const ROADMAP_DEFAULT_FEATURES: Feature[] = [
   {
-    id: 'legacy-replayglowz-bookmarks',
-    key: 'replayglowz-bookmarks',
+    id: 'legacy-replayglows-bookmarks',
+    key: 'replayglows-bookmarks',
     title: 'Structured Obsidian Export',
     description:
       'Turn captured timestamps and notes into cleaner Markdown exports that are easier to reuse inside a real learning vault.',
     status: 'completed',
-    projectId: 'replayglowz',
+    projectId: 'replayglows',
     votes: 42,
   },
   {
-    id: 'legacy-replayglowz-obsidian-export',
-    key: 'replayglowz-obsidian-export',
+    id: 'legacy-replayglows-obsidian-export',
+    key: 'replayglows-obsidian-export',
     title: 'Faster Keyboard-First Capture',
     description:
       'Reduce friction when saving a moment, adding a note, and moving on without breaking the YouTube flow.',
     status: 'in-development',
-    projectId: 'replayglowz',
+    projectId: 'replayglows',
     votes: 38,
   },
   {
-    id: 'legacy-replayglowz-analytics',
-    key: 'replayglowz-analytics',
+    id: 'legacy-replayglows-analytics',
+    key: 'replayglows-analytics',
     title: 'Review Sessions Across Saved Moments',
     description:
       'Revisit saved timestamps in a more deliberate sequence instead of hunting through individual videos one by one.',
     status: 'planned',
-    projectId: 'replayglowz',
+    projectId: 'replayglows',
     votes: 25,
   },
   {
-    id: 'legacy-replayglowz-ai-summaries',
-    key: 'replayglowz-ai-summaries',
+    id: 'legacy-replayglows-ai-summaries',
+    key: 'replayglows-ai-summaries',
     title: 'Shared Study Packs',
     description:
       'Bundle selected timestamps, notes, and exports into cleaner packets that are easier to reuse or share with a team.',
     status: 'considering',
-    projectId: 'replayglowz',
+    projectId: 'replayglows',
     votes: 67,
   },
   {

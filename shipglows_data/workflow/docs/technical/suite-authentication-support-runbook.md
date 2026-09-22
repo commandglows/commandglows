@@ -16,7 +16,7 @@ docs_impact: yes
 linked_systems:
   - "Former suite domain for WinGlows Formation"
   - "WinGlows Android app"
-  - "ReplayGlowz"
+  - "ReplayGlows"
   - "Clerk"
   - "Firebase Auth"
   - "Firestore"
@@ -38,7 +38,7 @@ evidence:
   - "The suite auth strategy requires deny-by-default access and no silent email merge."
   - "The app pointer and spec both require redacted diagnostics and server-owned entitlements."
   - "Support cases must be handled without exposing tokens, secrets or raw OAuth/payment payloads."
-  - "User correction 2026-05-23: ReplayGlowz is the canonical YouTube product and `product_id=replayglowz`; the old YouTube product naming is legacy only."
+  - "User correction 2026-05-23: ReplayGlows is the canonical YouTube product and `product_id=replayglows`; the old YouTube product naming is legacy only."
 next_review: "2026-06-21"
 next_step: "/sf-docs technical audit"
 ---
@@ -55,7 +55,7 @@ One identity does not equal product access. Access is denied by default. A recog
 
 Collect only redacted diagnostic evidence:
 
-- provider identifiers: redacted Clerk user id, Firebase uid, Convex `global_user_id`, Polar customer/subscription/order ids, YouTube OAuth account reference if ReplayGlowz is involved
+- provider identifiers: redacted Clerk user id, Firebase uid, Convex `global_user_id`, Polar customer/subscription/order ids, YouTube OAuth account reference if ReplayGlows is involved
 - environment: local, preview, staging or production
 - product: `product_id`, plan, entitlement status, timestamps, event ids, request ids, deployment URL or build id
 - state: recognized / denied / pending review / revoked / expired / stale mirror / provider outage
@@ -81,7 +81,7 @@ Do not collect or paste:
 | Revoked or disabled Firebase session | Firebase Admin revocation check | Token is structurally valid but no longer active | Ask the user to sign out and sign in again | Do not bypass revocation or reuse the revoked session |
 | Provider outage or misconfiguration | Clerk, Firebase, Convex, Polar or YouTube | The service is unavailable, misrouted or pointing at the wrong environment | Confirm environment, callback URLs, webhook secrets and build config | Keep access denied, notify operators and wait for recovery |
 | Wrong environment | Deployment/configuration | Preview, staging and prod are mixed | Check the deployment target, secrets set and callback origin | Roll back to the correct environment and invalidate stale sessions |
-| ReplayGlowz YouTube OAuth confusion | Product permission vs suite identity | YouTube grant is missing or revoked, but suite login is fine | Explain that YouTube OAuth is a product permission, not the suite identity | Reconnect or revoke the YouTube grant only; do not touch suite identity unless needed |
+| ReplayGlows YouTube OAuth confusion | Product permission vs suite identity | YouTube grant is missing or revoked, but suite login is fine | Explain that YouTube OAuth is a product permission, not the suite identity | Reconnect or revoke the YouTube grant only; do not touch suite identity unless needed |
 
 ## Escalation And Rollback
 
@@ -112,5 +112,5 @@ Français:
 - Grant flow flips the `suiteAccess` mirror from deny to allow for the correct `product_id`.
 - Revoke or expiry flow flips the `suiteAccess` mirror from allow to deny.
 - No email-only merge path exists.
-- Support cases were tested for: recognized/no access, duplicate email, linking required, missing entitlement after purchase, refund/revoke, Firebase bridge failure, internal sync failure, revoked session, provider outage, wrong environment and ReplayGlowz YouTube OAuth confusion.
+- Support cases were tested for: recognized/no access, duplicate email, linking required, missing entitlement after purchase, refund/revoke, Firebase bridge failure, internal sync failure, revoked session, provider outage, wrong environment and ReplayGlows YouTube OAuth confusion.
 - All collected evidence is redacted and contains no tokens, secrets, raw payment payloads or raw OAuth payloads.

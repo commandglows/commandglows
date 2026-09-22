@@ -1,7 +1,7 @@
-# ReplayGlowz Cost & Pricing Study — YouTube SaaS Tools
+# ReplayGlows Cost & Pricing Study — YouTube SaaS Tools
 
 > Date: 2026-04-08
-> Scope: Infrastructure costs, competitor pricing, sustainable SaaS pricing for ReplayGlowz
+> Scope: Infrastructure costs, competitor pricing, sustainable SaaS pricing for ReplayGlows
 > Goal: Price fairly to grow without going bankrupt
 
 ---
@@ -49,7 +49,7 @@ Sources:
 | Action compute | 20 GB-hr/mo | 250 GB-hr/mo | $0.33/GB-hr |
 | Data egress | 1 GB/mo | 50 GB/mo | $0.132/GB |
 
-**For ReplayGlowz at scale (10K active users):**
+**For ReplayGlows at scale (10K active users):**
 - ~5M function calls/mo → $8.80 overage
 - ~5 GB database → $1.10 overage
 - ~10 GB files → $0.33 overage
@@ -65,7 +65,7 @@ Source: [Convex pricing](https://www.convex.dev/pricing)
 | Free | $0 | 50,000 MAU |
 | Pro | $20/mo base | +$0.02/MAU after 50K |
 
-**For ReplayGlowz:** Free until 50K users. At 100K users: $20 + (50K × $0.02) = **$1,020/mo**.
+**For ReplayGlows:** Free until 50K users. At 100K users: $20 + (50K × $0.02) = **$1,020/mo**.
 
 Source: [Clerk pricing](https://clerk.com/pricing)
 
@@ -95,7 +95,7 @@ Sources:
 | **Deepgram Nova-3** | $0.0077 | $0.46 | Real-time streaming |
 | **Self-hosted Whisper** | ~$0.001 | ~$0.06 | GPU needed, complex ops |
 
-**This is the #1 cost driver for ReplayGlowz.**
+**This is the #1 cost driver for ReplayGlows.**
 
 Sources:
 - [OpenAI Whisper pricing calculator](https://costgoat.com/pricing/openai-transcription)
@@ -112,7 +112,7 @@ Sources:
 | Caption download | 200 units | 50/day |
 | Channel list | 1 unit | 10,000/day |
 
-**For ReplayGlowz:** Playlist sync and video metadata are cheap (1 unit). Search and captions are expensive. At scale, may need multiple API keys or apply for quota increase.
+**For ReplayGlows:** Playlist sync and video metadata are cheap (1 unit). Search and captions are expensive. At scale, may need multiple API keys or apply for quota increase.
 
 Source: [YouTube API quota calculator](https://developers.google.com/youtube/v3/determine_quota_cost)
 
@@ -187,7 +187,7 @@ Source: [YouTube API quota calculator](https://developers.google.com/youtube/v3/
 ### The Golden Rule
 > **Free tier = YouTube native captions only (zero cost).**
 > **AI transcription = paid feature only.**
-> **This single rule makes ReplayGlowz financially invincible.**
+> **This single rule makes ReplayGlows financially invincible.**
 
 ### Pricing tiers
 
@@ -235,7 +235,7 @@ Assuming 2% free-to-paid conversion (industry standard for freemium SaaS):
 1. **Transcript cache hit rate** — Popular videos will be transcribed once and served to all users. At 10K+ users, expect 40-60% cache hit rate, cutting AI costs nearly in half
 2. **Self-hosted Whisper** — At ~5K+ paid users, a dedicated GPU instance ($200-400/mo) would reduce transcription costs by ~80% vs API
 3. **Negotiate volume pricing** — Deepgram and AssemblyAI both offer volume discounts at 1K+ hours/month
-4. **Use YouTube native captions first** — Always try free extraction before AI fallback (ReplayGlowz already does this)
+4. **Use YouTube native captions first** — Always try free extraction before AI fallback (ReplayGlows already does this)
 
 ### Transcript caching impact
 
@@ -255,11 +255,11 @@ Based on this cost analysis, here's the complete product pricing:
 |---------|---------|----------------|------|---------------|
 | **CommandGlows Training** | ~~$97~~ | **$49** | One-time | ~$0 |
 | **SocialFlow Lifetime** | ~~$149~~ | **$99** | One-time | ~$0 (local app) |
-| **ReplayGlowz Pro** | $7/mo | — | Subscription | ~$0.14/mo |
-| **ReplayGlowz Power** | $15/mo | — | Subscription | ~$0.50/mo |
-| **Flowz Bundle** | ~~$246~~ | **$149** | Training + SocialFlow + 1yr ReplayGlowz Pro | ~$1.68/yr |
+| **ReplayGlows Pro** | $7/mo | — | Subscription | ~$0.14/mo |
+| **ReplayGlows Power** | $15/mo | — | Subscription | ~$0.50/mo |
+| **Flowz Bundle** | ~~$246~~ | **$149** | Training + SocialFlow + 1yr ReplayGlows Pro | ~$1.68/yr |
 
-The bundle includes the two lifetime products ($49+$99=$148 value) plus 1 year of ReplayGlowz Pro ($84 value) = $232 value for $149. After year 1, ReplayGlowz renews at $7/mo.
+The bundle includes the two lifetime products ($49+$99=$148 value) plus 1 year of ReplayGlows Pro ($84 value) = $232 value for $149. After year 1, ReplayGlows renews at $7/mo.
 
 ---
 
@@ -277,4 +277,4 @@ The bundle includes the two lifetime products ($49+$99=$148 value) plus 1 year o
 
 6. **Competitors cluster at $8-10/mo.** Your $7/mo price slightly undercuts while being fully sustainable.
 
-7. **No lifetime deal for ReplayGlowz.** The ongoing AI transcription costs make lifetime pricing dangerous. A heavy lifetime user could cost you $50+/year in transcription alone, forever.
+7. **No lifetime deal for ReplayGlows.** The ongoing AI transcription costs make lifetime pricing dangerous. A heavy lifetime user could cost you $50+/year in transcription alone, forever.

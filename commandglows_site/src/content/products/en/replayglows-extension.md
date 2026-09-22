@@ -1,14 +1,14 @@
 ---
-title: "ReplayGlowz"
+title: "ReplayGlows"
 description: "Advanced YouTube Bookmarking Chrome Extension"
 status: "beta"
 main:
   id: 1
   content: |
-    Discover ReplayGlowz – your ultimate YouTube productivity companion. This powerful Chrome extension transforms your video watching experience with advanced bookmarking features, customizable keyboard shortcuts, and seamless export options. Perfect for students, researchers, and anyone looking to organize their YouTube learning journey.
+    Discover ReplayGlows – your ultimate YouTube productivity companion. This powerful Chrome extension transforms your video watching experience with advanced bookmarking features, customizable keyboard shortcuts, and seamless export options. Perfect for students, researchers, and anyone looking to organize their YouTube learning journey.
   imgCard: "@/images/CommandGlows.png"
   imgMain: "@/images/CommandGlows.png"
-  imgAlt: "ReplayGlowz Chrome extension interface screenshot"
+  imgAlt: "ReplayGlows Chrome extension interface screenshot"
 tabs:
   - id: "tabs-with-card-item-1"
     dataTab: "#tabs-with-card-1"
@@ -22,7 +22,7 @@ tabs:
 longDescription:
   title: "Transform Your YouTube Learning Experience"
   subTitle: |
-    ReplayGlowz brings professional-grade bookmarking capabilities to YouTube, helping you organize and navigate through educational content with ease. Whether you're studying, researching, or simply want to keep track of important moments in videos, ReplayGlowz makes it effortless.
+    ReplayGlows brings professional-grade bookmarking capabilities to YouTube, helping you organize and navigate through educational content with ease. Whether you're studying, researching, or simply want to keep track of important moments in videos, ReplayGlows makes it effortless.
   btnTitle: "Join the Beta"
   btnURL: "/contact"
 descriptionList:

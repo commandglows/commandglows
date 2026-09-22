@@ -27,7 +27,7 @@ longDescription:
   btnURL: "/contact"
 descriptionList:
   - title: "8 Premium Plugins, 1 Unified Experience"
-    subTitle: "CreatorFlowz, ReplayGlowz, MediaFlowz, EditorFlowz, RSSFlowz, PluginFlowz, MailingFlowz, and LinkFlowz – each meticulously crafted to enhance your Obsidian workflow."
+    subTitle: "CreatorFlowz, ReplayGlows, MediaFlowz, EditorFlowz, RSSFlowz, PluginFlowz, MailingFlowz, and LinkFlowz – each meticulously crafted to enhance your Obsidian workflow."
   - title: "Save 50% Compared to Individual Purchases"
     subTitle: "Get the complete suite at a fraction of the cost. Plus, enjoy lifetime updates and priority support across all plugins."
   - title: "30-Day Money-Back Guarantee"
@@ -36,7 +36,7 @@ specificationsLeft:
   - title: "Content Creation & Management"
     subTitle: "CreatorFlowz and EditorFlowz provide advanced editing tools, media integration from Unsplash, Pexels, and more, plus AI-powered content assistance."
   - title: "Media & Resource Handling"
-    subTitle: "ReplayGlowz and MediaFlowz offer seamless YouTube integration, automatic media optimization, and CDN hosting for all your resources."
+    subTitle: "ReplayGlows and MediaFlowz offer seamless YouTube integration, automatic media optimization, and CDN hosting for all your resources."
   - title: "Information & Project Management"
     subTitle: "RSSFlowz and PluginFlowz help you stay updated with customizable feeds and maintain an organized plugin ecosystem."
   - title: "Communication & Sharing"

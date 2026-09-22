@@ -16,7 +16,7 @@ docs_impact: yes
 linked_systems:
   - "WinGlowz Android app"
   - "ContentGlowz app"
-  - "ReplayGlowz app"
+  - "ReplayGlows app"
   - "SocialGlowz"
   - "NoteFinderz"
   - "GoCharbon"
@@ -33,8 +33,8 @@ evidence:
   - "/home/claude/winglowz_app/pubspec.yaml"
   - "/home/claude/contentglowz/contentglowz_app/README.md"
   - "/home/claude/contentglowz/contentglowz_app/pubspec.yaml"
-  - "/home/claude/replayglowz/replayglowz_app/README.md"
-  - "/home/claude/replayglowz/replayglowz_app/pubspec.yaml"
+  - "/home/claude/replayglows/replayglows_app/README.md"
+  - "/home/claude/replayglows/replayglows_app/pubspec.yaml"
   - "/home/claude/socialglowz/README.md"
   - "/home/claude/socialglowz/package.json"
   - "/home/claude/shipglows_data/projects/socialflow/TASKS.md"
@@ -82,13 +82,13 @@ Security Rules, server authorization, or entitlement checks.
 | --- | --- | --- | --- |
 | WinGlowz app, formerly VoiceFlowz / VoiceFlows | Flutter Android-first, Firebase Auth and Firestore dependencies, README says Firebase first adapter and cloud sync pending Firebase validation; historical VoiceFlowz tracker maps to this app | High | Keep Firebase for the app adapter. Add App Check when Firestore/Storage/Functions are production-gated. |
 | ContentGlowz app | Flutter app, Clerk web auth, FastAPI backend, offline cache, replay queue, temp-ID reconciliation already documented | Medium | Do not migrate just because it is Flutter. Evaluate Firebase only for a new feature that needs native realtime collaboration, cross-device live sync, or Firebase-backed file/media sync. |
-| ReplayGlowz app | Flutter web app, Firebase Auth, Convex backend subscriptions, transcript worker talks through Convex | Medium-high, already partial | Keep Firebase Auth plus Convex. Firebase data migration is not needed while Convex owns realtime state and orchestration. |
+| ReplayGlows app | Flutter web app, Firebase Auth, Convex backend subscriptions, transcript worker talks through Convex | Medium-high, already partial | Keep Firebase Auth plus Convex. Firebase data migration is not needed while Convex owns realtime state and orchestration. |
 | SocialGlowz | Vue/Tauri/WebView app, Convex Auth, cloud-backed sync, durable Convex sync queue, WebSocket subscriptions | Medium | Convex already solves realtime/sync. Revisit Firebase only if Android native attestation, Firebase-hosted data, or stronger mobile backend protection becomes a product requirement. |
 | NoteFinderz | Astro/Vue, Clerk auth, Convex backend for user data/submissions/feeds/webhooks | Low-medium | Keep Clerk plus Convex. Firebase is not a better default unless a native/offline app is added. |
 | WinGlowz site / Formation | Existing Clerk/Convex/Polar work and suite identity decision | Low for app data, high only as mobile bridge | Keep Clerk as suite identity. Firebase remains the Android bridge, not the web account center. |
 | GoCharbon | Astro/content-style package, no obvious auth/realtime backend in package | Low | No Firebase migration signal. |
 | ContentGlowz site | Astro landing/site surface | Low | No Firebase migration signal. |
-| ReplayGlowz site | Astro landing/site surface | Low | No Firebase migration signal. |
+| ReplayGlows site | Astro landing/site surface | Low | No Firebase migration signal. |
 | Nantes Gratuit | Supabase Auth/RLS/Storage/Edge Functions tracker | Medium only if mobile/offline becomes central | Keep Supabase unless a mobile offline/realtime app spec is created. |
 | GoCharbon Quiz | Tracker shows FastAPI/Convex drift | Unknown | Clean the backend architecture first; do not add Firebase before resolving FastAPI vs Convex ownership. |
 | Quit Coke | Astro, Clerk, Polar, RevenueCat tracker | Low | No Firebase migration signal unless native app offline behavior becomes central. |
@@ -126,7 +126,7 @@ needs:
    current WinGlowz app, not as a separate product to migrate.
 3. ContentGlowz app: no immediate migration; document specific missing offline
    or realtime features before deciding.
-4. SocialGlowz and ReplayGlowz: keep Convex for realtime unless Firebase-backed
+4. SocialGlowz and ReplayGlows: keep Convex for realtime unless Firebase-backed
    mobile security becomes a hard requirement.
 
 ## Internet Research

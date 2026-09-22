@@ -15,7 +15,7 @@ security_impact: yes
 docs_impact: yes
 linked_systems:
   - "WinGlowz suite identity"
-  - "ReplayGlowz"
+  - "ReplayGlows"
   - "NoteFlowz / NoteFinderz"
   - "ContentGlowz"
   - "SocialGlowz"
@@ -27,7 +27,7 @@ linked_systems:
   - "Convex"
 evidence:
   - "User question 2026-05-23: how to handle NoteFlowz/other products and French apps that may not naturally belong to the WinGlowz/Wispr Flow suite."
-  - "docs/explorations/2026-05-17-root-apps-firebase-fit.md classifies ReplayGlowz, ContentGlowz, NoteFinderz, Nantes Gratuit, Quit Coke and related products by current auth/backend fit."
+  - "docs/explorations/2026-05-17-root-apps-firebase-fit.md classifies ReplayGlows, ContentGlowz, NoteFinderz, Nantes Gratuit, Quit Coke and related products by current auth/backend fit."
   - "/home/claude/shipglows_data/CLAUDE.md lists NoteFlowz, plaisirsurprise, French content projects, Convex and Clerk patterns."
   - "/home/claude/shipglows_data/PROJECTS.md lists French or separate-brand products including jarrettelacoke.fr and plaisirsurprise."
   - "/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication.md defines Clerk central identity plus per-product entitlements for the WinGlowz suite."
@@ -53,7 +53,7 @@ How should products such as NoteFlowz/NoteFinderz and French apps fit with the n
 
 ## Context Read
 
-- `docs/explorations/2026-05-17-root-apps-firebase-fit.md` - existing portfolio classification across WinGlowz, ReplayGlowz, ContentGlowz, NoteFinderz, Nantes Gratuit and Quit Coke.
+- `docs/explorations/2026-05-17-root-apps-firebase-fit.md` - existing portfolio classification across WinGlowz, ReplayGlows, ContentGlowz, NoteFinderz, Nantes Gratuit and Quit Coke.
 - `/home/claude/shipglows_data/CLAUDE.md` - workspace-level stack notes for NoteFlowz, French projects, Convex and Clerk.
 - `/home/claude/shipglows_data/PROJECTS.md` - high-level list of separate products and brands.
 - `/home/claude/shipglows_data/projects/winglowz/docs/technical/suite-authentication.md` - canonical WinGlowz suite auth decision.
@@ -98,7 +98,7 @@ Use Option C.
 
 Default taxonomy:
 
-- Productivity / AI workflow products: WinGlowz, ReplayGlowz, ContentGlowz, NoteFlowz/NoteFinderz and possibly SocialGlowz can share a Flowz/WinGlowz family identity if login copy clearly says the product uses the shared account.
+- Productivity / AI workflow products: WinGlowz, ReplayGlows, ContentGlowz, NoteFlowz/NoteFinderz and possibly SocialGlowz can share a Flowz/WinGlowz family identity if login copy clearly says the product uses the shared account.
 - Local French / public-interest products: Nantes Gratuit should not show a WinGlowz account brand unless the product is explicitly repositioned under that umbrella.
 - Sensitive wellness/recovery products: quit-coke / jarrettelacoke style products should keep a separate visible account realm because privacy expectations are higher.
 - Luxury/booking or materially different consumer products: plaisirsurprise should likely stay separate visibly, even if it uses Clerk/Convex under the hood.

@@ -129,7 +129,7 @@ Astro API routes act as thin integration controllers for:
 - suite bridge endpoints:
   - `POST /api/bridge/firebase` maps Firebase users to suite identities, mirrors `commandglows_app` access into Firestore, and issues a short-lived HMAC-signed checkout identity handoff when configured.
   - `POST /api/bridge/sync` refreshes the Firestore access mirror by `globalUserId`.
-  - `POST /api/bridge/entitlement` verifies a Clerk session token server-side and returns a fail-closed ReplayGlowz entitlement snapshot for `product_id=replayglowz`; old YouTube-product ids are no longer accepted, and a recognized installation can receive only the shared bounded trial policy.
+  - `POST /api/bridge/entitlement` verifies a Clerk session token server-side and returns a fail-closed ReplayGlows entitlement snapshot for `product_id=replayglows`; old YouTube-product ids are no longer accepted, and a recognized installation can receive only the shared bounded trial policy.
 - commerce endpoints:
   - `POST /api/checkout/start` authenticates Clerk-backed public or Formation purchases, keeps the product-bound handoff server-side, and redirects directly to Stripe.
   - `POST /api/commerce/checkout` accepts Stripe only; every offer requires a valid signed product/environment handoff in the request body and an environment-backed Price ID before creating a Stripe Managed Payments Checkout Session. Browser-visible GET handoffs are rejected.
@@ -149,7 +149,7 @@ only. Identity synchronization creates no entitlement; historical
 `product_default` rows remain stored but are non-granting. CommunityGlows,
 All eight registered suite products can reach the same product-scoped trial
 writer through `bridge:ensureSuiteProductTrialByGlobalUserId`; dedicated
-CommandGlows, CommunityGlows, ReplayGlowz and Temu adapters remain thin wrappers.
+CommandGlows, CommunityGlows, ReplayGlows and Temu adapters remain thin wrappers.
 Formation access accepts only active paid or non-expired trial entitlements.
 
 ### Backend state layer

@@ -61,7 +61,7 @@ Observable result: the homepage remains visible and usable with or without JavaS
 
 ## Problem
 
-The current homepage has a strong visual identity and a memorable headline, but its conversion argument is fragmented. It presents Windows Mastery, CMDglows, ObsiFlowz, ReplayGlowz, RSSFlowz, PluginFlowz, testimonials, a generic lead magnet, and multiple repeated calls to action before a visitor can understand which offer is the intended first step.
+The current homepage has a strong visual identity and a memorable headline, but its conversion argument is fragmented. It presents Windows Mastery, CMDglows, ObsiFlowz, ReplayGlows, RSSFlowz, PluginFlowz, testimonials, a generic lead magnet, and multiple repeated calls to action before a visitor can understand which offer is the intended first step.
 
 Two runtime defects are more urgent than copy refinement:
 

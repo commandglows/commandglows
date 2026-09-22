@@ -6,8 +6,8 @@
     "allProjects": "Tous les projets"
   },
   "projects": {
-    "replayglowz": {
-      "name": "ReplayGlowz",
+    "replayglows": {
+      "name": "ReplayGlows",
       "description": "Plateforme de gestion et d'automatisation pour YouTube"
     },
     "mediaflowz": {

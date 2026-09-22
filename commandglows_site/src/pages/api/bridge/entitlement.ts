@@ -7,17 +7,17 @@ import {
   getBearerTokenFromAuthorizationHeader,
   getConvexBridgeSecret,
   getSuiteEntitlementVerifySecret,
-  type ReplayGlowzEntitlementReasonCode,
-  type ReplayGlowzEntitlementSnapshot,
+  type ReplayGlowsEntitlementReasonCode,
+  type ReplayGlowsEntitlementSnapshot,
 } from '@/lib/suiteBridge'
 
 export const prerender = false
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 const ENTITLEMENT_SECRET_HEADER = 'x-suite-entitlement-secret'
-const INSTALLATION_ID_HEADER = 'x-replayglowz-installation-id'
+const INSTALLATION_ID_HEADER = 'x-replayglows-installation-id'
 const TRIAL_ACTION_HEADER = 'x-suite-trial-action'
-const ALLOWED_REASON_CODES = new Set<ReplayGlowzEntitlementReasonCode>([
+const ALLOWED_REASON_CODES = new Set<ReplayGlowsEntitlementReasonCode>([
   'active_entitlement',
   'missing_product_entitlement',
   'account_not_found',
@@ -58,7 +58,7 @@ function hashTrialSignal(value: string, secret: string, purpose: string): string
   return createHmac('sha256', secret).update(`${purpose}:${value}`).digest('hex')
 }
 
-function parseSnapshot(value: unknown): ReplayGlowzEntitlementSnapshot | null {
+function parseSnapshot(value: unknown): ReplayGlowsEntitlementSnapshot | null {
   if (!value || typeof value !== 'object') {
     return null
   }
@@ -70,7 +70,7 @@ function parseSnapshot(value: unknown): ReplayGlowzEntitlementSnapshot | null {
     return null
   }
   if (
-    !ALLOWED_REASON_CODES.has(reasonCode as ReplayGlowzEntitlementReasonCode)
+    !ALLOWED_REASON_CODES.has(reasonCode as ReplayGlowsEntitlementReasonCode)
   ) {
     return null
   }
@@ -79,7 +79,7 @@ function parseSnapshot(value: unknown): ReplayGlowzEntitlementSnapshot | null {
     hasAccess,
     globalUserId: parseNullableString(payload.globalUserId),
     matchedProductId: parseNullableString(payload.matchedProductId),
-    reasonCode: reasonCode as ReplayGlowzEntitlementReasonCode,
+    reasonCode: reasonCode as ReplayGlowsEntitlementReasonCode,
   }
 }
 
@@ -167,7 +167,7 @@ export const POST: APIRoute = async ({ request }) => {
         ? hashTrialSignal(
             installationId,
             trialSignalSecret,
-            'replayglowz-installation'
+            'replayglows-installation'
           )
         : undefined
     const networkHash =
@@ -175,11 +175,11 @@ export const POST: APIRoute = async ({ request }) => {
         ? hashTrialSignal(
             forwardedAddress,
             trialSignalSecret,
-            'replayglowz-network'
+            'replayglows-network'
           )
         : undefined
     const rawSnapshot = await convex.mutation(
-      'bridge:ensureReplayGlowzEntitlementSnapshotByClerkId' as never,
+      'bridge:ensureReplayGlowsEntitlementSnapshotByClerkId' as never,
       {
         clerkId: clerkUserId,
         bridgeSecret: convexBridgeSecret,
@@ -202,7 +202,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     return jsonResponse({ status: 'ok', ...snapshot }, 200)
   } catch {
-    console.error('ReplayGlowz entitlement verification failed.')
+    console.error('ReplayGlows entitlement verification failed.')
     return jsonResponse(
       { status: 'error', error: 'entitlement_verification_failed' },
       500

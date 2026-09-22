@@ -49,7 +49,7 @@ Ready for implementation on 2026-06-09. The user decision is explicit: the old Y
 
 ## Minimal Behavior Contract
 
-WinGlows public pages, active docs, scripts, tests, runtime allowlists, and governance docs must stop exposing the old YouTube-product name. The current canonical product identity is `ReplayGlowz` with `product_id=replayglowz`. If a runtime bridge previously accepted the old product id as an alias, this chantier removes that alias and updates tests/docs to make the break intentional. Historical rows may be rewritten only when they are active governance notes that would otherwise keep reintroducing old naming; do not fabricate history or introduce unsupported product claims.
+WinGlows public pages, active docs, scripts, tests, runtime allowlists, and governance docs must stop exposing the old YouTube-product name. The current canonical product identity is `ReplayGlows` with `product_id=replayglows`. If a runtime bridge previously accepted the old product id as an alias, this chantier removes that alias and updates tests/docs to make the break intentional. Historical rows may be rewritten only when they are active governance notes that would otherwise keep reintroducing old naming; do not fabricate history or introduce unsupported product claims.
 
 ## Scope In
 
@@ -63,7 +63,7 @@ WinGlows public pages, active docs, scripts, tests, runtime allowlists, and gove
 
 - No Android build, install, or Gradle validation.
 - No production deployment, DNS, or Vercel alias work in this run.
-- No new product launch copy beyond replacing stale YouTube-product naming with `ReplayGlowz` or removing obsolete references.
+- No new product launch copy beyond replacing stale YouTube-product naming with `ReplayGlows` or removing obsolete references.
 - No commits or pushes from this skill run.
 
 ## Acceptance Criteria
@@ -78,7 +78,7 @@ WinGlows public pages, active docs, scripts, tests, runtime allowlists, and gove
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-09 21:10:00 UTC | sf-build | GPT-5 Codex | Removed old YouTube-product naming from active monorepo surfaces: site public copy/content/routes/assets/scripts now use ReplayGlowz, product content files and market-study filename were renamed, suite bridge allowlists no longer accept the old product id, ReplayGlowz alias reason code was removed, bridge tests were updated, and active governance docs now state that old ids must be normalized before runtime checks. Local proof: old-brand `rg` scan returned no matches; `pnpm build:check`, `pnpm test:unit`, ShipGlows metadata lint, and alias-contract scans passed. | implemented | Review diff; ship only on explicit commit/push request. |
+| 2026-06-09 21:10:00 UTC | sf-build | GPT-5 Codex | Removed old YouTube-product naming from active monorepo surfaces: site public copy/content/routes/assets/scripts now use ReplayGlows, product content files and market-study filename were renamed, suite bridge allowlists no longer accept the old product id, ReplayGlows alias reason code was removed, bridge tests were updated, and active governance docs now state that old ids must be normalized before runtime checks. Local proof: old-brand `rg` scan returned no matches; `pnpm build:check`, `pnpm test:unit`, ShipGlows metadata lint, and alias-contract scans passed. | implemented | Review diff; ship only on explicit commit/push request. |
 | 2026-06-09 21:05:11 UTC | sf-build | GPT-5 Codex | Created the dedicated cleanup chantier and started the implementation pass for site public content, suite bridge aliases, tests, product scripts, SVG labels, and governance docs. | partial | Continue implementation and validation in this run. |
 
 ## Current Chantier Flow

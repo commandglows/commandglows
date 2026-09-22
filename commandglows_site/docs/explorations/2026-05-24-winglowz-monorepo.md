@@ -16,12 +16,12 @@ docs_impact: yes
 linked_systems:
   - "/home/claude/winglowz"
   - "/home/claude/winglowz_app"
-  - "/home/claude/replayglowz"
+  - "/home/claude/replayglows"
   - "/home/claude/contentglowz"
 evidence:
   - "winglowz and winglowz_app are separate Git repositories with separate remotes."
   - "winglowz is an Astro/Vercel site with pnpm; winglowz_app is a Flutter/Firebase/Vercel app."
-  - "ReplayGlowz and ContentGlowz use one canonical root with app/site/lab subdirectories."
+  - "ReplayGlows and ContentGlowz use one canonical root with app/site/lab subdirectories."
   - "Both WinGlows repositories currently contain separate shipglows_data governance trees."
 depends_on: []
 supersedes: []
@@ -32,13 +32,13 @@ next_step: "/sf-spec WinGlows monorepo migration"
 
 ## Starting Question
 
-Should `winglowz` and `winglowz_app` be reorganized into one monorepo, like the existing ReplayGlowz and ContentGlowz repository layouts?
+Should `winglowz` and `winglowz_app` be reorganized into one monorepo, like the existing ReplayGlows and ContentGlowz repository layouts?
 
 ## Context Read
 
 - `/home/claude/winglowz/package.json` - confirmed the site is an Astro/pnpm project.
 - `/home/claude/winglowz_app/pubspec.yaml` - confirmed the app is Flutter Android-first with Firebase and Supabase dependencies.
-- `/home/claude/replayglowz/README.md` - used as the closest monorepo precedent for app/site/lab layout and deployment model.
+- `/home/claude/replayglows/README.md` - used as the closest monorepo precedent for app/site/lab layout and deployment model.
 - `/home/claude/contentglowz/README.md` - used as the second monorepo precedent for canonical single-repository ownership.
 - `/home/claude/shipglows/skills/references/canonical-paths.md` - confirmed the governance rule that monorepos should keep one root `shipglows_data`.
 
@@ -53,7 +53,7 @@ WinGlows is currently split across two sibling repositories:
 - `/home/claude/winglowz` - public/content/site surface.
 - `/home/claude/winglowz_app` - Flutter application surface.
 
-That split keeps each deployment simple, but it fragments product context, governance documents, issue/spec history, and cross-surface work. The existing ReplayGlowz and ContentGlowz examples suggest that this workspace already has an operational preference for one canonical product root per brand.
+That split keeps each deployment simple, but it fragments product context, governance documents, issue/spec history, and cross-surface work. The existing ReplayGlows and ContentGlowz examples suggest that this workspace already has an operational preference for one canonical product root per brand.
 
 ## Option Space
 
@@ -61,7 +61,7 @@ That split keeps each deployment simple, but it fragments product context, gover
 
 - Summary: Keep `winglowz` and `winglowz_app` as independent GitHub repositories.
 - Pros: Lowest migration cost, no deployment root changes, preserves current Git history and branch habits.
-- Cons: Duplicated `shipglows_data`, harder cross-surface specs, more drift between site and app, less consistent with ReplayGlowz/ContentGlowz.
+- Cons: Duplicated `shipglows_data`, harder cross-surface specs, more drift between site and app, less consistent with ReplayGlows/ContentGlowz.
 
 ### Option B: Move To One Monorepo
 
@@ -88,7 +88,7 @@ Yes, WinGlows should probably become a monorepo, but not as an opportunistic fil
 1. Finish or checkpoint the current app/site changes.
 2. Choose the canonical repository and target layout.
 3. Preserve or explicitly abandon the secondary repository history.
-4. Move deployment configs to root-directory based deployment, matching ReplayGlowz/ContentGlowz.
+4. Move deployment configs to root-directory based deployment, matching ReplayGlows/ContentGlowz.
 5. Consolidate `shipglows_data` at the monorepo root.
 
 The likely target layout:
@@ -146,4 +146,4 @@ winglowz/
 
 | Date UTC | Prompt/Focus | Action | Result | Next step |
 |----------|--------------|--------|--------|-----------|
-| 2026-05-24 19:32:58 UTC | Consider merging `winglowz` and `winglowz_app` into a monorepo | Compared current WinGlows layout with ReplayGlowz and ContentGlowz precedents | Monorepo looks directionally right, but should be staged after protecting current uncommitted work | `/sf-spec WinGlows monorepo migration` |
+| 2026-05-24 19:32:58 UTC | Consider merging `winglowz` and `winglowz_app` into a monorepo | Compared current WinGlows layout with ReplayGlows and ContentGlowz precedents | Monorepo looks directionally right, but should be staged after protecting current uncommitted work | `/sf-spec WinGlows monorepo migration` |
