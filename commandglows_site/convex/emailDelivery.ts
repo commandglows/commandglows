@@ -2,10 +2,11 @@ import { internalAction } from './_generated/server'
 import { anyApi } from 'convex/server'
 import { authorize, parseEmailConfig } from './emailConfig'
 
-function workerHeaders(credential: string) {
+function workerHeaders(credential: string, gateSecret: string) {
   const headers = new Headers({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${credential}`,
+    'X-Email-Worker-Gate': gateSecret,
   })
   const bypassToken =
     process.env.EMAIL_WORKER_BYPASS_TOKEN ||
@@ -23,7 +24,14 @@ export const poll = internalAction({
     if (!process.env.EMAIL_CONTROL_CONFIG) return { status: 'disabled' }
     const config = parseEmailConfig(process.env.EMAIL_CONTROL_CONFIG)
     const credential = process.env.EMAIL_DISPATCH_CREDENTIAL
-    if (!credential || credential.length < 32) return { status: 'disabled' }
+    const gateSecret = process.env.EMAIL_WORKER_GATE_SECRET
+    if (
+      !credential ||
+      credential.length < 32 ||
+      !gateSecret ||
+      gateSecret.length < 32
+    )
+      return { status: 'disabled' }
     let processed = 0
     let failed = 0
     for (const business of config.businesses) {
@@ -62,7 +70,7 @@ export const poll = internalAction({
           method: 'POST',
           redirect: 'error',
           signal: AbortSignal.timeout(45_000),
-          headers: workerHeaders(credential),
+          headers: workerHeaders(credential, gateSecret),
           body: JSON.stringify({ business_id: business.id }),
         })
       } catch {

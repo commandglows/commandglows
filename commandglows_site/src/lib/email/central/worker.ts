@@ -108,6 +108,12 @@ export async function handleDispatch(
 ) {
   try {
     const credential = bearer(request)
+    const gateSecret = env.EMAIL_WORKER_GATE_SECRET
+    const suppliedGateSecret = request.headers.get('x-email-worker-gate') ?? ''
+    if (!gateSecret || gateSecret.length < 32)
+      throw new EmailHttpError('configuration_unavailable', 503)
+    if (!secretMatches(suppliedGateSecret, gateSecret))
+      throw new EmailHttpError('worker_authentication_required', 401)
     const body = await readJson(request, 1024)
     onlyKeys(body, ['business_id'])
     const { config, business } = authorizeHttp(

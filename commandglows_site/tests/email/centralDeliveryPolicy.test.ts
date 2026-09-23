@@ -9,6 +9,7 @@ import {
 } from '../../src/lib/email/central/transport'
 const modules = import.meta.glob('../../convex/**/*.ts')
 const credential = 'x'.repeat(40)
+const workerGateSecret = 'w'.repeat(40)
 const recipient = 'test@example.test'
 const ref = (name: string) => makeFunctionReference<'mutation'>(`email:${name}`)
 function fixture() {
@@ -154,11 +155,13 @@ test('failed live profile makes no provider call; explicit Sandbox cannot use Li
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${credential}`,
+        'x-email-worker-gate': workerGateSecret,
       },
       body: JSON.stringify({ business_id: 'test' }),
     })
   const env = () => ({
     EMAIL_CONTROL_CONFIG: JSON.stringify(f.config),
+    EMAIL_WORKER_GATE_SECRET: workerGateSecret,
     EMAIL_TEST: credential,
     EMAIL_PROVIDER: 'synthetic',
     EMAIL_TOKEN_SIGNING_KEY: 's'.repeat(40),
@@ -218,6 +221,7 @@ test('Preview Live dispatch reserves durable quota before one POST and rejects t
   await f.seed()
   const env = {
     EMAIL_CONTROL_CONFIG: JSON.stringify(f.config),
+    EMAIL_WORKER_GATE_SECRET: workerGateSecret,
     EMAIL_TEST: credential,
     EMAIL_PROVIDER: 'synthetic',
     EMAIL_TOKEN_SIGNING_KEY: 's'.repeat(40),
@@ -259,6 +263,7 @@ test('Preview Live dispatch reserves durable quota before one POST and rejects t
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${credential}`,
+        'x-email-worker-gate': workerGateSecret,
       },
       body: JSON.stringify({ business_id: 'test' }),
     })

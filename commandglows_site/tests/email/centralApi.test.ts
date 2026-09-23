@@ -10,7 +10,9 @@ import { handlePostmarkWebhook } from '../../src/lib/email/central/webhooks'
 import { handleDispatch } from '../../src/lib/email/central/worker'
 
 const credential = 'test-credential-with-at-least-32-characters'
+const workerGateSecret = 'test-worker-gate-secret-at-least-32-chars'
 const env = {
+  EMAIL_WORKER_GATE_SECRET: workerGateSecret,
   EMAIL_TOKEN_SIGNING_KEY: 'test-signing-secret-at-least-32-characters',
   EMAIL_PREFERENCES_CREDENTIAL: credential,
   EMAIL_TEST_CLIENT: credential,
@@ -71,6 +73,7 @@ const request = (
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${credential}`,
+      'X-Email-Worker-Gate': workerGateSecret,
       'Idempotency-Key': 'request-idempotency-1',
       ...headers,
     },
@@ -362,6 +365,26 @@ describe('Postmark webhook boundary', () => {
 })
 
 describe('dispatch environment and consent checks', () => {
+  test('dispatch requires the independent worker gate before any provider access', async () => {
+    const mutation = vi.fn()
+    const fetcher = vi.fn()
+    const missing = new Request(
+      'https://email.example.test/api/v1/email/dispatch',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${credential}`,
+        },
+        body: JSON.stringify({ business_id: 'communityglows' }),
+      }
+    )
+    const response = await handleDispatch(missing, env, mutation, fetcher)
+    expect(response.status).toBe(401)
+    expect(mutation).not.toHaveBeenCalled()
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+
   const streamResponse = {
     MessageStreams: [
       { ID: 'outbound', ServerID: 42, MessageStreamType: 'Transactional' },

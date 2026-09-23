@@ -46,6 +46,10 @@ test('scheduled poll is disabled without configuration and reports safe worker f
       'EMAIL_DISPATCH_CREDENTIAL',
       'test-credential-at-least-32-characters'
     )
+    vi.stubEnv(
+      'EMAIL_WORKER_GATE_SECRET',
+      'test-worker-gate-secret-at-least-32-chars'
+    )
     fetcher.mockResolvedValueOnce(
       new Response('private provider details', { status: 503 })
     )
@@ -67,7 +71,9 @@ test('scheduled poll is disabled without configuration and reports safe worker f
 
 test('persisted signup → confirmation delivery → confirm → reviewed newsletter → opt-out → no further dispatch', async () => {
   const credential = 'test-lifecycle-credential-at-least-32-chars'
+  const workerGateSecret = 'test-lifecycle-worker-gate-secret-32chars'
   const env = {
+    EMAIL_WORKER_GATE_SECRET: workerGateSecret,
     EMAIL_TOKEN_SIGNING_KEY: 'test-signature-secret-at-least-32-chars',
     EMAIL_TEST_CLIENT: credential,
     EMAIL_PREFERENCES_CREDENTIAL: credential,
@@ -126,6 +132,7 @@ test('persisted signup → confirmation delivery → confirm → reviewed newsle
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${credential}`,
+        'X-Email-Worker-Gate': workerGateSecret,
         'Idempotency-Key': key,
       },
       body: JSON.stringify(body),

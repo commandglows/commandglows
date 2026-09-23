@@ -532,6 +532,10 @@ test('scheduled poll pumps configured campaigns and a pump permission failure do
   f.config.businesses[0].publicBaseUrl = 'https://example.test'
   vi.stubEnv('EMAIL_CONTROL_CONFIG', JSON.stringify(f.config))
   vi.stubEnv('EMAIL_DISPATCH_CREDENTIAL', credential)
+  vi.stubEnv(
+    'EMAIL_WORKER_GATE_SECRET',
+    'test-worker-gate-secret-at-least-32-chars'
+  )
   const fetcher = vi.fn().mockResolvedValue(new Response('{}'))
   vi.stubGlobal('fetch', fetcher)
   expect(await f.t.action(anyApi.emailDelivery.poll, {})).toMatchObject({
@@ -539,6 +543,9 @@ test('scheduled poll pumps configured campaigns and a pump permission failure do
   })
   expect((await f.read('status', c)).fanout.queued).toBe(1)
   expect(fetcher).toHaveBeenCalledTimes(1)
+  expect(
+    (fetcher.mock.calls[0]?.[1]?.headers as Headers).get('x-email-worker-gate')
+  ).toBe('test-worker-gate-secret-at-least-32-chars')
   f.config.clients[0].operations = ['campaign_dispatch']
   vi.stubEnv('EMAIL_CONTROL_CONFIG', JSON.stringify(f.config))
   await expect(f.t.action(anyApi.emailDelivery.poll, {})).rejects.toThrow(
