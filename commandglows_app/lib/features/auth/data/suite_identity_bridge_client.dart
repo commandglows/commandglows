@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 
 import '../../../core/bootstrap/suite_identity_bridge_bootstrap.dart';
 import '../domain/product_entitlement.dart';
@@ -13,6 +14,29 @@ class SuiteIdentityBridgeClient {
     : _httpClient = httpClient ?? http.Client();
 
   final http.Client _httpClient;
+  static const _uuid = Uuid();
+  static const _publicTrialReasonCodes = <String>{
+    'installation_not_eligible',
+    'previous_trial_exists',
+    'trial_cycles_exhausted',
+    'temporary_rate_limit',
+    'active_paid_access',
+  };
+  static const _safeBridgeErrorCodes = <String>{
+    'invalid_json',
+    'bridge_secret_not_configured',
+    'trial_installation_signal_unavailable',
+    'firebase_admin_not_configured',
+    'missing_bearer_token',
+    'convex_not_configured',
+    'invalid_firebase_token',
+    'invalid_token_audience_issuer_or_subject',
+    'invalid_bridge_snapshot',
+    'bridge_write_failed',
+    'firebase_identity_unavailable',
+    'installation_id_required',
+    'installation_id_invalid',
+  };
 
   Future<Uri?> startStripeCheckout({
     required SuiteIdentityBridgeRuntimeConfig bridgeConfig,
@@ -59,11 +83,18 @@ class SuiteIdentityBridgeClient {
     if (requestTrialStart && requestTrialRestart) {
       throw ArgumentError('Only one trial action can be requested at a time.');
     }
+    final requestId = requestTrialStart ? _uuid.v4() : null;
     if (!bridgeConfig.isConfigured) {
       return _conservativeAccountSnapshot(
         account: firebaseAccount,
         issue:
             bridgeConfig.issue ?? 'suite_identity_bridge_missing_configuration',
+        trialRequest: requestId == null
+            ? null
+            : TrialRequestResult(
+                state: TrialRequestState.notSent,
+                requestId: requestId,
+              ),
       );
     }
 
@@ -72,6 +103,12 @@ class SuiteIdentityBridgeClient {
       return _conservativeAccountSnapshot(
         account: firebaseAccount,
         issue: 'suite_identity_bridge_missing_firebase_token',
+        trialRequest: requestId == null
+            ? null
+            : TrialRequestResult(
+                state: TrialRequestState.notSent,
+                requestId: requestId,
+              ),
       );
     }
 
@@ -84,6 +121,7 @@ class SuiteIdentityBridgeClient {
           : requestTrialRestart
           ? 'restart'
           : null,
+      requestId: requestId,
     );
     if (response == null) {
       return _conservativeAccountSnapshot(
@@ -91,6 +129,12 @@ class SuiteIdentityBridgeClient {
         issue:
             'suite_identity_bridge_network_error'
             '(endpoint=${bridgeConfig.endpointLabel})',
+        trialRequest: requestId == null
+            ? null
+            : TrialRequestResult(
+                state: TrialRequestState.noResponse,
+                requestId: requestId,
+              ),
       );
     }
 
@@ -100,6 +144,14 @@ class SuiteIdentityBridgeClient {
         issue:
             'suite_identity_bridge_http_${response.statusCode}'
             '(endpoint=${bridgeConfig.endpointLabel})',
+        trialRequest: requestId == null
+            ? null
+            : TrialRequestResult(
+                state: TrialRequestState.httpError,
+                requestId: requestId,
+                httpStatus: response.statusCode,
+                machineErrorCode: _safeMachineError(response.body),
+              ),
       );
     }
 
@@ -108,6 +160,13 @@ class SuiteIdentityBridgeClient {
       return _conservativeAccountSnapshot(
         account: firebaseAccount,
         issue: 'suite_identity_bridge_invalid_json',
+        trialRequest: requestId == null
+            ? null
+            : TrialRequestResult(
+                state: TrialRequestState.responseUnknown,
+                requestId: requestId,
+                httpStatus: response.statusCode,
+              ),
       );
     }
 
@@ -116,10 +175,21 @@ class SuiteIdentityBridgeClient {
       return _conservativeAccountSnapshot(
         account: firebaseAccount,
         issue: 'suite_identity_bridge_invalid_schema',
+        trialRequest: requestId == null
+            ? null
+            : TrialRequestResult(
+                state: TrialRequestState.responseUnknown,
+                requestId: requestId,
+                httpStatus: response.statusCode,
+              ),
       );
     }
 
-    return parsed;
+    if (requestId == null) return parsed;
+    return _withTrialRequest(
+      parsed,
+      _parseTrialRequest(decoded['trialRequest'], requestId, response),
+    );
   }
 
   Future<String?> _resolveToken(FirebaseIdTokenResolver resolveIdToken) async {
@@ -139,16 +209,21 @@ class SuiteIdentityBridgeClient {
     required String idToken,
     required String installationId,
     required String? trialAction,
+    required String? requestId,
   }) async {
     try {
+      final headers = <String, String>{
+        'Authorization': 'Bearer $idToken',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CommandGlows-Installation-Id': installationId,
+      };
+      if (requestId != null) {
+        headers['X-CommandGlows-Request-Id'] = requestId;
+      }
       return await _httpClient.post(
         bridgeUri,
-        headers: <String, String>{
-          'Authorization': 'Bearer $idToken',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'X-CommandGlows-Installation-Id': installationId,
-        },
+        headers: headers,
         body: trialAction == null
             ? '{}'
             : jsonEncode(<String, String>{'trialAction': trialAction}),
@@ -157,6 +232,68 @@ class SuiteIdentityBridgeClient {
       return null;
     }
   }
+
+  TrialRequestResult _parseTrialRequest(
+    Object? rawValue,
+    String requestId,
+    http.Response response,
+  ) {
+    final responseTrial = rawValue is Map
+        ? Map<String, Object?>.from(rawValue)
+        : null;
+    final bodyRequestId = _parseNonEmptyString(responseTrial?['requestId']);
+    final headerRequestId = _parseNonEmptyString(
+      response.headers['x-commandglows-request-id'],
+    );
+    if (responseTrial == null ||
+        (bodyRequestId != requestId && headerRequestId != requestId)) {
+      return TrialRequestResult(
+        state: TrialRequestState.responseUnknown,
+        requestId: requestId,
+        httpStatus: response.statusCode,
+      );
+    }
+    final trial = responseTrial;
+    final outcome = _parseNonEmptyString(trial['outcome']);
+    final reason = _parseNonEmptyString(trial['reasonCode']);
+    final state = switch (outcome) {
+      'granted' => TrialRequestState.granted,
+      'already_active' => TrialRequestState.alreadyActive,
+      'denied'
+          when reason != null && _publicTrialReasonCodes.contains(reason) =>
+        TrialRequestState.denied,
+      _ => TrialRequestState.responseUnknown,
+    };
+    return TrialRequestResult(
+      state: state,
+      requestId: requestId,
+      httpStatus: response.statusCode,
+      reasonCode: state == TrialRequestState.denied ? reason : null,
+    );
+  }
+
+  String? _safeMachineError(String rawBody) {
+    final payload = _decodeJsonObject(rawBody);
+    if (payload == null) return null;
+    for (final field in const ['errorCode', 'error', 'code']) {
+      final value = _parseNonEmptyString(payload[field]);
+      if (value != null && _safeBridgeErrorCodes.contains(value)) return value;
+    }
+    return null;
+  }
+
+  SuiteIdentitySnapshot _withTrialRequest(
+    SuiteIdentitySnapshot snapshot,
+    TrialRequestResult result,
+  ) => SuiteIdentitySnapshot(
+    status: snapshot.status,
+    globalUserId: snapshot.globalUserId,
+    checkoutIdentityToken: snapshot.checkoutIdentityToken,
+    accounts: snapshot.accounts,
+    entitlements: snapshot.entitlements,
+    issue: snapshot.issue,
+    trialRequest: result,
+  );
 
   Map<String, Object?>? _decodeJsonObject(String rawBody) {
     try {
@@ -393,6 +530,7 @@ class SuiteIdentityBridgeClient {
   SuiteIdentitySnapshot _conservativeAccountSnapshot({
     required SuiteIdentityAccount account,
     required String issue,
+    TrialRequestResult? trialRequest,
   }) {
     return SuiteIdentitySnapshot(
       status: SuiteAccountStatus.recognized,
@@ -400,6 +538,7 @@ class SuiteIdentityBridgeClient {
       accounts: [account],
       entitlements: const [],
       issue: issue,
+      trialRequest: trialRequest,
     );
   }
 }

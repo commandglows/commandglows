@@ -1,5 +1,38 @@
 import 'product_entitlement.dart';
 
+enum TrialRequestState {
+  notSent,
+  noResponse,
+  httpError,
+  denied,
+  granted,
+  alreadyActive,
+  responseUnknown,
+}
+
+class TrialRequestResult {
+  const TrialRequestResult({
+    required this.state,
+    this.requestId,
+    this.httpStatus,
+    this.machineErrorCode,
+    this.reasonCode,
+  });
+
+  final TrialRequestState state;
+  final String? requestId;
+  final int? httpStatus;
+  final String? machineErrorCode;
+  final String? reasonCode;
+
+  bool get responseReceived =>
+      state == TrialRequestState.httpError ||
+      state == TrialRequestState.denied ||
+      state == TrialRequestState.granted ||
+      state == TrialRequestState.alreadyActive ||
+      state == TrialRequestState.responseUnknown;
+}
+
 enum SuiteIdentityProvider { clerk, firebase, local }
 
 enum SuiteAccountStatus {
@@ -31,6 +64,7 @@ class SuiteIdentitySnapshot {
     this.accounts = const [],
     this.entitlements = const [],
     this.issue,
+    this.trialRequest,
   });
 
   const SuiteIdentitySnapshot.unavailable([this.issue])
@@ -38,7 +72,8 @@ class SuiteIdentitySnapshot {
       globalUserId = null,
       checkoutIdentityToken = null,
       accounts = const [],
-      entitlements = const [];
+      entitlements = const [],
+      trialRequest = null;
 
   final SuiteAccountStatus status;
   final String? globalUserId;
@@ -46,6 +81,7 @@ class SuiteIdentitySnapshot {
   final List<SuiteIdentityAccount> accounts;
   final List<ProductEntitlement> entitlements;
   final String? issue;
+  final TrialRequestResult? trialRequest;
 
   bool hasAccessTo(ProductId productId) {
     return entitlements.any(

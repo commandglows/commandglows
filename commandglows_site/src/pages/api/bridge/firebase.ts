@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { createHmac } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { ConvexHttpClient } from "convex/browser";
 import { FieldValue } from "firebase-admin/firestore";
 import { getFirebaseAdminState } from "@/lib/firebaseAdmin";
@@ -28,6 +28,36 @@ export const prerender = false;
 const JSON_HEADERS = { "Content-Type": "application/json" };
 const PRODUCT_TOKEN_NOT_CONFIGURED = "product_token_not_configured";
 const INSTALLATION_ID_HEADER = 'x-commandglows-installation-id';
+const REQUEST_ID_HEADER = 'x-commandglows-request-id';
+const REQUEST_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const TRIAL_REASON_CODES = new Set([
+  'installation_not_eligible',
+  'previous_trial_exists',
+  'trial_cycles_exhausted',
+  'temporary_rate_limit',
+  'active_paid_access',
+]);
+
+function bridgeJsonResponse(
+  body: Record<string, unknown>,
+  status: number,
+  requestId: string,
+  includeBodyRequestId: boolean
+): Response {
+  return new Response(
+    JSON.stringify(includeBodyRequestId ? { ...body, requestId } : body),
+    { status, headers: { ...JSON_HEADERS, [REQUEST_ID_HEADER]: requestId } }
+  );
+}
+
+function logTrialRequest(
+  requestId: string,
+  outcome: string,
+  reasonCode: string | null,
+  status: number
+) {
+  console.info(JSON.stringify({ requestId, action: 'start', outcome, reasonCode, status }));
+}
 
 function hashTrialSignal(value: string, secret: string, purpose: string): string {
   return createHmac('sha256', secret).update(`${purpose}:${value}`).digest('hex');
@@ -220,38 +250,49 @@ function buildReplayGlowsClientSnapshot(
 }
 
 export const POST: APIRoute = async ({ request }) => {
+  let bridgeRequest: FirebaseBridgeRequest;
+  try {
+    bridgeRequest = parseFirebaseBridgeRequest(await request.json());
+  } catch {
+    return bridgeJsonResponse(
+      { status: 'bad_request', error: 'invalid_json' }, 400, randomUUID(), false
+    );
+  }
+
+  const isTrialStart = bridgeRequest.trialAction === 'start';
+  const incomingRequestId = request.headers.get(REQUEST_ID_HEADER)?.trim();
+  const validRequestId = !incomingRequestId || REQUEST_ID_PATTERN.test(incomingRequestId);
+  const requestId = validRequestId && incomingRequestId ? incomingRequestId : randomUUID();
+  let trialOutcome = 'unknown';
+  let trialReasonCode: string | null = null;
+  const respond = (body: Record<string, unknown>, status: number) => {
+    if (isTrialStart) logTrialRequest(requestId, trialOutcome, trialReasonCode, status);
+    return bridgeJsonResponse(body, status, requestId, isTrialStart);
+  };
+  if (!validRequestId) {
+    return respond({ status: 'bad_request', error: 'invalid_request_id' }, 400);
+  }
+
   const env = getServerEnv();
   const bridgeSecret = getConvexBridgeSecret(env);
   const trialSignalSecret = env.SUITE_TRIAL_SIGNAL_SECRET;
 
   if (!bridgeSecret) {
-    return new Response(
-      JSON.stringify({
+    return respond(
+      {
         status: "unavailable",
         error: "bridge_secret_not_configured",
-      }),
-      { status: 503, headers: JSON_HEADERS }
+      }, 503
     );
   }
 
   const installationId = request.headers.get(INSTALLATION_ID_HEADER)?.trim();
   if (!trialSignalSecret || !installationId || installationId.length > 128) {
-    return new Response(
-      JSON.stringify({
+    return respond(
+      {
         status: "unavailable",
         error: "trial_installation_signal_unavailable",
-      }),
-      { status: 503, headers: JSON_HEADERS }
-    );
-  }
-
-  let bridgeRequest: FirebaseBridgeRequest;
-  try {
-    bridgeRequest = parseFirebaseBridgeRequest(await request.json());
-  } catch {
-    return new Response(
-      JSON.stringify({ status: "bad_request", error: "invalid_json" }),
-      { status: 400, headers: JSON_HEADERS }
+      }, 503
     );
   }
 
@@ -269,12 +310,11 @@ export const POST: APIRoute = async ({ request }) => {
 
   const firebaseAdmin = getFirebaseAdminState(env);
   if (!firebaseAdmin) {
-    return new Response(
-      JSON.stringify({
+    return respond(
+      {
         status: "unavailable",
         error: "firebase_admin_not_configured",
-      }),
-      { status: 503, headers: JSON_HEADERS }
+      }, 503
     );
   }
 
@@ -282,38 +322,28 @@ export const POST: APIRoute = async ({ request }) => {
     request.headers.get("authorization")
   );
   if (!bearerToken) {
-    return new Response(
-      JSON.stringify({ status: "unauthorized", error: "missing_bearer_token" }),
-      { status: 401, headers: JSON_HEADERS }
-    );
+    return respond({ status: "unauthorized", error: "missing_bearer_token" }, 401);
   }
 
   const convexUrl = env.PUBLIC_CONVEX_URL;
   if (!convexUrl || convexUrl === "https://PLACEHOLDER.convex.cloud") {
-    return new Response(
-      JSON.stringify({ status: "unavailable", error: "convex_not_configured" }),
-      { status: 503, headers: JSON_HEADERS }
-    );
+    return respond({ status: "unavailable", error: "convex_not_configured" }, 503);
   }
 
   let decodedToken;
   try {
     decodedToken = await firebaseAdmin.auth.verifyIdToken(bearerToken, true);
   } catch {
-    console.error("Firebase bridge token verification failed.");
-    return new Response(
-      JSON.stringify({ status: "unauthorized", error: "invalid_firebase_token" }),
-      { status: 401, headers: JSON_HEADERS }
-    );
+    if (!isTrialStart) console.error("Firebase bridge token verification failed.");
+    return respond({ status: "unauthorized", error: "invalid_firebase_token" }, 401);
   }
 
   if (!isTrustedFirebaseIdTokenClaims(decodedToken, firebaseAdmin.projectId)) {
-    return new Response(
-      JSON.stringify({
+    return respond(
+      {
         status: "unauthorized",
         error: "invalid_token_audience_issuer_or_subject",
-      }),
-      { status: 401, headers: JSON_HEADERS }
+      }, 401
     );
   }
 
@@ -326,7 +356,7 @@ export const POST: APIRoute = async ({ request }) => {
         firebaseUid: decodedToken.uid,
         firebaseEmail: decodedToken.email,
         environment: resolveBridgeEnvironment(env.NODE_ENV),
-        sourceRef: request.headers.get("x-request-id") ?? undefined,
+        // Correlation IDs are deliberately separate from entitlement provenance.
         installationHash,
         networkHash,
         trialAction: bridgeRequest.trialAction,
@@ -335,18 +365,45 @@ export const POST: APIRoute = async ({ request }) => {
     );
 
     if (!rawSnapshot || typeof rawSnapshot !== "object") {
-      return new Response(
-        JSON.stringify({ status: "error", error: "invalid_bridge_snapshot" }),
-        { status: 502, headers: JSON_HEADERS }
-      );
+      return respond({ status: "error", error: "invalid_bridge_snapshot" }, 502);
     }
 
     const snapshot = parseBridgeSnapshot(rawSnapshot);
     if (!snapshot.globalUserId || snapshot.globalUserId.trim() === "") {
-      return new Response(
-        JSON.stringify({ status: "error", error: "invalid_bridge_snapshot" }),
-        { status: 502, headers: JSON_HEADERS }
-      );
+      return respond({ status: "error", error: "invalid_bridge_snapshot" }, 502);
+    }
+
+    const rawTrialRequest =
+      isTrialStart && "trialRequest" in rawSnapshot
+        ? (rawSnapshot as { trialRequest?: Record<string, unknown> }).trialRequest
+        : undefined;
+    const validTrialOutcome =
+      rawTrialRequest?.outcome === "granted" ||
+      rawTrialRequest?.outcome === "already_active" ||
+      rawTrialRequest?.outcome === "denied";
+    const validTrialReason =
+      typeof rawTrialRequest?.reasonCode === "string" &&
+      TRIAL_REASON_CODES.has(rawTrialRequest.reasonCode);
+    if (
+      isTrialStart &&
+      (!validTrialOutcome ||
+        (rawTrialRequest?.outcome === "denied" && !validTrialReason))
+    ) {
+      return respond({ status: "error", error: "invalid_trial_request_outcome" }, 502);
+    }
+    const trialRequest = isTrialStart
+      ? {
+          outcome: rawTrialRequest!.outcome,
+          reasonCode:
+            rawTrialRequest!.outcome === "denied"
+              ? rawTrialRequest!.reasonCode
+              : null,
+          requestId,
+        }
+      : undefined;
+    if (trialRequest) {
+      trialOutcome = trialRequest.outcome as string;
+      trialReasonCode = trialRequest.reasonCode as string | null;
     }
 
     const replayGlowsSnapshot = resolveReplayGlowsEntitlementSnapshot({
@@ -424,17 +481,17 @@ export const POST: APIRoute = async ({ request }) => {
       ...(checkoutIdentityToken ? { checkoutIdentityToken } : {}),
       ...(productToken ? { productToken, product_token: productToken } : {}),
       ...(productTokenIssue ? { productTokenIssue } : {}),
+      ...(trialRequest ? { trialRequest } : {}),
     };
 
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: JSON_HEADERS,
-    });
+    return respond(response, 200);
   } catch (error) {
+    if (isTrialStart) {
+      trialOutcome = "unknown";
+      trialReasonCode = null;
+      return respond({ status: "error", error: "bridge_write_failed" }, 500);
+    }
     console.error("Firebase bridge sync failed:", error);
-    return new Response(
-      JSON.stringify({ status: "error", error: "bridge_write_failed" }),
-      { status: 500, headers: JSON_HEADERS }
-    );
+    return respond({ status: "error", error: "bridge_write_failed" }, 500);
   }
 };

@@ -52,6 +52,9 @@ importers:
       '@vercel/nft':
         specifier: ^1.3.0
         version: 1.5.0(rollup@4.60.2)
+      '@vercel/oidc':
+        specifier: 3.4.0
+        version: 3.4.0
       astro-compress:
         specifier: ^2.3.9
         version: 2.4.1(@types/node@25.6.0)(@vercel/functions@3.5.0)(jiti@2.7.0)(rollup@4.60.2)(typescript@5.9.3)(yaml@2.8.4)
@@ -79,6 +82,9 @@ importers:
       globby:
         specifier: ^16.1.0
         version: 16.2.0
+      google-auth-library:
+        specifier: 10.6.2
+        version: 10.6.2
       html-minifier-terser:
         specifier: ^7.2.0
         version: 7.2.0

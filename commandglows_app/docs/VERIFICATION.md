@@ -70,11 +70,11 @@ next_step: "Run authenticated Firebase and platform-specific production checks b
   (`unawaited_return_in_try_block`). No auth-file analyzer issue was reported.
 - `git diff --check` passed; Git emitted only the repository's LF-to-CRLF
   working-copy notices.
-- Google sign-in is enabled for Firebase project `commandglows-dev`, and its
+- At the time of this recorded verification, Google sign-in was enabled for Firebase project `commandglows-dev`, and its
   generated Web OAuth client ID is configured in Doppler `commandglows/dev`.
   The Android app `1:9805404731:android:dfbca893b4205de88a1a1e` is registered
   for `com.commandglows.app`, and the local debug SHA-1 is attached. The suite
-  identity bridge URL in Doppler dev points to the public Production endpoint
+  identity bridge URL in Doppler dev pointed to the public Production endpoint
   `www.commandglows.com/api/bridge/firebase`. An unauthenticated probe returns
   the expected `401 missing_bearer_token`, confirming the handler and required
   server config are live. The route uses its deployment environment
@@ -90,6 +90,42 @@ next_step: "Run authenticated Firebase and platform-specific production checks b
 - Awaited the local settings read inside its `try` block so asynchronous storage
   errors are caught and the analyzer warning is addressed. Analyze and tests
   were not rerun after this follow-up.
+- Rechecked the Windows trial configuration: Doppler dev now points to
+  `https://dev.commandglows.com/api/bridge/firebase`, but the managed recipe did
+  not forward `SUITE_IDENTITY_BRIDGE_URL`, leaving the compiled app on its
+  production default. Added the bridge URL to the allowlisted, environment-paired
+  Dart defines and relaunched the managed Windows app through the configured
+  DevServer. The new Debug kernel contains the Dev bridge URL and the registry
+  reports the Windows session running. No authenticated sign-in or trial request
+  was made; the bridge deployment's Firebase Admin and Convex environment still
+  need separate verification.
+- The `dev.commandglows.com` alias currently resolves to a Vercel deployment
+  whose target is Production. Doppler Dev and Vercel Development do not contain
+  the server configuration required for an isolated Dev bridge. Anonymous
+  probes returned `503 trial_installation_signal_unavailable` without an
+  installation ID and `401 missing_bearer_token` with a synthetic ID. This does
+  not verify Firebase Admin project identity, Convex environment, or trial
+  behavior. Do not send a Dev Firebase token to this alias until a dedicated
+  Dev bridge is configured.
+- The app now sends a UUIDv4 correlation ID for each trial-start request and
+  distinguishes a request not sent, no response/unknown outcome, an HTTP error,
+  a structured denial, and confirmed active access. A shared-install denial
+  does not disclose whether another identity used that installation.
+- The bridge returns a structured trial outcome from Convex, echoes the
+  request ID in the response header/body, and logs only request ID, action,
+  outcome, safe reason code, and status. Invalid/missing backend outcomes return
+  HTTP 502 as unknown; they are not presented as user ineligibility.
+- Focused Flutter proof under Doppler: `dart analyze lib/features/auth` has no
+  issues; the identity bridge client, auth gate, and trial access tests pass
+  (24 tests). Focused site bridge/Convex tests pass (19 tests), and
+  `pnpm build:check` completes with zero errors and warnings (one existing
+  hint). `git diff --check` passes.
+- Live UI/authenticated trial proof remains blocked: `dev.commandglows.com`
+  resolves to a Production-target deployment, while Doppler Dev and Vercel
+  Development lack the server-side Firebase Admin/Convex bridge configuration.
+  The managed Windows session was stopped without sending a trial request.
+  Establish an isolated Dev bridge and verify its Firebase and Convex projects
+  before live smoke; do not use the current alias with a Dev Firebase token.
 
 ## Keyboard Sync Slice Verification — 2026-05-25
 

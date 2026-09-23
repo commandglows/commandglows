@@ -48,7 +48,7 @@ async function bridgeIdentity(
     uid: string
     installationHash: string
     networkHash?: string
-    trialAction?: 'restart'
+    trialAction?: 'start' | 'restart'
   }
 ) {
   return t.mutation(api.bridge.upsertFirebaseIdentity, {
@@ -159,6 +159,40 @@ describe('CommandGlows trial Convex integration', () => {
     )
   })
 
+  test('reports granted and already_active for explicit start requests', async () => {
+    const t = createTestBackend()
+    const first = await bridgeIdentity(t, {
+      uid: 'firebase-start-outcome',
+      installationHash: 'installation-start-outcome',
+      trialAction: 'start',
+    })
+    expect(first.trialRequest).toEqual({ outcome: 'granted', reasonCode: null })
+
+    const repeated = await bridgeIdentity(t, {
+      uid: 'firebase-start-outcome',
+      installationHash: 'installation-start-outcome',
+      trialAction: 'start',
+    })
+    expect(repeated.trialRequest).toEqual({ outcome: 'already_active', reasonCode: null })
+  })
+
+  test('uses the generic installation reason for a different identity', async () => {
+    const t = createTestBackend()
+    await bridgeIdentity(t, {
+      uid: 'firebase-installation-owner',
+      installationHash: 'installation-shared-start',
+    })
+    const denied = await bridgeIdentity(t, {
+      uid: 'firebase-installation-other',
+      installationHash: 'installation-shared-start',
+      trialAction: 'start',
+    })
+    expect(denied.trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'installation_not_eligible',
+    })
+  })
+
   test('ENT-TRIAL-003/004 allows two restarts and denies a fourth period', async () => {
     const t = createTestBackend()
     const first = await bridgeIdentity(t, {
@@ -183,6 +217,15 @@ describe('CommandGlows trial Convex integration', () => {
       uid: 'firebase-user-restarts',
       installationHash: 'installation-hash-restarts',
       trialAction: 'restart',
+    })
+    const exhaustedStart = await bridgeIdentity(t, {
+      uid: 'firebase-user-restarts',
+      installationHash: 'installation-hash-restarts',
+      trialAction: 'start',
+    })
+    expect(exhaustedStart.trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'trial_cycles_exhausted',
     })
 
     const trials = await commandGlowsTrials(t)
@@ -248,6 +291,24 @@ describe('CommandGlows trial Convex integration', () => {
     expect(
       (await commandGlowsTrials(t)).map((row) => row.trialAttempt)
     ).toEqual([1, 2])
+  })
+
+  test('reports previous_trial_exists for an expired cycle requested as a new start', async () => {
+    const t = createTestBackend()
+    const first = await bridgeIdentity(t, {
+      uid: 'firebase-previous-cycle',
+      installationHash: 'installation-previous-cycle',
+    })
+    await expireLatestTrial(t, first.globalUserId)
+    const denied = await bridgeIdentity(t, {
+      uid: 'firebase-previous-cycle',
+      installationHash: 'installation-previous-cycle',
+      trialAction: 'start',
+    })
+    expect(denied.trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'previous_trial_exists',
+    })
   })
 
   test('ENT-TRIAL-007 paid access prevents trial creation', async () => {
@@ -583,11 +644,16 @@ describe('CommandGlows trial Convex integration', () => {
           uid: `firebase-network-${index}`,
           installationHash: `installation-hash-network-${index}`,
           networkHash: 'shared-network-hash',
+          ...(index === 4 ? { trialAction: 'start' as const } : {}),
         })
       )
     }
 
     expect(await commandGlowsTrials(t)).toHaveLength(3)
+    expect(snapshots[3].trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'temporary_rate_limit',
+    })
     expect(
       snapshots[3].entitlements.some(
         (entry) => entry.productId === 'commandglows_app'

@@ -1522,6 +1522,49 @@ export const upsertFirebaseIdentity = mutation({
       environment,
       now,
     })
+    const commandGlowsTrialsBefore = productTrials(
+      rawEntitlements,
+      COMMANDGLOWS_APP_PRODUCT_ID
+    )
+    const hadActiveCommandGlowsTrial = commandGlowsTrialsBefore.some((entry) =>
+      isTrialEntitlementActive(entry, now)
+    )
+    const hadActiveCommandGlowsPaidAccess = hasActivePaidEntitlement(
+      rawEntitlements,
+      COMMANDGLOWS_APP_PRODUCT_ID,
+      now
+    )
+    const trialNetworkWindowStartedAt =
+      Math.floor(now / SUITE_TRIAL_NETWORK_WINDOW_MS) *
+      SUITE_TRIAL_NETWORK_WINDOW_MS
+    const existingTrialNetworkWindow =
+      args.trialAction === 'start' && args.networkHash
+        ? await ctx.db
+            .query('productTrialRiskWindows')
+            .withIndex('by_productEnvironmentNetworkWindow', (q) =>
+              q
+                .eq('productId', COMMANDGLOWS_APP_PRODUCT_ID)
+                .eq('environment', environment)
+                .eq('networkHash', args.networkHash!)
+                .eq('windowStartedAt', trialNetworkWindowStartedAt)
+            )
+            .first()
+        : null
+    const trialNetworkRateLimited =
+      Boolean(existingTrialNetworkWindow) &&
+      existingTrialNetworkWindow!.grantCount >= SUITE_TRIAL_NETWORK_MAX_GRANTS
+    const trialPolicy = getSuiteProductTrialPolicy(COMMANDGLOWS_APP_PRODUCT_ID)
+    const trialDenialReason = !installation.eligible
+      ? ('installation_not_eligible' as const)
+      : hadActiveCommandGlowsPaidAccess
+        ? ('active_paid_access' as const)
+        : commandGlowsTrialsBefore.length >= (trialPolicy?.maxTrialCycles ?? 0)
+          ? ('trial_cycles_exhausted' as const)
+          : args.trialAction === 'start' && commandGlowsTrialsBefore.length > 0
+            ? ('previous_trial_exists' as const)
+            : trialNetworkRateLimited
+              ? ('temporary_rate_limit' as const)
+              : null
     const didStartCommandGlowsTrial = await maybeStartProductTrialEntitlement(
       ctx,
       {
@@ -1553,6 +1596,19 @@ export const upsertFirebaseIdentity = mutation({
         installation.installationId,
         now
       )
+    }
+
+    const trialRequest =
+      args.trialAction === 'start'
+        ? didStartCommandGlowsTrial
+          ? {
+              outcome: hadActiveCommandGlowsTrial ? ('already_active' as const) : ('granted' as const),
+              reasonCode: null,
+            }
+          : { outcome: 'denied' as const, reasonCode: trialDenialReason }
+        : undefined
+    if (trialRequest?.outcome === 'denied' && !trialRequest.reasonCode) {
+      throw new Error('trial_start_denial_reason_unavailable')
     }
 
     rawEntitlements = await ctx.db
@@ -1640,6 +1696,7 @@ export const upsertFirebaseIdentity = mutation({
         ? ('clerk' as const)
         : null,
       entitlements,
+      ...(trialRequest ? { trialRequest } : {}),
     }
   },
 })
