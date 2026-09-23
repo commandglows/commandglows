@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.3.1"
 project: commandglows
 created: "2026-05-17"
-updated: "2026-09-05"
+updated: "2026-09-17"
 status: reviewed
 source_skill: sg-docs
 scope: code-docs-map
@@ -32,8 +32,11 @@ evidence:
   - commandglows_site/src/lib/commerce/providers/stripe.ts
   - commandglows_site/src/pages/api/commerce/webhooks/stripe.ts
   - commandglows_app/lib/features/auth/presentation/trial_access_screen.dart
-next_review: "2026-09-11"
-next_step: "Review after hosted Stripe proof or any commerce/entitlement contract change."
+  - commandglows_app/.firebaserc
+  - commandglows_app/.shipglows.flutter.json
+  - commandglows_app/scripts/flutter_config.py
+next_review: "2026-10-17"
+next_step: "Review after a Firebase environment, CI, or commerce/entitlement contract change."
 ---
 # Code Docs Map
 
@@ -59,6 +62,7 @@ Map stable code areas to their primary technical docs, expected validations, and
 | `commandglows_site/src/pages/api/**`, `commandglows_site/convex/**` | auth, billing, newsletter, backend state | `shipglows_data/technical/architecture.md` | `shipglows_data/technical/context-function-tree.md`, `shipglows_data/technical/guidelines.md` | `pnpm -C commandglows_site test:unit && pnpm -C commandglows_site build:check` | auth, checkout, webhook, newsletter, schema, or entitlement changes |
 | `commandglows_site/src/pages/api/checkout/start.ts`, `commandglows_site/src/pages/api/commerce/**`, `commandglows_site/src/lib/commerce/**` | authenticated Stripe-only suite commerce | `shipglows_data/technical/payment-activation-entitlements.md` | `shipglows_data/technical/platforms/stripe-managed-payments.md`, `shipglows_data/technical/architecture.md` | `pnpm -C commandglows_site vitest run tests/commerce tests/bridge/commandGlowsTrialConvex.test.ts` | checkout identity, offer/Price-ID mapping, webhook normalization, refunds/disputes, or idempotency behavior |
 | `commandglows_app/lib/features/auth/**` | Firebase identity, entitlement snapshot, trial gate and purchase handoff | `shipglows_data/technical/payment-activation-entitlements.md` | `shipglows_data/technical/architecture.md`, `shipglows_data/workflow/specs/commandglows-trial-then-paid-entitlements.md` | `(cd commandglows_app && flutter analyze && flutter test)` | identity parsing, trial expiry/restart, access gating, or purchase handoff changes |
+| `commandglows_app/.firebaserc`, `firebase.json`, `firestore.rules`, `firestore.indexes.json`, `.shipglows*.json`, `scripts/flutter_config.py` | Firebase environments, public client configuration, managed launch and rules deployment | `shipglows_data/technical/commandglows_app/architecture.md` | `commandglows_app/docs/technical/firebase-cli-foundation.md`, `shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md` | resolver unit tests, Firebase CLI targeted deploy/probe, and Doppler-prefixed local launch where applicable | alias, provider, public config, rules/indexes, or launch-recipe changes |
 | `commandglows_site/src/content/config.ts`, `commandglows_site/src/content/**` | runtime content schema and content collections | `shipglows_data/technical/guidelines.md` | `shipglows_data/editorial/astro-content-schema-policy.md`, `shipglows_data/editorial/content-map.md` | `pnpm -C commandglows_site build:check` | schema changes, new collections, frontmatter contract changes |
 | `README.md`, `AGENT.md`, `shipglows_data/**` | governance and onboarding docs | `shipglows_data/technical/README.md` | all canonical governance docs | metadata lint + targeted `rg` checks | doc drift, new subsystem docs, or governance migration |
 

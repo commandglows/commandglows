@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.1.1"
 project: "CommandGlows"
 created: "2026-04-26"
-updated: "2026-06-10"
+updated: "2026-09-17"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -19,6 +19,9 @@ evidence:
   - "docs/API.md"
   - "modules/floating-overlay/android/src/main/java/expo/modules/floatingoverlay/FloatingOverlayModule.kt"
   - "shipglows_data/workflow/audits/2026-06-10-commandglows-platform-parity.md"
+  - "commandglows_app/.firebaserc"
+  - "commandglows_app/.shipglows.flutter.json"
+  - "commandglows_app/scripts/flutter_config.py"
 linked_systems:
   - "Flutter"
   - "Backend-agnostic stores"
@@ -40,8 +43,8 @@ depends_on:
   - "docs/DECISIONS.md@0.1.0"
   - "docs/MIGRATION_FLUTTER.md@0.1.0"
 supersedes: []
-next_review: "2026-05-27"
-next_step: "$sf-docs update"
+next_review: "2026-10-17"
+next_step: "Prove authenticated remote access and complete separately authorized production integrations."
 ---
 
 # Architecture — CommandGlows
@@ -121,6 +124,25 @@ Desktop native
   -> macOS MethodChannel for floating window, Control+Option+Space, NSPasteboard and best-effort Command+V
   -> Linux MethodChannel for GTK keep-above, scoped accelerator where available, clipboard-only fallback
 ```
+
+### Firebase environment configuration
+
+The repository maps Firebase CLI aliases `dev` to `commandglows-dev` and `prod`
+to `commandglows`. Each project has Email/password enabled and a default
+Firestore database in `nam5`; the repository Firestore rules and indexes were
+deployed to both. No user or application data was migrated into either new
+project.
+
+The managed Windows development recipe obtains the six public Firebase client
+values from Doppler project `commandglows`, configuration `dev`, and turns them
+into Flutter defines through `scripts/flutter_config.py`. The same resolver
+validates Doppler configuration `prd` against `commandglows`. These public
+client identifiers are not admin credentials.
+
+This setup does not enable Google sign-in, Cloud Storage, server/admin
+credentials, authenticated-user Firestore verification, or production CI
+deployment. Those are separate gates; this document must not treat a resolver
+or Windows launch as a production-access proof.
 
 ### Layer contracts
 

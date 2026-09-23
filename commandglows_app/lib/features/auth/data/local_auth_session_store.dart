@@ -36,6 +36,11 @@ class LocalAuthSessionStore implements AuthSessionStore {
   }
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    throw UnsupportedError('Password reset is not configured.');
+  }
+
+  @override
   Future<void> signInWithGoogle() async {
     throw AuthFailure.unsupported(
       UnsupportedError('Google Sign-In is not configured.'),

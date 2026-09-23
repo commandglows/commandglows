@@ -1,6 +1,7 @@
 {
   "projects": {
-    "default": "winglowz-dev",
-    "dev": "winglowz-dev"
+    "default": "commandglows-dev",
+    "dev": "commandglows-dev",
+    "prod": "commandglows"
   }
 }

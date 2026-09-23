@@ -231,6 +231,9 @@ class _RecordingCloudAuthStore implements AuthSessionStore {
   }) async {}
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {}
+
+  @override
   Future<void> signInWithGoogle() async {}
 
   @override
@@ -290,6 +293,9 @@ class _PostAuthRemoteAuthStore implements AuthSessionStore {
   void dispose() {
     _controller.close();
   }
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) async {}
 }
 
 class _PendingSignupWelcomeController extends SignupWelcomeController {
@@ -962,7 +968,10 @@ void main() {
         find.byKey(const Key('settings-connect-cloud-account')),
       );
 
-      expect(find.text('Connexion'), findsOneWidget);
+      expect(
+        find.widgetWithText(SegmentedButton<bool>, 'Connexion'),
+        findsOneWidget,
+      );
       await tester.enterText(
         find.byKey(const ValueKey('auth-email-field')),
         'test@example.com',
@@ -1023,7 +1032,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Connexion'), findsOneWidget);
+      expect(
+        find.widgetWithText(SegmentedButton<bool>, 'Connexion'),
+        findsOneWidget,
+      );
       await tester.enterText(
         find.byKey(const ValueKey('auth-email-field')),
         'alice@example.test',

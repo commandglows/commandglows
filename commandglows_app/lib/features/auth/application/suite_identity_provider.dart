@@ -70,14 +70,16 @@ Future<SuiteIdentitySnapshot> _identityFromAuthSession(
   final resolveIdToken = ref.read(firebaseIdTokenResolverProvider);
   final bridgeConfig = SuiteIdentityBridgeBootstrap.config;
   try {
-    return await bridgeClient.resolveFromFirebaseSession(
-      bridgeConfig: bridgeConfig,
-      firebaseAccount: firebaseAccount,
-      resolveIdToken: resolveIdToken,
-      installationId: bridgeConfig.isConfigured
-          ? await installationIdStore.readOrCreate()
-          : 'not-needed-when-bridge-is-unconfigured',
-    );
+    return await bridgeClient
+        .resolveFromFirebaseSession(
+          bridgeConfig: bridgeConfig,
+          firebaseAccount: firebaseAccount,
+          resolveIdToken: resolveIdToken,
+          installationId: bridgeConfig.isConfigured
+              ? await installationIdStore.readOrCreate()
+              : 'not-needed-when-bridge-is-unconfigured',
+        )
+        .timeout(const Duration(seconds: 15));
   } catch (error) {
     return SuiteIdentitySnapshot(
       status: SuiteAccountStatus.unavailable,

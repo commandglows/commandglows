@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +13,7 @@ import '../../../core/widgets/app_components.dart';
 import '../application/auth_session_provider.dart';
 import '../domain/auth_session_store.dart';
 import '../domain/auth_failure.dart';
+import '../data/google_auth_client.dart';
 import 'google_web_sign_in_button.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
@@ -18,10 +21,12 @@ class SignInScreen extends ConsumerStatefulWidget {
     super.key,
     this.remoteOnly = false,
     this.onAuthenticated,
+    this.googleAvailableOverride,
   });
 
   final bool remoteOnly;
   final VoidCallback? onAuthenticated;
+  final bool? googleAvailableOverride;
 
   @override
   ConsumerState<SignInScreen> createState() => _SignInScreenState();
@@ -32,6 +37,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _busy = false;
+  bool _signup = false;
+  bool _resetSent = false;
   String? _error;
   String? _errorDetail;
   String _errorTitle = 'Connexion impossible';
@@ -77,15 +84,28 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       if (signup) {
-        await store.createAccountWithEmailPassword(
-          email: email,
-          password: password,
-        );
+        await store
+            .createAccountWithEmailPassword(email: email, password: password)
+            .timeout(const Duration(seconds: 20));
         ref.read(signupWelcomePendingProvider.notifier).markPending();
       } else {
-        await store.signInWithEmailPassword(email: email, password: password);
+        await store
+            .signInWithEmailPassword(email: email, password: password)
+            .timeout(const Duration(seconds: 20));
       }
       widget.onAuthenticated?.call();
+    } on TimeoutException catch (error, stackTrace) {
+      await _presentAuthFailure(
+        AuthFailure(
+          kind: AuthFailureKind.networkUnavailable,
+          userMessage:
+              'La connexion prend trop de temps. Réessaie sans ressaisir tes informations.',
+          category: 'auth_timeout',
+          code: 'timeout',
+          supportDetail: error,
+        ),
+        stackTrace,
+      );
     } on AuthFailure catch (error, stackTrace) {
       await _presentAuthFailure(error, stackTrace);
     } on UnsupportedError catch (error, stackTrace) {
@@ -97,6 +117,69 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         setState(() => _busy = false);
       }
     }
+  }
+
+  Future<void> _resetPassword() async {
+    setState(() {
+      _autovalidateMode = AutovalidateMode.onUserInteraction;
+      _error = null;
+      _errorDetail = null;
+      _resetSent = false;
+      _errorTitle = 'Récupération impossible';
+    });
+    final emailError = _validateEmail(_emailController.text);
+    if (emailError != null) {
+      setState(() => _error = emailError);
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await _store()
+          .sendPasswordResetEmail(email: _emailController.text.trim())
+          .timeout(const Duration(seconds: 20));
+      if (mounted) setState(() => _resetSent = true);
+    } on TimeoutException catch (error, stackTrace) {
+      await _presentAuthFailure(
+        AuthFailure(
+          kind: AuthFailureKind.networkUnavailable,
+          userMessage:
+              'La demande prend trop de temps. Réessaie sans ressaisir ton e-mail.',
+          category: 'auth_password_reset_timeout',
+          code: 'timeout',
+          supportDetail: error,
+        ),
+        stackTrace,
+      );
+    } on AuthFailure catch (error, stackTrace) {
+      await _presentAuthFailure(error, stackTrace);
+    } on UnsupportedError catch (error, stackTrace) {
+      await _presentAuthFailure(AuthFailure.unsupported(error), stackTrace);
+    } catch (error, stackTrace) {
+      await _presentAuthFailure(AuthFailure.unexpected(error), stackTrace);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _changeMode(bool signup) {
+    if (_busy || signup == _signup) return;
+    setState(() {
+      _signup = signup;
+      _error = null;
+      _errorDetail = null;
+      _resetSent = false;
+      _autovalidateMode = AutovalidateMode.disabled;
+      _passwordController.clear();
+    });
+  }
+
+  bool get _googleAvailable {
+    final override = widget.googleAvailableOverride;
+    if (override != null) return override;
+    final supportedPlatform =
+        kIsWeb || defaultTargetPlatform == TargetPlatform.android;
+    return supportedPlatform &&
+        GoogleAuthRuntimeConfig.fromEnvironment().normalizedWebClientId != null;
   }
 
   Future<void> _signInWithGoogle() async {
@@ -231,7 +314,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   maxWidth: AppLayoutMetrics.authFormMaxWidth,
                 ),
                 child: AppSectionCard(
-                  title: 'Connexion',
+                  title: _signup ? 'Créer un compte' : 'Connexion',
                   subtitle: widget.remoteOnly
                       ? 'Connecte ton compte CommandGlows pour activer la synchronisation cloud.'
                       : 'Accède à ton espace de dictée, clipboard et snippets.',
@@ -242,6 +325,29 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          SegmentedButton<bool>(
+                            segments: const [
+                              ButtonSegment(
+                                value: false,
+                                label: Text('Connexion'),
+                              ),
+                              ButtonSegment(
+                                value: true,
+                                label: Text('Inscription'),
+                              ),
+                            ],
+                            selected: {_signup},
+                            onSelectionChanged: _busy
+                                ? null
+                                : (selection) => _changeMode(selection.first),
+                          ),
+                          if (kDebugMode) ...[
+                            AppGaps.x2,
+                            const Text(
+                              'Environnement de développement : les anciens comptes n’ont pas été transférés. Utilise un compte créé pour cet environnement.',
+                            ),
+                          ],
+                          AppGaps.x3,
                           TextFormField(
                             key: const ValueKey('auth-email-field'),
                             controller: _emailController,
@@ -272,13 +378,33 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                             validator: _validatePassword,
                             onFieldSubmitted: (_) {
                               if (!_busy) {
-                                _submit(signup: false);
+                                _submit(signup: _signup);
                               }
                             },
                             decoration: const InputDecoration(
                               labelText: 'Mot de passe',
                             ),
                           ),
+                          if (!_signup)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: _busy ? null : _resetPassword,
+                                child: const Text('Mot de passe oublié'),
+                              ),
+                            ),
+                          if (_resetSent) ...[
+                            AppBannerCard(
+                              icon: Icons.mark_email_read_outlined,
+                              title: 'E-mail envoyé',
+                              message:
+                                  'Si cette adresse peut recevoir une récupération, les instructions viennent d’être envoyées.',
+                              accentColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                            ),
+                            AppGaps.x2,
+                          ],
                           AppGaps.x4,
                           if (_error != null) ...[
                             AppBannerCard(
@@ -296,35 +422,22 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                             ),
                             AppGaps.x2,
                           ],
-                          Row(
-                            children: [
-                              Expanded(
-                                child: FilledButton(
-                                  onPressed: _busy
-                                      ? null
-                                      : () => _submit(signup: false),
-                                  child: const Text('Se connecter'),
-                                ),
-                              ),
-                              AppGaps.horizontalX3,
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: _busy
-                                      ? null
-                                      : () => _submit(signup: true),
-                                  child: const Text('Créer un compte'),
-                                ),
-                              ),
-                            ],
+                          FilledButton(
+                            onPressed: _busy
+                                ? null
+                                : () => _submit(signup: _signup),
+                            child: Text(
+                              _signup ? 'Créer mon compte' : 'Se connecter',
+                            ),
                           ),
                           AppGaps.x2,
-                          if (kIsWeb)
+                          if (_googleAvailable && kIsWeb)
                             GoogleWebSignInButton(
                               disabled: _busy,
                               onAuthenticated: _signInWithGoogleIdToken,
                               onFailure: _presentAuthFailure,
                             )
-                          else
+                          else if (_googleAvailable)
                             OutlinedButton.icon(
                               onPressed: _busy ? null : _signInWithGoogle,
                               icon: const Icon(Icons.login_outlined),

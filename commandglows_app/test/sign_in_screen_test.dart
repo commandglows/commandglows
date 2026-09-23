@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:commandglows_app/core/theme/app_theme.dart';
@@ -57,6 +58,15 @@ class _ThrowingAuthSessionStore implements AuthSessionStore {
   }
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    throw AuthFailure.firebase(
+      code: 'network-request-failed',
+      message: 'offline',
+      signup: false,
+    );
+  }
+
+  @override
   Future<void> signInWithGoogle() async {
     final failure = googleFailure;
     if (failure != null) {
@@ -78,6 +88,7 @@ class _ThrowingAuthSessionStore implements AuthSessionStore {
 
 class _SuccessfulAuthSessionStore implements AuthSessionStore {
   var createAccountCalls = 0;
+  var resetCalls = 0;
 
   @override
   Future<AuthSessionSnapshot> currentSession() async => _signedOut;
@@ -103,6 +114,11 @@ class _SuccessfulAuthSessionStore implements AuthSessionStore {
   }
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    resetCalls += 1;
+  }
+
+  @override
   Future<void> signInWithGoogle() async {}
 
   @override
@@ -117,10 +133,13 @@ const _signedOut = AuthSessionSnapshot(
   syncStatus: SyncStatus.unavailable(),
 );
 
-Widget _testWidget(AuthSessionStore store) {
+Widget _testWidget(AuthSessionStore store, {bool googleAvailable = true}) {
   return ProviderScope(
     overrides: [authSessionStoreProvider.overrideWithValue(store)],
-    child: MaterialApp(theme: AppTheme.light, home: const SignInScreen()),
+    child: MaterialApp(
+      theme: AppTheme.light,
+      home: SignInScreen(googleAvailableOverride: googleAvailable),
+    ),
   );
 }
 
@@ -211,12 +230,14 @@ void main() {
     final store = _ThrowingAuthSessionStore();
     await tester.pumpWidget(_testWidget(store));
 
+    await tester.tap(find.text('Inscription'));
+    await tester.pump();
     await tester.enterText(
       find.byType(TextFormField).first,
       'test@example.com',
     );
     await tester.enterText(find.byType(TextFormField).last, 'password');
-    await tester.tap(find.text('Créer un compte'));
+    await tester.tap(find.text('Créer mon compte'));
     await tester.pumpAndSettle();
 
     expect(find.text('Création de compte impossible'), findsOneWidget);
@@ -236,12 +257,14 @@ void main() {
     final store = _SuccessfulAuthSessionStore();
     await tester.pumpWidget(_testWidget(store));
 
+    await tester.tap(find.text('Inscription'));
+    await tester.pump();
     await tester.enterText(
       find.byType(TextFormField).first,
       'test@example.com',
     );
     await tester.enterText(find.byType(TextFormField).last, 'password');
-    await tester.tap(find.text('Créer un compte'));
+    await tester.tap(find.text('Créer mon compte'));
     await tester.pumpAndSettle();
 
     final container = ProviderScope.containerOf(
@@ -249,6 +272,46 @@ void main() {
     );
     expect(store.createAccountCalls, 1);
     expect(container.read(signupWelcomePendingProvider), isTrue);
+  });
+
+  testWidgets('password reset keeps email and confirms a neutral response', (
+    tester,
+  ) async {
+    final store = _SuccessfulAuthSessionStore();
+    await tester.pumpWidget(_testWidget(store));
+
+    await tester.enterText(
+      find.byKey(const ValueKey('auth-email-field')),
+      'test@example.com',
+    );
+    await tester.tap(find.text('Mot de passe oublié'));
+    await tester.pumpAndSettle();
+
+    expect(store.resetCalls, 1);
+    expect(find.text('E-mail envoyé'), findsOneWidget);
+    expect(
+      find.textContaining('Si cette adresse peut recevoir'),
+      findsOneWidget,
+    );
+    final emailField = tester.widget<TextFormField>(
+      find.byKey(const ValueKey('auth-email-field')),
+    );
+    expect(emailField.controller?.text, 'test@example.com');
+  });
+
+  testWidgets('windows does not offer an unavailable Google flow', (
+    tester,
+  ) async {
+    final previousPlatform = debugDefaultTargetPlatformOverride;
+    debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+    addTearDown(() => debugDefaultTargetPlatformOverride = previousPlatform);
+
+    await tester.pumpWidget(
+      _testWidget(_SuccessfulAuthSessionStore(), googleAvailable: false),
+    );
+
+    expect(find.text('Continuer avec Google'), findsNothing);
+    debugDefaultTargetPlatformOverride = previousPlatform;
   });
 
   testWidgets('does not offer a local access bypass', (tester) async {

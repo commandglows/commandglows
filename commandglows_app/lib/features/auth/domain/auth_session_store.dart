@@ -51,6 +51,8 @@ abstract class AuthSessionStore {
     required String password,
   });
 
+  Future<void> sendPasswordResetEmail({required String email});
+
   Future<void> signInWithGoogle();
 
   Future<void> signInWithGoogleIdToken({required String? idToken});

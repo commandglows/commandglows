@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "shipglows.backend.v1",
+  "provider": "firebase",
+  "mode": "remote",
+  "reason": null,
+  "command": null,
+  "dependencies": [],
+  "readiness": {
+    "url": "https://commandglows-dev.firebaseapp.com/__/auth/handler",
+    "statusCode": 200,
+    "timeoutSeconds": 15
+  }
+}

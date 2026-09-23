@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: "CommandGlows"
 created: "2026-03-18"
-updated: "2026-05-19"
+updated: "2026-09-17"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "guidelines"
@@ -18,6 +18,8 @@ evidence:
   - "docs/MIGRATION_FLUTTER.md"
   - "docs/API.md"
   - "modules/floating-overlay/android/src/main/java/expo/modules/floatingoverlay/FloatingOverlayModule.kt"
+  - "commandglows_app/.shipglows.flutter.json"
+  - "commandglows_app/scripts/flutter_config.py"
 linked_systems:
   - "Flutter"
   - "Backend-agnostic stores"
@@ -27,8 +29,8 @@ linked_systems:
 depends_on:
   - "shipglows_data/technical/architecture.md@0.1.0"
 supersedes: []
-next_review: "2026-05-27"
-next_step: "$sf-docs update"
+next_review: "2026-10-17"
+next_step: "Recheck configuration and provider gates when production work is authorized."
 ---
 
 # Guidelines — CommandGlows
@@ -66,6 +68,12 @@ Not allowed:
 5. Never write API keys to remote data stores, logs, or analytics payloads.
 6. Never persist empty/whitespace transcriptions.
 7. Suite access must use server-owned entitlements; a Clerk account alone does not grant product access.
+
+## Firebase configuration policy
+
+- Use Firebase aliases `dev` (`commandglows-dev`) and `prod` (`commandglows`); never substitute retired project IDs.
+- For local builds and runs, use Doppler with the intended configuration and the Flutter configuration resolver. Only public Firebase client values may become Dart defines.
+- Treat Google sign-in, Cloud Storage, server/admin credentials, user/data migration, authenticated Firestore access, and CI deployment as explicit separate changes. Their absence is not repaired by inventing placeholder values.
 
 ## API and schema change guidelines
 

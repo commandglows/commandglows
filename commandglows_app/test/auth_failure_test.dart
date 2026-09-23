@@ -24,7 +24,7 @@ void main() {
     );
 
     expect(failure.kind, AuthFailureKind.invalidCredentials);
-    expect(failure.userMessage, 'Email ou mot de passe incorrect.');
+    expect(failure.userMessage, 'Vérifie ton e-mail et ton mot de passe.');
   });
 
   test('maps firebase rest invalid login credentials', () {
@@ -35,7 +35,7 @@ void main() {
     );
 
     expect(failure.kind, AuthFailureKind.invalidCredentials);
-    expect(failure.userMessage, 'Email ou mot de passe incorrect.');
+    expect(failure.userMessage, 'Vérifie ton e-mail et ton mot de passe.');
   });
 
   test('maps firebase configuration not found as configuration failure', () {

@@ -18,24 +18,16 @@ import {
   type ReplayGlowsProductUserIdSource,
 } from "@/lib/suiteBridge";
 import { createCommerceCheckoutIdentityToken } from "@/lib/commerce/checkoutIdentity";
+import {
+  parseFirebaseBridgeRequest,
+  type FirebaseBridgeRequest,
+} from "@/lib/firebaseBridgeRequest";
 
 export const prerender = false;
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
 const PRODUCT_TOKEN_NOT_CONFIGURED = "product_token_not_configured";
 const INSTALLATION_ID_HEADER = 'x-commandglows-installation-id';
-
-type FirebaseBridgeRequest = {
-  trialAction?: 'start' | 'restart';
-};
-
-function parseBridgeRequest(value: unknown): FirebaseBridgeRequest {
-  if (!value || typeof value !== 'object') {
-    return {};
-  }
-  const trialAction = (value as Record<string, unknown>).trialAction;
-  return trialAction === 'restart' ? { trialAction } : {};
-}
 
 function hashTrialSignal(value: string, secret: string, purpose: string): string {
   return createHmac('sha256', secret).update(`${purpose}:${value}`).digest('hex');
@@ -255,7 +247,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   let bridgeRequest: FirebaseBridgeRequest;
   try {
-    bridgeRequest = parseBridgeRequest(await request.json());
+    bridgeRequest = parseFirebaseBridgeRequest(await request.json());
   } catch {
     return new Response(
       JSON.stringify({ status: "bad_request", error: "invalid_json" }),

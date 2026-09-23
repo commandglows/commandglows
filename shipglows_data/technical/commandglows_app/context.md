@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "CommandGlows"
 created: "2026-05-10"
-updated: "2026-05-10"
+updated: "2026-09-17"
 status: reviewed
 source_skill: sf-docs
 scope: technical-context
@@ -26,8 +26,10 @@ evidence:
   - "docs/technical/README.md"
   - "docs/technical/code-docs-map.md"
   - "shipglows_data/technical/architecture.md"
-next_review: "2026-06-10"
-next_step: "/sf-docs technical audit"
+  - "commandglows_app/.firebaserc"
+  - "commandglows_app/.shipglows.flutter.json"
+next_review: "2026-10-17"
+next_step: "Re-check authenticated Firebase and Windows interaction proof before a production claim."
 ---
 
 # Technical Context — CommandGlows
@@ -49,6 +51,9 @@ This context file is the technical governance anchor for `shipglows_data`-based 
 - Flutter remains the target execution layer for this repo state.
 - Android native overlays and IME behavior remain explicitly documented and are treated as platform-critical code paths.
 - Firebase is the active remote adapter in the migration-ready state; Supabase/legacy paths are tracked as migration references.
+- The active Firebase aliases are `dev` → `commandglows-dev` and `prod` → `commandglows`; both currently expose Email/password and a default Firestore database in `nam5`.
+- Managed local Windows launch reads public Firebase client configuration from Doppler `commandglows/dev`. The `prd` configuration is synchronized and resolver-validated, but does not constitute a production release.
+- Google sign-in, Cloud Storage, server/admin credentials, authenticated-user Firestore proof, and production CI wiring are not configured by this foundation.
 
 ## Validation
 

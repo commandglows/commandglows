@@ -90,6 +90,45 @@ flutter test
 
 ## Firebase Runtime Defines
 
+### Windows development
+
+Launch the managed debug session with:
+
+```powershell
+s.cmd start -ProjectPath "$PWD" -FlutterDevice windows
+```
+
+Run this from `commandglows_app`. The managed recipe invokes its public
+configuration resolver through `doppler run --project commandglows --config dev`
+and starts the equivalent of `flutter run -d windows` with the resulting Dart
+defines. It forwards only the six Firebase client parameters, not server secrets.
+The recipe is currently Windows-only; other platforms need their own validated
+client configuration.
+
+The Firebase display name is `CommandGlows Dev` and its project ID is
+`commandglows-dev`; `.firebaserc` points to this project. The backend readiness
+check verifies the project's hosted Firebase Auth handler only. Successful startup
+does not establish a signed-in session or protected Firestore/Storage access;
+verify those separately in the running app.
+
+Development Authentication enables email/password via `firebase.json`. Firestore
+uses the `(default)` database in `nam5`, with this repository's rules and indexes.
+Google OAuth and Cloud Storage buckets are not provisioned by this setup. The old
+project had no Storage buckets. A client Storage bucket name
+alone does not establish a provisioned bucket. Cloud product access also requires
+the normal server-managed `suiteAccess` entitlement after authentication.
+
+Resolver checks: `python -B -m unittest discover -s scripts -p test_flutter_config.py`.
+
+Production uses the fresh Firebase project `commandglows` (alias `prod`) and
+Doppler `commandglows/prd`. Its Windows client configuration is validated with
+the same resolver using `--environment prd`; the managed interactive recipe
+continues to select development by default. Production has email/password Auth
+and a `(default)` Firestore database in `nam5` with the repository rules/indexes.
+No accounts or data were transferred from the retired `winflowz-suite` project.
+Google OAuth, Storage, server credentials and release CI need separate production
+configuration before claiming full production readiness.
+
 Firebase is now wired as the first backend adapter behind backend-agnostic stores.
 If these values are missing, CommandGlows stays in local mode so UI development does
 not crash.
@@ -168,7 +207,7 @@ Store these repository secrets in GitHub Actions:
 
 Use `docs/technical/firebase-cli-foundation.md` for exact Firebase CLI commands:
 
-- `firebase use winglowz-dev` (immutable existing provider project ID; external CommandGlows Firebase project cutover is tracked separately)
+- `firebase use commandglows-dev`
 - `firebase deploy --only firestore`
 - `firebase emulators:start --only firestore,auth`
 

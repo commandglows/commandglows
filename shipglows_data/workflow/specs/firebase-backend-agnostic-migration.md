@@ -1,10 +1,11 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
-project: "WinGlows"
+artifact_version: "1.0.1"
+project: "CommandGlows"
 created: "2026-05-09"
 created_at: "2026-05-09 21:45:00 UTC"
+updated: "2026-09-17"
 updated: "2026-05-09"
 updated_at: "2026-05-10 16:18:01 UTC"
 status: ready
@@ -13,7 +14,7 @@ source_model: "GPT-5 Codex"
 scope: "firebase-backend-agnostic-migration"
 owner: "Diane"
 confidence: high
-user_story: "En tant que builder de WinGlows, je veux remplacer la cible Supabase par des contrats backend-agnostiques avec Firebase comme premier adaptateur Android, afin de garder l'app gratuite au départ, pilotable en CLI et remplaçable plus tard."
+user_story: "En tant que builder de CommandGlows, je veux remplacer la cible Supabase par des contrats backend-agnostiques avec Firebase comme premier adaptateur, afin de garder l'app gratuite au départ, pilotable en CLI et remplaçable plus tard."
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
@@ -49,12 +50,13 @@ supersedes:
 evidence:
   - "User decision 2026-05-09: backend must be backend-agnostic and Supabase is no longer the target."
   - "User decision 2026-05-09: Firebase is accepted as first adapter for Android MVP."
-  - "User decision 2026-05-09: use GitHub Secrets and Blacksmith for APK build configuration."
+  - "User decision 2026-09-17: local builds and runs use Doppler; CI migration remains separate."
+  - "Firebase CLI evidence 2026-09-17: commandglows-dev and commandglows created, Email/password enabled, default Firestore nam5 and repository rules/indexes deployed."
   - "User decision 2026-05-09: web is ignored for now; Android is the current implementation focus."
   - "Firebase official docs checked 2026-05-09: Flutter apps should be configured with FlutterFire CLI."
   - "Firebase official docs checked 2026-05-09: Firebase CLI deploys Firestore rules and indexes from firebase.json."
   - "Firebase official docs checked 2026-05-09: Firestore Security Rules use request.auth and can enforce per-user access; rules are not query filters."
-next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
+next_step: "Run authenticated user/data and separately authorized production CI/provider proofs."
 ---
 
 # Title
@@ -67,9 +69,9 @@ Ready for staged implementation. This spec replaces the old Supabase-target migr
 
 # User Story
 
-En tant que builder de WinGlows, je veux remplacer la cible Supabase par des contrats backend-agnostiques avec Firebase comme premier adaptateur Android, afin de garder l'app gratuite au départ, pilotable en CLI et remplaçable plus tard.
+En tant que builder de CommandGlows, je veux remplacer la cible Supabase par des contrats backend-agnostiques avec Firebase comme premier adaptateur, afin de garder l'app gratuite au départ, pilotable en CLI et remplaçable plus tard.
 
-Acteur principal: builder WinGlows.
+Acteur principal: builder CommandGlows.
 
 Acteurs secondaires: utilisateur Android, futur utilisateur connecté, GitHub Actions/Blacksmith, futur backend provider.
 
@@ -78,13 +80,13 @@ Déclencheurs:
 - Une fonctionnalité a besoin de lire/écrire des données utilisateur distantes.
 - Un écran existant dépend encore directement de Supabase.
 - Une préférence settings doit survivre au redémarrage et éventuellement se synchroniser.
-- Le build Android doit recevoir une configuration backend via GitHub Secrets.
+- Le build ou run local doit recevoir sa configuration backend via Doppler.
 
 Résultat observable attendu: l'app garde ses workflows Android actuels, mais les nouvelles écritures passent par des interfaces produit (`SettingsStore`, `ClipboardHistoryStore`, futurs stores transcriptions/snippets/dictionary/auth) et Firebase devient un adaptateur remplaçable, configuré par CLI, règles et indexes versionnés.
 
 # Minimal Behavior Contract
 
-WinGlows expose des contrats backend-agnostiques pour les données utilisateur et les settings. Les widgets et services Android ne connaissent pas Firebase, Supabase, Firestore, SQL ou règles provider; ils consomment des stores/domain APIs. Firebase Auth fournit l'identité distante du premier MVP Android, Cloud Firestore porte les documents utilisateur, et Firestore Security Rules imposent que chaque utilisateur ne lise/écrive que ses propres documents. Si Firebase n'est pas configuré, l'app reste utilisable en mode local ou affiche un état de sync indisponible sans crash ni fausse promesse. L'edge case facile à rater est la migration progressive: Supabase legacy peut rester présent pour compiler, mais ne doit pas redevenir le contrat produit ni apparaître comme cible active dans l'UI ou les docs.
+CommandGlows expose des contrats backend-agnostiques pour les données utilisateur et les settings. Les widgets et services Android ne connaissent pas Firebase, Supabase, Firestore, SQL ou règles provider; ils consomment des stores/domain APIs. Firebase Auth fournit l'identité distante du premier MVP Android, Cloud Firestore porte les documents utilisateur, et Firestore Security Rules imposent que chaque utilisateur ne lise/écrive que ses propres documents. Si Firebase n'est pas configuré, l'app reste utilisable en mode local ou affiche un état de sync indisponible sans crash ni fausse promesse. L'edge case facile à rater est la migration progressive: Supabase legacy peut rester présent pour compiler, mais ne doit pas redevenir le contrat produit ni apparaître comme cible active dans l'UI ou les docs.
 
 # Scope In
 
@@ -93,7 +95,7 @@ WinGlows expose des contrats backend-agnostiques pour les données utilisateur e
 - Ajouter Firebase comme premier adaptateur distant Android: Auth + Firestore + rules + indexes.
 - Ajouter `firebase.json`, `firestore.rules`, `firestore.indexes.json` et le workflow CLI attendu.
 - Configurer FlutterFire via CLI pour Android quand le projet Firebase existe.
-- Utiliser GitHub Secrets pour injecter la configuration nécessaire au build Blacksmith.
+- Utiliser Doppler pour les builds et runs locaux; traiter toute migration CI comme un chantier séparé.
 - Marquer les documents Supabase comme legacy/superseded.
 - Mettre à jour README, docs techniques, platform behavior, verification et TASKS.
 - Garder les secrets OpenAI/Anthropic locaux uniquement; ils ne vont jamais dans Firebase.
@@ -115,7 +117,7 @@ WinGlows expose des contrats backend-agnostiques pour les données utilisateur e
 - Les writes doivent être user-scoped par auth uid, pas par un user id de confiance fourni par le client.
 - Les requêtes client doivent être compatibles avec les Security Rules; les rules ne sont pas des filtres.
 - Les fichiers rules/indexes doivent être versionnés et déployables via CLI.
-- GitHub Secrets est la source CI pour les valeurs de build; ne pas introduire Doppler.
+- Doppler est la source locale pour les valeurs de build/run publiques; ne jamais exposer de secret serveur dans les `--dart-define`.
 - Supabase legacy ne peut recevoir que des corrections de compatibilité, pas de nouvelles fonctionnalités cible.
 
 # Proposed Data Shape
@@ -134,8 +136,9 @@ Les noms exacts peuvent changer si l'implémentation prouve une meilleure conven
 # Confirmed Technical Decisions
 
 - Firebase project is configured through CLI.
-- Dev-only Firebase project ID: `winglowz-dev`. Display name may be `WinGlows Dev`; Google Cloud project IDs cannot contain underscores.
-- Auth providers for MVP: anonymous, email/password, Google Sign-In.
+- Firebase aliases: `dev` → `commandglows-dev`, `prod` → `commandglows`; les deux ont Email/password, Firestore `(default)` en `nam5` et les rules/indexes du dépôt déployés.
+- Aucune donnée ou utilisateur n'a été basculé vers les nouveaux projets.
+- Auth provider currently enabled: Email/password. Google Sign-In remains unconfigured.
 - App must keep a local fallback when Firebase is missing or unavailable.
 - First remote sync scope targets settings, clipboard, and transcriptions when unblocked.
 - Clipboard sync is automatic, with private-field gating and user-visible sync/error state required before production confidence.
@@ -154,7 +157,7 @@ Les noms exacts peuvent changer si l'implémentation prouve une meilleure conven
 - [x] Tâche 2 : Ajouter le socle Firebase CLI
   - Fichiers : `firebase.json`, `firestore.rules`, `firestore.indexes.json`, docs setup.
   - Action : versionner rules/indexes et commandes `firebase deploy --only firestore`. Fait avec doc `docs/technical/firebase-cli-foundation.md`.
-  - Validate with : JSON lint OK, `git diff --check` OK; Firebase CLI 15.17.0 installé; `firebase emulators:exec --project demo-winglowz-dev --only firestore,auth "true"` OK.
+  - Validate with : JSON lint OK, `git diff --check` OK; Firebase CLI 15.17.0 installé; emulator smoke historique OK. Les déploiements réels 2026-09-17 ont ciblé `commandglows-dev` et `commandglows`.
 
 - [x] Tâche 3 : Configurer FlutterFire Android
   - Fichiers : `lib/firebase_options.dart`, `android/**`, `pubspec.yaml`.
@@ -181,10 +184,10 @@ Les noms exacts peuvent changer si l'implémentation prouve une meilleure conven
   - Action : retirer Supabase du bootstrap/runtime providers/diagnostics actifs tout en gardant les adapters/tests legacy pour compatibilité compile.
   - Validate with : `rg Supabase lib test pubspec.yaml`, `flutter analyze`, `flutter test`.
 
-- [x] Tâche 8 : Mettre à jour CI/Blacksmith
+- [x] Tâche 8 : Mettre à jour CI/Blacksmith (historique)
   - Fichiers : `.github/workflows/**`, README.
-  - Action : GitHub Secrets Firebase, build APK, artifact proof. Fait avec secrets Firebase runtime, `GCP_WIF_PROVIDER` + `GCP_WIF_SERVICE_ACCOUNT` (OIDC Workload Identity Federation), build APK Blacksmith et job deploy Firestore conditionné à `main`/`master`/manuel.
-  - Validate with : workflow syntax locale OK; hosted build/deploy restant à prouver après ajout des secrets GitHub.
+  - Action : ancien flux GitHub Secrets/WIF/Blacksmith documenté pour les projets précédents.
+  - Validate with : non applicable aux nouveaux projets tant qu'une migration CI, distincte, n'est pas autorisée et prouvée.
 
 - [x] Tâche 9 : Archiver les docs Supabase
   - Fichiers : `docs/SPEC_FLUTTER_SUPABASE_MIGRATION.md`, `docs/API_SUPABASE.md`, `docs/MIGRATION_FLUTTER.md`, `docs/technical/supabase-data.md`.
@@ -198,7 +201,7 @@ Les noms exacts peuvent changer si l'implémentation prouve une meilleure conven
 - Les rules Firestore refusent les non-authentifiés et isolent `users/{uid}`.
 - Les secrets BYOK restent locaux.
 - Les commandes Firebase CLI sont documentées.
-- GitHub Secrets + Blacksmith restent le chemin build APK.
+- Les builds/runs locaux utilisent Doppler; la CI/Blacksmith des nouveaux projets reste à migrer et prouver séparément.
 - Les docs Supabase ne se présentent plus comme cible active.
 - `flutter analyze` passe.
 - `flutter test` passe.
@@ -209,7 +212,7 @@ Les noms exacts peuvent changer si l'implémentation prouve une meilleure conven
 - Fake store tests pour chaque interface.
 - Firebase rules tests ou emulator smoke pour user A/user B.
 - Android smoke: auth, settings, clipboard, transcription save, snippets, dictionary.
-- CI: Blacksmith APK avec secrets Firebase quand disponibles.
+- CI: après autorisation, configurer et prouver un APK Blacksmith/CI avec l'environnement production actuel, sans secret serveur client.
 - Search checks:
   - `rg "Supabase.*target|Flutter \\+ Supabase" README.md shipglows_data/business/product.md shipglows_data/business/business.md shipglows_data/technical/architecture.md shipglows_data/technical/guidelines.md docs specs`
   - `rg "Supabase" lib test pubspec.yaml` doit rester uniquement dans legacy/adapters jusqu'à suppression.
@@ -254,6 +257,7 @@ Les noms exacts peuvent changer si l'implémentation prouve une meilleure conven
 | 2026-05-10 20:31:19 UTC | sf-build | GPT-5 Codex | Finalized Android-current manual pass scope: Android overlay/IME device QA remains tracked separately, iOS/macOS microphone/speech declarations are future-compatible only, non-Android desktop/web proof is out of current runtime scope, web local speech disabled, and local analyze/test/web build passed. | partial | Keep Android real-device QA under overlay/IME tasks. |
 | 2026-05-11 00:00:00 UTC | sf-start | GPT-5 Codex | Completed task 7 by removing Supabase from active runtime bootstrap/provider selection and backend diagnostics while preserving legacy Supabase adapters/tests for compile compatibility. | implemented | `/sf-verify shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md` |
 | 2026-05-11 05:48:21 UTC | sf-verify | GPT-5 Codex | Verified task 7 runtime detachment and local checks; `flutter analyze`, `flutter test`, format, diff check, and Firebase emulator smoke passed, but high bug `BUG-2026-05-10-002` remains `fix-attempted` and active docs still present Supabase as reviewed runtime architecture. | partial | Close bug gate with APK/device retest and update stale Supabase-target docs before sf-end |
+| 2026-09-17 | sg-docs | Codex | Documented new `commandglows-dev` and `commandglows` Firebase foundations, Doppler local configuration, and explicit production gaps. | partial | Prove authenticated data access; authorize Google/Storage/CI work separately if needed. |
 
 # Current Chantier Flow
 
@@ -262,6 +266,6 @@ Les noms exacts peuvent changer si l'implémentation prouve une meilleure conven
 | sf-spec | done | This spec captures backend-agnostic Firebase migration contract | sf-start |
 | sf-ready | done | Scope, constraints, rules, CLI, tasks, tests and stop conditions are explicit | sf-start |
 | sf-start | done | Tasks 1-9 are implemented. Task 7 now detaches Supabase from active runtime bootstrap/provider selection and diagnostics while preserving legacy Supabase code for compatibility. | sf-verify |
-| sf-verify | partial | Local Dart checks and Firebase emulator smoke passed; runtime detachment is visible in code, but high bug `BUG-2026-05-10-002` is still `fix-attempted` and `CLAUDE.md`/`docs/ARCHITECTURE_FLUTTER.md` still carry reviewed Supabase-target instructions. | Fix doc/bug gates, then rerun sf-verify |
+| sf-verify | partial | Firebase foundations exist for dev and prod, rules/indexes are deployed, and the Doppler resolver is tested. Authenticated user/data access, Android smoke, Google/Storage, and new-project CI are still unproved. | Run those focused proofs only after their required configuration is authorized. |
 | sf-end | pending | Current verification is partial after task 7 reopen. | Wait for sf-verify verified |
 | sf-ship | pending | Prior Firestore OIDC/WIF CI deploy proof remains valid, but current dirty task 7 verification is not ready to close. | Run after sf-end |

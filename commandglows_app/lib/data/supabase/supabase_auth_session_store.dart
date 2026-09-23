@@ -44,6 +44,11 @@ class SupabaseAuthSessionStore implements AuthSessionStore {
   }
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    await _client.auth.resetPasswordForEmail(email);
+  }
+
+  @override
   Future<void> signInWithGoogle() async {
     throw UnsupportedError('Google Sign-In waits for the Firebase adapter.');
   }

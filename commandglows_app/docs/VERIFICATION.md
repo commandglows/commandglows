@@ -1,10 +1,10 @@
 ---
 artifact: verification_plan
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.3"
 project: "CommandGlows"
 created: "2026-04-27"
-updated: "2026-05-30"
+updated: "2026-09-22"
 status: "reviewed"
 source_skill: "sf-spec"
 scope: "android_firebase_backend_agnostic_migration"
@@ -21,7 +21,13 @@ evidence:
   - "test/widget_test.dart"
   - "shipglows_data/workflow/specs/clipboard-backend-agnostic-api.md"
   - "shipglows_data/workflow/specs/windows-desktop-overlay-hotkeys-parity.md"
-next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-migration.md"
+  - ".firebaserc"
+  - ".shipglows.flutter.json"
+  - "scripts/test_flutter_config.py"
+  - "test/auth_gate_screen_test.dart"
+  - "test/sign_in_screen_test.dart"
+  - "test/app_router_auth_guard_test.dart"
+next_step: "Run authenticated Firebase and platform-specific production checks before release."
 ---
 
 # Verification — CommandGlows Android Firebase Backend-Agnostic Migration
@@ -39,6 +45,51 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
 - Android overlay sanity (without full build when toolchain is heavy): verify `flutter analyze`, then run on Android and check start/stop/cancel/status from Settings and Voice screens.
 - Firebase configuration/rules/indexes validation when Firebase adapter is implemented.
 - Firestore Security Rules tests or emulator smoke proving user-scoped isolation.
+
+## Firebase foundation status — 2026-09-17
+
+- `dev` maps to `commandglows-dev`; `prod` maps to `commandglows`.
+- Both have Email/password enabled, Firestore `(default)` in `nam5`, and the
+  repository rules/indexes deployed.
+- Doppler `dev` and `prd` client configuration passed the six resolver tests;
+  the Windows development launch was observed with `dev`.
+- Not yet a production proof: real sign-up/sign-in, authenticated Firestore
+  user isolation, entitlement bridge, Google sign-in, Cloud Storage, Android
+  device auth smoke, and CI for the new production project.
+
+## Auth and trial-access gate verification — 2026-09-23
+
+- `doppler run --project commandglows --config dev --no-fallback -- flutter test`:
+  all 329 Flutter tests passed, including sign-in, password reset, auth routing,
+  trial access, and fail-closed bridge states.
+- The focused auth suite passed (26 tests). The full suite exposed two old
+  widget assertions that expected a single `Connexion` label after the new
+  mode selector was added; the assertions now target the selector explicitly.
+- `flutter analyze --no-pub` reports one warning in the unrelated
+  `lib/features/settings/data/local_settings_store.dart:211`
+  (`unawaited_return_in_try_block`). No auth-file analyzer issue was reported.
+- `git diff --check` passed; Git emitted only the repository's LF-to-CRLF
+  working-copy notices.
+- Google sign-in is enabled for Firebase project `commandglows-dev`, and its
+  generated Web OAuth client ID is configured in Doppler `commandglows/dev`.
+  The Android app `1:9805404731:android:dfbca893b4205de88a1a1e` is registered
+  for `com.commandglows.app`, and the local debug SHA-1 is attached. The suite
+  identity bridge URL in Doppler dev points to the public Production endpoint
+  `www.commandglows.com/api/bridge/firebase`. An unauthenticated probe returns
+  the expected `401 missing_bearer_token`, confirming the handler and required
+  server config are live. The route uses its deployment environment
+  (`NODE_ENV=production`); no dev Firebase token was sent, so dev-to-production
+  project compatibility and trial behavior remain unproven. GitHub Actions has
+  the development Firebase client configuration secrets required by the Android
+  workflow. No Android device is ready, so these tests do not prove Firebase
+  sign-in, a live entitlement/trial response, Google OAuth, checkout, or Android
+  behavior.
+
+### Follow-up — 2026-09-23
+
+- Awaited the local settings read inside its `try` block so asynchronous storage
+  errors are caught and the analyzer warning is addressed. Analyze and tests
+  were not rerun after this follow-up.
 
 ## Keyboard Sync Slice Verification — 2026-05-25
 
@@ -117,7 +168,7 @@ Run before closing any auth-hardening chantier as sellable/production-ready:
 | Email/password sign-up or sign-in success | Session becomes Firebase-backed; app shell opens; remote stores use Firebase `uid`, not a client-provided user id. |
 | Email/password wrong credential | User sees a generic credential error that does not reveal whether the account exists. |
 | Provider disabled / invalid Firebase config | User sees a setup/configuration message; support detail is redacted and copyable. |
-| Google Sign-In success | Android account selection returns an ID token; Firebase credential sign-in succeeds; session provider reports Google auth. |
+| Google Sign-In success | Blocked until the Firebase Android app and signing SHA are registered; device smoke is still required. |
 | Google user cancellation before selection | User sees a cancellation message; no high-severity Sentry event is required. |
 | Controlled Google config failure or documented equivalent | Missing SHA/package/server client ID/client config is reported as configuration trouble, even if the SDK labels it canceled after account selection. |
 | Google missing/null ID token | No Firebase credential is built; typed auth failure is shown and logged redacted. |

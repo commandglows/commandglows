@@ -148,7 +148,7 @@ void main() {
       await _pumpRouter(tester);
 
       expect(router.routeInformationProvider.value.uri.path, '/');
-      expect(find.text('Connexion'), findsOneWidget);
+      expect(find.text('Connexion'), findsAtLeastNWidgets(1));
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();

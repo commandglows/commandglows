@@ -24,12 +24,82 @@ class AuthGateScreen extends ConsumerStatefulWidget {
 
 class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   bool _isRestarting = false;
+  bool _isStartingTrial = false;
   bool _isPurchasing = false;
+  bool _checkoutOpened = false;
   String? _restartError;
+  String? _trialStartError;
   String? _purchaseError;
 
+  Uri get _offersUri => Uri.https(
+    'www.commandglows.com',
+    Localizations.localeOf(context).languageCode == 'fr'
+        ? '/fr/commandglows-founder'
+        : '/commandglows-founder',
+  );
+
+  Future<void> _viewOffers() async {
+    try {
+      if (!await launchUrl(_offersUri, mode: LaunchMode.externalApplication)) {
+        throw StateError('offers_unavailable');
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _purchaseError =
+              'La page des offres ne peut pas être ouverte pour le moment.';
+        });
+      }
+    }
+  }
+
+  Future<void> _startTrial() async {
+    setState(() {
+      _isStartingTrial = true;
+      _trialStartError = null;
+    });
+    try {
+      final session = await ref.read(authSessionProvider.future);
+      final user = session.user;
+      if (!session.isSignedIn || session.isLocalFallback || user == null) {
+        throw StateError('signed_in_account_required');
+      }
+      final bridgeClient = ref.read(suiteIdentityBridgeClientProvider);
+      final identity = await bridgeClient.resolveFromFirebaseSession(
+        bridgeConfig: SuiteIdentityBridgeBootstrap.config,
+        firebaseAccount: SuiteIdentityAccount(
+          provider: SuiteIdentityProvider.firebase,
+          providerUserId: user.id,
+          email: user.email,
+        ),
+        resolveIdToken: ref.read(firebaseIdTokenResolverProvider),
+        installationId: await ref
+            .read(installationIdStoreProvider)
+            .readOrCreate(),
+        requestTrialStart: true,
+      );
+      if (identity.statusFor(ProductId.commandglowsApp) !=
+          SuiteAccountStatus.accessActive) {
+        throw StateError('trial_not_granted');
+      }
+      ref.invalidate(suiteIdentityProvider);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _trialStartError =
+              'L’essai n’a pas pu être activé pour ce compte. Réessayez ou consultez les offres.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isStartingTrial = false);
+    }
+  }
+
   Future<void> _startPurchase(String? checkoutIdentityToken) async {
-    if (checkoutIdentityToken == null) return;
+    if (checkoutIdentityToken == null) {
+      await _viewOffers();
+      return;
+    }
     setState(() {
       _isPurchasing = true;
       _purchaseError = null;
@@ -43,8 +113,10 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           );
       if (checkoutUri == null ||
           !await launchUrl(checkoutUri, mode: LaunchMode.externalApplication)) {
-        throw StateError('checkout_unavailable');
+        await _viewOffers();
+        return;
       }
+      if (mounted) setState(() => _checkoutOpened = true);
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -55,6 +127,19 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     } finally {
       if (mounted) setState(() => _isPurchasing = false);
     }
+  }
+
+  void _retryAccess() {
+    setState(() {
+      _restartError = null;
+      _purchaseError = null;
+    });
+    ref.invalidate(suiteIdentityProvider);
+  }
+
+  Future<void> _changeAccount() async {
+    await ref.read(authSessionStoreProvider).signOut();
+    ref.invalidate(suiteIdentityProvider);
   }
 
   Future<void> _restartTrial() async {
@@ -124,18 +209,24 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         final identityAsync = ref.watch(suiteIdentityProvider);
         return identityAsync.when(
           loading: () => const _AccessLoadingScreen(),
-          error: (error, stackTrace) => TrialAccessScreen(
-            entitlement: null,
-            isRestarting: _isRestarting,
-            isPurchasing: _isPurchasing,
-            onRestart: _restartTrial,
-            restartError: _restartError,
-            purchaseError: _purchaseError,
+          error: (error, stackTrace) => _AccessUnavailableScreen(
+            onRetry: _retryAccess,
+            onChangeAccount: _changeAccount,
+            detail: AuthFailure.redact(error),
           ),
           data: (identity) {
-            if (identity.statusFor(ProductId.commandglowsApp) ==
-                SuiteAccountStatus.accessActive) {
+            final accessStatus = identity.statusFor(ProductId.commandglowsApp);
+            if (accessStatus == SuiteAccountStatus.accessActive) {
               return const AppShellScreen();
+            }
+            if (accessStatus == SuiteAccountStatus.unavailable ||
+                accessStatus == SuiteAccountStatus.unknown ||
+                accessStatus == SuiteAccountStatus.linkingRequired) {
+              return _AccessUnavailableScreen(
+                onRetry: _retryAccess,
+                onChangeAccount: _changeAccount,
+                detail: identity.supportSummary,
+              );
             }
             final commandGlowsEntitlement = identity.entitlementFor(
               ProductId.commandglowsApp,
@@ -147,9 +238,21 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
               onPurchase: identity.checkoutIdentityToken == null
                   ? null
                   : () => _startPurchase(identity.checkoutIdentityToken),
+              purchaseActionLabel: identity.checkoutIdentityToken == null
+                  ? 'Voir les offres et acheter'
+                  : 'Acheter CommandGlows',
+              onViewOffers: _viewOffers,
+              onStartTrial: (commandGlowsEntitlement?.trialAttempt ?? 0) == 0
+                  ? _startTrial
+                  : null,
+              isStartingTrial: _isStartingTrial,
+              trialStartError: _trialStartError,
               onRestart: _restartTrial,
               restartError: _restartError,
               purchaseError: _purchaseError,
+              checkoutOpened: _checkoutOpened,
+              onVerifyAccess: _retryAccess,
+              onChangeAccount: _changeAccount,
             );
           },
         );
@@ -197,6 +300,75 @@ class _AccessLoadingScreen extends StatelessWidget {
   const _AccessLoadingScreen();
 
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: CircularProgressIndicator()));
+  Widget build(BuildContext context) => Scaffold(
+    body: Center(
+      child: Semantics(
+        liveRegion: true,
+        label: 'Nous vérifions ton accès à CommandGlows.',
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            AppGaps.x2,
+            Text('Nous vérifions ton accès à CommandGlows.'),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _AccessUnavailableScreen extends StatelessWidget {
+  const _AccessUnavailableScreen({
+    required this.onRetry,
+    required this.onChangeAccount,
+    required this.detail,
+  });
+
+  final VoidCallback onRetry;
+  final Future<void> Function() onChangeAccount;
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: Center(
+      child: Padding(
+        padding: AppInsets.screen,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: AppSectionCard(
+            leading: const Icon(Icons.cloud_off_outlined),
+            title: 'Impossible de vérifier ton accès',
+            subtitle:
+                'La connexion à notre service d’accès a été interrompue. Aucun achat n’est nécessaire tant que la vérification n’a pas abouti.',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Réessayer'),
+                ),
+                AppGaps.x2,
+                OutlinedButton(
+                  onPressed: onChangeAccount,
+                  child: const Text('Changer de compte'),
+                ),
+                AppGaps.x2,
+                ExpansionTile(
+                  title: const Text('Détails techniques'),
+                  children: [
+                    Padding(
+                      padding: AppInsets.card,
+                      child: SelectableText(detail),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

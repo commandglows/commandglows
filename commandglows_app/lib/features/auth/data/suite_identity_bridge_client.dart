@@ -53,8 +53,12 @@ class SuiteIdentityBridgeClient {
     required SuiteIdentityAccount firebaseAccount,
     required FirebaseIdTokenResolver resolveIdToken,
     String installationId = 'test-installation-id',
+    bool requestTrialStart = false,
     bool requestTrialRestart = false,
   }) async {
+    if (requestTrialStart && requestTrialRestart) {
+      throw ArgumentError('Only one trial action can be requested at a time.');
+    }
     if (!bridgeConfig.isConfigured) {
       return _conservativeAccountSnapshot(
         account: firebaseAccount,
@@ -75,7 +79,11 @@ class SuiteIdentityBridgeClient {
       bridgeUri: bridgeConfig.bridgeUri!,
       idToken: idToken,
       installationId: installationId,
-      requestTrialRestart: requestTrialRestart,
+      trialAction: requestTrialStart
+          ? 'start'
+          : requestTrialRestart
+          ? 'restart'
+          : null,
     );
     if (response == null) {
       return _conservativeAccountSnapshot(
@@ -130,7 +138,7 @@ class SuiteIdentityBridgeClient {
     required Uri bridgeUri,
     required String idToken,
     required String installationId,
-    required bool requestTrialRestart,
+    required String? trialAction,
   }) async {
     try {
       return await _httpClient.post(
@@ -141,7 +149,9 @@ class SuiteIdentityBridgeClient {
           'Content-Type': 'application/json',
           'X-CommandGlows-Installation-Id': installationId,
         },
-        body: requestTrialRestart ? '{"trialAction":"restart"}' : '{}',
+        body: trialAction == null
+            ? '{}'
+            : jsonEncode(<String, String>{'trialAction': trialAction}),
       );
     } catch (_) {
       return null;

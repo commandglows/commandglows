@@ -84,6 +84,19 @@ class FirebaseAuthSessionStore implements AuthSessionStore {
   }
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on firebase_auth.FirebaseAuthException catch (error) {
+      throw AuthFailure.firebase(
+        code: error.code,
+        message: error.message,
+        signup: false,
+      );
+    }
+  }
+
+  @override
   Future<void> signInWithGoogle() async {
     try {
       await _googleAuthClient.initialize();

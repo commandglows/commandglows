@@ -157,31 +157,75 @@ void main() {
     expect(entitlement.canRestartTrial, isTrue);
   });
 
-  test('starts checkout with the handoff in a POST body, never in the URL', () async {
-    const handoff = 'signed-sensitive-handoff';
-    final client = SuiteIdentityBridgeClient(
-      httpClient: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/api/commerce/checkout');
-        expect(request.url.toString(), isNot(contains(handoff)));
-        expect(request.body, contains(handoff));
-        return http.Response(
-          '{"checkoutUrl":"https://checkout.stripe.test/session"}',
-          200,
-          headers: const {'content-type': 'application/json'},
-        );
-      }),
-    );
+  test(
+    'sends an explicit first-trial request with the installation id',
+    () async {
+      final client = SuiteIdentityBridgeClient(
+        httpClient: MockClient((request) async {
+          expect(request.body, '{"trialAction":"start"}');
+          expect(
+            request.headers['x-commandglows-installation-id'],
+            'device-123',
+          );
+          return http.Response(
+            '''
+          {
+            "status": "ok",
+            "globalUserId": "gu_123",
+            "accounts": [],
+            "entitlements": [
+              {"productId": "commandglows_app", "status": "trialing", "trialAttempt": 1}
+            ]
+          }
+          ''',
+            200,
+            headers: const {'content-type': 'application/json'},
+          );
+        }),
+      );
 
-    final checkout = await client.startStripeCheckout(
-      bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
-        bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
-      ),
-      checkoutIdentityToken: handoff,
-    );
+      final identity = await client.resolveFromFirebaseSession(
+        bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+          bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+        ),
+        firebaseAccount: firebaseAccount,
+        resolveIdToken: () async => 'firebase-id-token',
+        installationId: 'device-123',
+        requestTrialStart: true,
+      );
 
-    expect(checkout, Uri.parse('https://checkout.stripe.test/session'));
-  });
+      expect(identity.entitlements.single.trialAttempt, 1);
+    },
+  );
+
+  test(
+    'starts checkout with the handoff in a POST body, never in the URL',
+    () async {
+      const handoff = 'signed-sensitive-handoff';
+      final client = SuiteIdentityBridgeClient(
+        httpClient: MockClient((request) async {
+          expect(request.method, 'POST');
+          expect(request.url.path, '/api/commerce/checkout');
+          expect(request.url.toString(), isNot(contains(handoff)));
+          expect(request.body, contains(handoff));
+          return http.Response(
+            '{"checkoutUrl":"https://checkout.stripe.test/session"}',
+            200,
+            headers: const {'content-type': 'application/json'},
+          );
+        }),
+      );
+
+      final checkout = await client.startStripeCheckout(
+        bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+          bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+        ),
+        checkoutIdentityToken: handoff,
+      );
+
+      expect(checkout, Uri.parse('https://checkout.stripe.test/session'));
+    },
+  );
 
   test('missing bridge url fails closed without network call', () async {
     var tokenResolverCalled = false;

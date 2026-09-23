@@ -117,7 +117,7 @@ class AuthFailure implements Exception {
       case 'invalid-login-credentials':
         return AuthFailure(
           kind: AuthFailureKind.invalidCredentials,
-          userMessage: 'Email ou mot de passe incorrect.',
+          userMessage: 'Vérifie ton e-mail et ton mot de passe.',
           category: 'auth_firebase_invalid_credentials',
           code: code,
           supportDetail: message,
@@ -259,7 +259,7 @@ class AuthFailure implements Exception {
     return AuthFailure(
       kind: AuthFailureKind.unexpected,
       userMessage:
-          'Connexion impossible pour le moment. Réessaie dans quelques instants.',
+          'Nous n’avons pas pu terminer la connexion. Réessaie dans quelques instants.',
       category: 'auth_unexpected',
       code: 'unexpected',
       supportDetail: error,
