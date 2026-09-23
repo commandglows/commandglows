@@ -2,6 +2,10 @@ import { convexTest } from 'convex-test'
 import { makeFunctionReference } from 'convex/server'
 import schema from '../../convex/schema'
 import { campaignAllowsDispatch } from '../../convex/emailCampaignState'
+import {
+  evidenceScope,
+  MANDATORY_EVIDENCE,
+} from '../../convex/emailCampaignEvidence'
 
 it('denies dispatch after unsubscribe and resubscribe following expansion', async () => {
   const t = convexTest(schema, modules)
@@ -17,16 +21,25 @@ it('denies dispatch after unsubscribe and resubscribe following expansion', asyn
     })
   )
   const c = (await command(t, 'create', content)).campaign
+  await seedEvidence(t, c.id)
   const review = await command(t, 'review', {
     campaignId: c.id,
     expectedVersion: 1,
   })
-  await command(t, 'approve', {
+  await expect(
+    command(t, 'approve', {
+      campaignId: c.id,
+      expectedVersion: 1,
+      reviewId: review.review.id,
+      reportId: review.review.report_id,
+    })
+  ).rejects.toThrow('human_authority_required')
+  await approveReview(t, c, review)
+  await t.mutation(ref('emailCampaigns:expand'), {
+    credential,
+    businessId: 'studio',
     campaignId: c.id,
-    expectedVersion: 1,
-    reviewId: review.review.id,
   })
-  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   const message = await t.run((ctx) => ctx.db.query('emailMessages').first())
   expect(await t.run((ctx) => campaignAllowsDispatch(ctx, message))).toBe(true)
   // Even churn within the review millisecond must invalidate the generation.
@@ -82,7 +95,12 @@ function config(recipients = business.allowedRecipients) {
         id: 'operator',
         credentialEnv: 'EMAIL_SNAPSHOT_CREDENTIAL',
         businessIds: ['studio'],
-        operations: ['campaign_read', 'campaign_write', 'campaign_dispatch', 'dispatch'],
+        operations: [
+          'campaign_read',
+          'campaign_write',
+          'campaign_dispatch',
+          'dispatch',
+        ],
       },
     ],
     businesses: [{ ...business, allowedRecipients: recipients }],
@@ -92,11 +110,75 @@ const command = (t: any, operation: string, input: any) =>
   t.mutation(ref('emailCampaigns:command'), {
     credential,
     actorId: 'admin',
+    sessionRef: 'snapshot-session',
     businessId: 'studio',
     operation,
     input,
     idempotencyKey: `snapshot-key-${String(++key).padStart(10, '0')}`,
   })
+async function seedEvidence(t: any, campaignId: string) {
+  const { campaign, version } = await t.run(async (ctx: any) => {
+    const campaign = await ctx.db.get(campaignId)
+    return { campaign, version: await ctx.db.get(campaign.versionId) }
+  })
+  const scopeDigest = evidenceScope({
+    businessId: 'studio',
+    campaignId,
+    versionId: version._id,
+    audienceId: version.audienceId,
+    purpose: version.purpose,
+    route: version.route,
+    planRevision: campaign.planRevision ?? 1,
+  })
+  await t.run(async (ctx: any) => {
+    const existing = await ctx.db
+      .query('emailCampaignPolicies')
+      .withIndex('scope', (q: any) =>
+        q.eq('businessId', 'studio').eq('identityKey', version.route)
+      )
+      .first()
+    if (!existing)
+      await ctx.db.insert('emailCampaignPolicies', {
+        businessId: 'studio',
+        identityKey: version.route,
+        revision: 1,
+        status: 'approved',
+        evidenceMaxAge: Object.fromEntries(
+          MANDATORY_EVIDENCE.map((kind) => [kind, 86_400_000])
+        ),
+        approvedAt: Date.now(),
+      })
+    for (const kind of MANDATORY_EVIDENCE)
+      await ctx.db.insert('emailCampaignEvidence', {
+        businessId: 'studio',
+        campaignId,
+        versionId: version._id,
+        kind,
+        source: 'fixture:campaign-snapshot',
+        owner: 'test-operator',
+        scopeDigest,
+        collectedAt: Date.now(),
+        validUntil: Date.now() + 86_400_000,
+        sourceRevision: 'fixture-1',
+        status: 'valid',
+        evidenceRef: `snapshot-${campaignId}-${kind}`,
+      })
+  })
+}
+async function approveReview(t: any, campaign: any, review: any) {
+  const base = { campaignId: campaign.id, expectedVersion: campaign.version }
+  const issued = await command(t, 'challenge', {
+    ...base,
+    action: 'approve',
+    reportId: review.review.report_id,
+  })
+  return command(t, 'approve', {
+    ...base,
+    reviewId: review.review.id,
+    reportId: review.review.report_id,
+    challengeId: issued.challenge.id,
+  })
+}
 beforeEach(() => {
   vi.useFakeTimers({ now: new Date('2026-09-08T12:00:00Z') })
   config()
@@ -133,6 +215,7 @@ it('freezes reviewed audience against allowlist growth and lifting suppression',
   })
   vi.setSystemTime(Date.now() + 1000)
   const c = (await command(t, 'create', content)).campaign
+  await seedEvidence(t, c.id)
   const review = await command(t, 'review', {
     campaignId: c.id,
     expectedVersion: 1,
@@ -144,12 +227,12 @@ it('freezes reviewed audience against allowlist growth and lifting suppression',
     'suppressed@example.test',
   ])
   await t.run((ctx) => ctx.db.delete(suppression))
-  await command(t, 'approve', {
+  await approveReview(t, c, review)
+  await t.mutation(ref('emailCampaigns:expand'), {
+    credential,
+    businessId: 'studio',
     campaignId: c.id,
-    expectedVersion: 1,
-    reviewId: review.review.id,
   })
-  await t.mutation(ref('emailCampaigns:expand'), { credential, businessId: 'studio', campaignId: c.id })
   expect(
     await t.run(async (ctx) =>
       (await ctx.db.query('emailMessages').collect()).map((m) => m.email)

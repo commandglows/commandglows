@@ -8,103 +8,132 @@
  * @module
  */
 
+import type * as apiKeys from "../apiKeys.js";
+import type * as appSumoFulfillment from "../appSumoFulfillment.js";
+import type * as bridge from "../bridge.js";
+import type * as commerceAlerts from "../commerceAlerts.js";
+import type * as commerceEmail from "../commerceEmail.js";
+import type * as commerceEventContract from "../commerceEventContract.js";
+import type * as commerceIncidentLedger from "../commerceIncidentLedger.js";
+import type * as commerceOperations from "../commerceOperations.js";
+import type * as commerceOperationsSchema from "../commerceOperationsSchema.js";
+import type * as commerceProcessor from "../commerceProcessor.js";
+import type * as commercePurchaseState from "../commercePurchaseState.js";
+import type * as crons from "../crons.js";
+import type * as defaultFreeEntitlements from "../defaultFreeEntitlements.js";
+import type * as email from "../email.js";
+import type * as emailAcceptance from "../emailAcceptance.js";
+import type * as emailAnalyticsPolicy from "../emailAnalyticsPolicy.js";
+import type * as emailCampaignEvidence from "../emailCampaignEvidence.js";
+import type * as emailCampaignExecution from "../emailCampaignExecution.js";
+import type * as emailCampaignPolicy from "../emailCampaignPolicy.js";
+import type * as emailCampaignSchema from "../emailCampaignSchema.js";
+import type * as emailCampaignState from "../emailCampaignState.js";
+import type * as emailCampaigns from "../emailCampaigns.js";
+import type * as emailConfig from "../emailConfig.js";
+import type * as emailDelivery from "../emailDelivery.js";
+import type * as emailEvents from "../emailEvents.js";
+import type * as emailIncidentQueries from "../emailIncidentQueries.js";
+import type * as emailIncidentSchema from "../emailIncidentSchema.js";
+import type * as emailIncidents from "../emailIncidents.js";
+import type * as emailLegacySchema from "../emailLegacySchema.js";
+import type * as emailMetrics from "../emailMetrics.js";
+import type * as emailOperations from "../emailOperations.js";
+import type * as emailOperationsPolicy from "../emailOperationsPolicy.js";
+import type * as emailOperationsSchema from "../emailOperationsSchema.js";
+import type * as emailOperatorAuthority from "../emailOperatorAuthority.js";
+import type * as emailSchema from "../emailSchema.js";
+import type * as emailSupport from "../emailSupport.js";
+import type * as emailSupportSchema from "../emailSupportSchema.js";
+import type * as features from "../features.js";
+import type * as http from "../http.js";
+import type * as licenseAdministration from "../licenseAdministration.js";
+import type * as productEntitlementPolicies from "../productEntitlementPolicies.js";
+import type * as resend from "../resend.js";
+import type * as siteAuthority from "../siteAuthority.js";
+import type * as siteIdentity from "../siteIdentity.js";
+import type * as siteSessions from "../siteSessions.js";
+import type * as users from "../users.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
-} from 'convex/server'
-import type * as apiKeys from '../apiKeys.js'
-import type * as bridge from '../bridge.js'
-import type * as commerceAlerts from '../commerceAlerts.js'
-import type * as commerceEmail from '../commerceEmail.js'
-import type * as commerceEventContract from '../commerceEventContract.js'
-import type * as commerceIncidentLedger from '../commerceIncidentLedger.js'
-import type * as commerceOperations from '../commerceOperations.js'
-import type * as commerceOperationsSchema from '../commerceOperationsSchema.js'
-import type * as commerceProcessor from '../commerceProcessor.js'
-import type * as commercePurchaseState from '../commercePurchaseState.js'
-import type * as crons from '../crons.js'
-import type * as defaultFreeEntitlements from '../defaultFreeEntitlements.js'
-import type * as email from '../email.js'
-import type * as emailAcceptance from '../emailAcceptance.js'
-import type * as emailCampaignPolicy from '../emailCampaignPolicy.js'
-import type * as emailCampaignSchema from '../emailCampaignSchema.js'
-import type * as emailCampaigns from '../emailCampaigns.js'
-import type * as emailCampaignState from '../emailCampaignState.js'
-import type * as emailConfig from '../emailConfig.js'
-import type * as emailDelivery from '../emailDelivery.js'
-import type * as emailLegacySchema from '../emailLegacySchema.js'
-import type * as emailOperations from '../emailOperations.js'
-import type * as emailOperationsPolicy from '../emailOperationsPolicy.js'
-import type * as emailOperationsSchema from '../emailOperationsSchema.js'
-import type * as emailOperatorAuthority from '../emailOperatorAuthority.js'
-import type * as emailSchema from '../emailSchema.js'
-import type * as emailSupport from '../emailSupport.js'
-import type * as emailSupportSchema from '../emailSupportSchema.js'
-import type * as features from '../features.js'
-import type * as http from '../http.js'
-import type * as licenseAdministration from '../licenseAdministration.js'
-import type * as productEntitlementPolicies from '../productEntitlementPolicies.js'
-import type * as resend from '../resend.js'
-import type * as siteAuthority from '../siteAuthority.js'
-import type * as siteIdentity from '../siteIdentity.js'
-import type * as siteSessions from '../siteSessions.js'
-import type * as users from '../users.js'
+} from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  apiKeys: typeof apiKeys
-  bridge: typeof bridge
-  commerceAlerts: typeof commerceAlerts
-  commerceEmail: typeof commerceEmail
-  commerceEventContract: typeof commerceEventContract
-  commerceIncidentLedger: typeof commerceIncidentLedger
-  commerceOperations: typeof commerceOperations
-  commerceOperationsSchema: typeof commerceOperationsSchema
-  commerceProcessor: typeof commerceProcessor
-  commercePurchaseState: typeof commercePurchaseState
-  crons: typeof crons
-  defaultFreeEntitlements: typeof defaultFreeEntitlements
-  email: typeof email
-  emailAcceptance: typeof emailAcceptance
-  emailCampaignPolicy: typeof emailCampaignPolicy
-  emailCampaignSchema: typeof emailCampaignSchema
-  emailCampaigns: typeof emailCampaigns
-  emailCampaignState: typeof emailCampaignState
-  emailConfig: typeof emailConfig
-  emailDelivery: typeof emailDelivery
-  emailLegacySchema: typeof emailLegacySchema
-  emailOperations: typeof emailOperations
-  emailOperationsPolicy: typeof emailOperationsPolicy
-  emailOperationsSchema: typeof emailOperationsSchema
-  emailOperatorAuthority: typeof emailOperatorAuthority
-  emailSchema: typeof emailSchema
-  emailSupport: typeof emailSupport
-  emailSupportSchema: typeof emailSupportSchema
-  features: typeof features
-  http: typeof http
-  licenseAdministration: typeof licenseAdministration
-  productEntitlementPolicies: typeof productEntitlementPolicies
-  resend: typeof resend
-  siteAuthority: typeof siteAuthority
-  siteIdentity: typeof siteIdentity
-  siteSessions: typeof siteSessions
-  users: typeof users
-}>
+  apiKeys: typeof apiKeys;
+  appSumoFulfillment: typeof appSumoFulfillment;
+  bridge: typeof bridge;
+  commerceAlerts: typeof commerceAlerts;
+  commerceEmail: typeof commerceEmail;
+  commerceEventContract: typeof commerceEventContract;
+  commerceIncidentLedger: typeof commerceIncidentLedger;
+  commerceOperations: typeof commerceOperations;
+  commerceOperationsSchema: typeof commerceOperationsSchema;
+  commerceProcessor: typeof commerceProcessor;
+  commercePurchaseState: typeof commercePurchaseState;
+  crons: typeof crons;
+  defaultFreeEntitlements: typeof defaultFreeEntitlements;
+  email: typeof email;
+  emailAcceptance: typeof emailAcceptance;
+  emailAnalyticsPolicy: typeof emailAnalyticsPolicy;
+  emailCampaignEvidence: typeof emailCampaignEvidence;
+  emailCampaignExecution: typeof emailCampaignExecution;
+  emailCampaignPolicy: typeof emailCampaignPolicy;
+  emailCampaignSchema: typeof emailCampaignSchema;
+  emailCampaignState: typeof emailCampaignState;
+  emailCampaigns: typeof emailCampaigns;
+  emailConfig: typeof emailConfig;
+  emailDelivery: typeof emailDelivery;
+  emailEvents: typeof emailEvents;
+  emailIncidentQueries: typeof emailIncidentQueries;
+  emailIncidentSchema: typeof emailIncidentSchema;
+  emailIncidents: typeof emailIncidents;
+  emailLegacySchema: typeof emailLegacySchema;
+  emailMetrics: typeof emailMetrics;
+  emailOperations: typeof emailOperations;
+  emailOperationsPolicy: typeof emailOperationsPolicy;
+  emailOperationsSchema: typeof emailOperationsSchema;
+  emailOperatorAuthority: typeof emailOperatorAuthority;
+  emailSchema: typeof emailSchema;
+  emailSupport: typeof emailSupport;
+  emailSupportSchema: typeof emailSupportSchema;
+  features: typeof features;
+  http: typeof http;
+  licenseAdministration: typeof licenseAdministration;
+  productEntitlementPolicies: typeof productEntitlementPolicies;
+  resend: typeof resend;
+  siteAuthority: typeof siteAuthority;
+  siteIdentity: typeof siteIdentity;
+  siteSessions: typeof siteSessions;
+  users: typeof users;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
  */
 export declare const api: FilterApi<
   typeof fullApi,
-  FunctionReference<any, 'public'>
->
+  FunctionReference<any, "public">
+>;
 
 /**
  * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
  */
 export declare const internal: FilterApi<
   typeof fullApi,
-  FunctionReference<any, 'internal'>
->
+  FunctionReference<any, "internal">
+>;
 
-export declare const components: {}
+export declare const components: {};

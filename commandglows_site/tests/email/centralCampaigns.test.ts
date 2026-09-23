@@ -2,6 +2,10 @@ import { convexTest } from 'convex-test'
 import { anyApi, makeFunctionReference } from 'convex/server'
 import schema from '../../convex/schema'
 import { deliveryRoute, type EmailConfig } from '../../convex/emailConfig'
+import {
+  evidenceScope,
+  MANDATORY_EVIDENCE,
+} from '../../convex/emailCampaignEvidence'
 import { handleCampaigns } from '../../src/lib/email/central/campaigns'
 const modules = import.meta.glob('../../convex/**/*.ts')
 const credential = 'x'.repeat(40)
@@ -72,6 +76,7 @@ async function fixture(count = 3) {
   })
   vi.setSystemTime(start + 1000)
   let keyNumber = 0
+  const approvalChallenges = new Map<string, Promise<string>>()
   const backend = {
     query: (name: string, args: any) =>
       t.query(makeFunctionReference<'query'>(name), args),
@@ -100,6 +105,80 @@ async function fixture(count = 3) {
     input: Record<string, any> = {},
     key?: string
   ) => {
+    if (operation === 'resume' && campaign) {
+      const fresh = await post('snapshot', campaign)
+      const requestKey = key ?? `test-resume-${++keyNumber}-request`
+      const challenge = (await backend.mutation('emailCampaigns:command', {
+        credential,
+        actorId: 'admin',
+        sessionRef: 'central-campaign-fixture-session',
+        businessId: 'test',
+        operation: 'challenge',
+        expectedVersion: fresh.revision,
+        campaignId: fresh.campaign_id,
+        key: `${requestKey}-challenge`,
+        input: {
+          action: 'resume',
+          reportId: fresh.review.report_id,
+        },
+      })) as any
+      return backend.mutation('emailCampaigns:command', {
+        credential,
+        actorId: 'admin',
+        sessionRef: 'central-campaign-fixture-session',
+        businessId: 'test',
+        operation: 'resume',
+        expectedVersion: fresh.revision,
+        campaignId: fresh.campaign_id,
+        key: requestKey,
+        input: {
+          reportId: fresh.review.report_id,
+          challengeId: challenge.challenge.id,
+        },
+      })
+    }
+    if (operation === 'approve' && campaign) {
+      const approvalKey = key ?? `test-approve-${++keyNumber}-request`
+      let challengePromise = approvalChallenges.get(approvalKey)
+      if (!challengePromise) {
+        challengePromise = backend
+          .mutation('emailCampaigns:command', {
+            credential,
+            actorId: 'admin',
+            sessionRef: 'central-campaign-fixture-session',
+            businessId: 'test',
+            operation: 'challenge',
+            expectedVersion: campaign.revision,
+            campaignId: campaign.campaign_id,
+            key: `${approvalKey}-challenge`,
+            input: {
+              action: 'approve',
+              reportId: campaign.review.report_id,
+            },
+          })
+          .then((receipt: any) => receipt.challenge.id)
+        approvalChallenges.set(approvalKey, challengePromise)
+      }
+      const challengeId = await challengePromise
+      return backend.mutation('emailCampaigns:command', {
+        credential,
+        actorId: 'admin',
+        sessionRef: 'central-campaign-fixture-session',
+        businessId: 'test',
+        operation: 'approve',
+        expectedVersion: campaign.revision,
+        campaignId: campaign.campaign_id,
+        key: approvalKey,
+        input: {
+          reviewId:
+            campaign.review?.id ??
+            `${campaign.campaign_id}:${campaign.revision}`,
+          reportId: campaign.review.report_id,
+          challengeId,
+          ...input,
+        },
+      })
+    }
     const result = await send(
       {
         operation,
@@ -109,7 +188,8 @@ async function fixture(count = 3) {
         ...(operation === 'approve' && campaign
           ? {
               review_id:
-                campaign.review?.id ?? `${campaign.campaign_id}:${campaign.revision}`,
+                campaign.review?.id ??
+                `${campaign.campaign_id}:${campaign.revision}`,
             }
           : {}),
       },
@@ -128,7 +208,68 @@ async function fixture(count = 3) {
       timezone: 'Europe/Paris',
       ...input,
     })
+  const seedEvidence = async (c: any) => {
+    const { campaign, version } = await t.run(async (ctx) => {
+      const campaign = await ctx.db.get(c.campaign_id)
+      return { campaign, version: await ctx.db.get(campaign.versionId) }
+    })
+    const scopeDigest = evidenceScope({
+      businessId: 'test',
+      campaignId: c.campaign_id,
+      versionId: version._id,
+      audienceId: version.audienceId,
+      purpose: version.purpose,
+      route: version.route,
+      planRevision: campaign.planRevision ?? 1,
+    })
+    await t.run(async (ctx) => {
+      const policy = await ctx.db
+        .query('emailCampaignPolicies')
+        .withIndex('scope', (q) =>
+          q.eq('businessId', 'test').eq('identityKey', version.route)
+        )
+        .first()
+      if (!policy)
+        await ctx.db.insert('emailCampaignPolicies', {
+          businessId: 'test',
+          identityKey: version.route,
+          revision: 1,
+          status: 'approved',
+          evidenceMaxAge: Object.fromEntries(
+            MANDATORY_EVIDENCE.map((kind) => [kind, 86_400_000])
+          ),
+          approvedAt: Date.now(),
+        })
+      for (const kind of MANDATORY_EVIDENCE) {
+        const existing = await ctx.db
+          .query('emailCampaignEvidence')
+          .withIndex('campaign', (q) =>
+            q
+              .eq('campaignId', c.campaign_id)
+              .eq('versionId', version._id)
+              .eq('kind', kind)
+          )
+          .first()
+        if (!existing)
+          await ctx.db.insert('emailCampaignEvidence', {
+            businessId: 'test',
+            campaignId: c.campaign_id,
+            versionId: version._id,
+            kind,
+            source: 'fixture:central-campaigns',
+            owner: 'test-operator',
+            scopeDigest,
+            collectedAt: Date.now(),
+            validUntil: Date.now() + 86_400_000,
+            sourceRevision: 'fixture-1',
+            status: 'valid',
+            evidenceRef: `central-${c.campaign_id}-${kind}`,
+          })
+      }
+    })
+  }
   const snapshot = async (c: any) => {
+    await seedEvidence(c)
     for (let n = 0; !c.snapshot.complete && n < 10; n++)
       c = await post('snapshot', c)
     expect(c.snapshot.complete).toBe(true)
@@ -191,15 +332,32 @@ afterEach(() => {
 
 test('an audience rename to a different purpose cannot reuse an earlier consent', async () => {
   const f = await fixture(2)
-  await f.t.run(ctx => ctx.db.patch(f.members[0], { purpose: 'old-purpose' }))
+  await f.t.run((ctx) => ctx.db.patch(f.members[0], { purpose: 'old-purpose' }))
   let c = await f.snapshot(await f.draft())
   expect(c.snapshot.eligible).toBe(1)
   expect(c.snapshot.excluded).toBe(1)
   c = await f.post('approve', c)
-  await f.t.run(ctx => ctx.db.patch(f.members[1], { purpose: 'other-purpose' }))
+  await f.t.run((ctx) =>
+    ctx.db.patch(f.members[1], { purpose: 'other-purpose' })
+  )
   await f.pump()
-  expect(await f.t.run(ctx => ctx.db.query('emailMessages').collect())).toHaveLength(0)
+  expect(
+    await f.t.run((ctx) => ctx.db.query('emailMessages').collect())
+  ).toHaveLength(0)
   expect((await f.read('status', c)).fanout.excluded).toBe(1)
+})
+
+test('legacy machine relay refuses approval without a human report challenge', async () => {
+  const f = await fixture(1)
+  const c = await f.snapshot(await f.draft())
+  const response = await f.send({
+    operation: 'approve',
+    campaign_id: c.campaign_id,
+    expected_version: c.revision,
+    review_id: c.review.id,
+  })
+  expect(response.status).toBeGreaterThanOrEqual(400)
+  expect(response.status).not.toBe(200)
 })
 
 test('HTTP campaign snapshot/fanout spans pages, freezes cutoff, and returns recipient-free status', async () => {
@@ -384,6 +542,7 @@ test('campaign pause after claim releases the unsent lease; resume reuses it; ca
     state: 'queued',
   })
   expect(await f.claim()).toEqual([])
+  vi.setSystemTime(Date.now() + 1)
   c = await f.post('resume', c)
   vi.setSystemTime(Date.now() + 61_000)
   const [resumed] = await f.claim()

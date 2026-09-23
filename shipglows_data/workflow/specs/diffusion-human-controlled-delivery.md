@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.5.0"
 project: CommandGlows
 created: "2026-09-16"
-updated: "2026-09-16"
+updated: "2026-09-23"
 created_at: "2026-09-16T19:02:32Z"
-updated_at: "2026-09-16T21:16:38Z"
+updated_at: "2026-09-23T14:13:35Z"
 status: draft
 source_skill: sg-development
 source_model: GPT-6
@@ -28,9 +28,12 @@ evidence:
   - commandglows_site/convex/emailCampaigns.ts
   - commandglows_site/convex/emailCampaignPolicy.ts
   - commandglows_site/convex/email.ts
+  - commandglows_site/convex/emailAnalyticsPolicy.ts
   - commandglows_site/src/lib/email/central/campaignApi.ts
   - commandglows_site/src/lib/email/central/transport.ts
-next_step: Implémenter le lot 2 selon les contrats R02–R04 ; aucune activation réelle.
+  - commandglows_site/tests/email/campaignAnalyticsPolicy.test.ts
+  - commandglows_site/tests/email/campaignMigrationCompatibility.test.ts
+next_step: Avant toute activation d'envoi réel, établir le profil de production approuvé et fermer les preuves d'attribution/couverture analytics ainsi que l'inventaire d'exclusion/rollback des workers historiques ; garder EMAIL_ALLOW_PRODUCTION_SEND fermé.
 ---
 
 # Title
@@ -40,6 +43,10 @@ Diffusion : contrôle humain avant, pendant et après envoi
 ## Status
 
 Corrections documentaires R01–R08 intégrées le 16 septembre 2026 dans « Normative implementation contracts ». Les lots 0 et 1 sont clôturés localement : le contrat canonique est réconcilié, le catalogue de preuves et les rapports de préflight sont persistés, et l’approbation exige des preuves fraîches et un challenge humain borné lorsque le profil l’active. La revue `not ready` ci-dessous est conservée comme constat historique antérieur aux corrections, et ne constitue pas un nouveau résultat de tests. Aucune activation fournisseur, livraison réelle ou permission externe n’a été effectuée. Les paramètres métier de production restent explicitement non approuvés.
+
+État local vérifié le 23 septembre 2026 : l'intégration Flutter/API/Convex couvre les lectures, le préflight, l'approbation et la reprise avec challenge lié à la session, la pause sûre, ainsi que la réduction du plan par références opaques avec confirmation explicite. La lecture paginée des incidents est raccordée, mais en lecture seule et indique les faits indisponibles. Un garde-fou local de politique analytique refuse les profils absents, incomplets, non approuvés ou désactivés, mais n'est pas raccordé au runtime ni à une politique persistée. Les événements conservés ne permettent pas d'attribution complète à une tentative ni de checkpoint fiable de couverture; aucun taux n'est inventé. Le handler courant bloque un essai pré-départ ancien-shaped après pause, mais l'exclusion d'un ancien worker déployé qui contournerait ce handler reste non prouvée.
+
+Preuves locales consignées dans le suivi ci-dessous : suites email/Flutter, analyse statique Flutter et typecheck web; les résultats courants et limites y sont détaillés. La suite Flutter complète passe après alignement de son test à la liste unifiée; les sections restent visibles sur petit écran et le retour lecteur est libellé « Back to list ». Aucun build, lancement interactif, déploiement, activation fournisseur, livraison réelle ou réception en boîte n'a été vérifié. Les paramètres métier, la collecte/rétention et l'exclusion opérationnelle des anciens workers restent bloquants avant réouverture de l'envoi.
 
 Le livrable demandé dans cette tâche est cette spec et son emplacement. Cette spec n'est pas une autorisation de déploiement, d'envoi réel, de modification DNS, de consentement ou de fournisseur. Les autorisations historiques d'autres chantiers ne sont pas transférées automatiquement.
 
@@ -437,16 +444,58 @@ OWASP : revue ciblée des catégories contrôle d'accès, configuration, concept
 
 La vérification complète est terminée. R02–R08 décrivent des précisions de contrat à formaliser ; R01 comporte un défaut actuel reproduit et le périmètre des chemins à protéger. Ces points sont sous responsabilité technique et ne justifient pas de redemander à Diane une approbation générale. Sa décision de suspension reste acquise. Les choix réservés à Diane avant activation demeurent ceux de la section Open Questions : valeurs métier, collecte/rétention et éventuelles nouvelles permissions/intégrations. Aucun lot d'implémentation n'est exécuté par ce rapport.
 
+## Lot 4–5 integration follow-up — 2026-09-23
+
+| Surface | Local state | Evidence and remaining boundary |
+| --- | --- | --- |
+| Human approval and recovery | Flutter obtains action-bound challenges for approve/resume; pause is a distinct fail-safe stop. Resume refreshes preflight and remains human-confirmed. The legacy machine relay refuses approval without a session challenge. | `tests/email`: 22 files, 190 passing. No hosted identity, provider or real delivery exercised. |
+| Plan reduction | Flutter pages frozen recipient references and selects only backend-marked reducible rows. It sends the opaque selected references with the observed campaign version, shows protected/locked counts, and waits for explicit confirmation. The backend preserves terminal/unknown ledger records and invalidates approval after reduction. | Campaign API test covers read routes and reduction receipt; `app/test/central_email_api_test.dart`: 9 passing; `app/test/campaign_controls_test.dart`: 1 passing widget test for incident honesty and confirmation gating. UI never renders email addresses. Read candidate cap is 1,000 references per selection session; larger campaigns must be reduced in separate versioned batches. |
+| Incident and metric views | A tenant-authorized, paged incident read is connected end-to-end. The UI shows persisted state, severity, motif and transition time, and labels missing measurement/threshold/sample/coverage/freshness. It is read-only; there is no acknowledge/resolve command. Metrics remain unavailable because current events cannot be attributed unambiguously to a dispatch attempt or establish a complete coverage checkpoint; no rates are shown as zero. | `emailAnalyticsPolicy.ts` and `campaignAnalyticsPolicy.test.ts` add a pure closed gate: absent, partial, non-approved, or source-disabled policy returns unavailable; it has no runtime/persisted-policy connection. The suite includes these tests. The analytics audit ran metric/incident reads (3 files, 10 tests). No durable attributed-event writer/evaluator or notification action exists; display does not prove rule evaluation. |
+| Compatibility and unified navigation | The workspace test follows the grouped-list UX: source and support items open from the same list while draft retention and uncertain-reply locking assertions remain. Reader back action now says “Back to list” for all sections. Product navigation was not changed. | Full app suite: 12 passing; sidebar section/widget suites: 26 passing. Desktop and narrow/mobile tests verify the three group headings, item grouping, and return-to-list label. No app build/run was performed because no Doppler project is configured. |
+| Validation | Email suite: 190/190 passing; Astro `pnpm typecheck`: 0 errors, 0 warnings, 1 existing hint. Flutter app and source-sidebar package `analyze`: no issues; app suite: 12 passing; sidebar suites: 26 passing; studio package suite: 17 passing. Both governance docs pass targeted metadata lint. | Doppler has no configured project here; no build or interactive app run was attempted. No deployment, provider activation, real send, hosted login, inbox, or production migration proof. |
+
+The historical Lot 5 table and rows below record the earlier checkpoint and are superseded where they conflict with this follow-up. Current flow: approval/recovery, plan reduction, and read-only incident display are connected locally; a fail-closed analytics policy helper is tested but not runtime-wired; attribution, coverage checkpoints, durable metric evaluation/actions and operator-approved policy remain incomplete; worker fencing/rollback against an older deployed worker remains unproved. Preserve the send stop until the missing policy and worker-exclusion evidence are addressed.
+
 ## Skill Run History
+
+### Garde de production et préflight Convex — 2026-09-23
+
+Le secret `EMAIL_WORKER_GATE_SECRET` est configuré dans Vercel Production et Convex Production (`CommandGlows/elegant-mule-677`). Le site a été redéployé depuis le commit publié `08d73698`; une requête sans en-tête de garde a reçu HTTP 401 avant lecture du corps ou accès au fournisseur. Aucun email n'a été envoyé.
+
+L'inventaire de Convex Production montre 14 tables, aucun cron ni exécution planifiée, aucune table email et aucune fonction centrale de dispatch; seule `resend.js:addBuyerToNewsletter` est exposée dans ce domaine. `EMAIL_CONTROL_CONFIG` et `EMAIL_DISPATCH_CREDENTIAL` sont absents de Convex Production, et `EMAIL_ALLOW_PRODUCTION_SEND` est absent de Vercel Production : le poller ne peut donc pas traiter de campagne réelle s'il est déployé maintenant.
+
+Un dry-run avec typecheck sur un worktree propre du commit `08d73698` a validé le schéma courant et n'annonçait aucune suppression d'index, mais montrait que Convex déploie l'ensemble du backend, avec de nombreux index/tables email et commerce et un changement de runtime Node des actions. Diane a autorisé explicitement cette mise à jour complète. Le déploiement Convex Production a réussi depuis ce commit : validation du schéma réussie, index ajoutés, aucun index supprimé, et `emailDelivery:poll` apparaît dans le cron de production chaque minute. Les exécutions observées sont en succès. `EMAIL_CONTROL_CONFIG` et `EMAIL_DISPATCH_CREDENTIAL` restant absents de Convex Production, la première garde du poller retourne `disabled`; `EMAIL_ALLOW_PRODUCTION_SEND` reste absent de Vercel Production. Aucun appel Postmark et aucun envoi réel n'ont été effectués. Cela prouve le déploiement du backend, pas la readiness d'une campagne ni l'exclusion exhaustive d'autres chemins email.
+
+Après accord de Diane pour remplacer l'ancien worker de production, le 2026-09-23, `EMAIL_CONTROL_CONFIG` a été remplacé par le profil fermé `{"environment":"sandbox","clients":[],"businesses":[]}` dans Convex Production (`elegant-mule-677`) et Vercel Production (`commandglows`). Une nouvelle clé `EMAIL_DISPATCH_CREDENTIAL` commune a été générée et posée dans les deux environnements sans être affichée; `EMAIL_WORKER_GATE_SECRET` reste configurée et `EMAIL_ALLOW_PRODUCTION_SEND` reste absente. Le poller n'a aucun client ni entreprise configuré et aucun chemin d'envoi réel n'est activé. Le site a été redéployé avec Vercel; déploiement `dpl_CD97fxQ5EajyCV2D4pLsbUAQqaG7`, état `READY`, alias `www.commandglows.com`, réponse HTTP 200. Aucun message n'a été envoyé.
+
+### Lot 5 — intégration locale, 2026-09-23
+
+| Surface | Contrat observé | Preuve / limite |
+| --- | --- | --- |
+| HTTP Astro → Convex | `campaignApi.ts` accepte `create/save/review/test/approve/cancel/delete`. `approve` exige `review_id`, `report_id`, `challenge_id` et la version attendue ; auth Clerk, origine même-site et clé d'idempotence sont contrôlées. Le handler renvoie toutefois la forme Convex brute (`page/cursor` pour la liste), pas la forme HTTP `campaigns/next_cursor` attendue par Flutter; le `get` Convex ne joint pas non plus `rendered`. | `campaignApi.test.ts` + `campaignDomain.test.ts` : 44 tests passent, dont un aller-retour HTTP vers les vraies mutations Convex locales avec blocs et challenge fixture. Aucun appel distant. Les tests ne couvrent pas encore ces lectures par le client Flutter. |
+| Flutter → HTTP | `CampaignEditorSession.approve` envoie `review_id`, mais ne fournit ni `report_id` ni `challenge_id`; le client n'acquiert pas le challenge requis. Il n'existe pas d'adaptateur HTTP Flutter pour `pause`, `resume` ou `reduce`. Le backend utilise l'état `paused`, alors que les ajouts Flutter reconnaissent `suspended`. La liste HTTP ne propose ni lecture d'incidents ni de métriques. | Lecture statique de `app/lib/campaign_repository.dart`, `campaignApi.ts`, `emailCampaigns.ts`, `emailMetrics.ts` et `emailIncidents.ts`. Ces écarts empêchent de déclarer le lot 4 ou l'intégration complète. Les modifications Flutter déjà présentes ont été préservées. |
+| Migration de schéma | Les nouveaux champs `planRevision`, `dispatchEpoch`, `firstLotComplete`, `ledgerId` et les extensions des tentatives/messages sont optionnels ; les enregistrements historiques peuvent être lus sans ces champs. | `campaignMigrationCompatibility.test.ts` : fixture synthétique de campagne, lecture avant/après ajout puis retrait simulé des seuls champs campagne, 1 test réussi. Les autres extensions sont couvertes par l'inspection du schéma, pas par cette fixture. Ce n'est pas une migration sur une base de production ni un test d'ancien worker concurrent. |
+| Garde au dernier point avant départ | Le worker courant doit revalider l'état campagne, l'epoch et la réservation avant d'obtenir l'autorisation de départ ; un essai de schéma historique sans `dispatchEpoch` ne doit pas passer cette garde après pause. | `pnpm exec vitest run tests/email/campaignDomain.test.ts -t "fences a legacy-shaped reserved attempt"` : 1 test réussi. Il simule un ancien essai réservé relu par le handler courant, puis une pause avant revalidation ; l'essai est refusé et sa réservation pré-départ libérée. Cela ne simule pas l'ancien binaire. Le test existant de crash après autorisation/bail expiré garde l'essai `unknown` sans nouvelle réservation (commande et preuve ci-dessous). |
+| Non-régression locale | API/Convex campagne et essais de la frontière Flutter testés sans identifiants réels. | Site `tests/email` : 20 fichiers, 178 tests passent ; app Flutter `central_email_api_test.dart` : 5 tests passent ; package Flutter : 17 tests passent. Pas d'analyse/build/run UI effectué. |
+
+Décision d'intégration : ne pas inventer de valeurs de préflight/challenge et ne pas adapter silencieusement `suspended` à `paused`. La reprise nécessite un contrat de commande et de challenge décidé et implémenté de bout en bout, puis un parcours de lot 4 sur données synthétiques. Le rollback de schéma n'autorise pas le rollback vers un worker qui ignore le ledger ou l'epoch après toute tentative de départ.
+
+### Fencing et rollback après tentative de départ — preuve locale limitée
+
+Le test ciblé ci-dessus prouve uniquement qu'un essai pré-départ de forme historique est refusé par le handler actuel après incrément d'epoch par pause. Le test existant `campaignDomain.test.ts` (« shares identity quota atomically and never releases an authorized crash ») couvre séparément l'autorisation de départ suivie d'un bail expiré : l'essai et le ledger deviennent `unknown`, sans nouvelle réservation. Commandes exécutées depuis `commandglows_site` : `pnpm exec vitest run tests/email/campaignDomain.test.ts -t "fences a legacy-shaped reserved attempt"` (1 réussi) ; la commande de reprise pour la preuve de crash est `pnpm exec vitest run tests/email/campaignDomain.test.ts -t "shares identity quota atomically and never releases an authorized crash"`.
+
+Le chemin courant ajoute maintenant une barrière indépendante : le poll Convex envoie `X-Email-Worker-Gate`, vérifié par `/api/v1/email/dispatch` contre `EMAIL_WORKER_GATE_SECRET` avant tout accès fournisseur. Le test local prouve le refus d'un appel possédant le seul ancien bearer, sans mutation ni accès fournisseur. Cela ferme le chemin HTTP de ce dépôt pour un ancien appelant qui ne possède pas cette nouvelle valeur, mais ne prouve ni l'état des déploiements, ni l'absence d'un worker qui possède déjà cette valeur ou appelle le fournisseur par une autre route. Le point R08 d'exclusion opérationnelle reste donc non satisfait jusqu'à l'inventaire et la révocation/arrêt côté production. La mise en production devra configurer une valeur aléatoire dédiée d'au moins 32 caractères dans Convex et dans l'hôte web avant de déployer le duo compatible; aucun secret n'a été modifié ici.
 
 | Date | Owner | Résultat |
 | --- | --- | --- |
 | 2026-09-17 | sg-development / lot 0 | Lot 0 local clôturé : contrats lecture/commande, blocs structurés, reçus, expansion authentifiée, outbox borné et rejeu concurrent réconciliés ; 66 tests campagne/politique/API/contenu verts et `astro check` sans erreur. Aucune activation externe. |
 | 2026-09-17 | sg-development / lot 1 | Lot 1 local clôturé : catalogue de preuves R05, rapports de préflight liés à la version/route/audience, invalidation par fraîcheur et scope, challenge humain à usage unique et refus des preuves indisponibles ; 166 tests email verts et `astro check` sans erreur (un hint Astro préexistant). Aucune activation externe. |
+| 2026-09-17 | sg-development / lot 2 | Lot 2 local implémenté : ledger durable par campagne/contact, réservations et autorisations de départ bornées par epoch, quotas identité/contact/campagne, réduction du plan restant et conservation des issues incertaines ; 168 tests email verts. Aucune activation externe. |
+| 2026-09-19 | sg-development / lot 3 | Lot 3 local implémenté par sous-agents : métriques R06, adaptateurs d'événements, attribution/couverture, cycle d'incidents R07 et notifications durables ; 177 tests email verts. Aucune activation externe. |
 | 2026-09-16 | sg-development / préparation de spec | Audit antérieur repris et divergences clés revérifiées ; contrat rédigé ; checklist indépendante de 12 invariants intégrée ; aucune implémentation |
 | 2026-09-16 | sg-engineering / 101-sg-ready | Revue intégrale : `not ready`. Sections et lots 0–5 examinés ; décision de suspension conservée ; R01–R08 documentés. Tests email : 150 réussis / 15 échoués ; frontière HTTP/Convex réellement testée et en échec. Aucune implémentation ni activation. |
 | 2026-09-16 | sg-docs / correction ciblée | Contrats normatifs R01–R08 intégrés, A13 corrigé et A17–A27 ajoutés. Topologie conforme et lint des métadonnées réussi. Relecture des contradictions entre règles générales et contrats détaillés ; revue initiale conservée comme historique. Aucun test applicatif relancé, aucune implémentation, activation ou modification des fichiers étrangers. |
 
 ## Current Chantier Flow
 
-Préparation et revue historique terminées → lots 0 et 1 locaux clôturés : contrat campagne/routage, API, rendu structuré, expansion authentifiée, outbox borné, catalogue de preuves, rapports de préflight et autorité humaine bornée prouvés par fixtures → lot 2 prêt à démarrer → aucune activation réelle, preuve fournisseur, boîte de réception ou livraison revendiquée.
+Lots 0–3 et API/Flutter locale raccordés pour approbation humaine, arrêt/reprise, réduction contrôlée et lecture honnête des incidents → helper de politique analytics fermé par défaut testé mais non raccordé; agrégation persistée toujours bloquée par l'attribution à une tentative, le checkpoint et le choix de collecte/rétention → garde Vercel déployée, clé Convex configurée, test HTTP sans garde refusé → backend Convex complet du commit `08d73698` déployé sur `elegant-mule-677`, avec le cron email outbox actif mais le poller retournant `disabled` faute de configuration Convex; aucun index supprimé et aucun envoi réel → garder l'envoi de production fermé jusqu'au profil approuvé, à la complétude des preuves analytics et à la clôture de l'inventaire d'exclusion/rollback historique.

@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: CommandGlows
 created: "2026-09-08"
-updated: "2026-09-08"
+updated: "2026-09-23"
 status: reviewed
 source_skill: sg-development
 scope: newsletter-campaign-api
@@ -18,18 +18,31 @@ depends_on: [shipglows_data/technical/central-email-operations.md]
 supersedes: []
 evidence:
   - commandglows_site/convex/emailCampaigns.ts
+  - commandglows_site/convex/emailAnalyticsPolicy.ts
   - commandglows_site/src/lib/email/central/campaignApi.ts
   - commandglows_site/tests/email/campaignDomain.test.ts
+  - commandglows_site/tests/email/campaignAnalyticsPolicy.test.ts
   - commandglows_site/tests/email/campaignApi.test.ts
+  - commandglows_site/tests/email/campaignMigrationCompatibility.test.ts
 next_review: "2026-10-08"
-next_step: deploy only within explicitly authorized configuration and verify hosted admin login before any authorized recipient test
+next_step: complete durable incident measurement and workflow before exposing actionable alerts; no activation is authorized
 ---
 
 # Newsletter campaign API
 
 The additive campaign application reuses the central email outbox and Postmark Broadcast stream. Source implementation does not establish deployed availability or inbox delivery. Existing single-recipient v1 routes remain compatible. No provider configuration, pilot recipient policy, legal footer, tracking or production activation changed.
 
+## Local integration status — 2026-09-23
+
+The local Flutter/API integration maps Convex pages to `{campaigns,next_cursor}`, returns frozen `rendered` content on detail, maps backend stopped/fanout states to Flutter delivery states, and carries report IDs, expiry and blockers through review. Approval and resume require a server-issued, single-use challenge bound to the authenticated Clerk session, actor, report, campaign revision and action. A stale safety pause is accepted without an expected revision; resume requires a report newer than the pause. Remaining-plan reduction is exposed at the authenticated HTTP/Convex boundary and invalidates approval. The app pages frozen recipient references, selects only backend-marked reducible references, shows protected/locked counts without addresses, checks the plan version, then requires explicit operator confirmation and reapproval.
+
+The authenticated read API also exposes recipient plan pages and durable incident history. Incident records currently persist state, severity, motif and transition timestamps; measurement, threshold, sample, coverage and freshness are returned as unavailable because no evaluator stores them. The incident UI is explicitly read-only; there is no acknowledgement/resolution mutation. Aggregate metrics remain explicitly unavailable because event storage does not yet provide complete attributable campaign aggregates. No zero rates are fabricated.
+
 The dispatch route now additionally requires `X-Email-Worker-Gate`, checked against `EMAIL_WORKER_GATE_SECRET` (minimum 32 characters) before any provider access. The current Convex poll sends this independent gate alongside its existing scoped bearer credential; both the Convex deployment and the web runtime must receive the same dedicated value before the upgraded pair can dispatch. Do not reuse `EMAIL_DISPATCH_CREDENTIAL` for this gate. Missing configuration disables polling or makes the route fail closed. This local check rejects callers that only possess the former dispatch credential, but does not prove that every deployed worker is upgraded, stopped, or unable to call a provider through another path; that remains a production inventory/revocation check.
+
+`emailAnalyticsPolicy.ts` now defines a pure, fail-closed R06/R07 policy parser and evaluation gate: absent, partial, non-approved, or source-disabled policy returns unavailable, with no default production values. This helper is not connected to the persisted policy schema, an event writer, or a runtime evaluator; it does not make metrics or incident evaluation operational. Fixture thresholds and retention values in its tests are not production recommendations. Collection choices, retention, metric attribution/checkpoints, and worker-exclusion evidence remain prerequisites to activation.
+
+Local evidence on 2026-09-23: all 22 email test files pass (190 tests); `pnpm typecheck` reports 0 errors, 0 warnings and one existing Astro hint. Flutter app `analyze` reports no issues and its full suite passes (12 tests); the unified-workspace test follows the current grouped-list navigation while retaining draft and uncertain-reply checks. The source-sidebar package analysis passes; two focused widget suites pass (26 tests). The newsletter studio package passes 17 tests. No build, deployment, provider activation, real send or inbox behavior was checked. See `shipglows_data/workflow/specs/diffusion-human-controlled-delivery.md` for local evidence and limits.
 
 ## Authority and hosting
 
@@ -39,20 +52,33 @@ Both backend modules must exist in their respective authorized deployments. The 
 
 ## Wire contract
 
-All paths below are relative to `/api/admin/email`. JSON keys use snake case. Dates are ISO instants with a timezone; responses normalize to UTC. Lists accept `limit` from 1 to 50 (default 20), optional `cursor`, and optional `state` from `draft`, `scheduled`, `sending`, `completed`, `cancelled`.
+All paths below are relative to `/api/admin/email`. JSON keys use snake case. Dates are ISO instants with a timezone; responses normalize to UTC. Lists accept `limit` from 1 to 50 (default 20), optional `cursor`, and optional `state` from `draft`, `scheduled`, `sending`, `completed`, `cancelled`, `suspended`, `queued`, `submitted`, `delivered`, `partiallyDelivered`, `failed` or `unknown`.
 
 | Method and path | Input | Result |
 | --- | --- | --- |
 | GET `context` | None | `{businesses:[{id,brand,from,audiences:[{id,purpose}],capabilities:{can_test,can_approve,disabled_reason},test_recipients:[]}]}` |
-| GET `campaigns` | Query `business_id`, optional list parameters | `{campaigns:[],next_cursor:null|string}` |
+| GET `campaigns` | Query `business_id`, optional list parameters and supported state | `{campaigns:[],next_cursor:null|string}`; completed result categories are derived from counters |
 | GET `campaigns/{id}` | Query `business_id` | `{campaign,rendered:{html,text}|null}`; frozen reviewed content |
+| GET `campaigns/{id}/recipients` | Query `business_id`, optional `cursor`, `limit` | PII-free frozen recipient references, states, plan version, and reducible/protected flags |
+| GET `campaigns/{id}/incidents` | Query `business_id`, optional `cursor`, `limit` | Durable incident state/severity/motif and latest transition; unavailable measurement fields include an explicit reason |
 | POST `campaigns` | `business_id,title,audience_id,locale,subject,preheader,blocks` | `{campaign}` |
 | POST `campaigns/{id}/save` | `business_id,expected_version` plus all editable fields | `{campaign}` with incremented version |
-| POST `campaigns/{id}/review` | `business_id,expected_version` | `{campaign,review:{id,version,eligible_count,complete,html,text}}` |
+| POST `campaigns/{id}/review` | `business_id,expected_version` | `{campaign,review:{id,report_id,version,eligible_count,complete,html,text}}` |
 | POST `campaigns/{id}/test` | `business_id,expected_version,recipient` | `{campaign,test:{message_id,version,state:"queued"}}` |
-| POST `campaigns/{id}/approve` | `business_id,expected_version,review_id`, optional `scheduled_at` | `{campaign}` |
+| POST `campaigns/{id}/approve` | `business_id,expected_version,review_id,report_id,challenge_id`, optional `scheduled_at` | `{campaign}`; the human challenge is single-use and bound server-side |
+| POST `campaigns/{id}/challenge` | `business_id,action,report_id`; action is `approve` or `resume` | `{challenge:{id,report_id,expires_at}}`; actor and session come from verified server auth |
+| POST `campaigns/{id}/pause` | `business_id`, optional stale `expected_version` | `{campaign}`; safety stop advances the dispatch epoch |
+| POST `campaigns/{id}/resume` | `business_id,expected_version,report_id,challenge_id` | `{campaign}`; requires a fresh report after pause |
+| POST `campaigns/{id}/reduce` | `business_id,expected_version,recipient_ids[]` | `{campaign}` with incremented plan revision and approval cleared |
 | POST `campaigns/{id}/cancel` | `business_id,expected_version` | `{campaign}` |
 | POST `campaigns/{id}/delete` | `business_id,expected_version`, draft only | `{deleted:true}` |
+
+There is no aggregate-metric route: stored events do not support complete campaign
+coverage or attribution, so the UI must display unavailable rather than zero. The
+incident read route is informational only. No persisted evaluator fields exist for
+measurement, threshold, sample, coverage or freshness, and no acknowledge/resolve
+mutation exists. The legacy `/api/v1/email/campaigns` machine relay cannot issue a
+human session challenge and must not be used for approval.
 
 Campaign shape:
 

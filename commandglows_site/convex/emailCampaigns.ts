@@ -28,6 +28,11 @@ import {
   currentReport,
   evidenceScope,
 } from './emailCampaignEvidence'
+import {
+  currentExecutionPolicy,
+  firstLotExhausted,
+  ledgerForContact,
+} from './emailCampaignExecution'
 
 const SNAPSHOT_PAGE = 50
 const FANOUT_PAGE = 25
@@ -176,6 +181,7 @@ export const command = mutation({
     key: v.optional(v.string()),
     idempotencyKey: v.optional(v.string()),
     actorId: v.optional(v.string()),
+    sessionRef: v.optional(v.string()),
     operation: v.string(),
     expectedVersion: v.optional(v.number()),
     campaignId: v.optional(v.id('emailCampaigns')),
@@ -183,7 +189,12 @@ export const command = mutation({
   },
   handler: async (ctx, args) => {
     const input = (args.input ?? {}) as Record<string, any>
-    const operation = args.operation === 'save' ? 'revise' : args.operation === 'review' ? 'snapshot' : args.operation
+    const operation =
+      args.operation === 'save'
+        ? 'revise'
+        : args.operation === 'review'
+          ? 'snapshot'
+          : args.operation
     const key = args.key ?? args.idempotencyKey
     const campaignId = args.campaignId ?? input.campaignId
     const expectedVersion = args.expectedVersion ?? input.expectedVersion ?? 0
@@ -199,6 +210,8 @@ export const command = mutation({
         'snapshot',
         'test',
         'approve',
+        'challenge',
+        'reduce',
         'pause',
         'resume',
         'cancel',
@@ -230,13 +243,20 @@ export const command = mutation({
       return previous.result
     }
     const now = Date.now()
+    let generatedChallenge: {
+      id: string
+      reportId: string
+      expiresAt: number
+    } | null = null
     let c: Doc<'emailCampaigns'>
     if (operation === 'create') {
-      if (campaignId || expectedVersion !== 0)
-        fail('version_conflict')
+      if (campaignId || expectedVersion !== 0) fail('version_conflict')
       const id = await ctx.db.insert('emailCampaigns', {
         businessId: business.id,
         revision: 0,
+        planRevision: 1,
+        dispatchEpoch: 0,
+        firstLotComplete: false,
         state: 'draft',
         snapshotComplete: false,
         scanned: 0,
@@ -261,7 +281,10 @@ export const command = mutation({
       c = (await ctx.db.get(id))!
     } else {
       c = await scoped(ctx, business.id, campaignId)
-      if ((c.revision ?? 0) !== expectedVersion) fail('version_conflict')
+      // Safety pauses are allowed from stale UI state and do not revise the
+      // campaign. All other changes remain optimistic-version checked.
+      if (operation !== 'pause' && (c.revision ?? 0) !== expectedVersion)
+        fail('version_conflict')
     }
     const oldVersion = c.versionId ? await ctx.db.get(c.versionId) : null
     if (['create', 'revise'].includes(operation)) {
@@ -295,8 +318,12 @@ export const command = mutation({
           brand: business.brand,
           legalFooter: business.legalFooter,
           subject:
-            value.subject || ('title' in value ? value.title : '') || 'Brouillon',
-          paragraphs: value.paragraphs.length ? value.paragraphs : ['Brouillon incomplet'],
+            value.subject ||
+            ('title' in value ? value.title : '') ||
+            'Brouillon',
+          paragraphs: value.paragraphs.length
+            ? value.paragraphs
+            : ['Brouillon incomplet'],
           unsubscribeUrl: '{{{ pm:unsubscribe }}}',
         })
       }
@@ -342,13 +369,16 @@ export const command = mutation({
               'recipient',
               'scheduledAt',
               'reason',
+              'membershipIds',
+              'recipientIds',
+              'action',
             ].includes(key)
         )
       )
         fail('invalid_input')
       if (!oldVersion) fail('invalid_state')
       if (operation === 'snapshot') {
-        if (c.state !== 'draft') fail('invalid_state')
+        if (!['draft', 'paused'].includes(c.state)) fail('invalid_state')
         if (!oldVersion.subject.trim() || !oldVersion.paragraphs.length)
           fail('invalid_input')
         if (!c.snapshotComplete) {
@@ -360,7 +390,10 @@ export const command = mutation({
                 .eq('audienceId', oldVersion.audienceId)
                 .lte('_creationTime', oldVersion.cutoff)
             )
-            .paginate({ cursor: c.snapshotCursor ?? null, numItems: SNAPSHOT_PAGE })
+            .paginate({
+              cursor: c.snapshotCursor ?? null,
+              numItems: SNAPSHOT_PAGE,
+            })
           let eligible = 0
           for (const member of batch.page) {
             if (
@@ -390,12 +423,20 @@ export const command = mutation({
               )
               .unique()
             if (!exists) {
+              const ledger = await ledgerForContact(ctx, {
+                businessId: business.id,
+                campaignId: c._id,
+                canonicalContactKey: member.email,
+                planRevision: c.planRevision ?? 1,
+              })
               await ctx.db.insert('emailCampaignRecipients', {
                 businessId: business.id,
                 campaignId: c._id,
                 versionId: oldVersion._id,
                 membershipId: member._id,
                 generation: member.generation,
+                canonicalContactKey: member.email,
+                ledgerId: ledger._id,
                 state: 'snapshot',
               })
               eligible++
@@ -417,34 +458,47 @@ export const command = mutation({
           !c.snapshotComplete
         )
           fail('review_required')
-        if (config.environment === 'production' || business.campaignPreflightRequired) {
-          const report = await currentReport(ctx, c._id, c.revision ?? 0)
-          const expectedScope = evidenceScope({
-            businessId: business.id,
-            campaignId: c._id,
-            versionId: oldVersion._id,
-            audienceId: oldVersion.audienceId,
-            purpose: oldVersion.purpose,
-            route: oldVersion.route,
-          })
-          if (
-            !report ||
-            input.reportId !== report._id ||
-            report.status !== 'valid' ||
-            report.expiresAt <= now ||
-            report.scopeDigest !== expectedScope
-          )
-            fail('preflight_blocked')
-          await consumeHumanChallenge(ctx, {
-            challengeId: input.challengeId,
-            businessId: business.id,
-            action: 'approve',
-            scopeDigest: expectedScope,
-            now,
-          })
-        }
+        const report = await currentReport(ctx, c._id, c.revision ?? 0)
+        const expectedScope = evidenceScope({
+          businessId: business.id,
+          campaignId: c._id,
+          versionId: oldVersion._id,
+          audienceId: oldVersion.audienceId,
+          purpose: oldVersion.purpose,
+          route: oldVersion.route,
+          planRevision: c.planRevision ?? 1,
+        })
+        const policy = await currentExecutionPolicy(
+          ctx,
+          business.id,
+          oldVersion.route
+        )
         if (
-          c.state !== 'draft' ||
+          !report ||
+          input.reportId !== report._id ||
+          report.status !== 'valid' ||
+          report.expiresAt <= now ||
+          report.scopeDigest !== expectedScope ||
+          !policy.record ||
+          report.policyRevision !== policy.record.revision
+        )
+          fail('preflight_blocked')
+        await consumeHumanChallenge(ctx, {
+          challengeId: input.challengeId,
+          businessId: business.id,
+          action: 'approve',
+          scopeDigest: expectedScope,
+          reportId: report._id,
+          revision: c.revision ?? 0,
+          actorId: args.actorId,
+          sessionRef: args.sessionRef,
+          now,
+        })
+        if (
+          (c.state !== 'draft' &&
+            !(
+              c.state === 'paused' && c.blockReason === 'remaining_plan_reduced'
+            )) ||
           requiresLiveTest(config, business) ||
           !business.activated ||
           !business.audiences.some(
@@ -459,14 +513,17 @@ export const command = mutation({
           approvedVersionId: oldVersion._id,
           approvedRoute: oldVersion.route,
           nextAt:
-            typeof input.scheduledAt === 'string' && Number.isFinite(Date.parse(input.scheduledAt))
+            typeof input.scheduledAt === 'string' &&
+            Number.isFinite(Date.parse(input.scheduledAt))
               ? Date.parse(input.scheduledAt)
               : oldVersion.scheduledAt,
           approvedScheduledAt:
-            typeof input.scheduledAt === 'string' && Number.isFinite(Date.parse(input.scheduledAt))
+            typeof input.scheduledAt === 'string' &&
+            Number.isFinite(Date.parse(input.scheduledAt))
               ? Date.parse(input.scheduledAt)
               : oldVersion.scheduledAt,
           reviewCutoff: oldVersion.cutoff,
+          pausedAt: undefined,
           expansionComplete: false,
           blockReason: undefined,
         })
@@ -475,12 +532,18 @@ export const command = mutation({
         if (typeof recipient !== 'string') fail('invalid_input')
         const normalized = recipient.trim().toLowerCase()
         const audience = business.audiences.find(
-          (a) => a.id === oldVersion.audienceId && a.purpose === oldVersion.purpose
+          (a) =>
+            a.id === oldVersion.audienceId && a.purpose === oldVersion.purpose
         )
         if (
           !audience ||
           !dispatchAllowed(config, business, normalized, 'broadcast', now) ||
-          (await suppressed(ctx, business.id, normalized, business.broadcastStream))
+          (await suppressed(
+            ctx,
+            business.id,
+            normalized,
+            business.broadcastStream
+          ))
         )
           fail('recipient_not_eligible')
         const messageId = await ctx.db.insert('emailMessages', {
@@ -518,14 +581,127 @@ export const command = mutation({
         void operationId
         return result
       } else if (operation === 'pause') {
-        if (!['scheduled', 'running', 'fanout_complete'].includes(c.state))
+        if (['completed', 'cancelled'].includes(c.state)) {
+          // A terminal stop is an idempotent receipt, never a state rewrite.
+        } else if (c.state === 'draft') {
+          await ctx.db.patch(c._id, { blockReason: 'operator_paused' })
+        } else {
+          await ctx.db.patch(c._id, {
+            state: 'paused',
+            resumeState: c.state,
+            pausedAt: now,
+            blockReason: 'operator_paused',
+            dispatchEpoch: (c.dispatchEpoch ?? 0) + 1,
+          })
+        }
+      } else if (operation === 'challenge') {
+        const action = input.action
+        if (
+          !['approve', 'resume'].includes(action) ||
+          typeof args.actorId !== 'string' ||
+          !args.actorId ||
+          typeof args.sessionRef !== 'string' ||
+          !args.sessionRef
+        )
+          fail('human_authority_required')
+        if (
+          (action === 'approve' &&
+            (!c.snapshotComplete ||
+              (c.state !== 'draft' &&
+                !(
+                  c.state === 'paused' &&
+                  c.blockReason === 'remaining_plan_reduced'
+                )))) ||
+          (action === 'resume' &&
+            (c.state !== 'paused' ||
+              !c.resumeState ||
+              c.approvedVersionId !== oldVersion._id))
+        )
           fail('invalid_state')
-        await ctx.db.patch(c._id, {
-          state: 'paused',
-          resumeState: c.state,
-          blockReason: 'operator_paused',
+        const report = await currentReport(ctx, c._id, c.revision ?? 0)
+        const scopeDigest = evidenceScope({
+          businessId: business.id,
+          campaignId: c._id,
+          versionId: oldVersion._id,
+          audienceId: oldVersion.audienceId,
+          purpose: oldVersion.purpose,
+          route: oldVersion.route,
+          planRevision: c.planRevision ?? 1,
         })
+        const policy = await currentExecutionPolicy(
+          ctx,
+          business.id,
+          oldVersion.route
+        )
+        if (
+          !report ||
+          input.reportId !== report._id ||
+          report.status !== 'valid' ||
+          report.expiresAt <= now ||
+          report.scopeDigest !== scopeDigest ||
+          (action === 'resume' &&
+            (!c.pausedAt || report.checkedAt <= c.pausedAt)) ||
+          !policy.record ||
+          report.policyRevision !== policy.record.revision
+        )
+          fail('preflight_blocked')
+        const challengeId = crypto.randomUUID()
+        const expiresAt = now + 120_000
+        await ctx.db.insert('emailOperatorChallenges', {
+          challengeId,
+          actorId: args.actorId,
+          sessionRef: args.sessionRef,
+          businessId: business.id,
+          action,
+          scopeDigest,
+          reportId: report._id,
+          revision: c.revision ?? 0,
+          expiresAt,
+        })
+        generatedChallenge = {
+          id: challengeId,
+          reportId: report._id,
+          expiresAt,
+        }
       } else if (operation === 'resume') {
+        const report = await currentReport(ctx, c._id, c.revision ?? 0)
+        const scopeDigest = evidenceScope({
+          businessId: business.id,
+          campaignId: c._id,
+          versionId: oldVersion._id,
+          audienceId: oldVersion.audienceId,
+          purpose: oldVersion.purpose,
+          route: oldVersion.route,
+          planRevision: c.planRevision ?? 1,
+        })
+        const policy = await currentExecutionPolicy(
+          ctx,
+          business.id,
+          oldVersion.route
+        )
+        if (
+          !report ||
+          input.reportId !== report._id ||
+          report.status !== 'valid' ||
+          report.expiresAt <= now ||
+          report.scopeDigest !== scopeDigest ||
+          !c.pausedAt ||
+          report.checkedAt <= c.pausedAt ||
+          !policy.record ||
+          report.policyRevision !== policy.record.revision
+        )
+          fail('preflight_blocked')
+        await consumeHumanChallenge(ctx, {
+          challengeId: input.challengeId,
+          businessId: business.id,
+          action: 'resume',
+          scopeDigest,
+          reportId: report._id,
+          revision: c.revision ?? 0,
+          actorId: args.actorId,
+          sessionRef: args.sessionRef,
+          now,
+        })
         if (
           c.state !== 'paused' ||
           !c.resumeState ||
@@ -537,14 +713,92 @@ export const command = mutation({
         await ctx.db.patch(c._id, {
           state: c.resumeState,
           resumeState: undefined,
+          pausedAt: undefined,
           blockReason: undefined,
           nextAt: Math.max(now, oldVersion.scheduledAt),
         })
       } else if (operation === 'cancel') {
-        if (c.state === 'cancelled') fail('invalid_state')
+        if (c.state !== 'cancelled')
+          await ctx.db.patch(c._id, {
+            state: 'cancelled',
+            blockReason: 'operator_cancelled',
+            dispatchEpoch: (c.dispatchEpoch ?? 0) + 1,
+          })
+      } else if (operation === 'reduce') {
+        if (
+          ![
+            'scheduled',
+            'sending',
+            'running',
+            'fanout_complete',
+            'paused',
+            'completed',
+          ].includes(c.state)
+        )
+          fail('invalid_state')
+        if (
+          (!Array.isArray(input.recipientIds) &&
+            !Array.isArray(input.membershipIds)) ||
+          (input.recipientIds ?? input.membershipIds).some(
+            (id: unknown) => typeof id !== 'string'
+          )
+        )
+          fail('invalid_input')
+        const selectedRecipients = Array.isArray(input.recipientIds)
+          ? new Set(input.recipientIds)
+          : null
+        const selectedMemberships = selectedRecipients
+          ? null
+          : new Set(input.membershipIds)
+        const recipients = await ctx.db
+          .query('emailCampaignRecipients')
+          .withIndex('campaign', (q) => q.eq('campaignId', c._id))
+          .collect()
+        // The caller may only shrink the frozen remaining plan; membership IDs
+        // not in this campaign cannot be smuggled into a revision.
+        if (
+          selectedRecipients
+            ? Array.from(selectedRecipients).some(
+                (id) => !recipients.some((row) => row._id === id)
+              )
+            : Array.from(selectedMemberships!).some(
+                (id) => !recipients.some((row) => row.membershipId === id)
+              )
+        )
+          fail('invalid_input')
+        for (const row of recipients) {
+          const ledger = row.ledgerId && (await ctx.db.get(row.ledgerId))
+          const permanentlyTreated =
+            ledger &&
+            [
+              'departure_authorized',
+              'accepted',
+              'delivered',
+              'unknown',
+            ].includes(ledger.state)
+          const selected = selectedRecipients
+            ? selectedRecipients.has(row._id)
+            : selectedMemberships!.has(row.membershipId)
+          if (!selected && !permanentlyTreated) {
+            if (row.messageId) {
+              const message = await ctx.db.get(row.messageId)
+              if (message?.state === 'queued')
+                await ctx.db.patch(message._id, { state: 'cancelled' })
+            }
+            await ctx.db.patch(row._id, {
+              state: 'excluded',
+              reason: 'remaining_plan_reduced',
+            })
+          }
+        }
         await ctx.db.patch(c._id, {
-          state: 'cancelled',
-          blockReason: 'operator_cancelled',
+          state: 'paused',
+          resumeState: undefined,
+          approvedVersionId: undefined,
+          approvedRoute: undefined,
+          blockReason: 'remaining_plan_reduced',
+          planRevision: (c.planRevision ?? 1) + 1,
+          dispatchEpoch: (c.dispatchEpoch ?? 0) + 1,
         })
       }
     }
@@ -558,7 +812,8 @@ export const command = mutation({
     })
     await ctx.db.patch(c._id, {
       revision:
-        (c.revision ?? 0) + (['create', 'revise'].includes(operation) ? 1 : 0),
+        (c.revision ?? 0) +
+        (['create', 'revise', 'reduce'].includes(operation) ? 1 : 0),
       operationId,
       updatedAt: now,
     })
@@ -573,6 +828,7 @@ export const command = mutation({
         audienceId: oldVersion!.audienceId,
         purpose: oldVersion!.purpose,
         route: oldVersion!.route,
+        planRevision: refreshed.planRevision ?? 1,
         now,
       })
       result = {
@@ -587,6 +843,16 @@ export const command = mutation({
           report_id: evidence.reportId,
           expires_at: evidence.report?.expiresAt ?? null,
           blocking_checks: evidence.report?.blockingChecks ?? [],
+        },
+      }
+    }
+    if (operation === 'challenge') {
+      result = {
+        ...result,
+        challenge: {
+          id: generatedChallenge!.id,
+          report_id: generatedChallenge!.reportId,
+          expires_at: generatedChallenge!.expiresAt,
         },
       }
     }
@@ -616,21 +882,45 @@ export const expand = mutation({
     if (!version || c.approvedVersionId !== version._id) return { processed: 0 }
     if ((c.approvedScheduledAt ?? version.scheduledAt) > Date.now())
       return { processed: 0 }
+    const execution = await currentExecutionPolicy(
+      ctx,
+      business.id,
+      version.route
+    )
     const page = await ctx.db
       .query('emailCampaignRecipients')
       .withIndex('version', (q) => q.eq('versionId', version._id))
       .paginate({ cursor: c.fanoutCursor ?? null, numItems: SNAPSHOT_PAGE })
     let queued = 0
     let excluded = 0
+    let firstLotComplete = c.firstLotComplete ?? false
     for (const snapshot of page.page) {
+      if (
+        !firstLotComplete &&
+        firstLotExhausted(execution.limits, (c.fanoutQueued ?? 0) + queued)
+      ) {
+        firstLotComplete = true
+        break
+      }
       if (snapshot.messageId || snapshot.state !== 'snapshot') continue
       const member = await ctx.db.get(snapshot.membershipId)
       if (
         !member ||
         member.state !== 'subscribed' ||
         member.generation !== snapshot.generation ||
-        !dispatchAllowed(config, business, member.email, 'broadcast', Date.now()) ||
-        (await suppressed(ctx, business.id, member.email, business.broadcastStream))
+        !dispatchAllowed(
+          config,
+          business,
+          member.email,
+          'broadcast',
+          Date.now()
+        ) ||
+        (await suppressed(
+          ctx,
+          business.id,
+          member.email,
+          business.broadcastStream
+        ))
       ) {
         await ctx.db.patch(snapshot._id, {
           state: 'excluded',
@@ -639,6 +929,18 @@ export const expand = mutation({
         excluded++
         continue
       }
+      const ledger =
+        snapshot.ledgerId ||
+        (
+          await ledgerForContact(ctx, {
+            businessId: business.id,
+            campaignId: c._id,
+            canonicalContactKey: member.email,
+            planRevision: c.planRevision ?? 1,
+          })
+        )._id
+      if (!snapshot.ledgerId)
+        await ctx.db.patch(snapshot._id, { ledgerId: ledger })
       const messageId = await ctx.db.insert('emailMessages', {
         businessId: business.id,
         email: member.email,
@@ -653,14 +955,28 @@ export const expand = mutation({
         campaignId: c._id,
         campaignVersionId: version._id,
         campaignRecipientId: snapshot._id,
+        campaignLedgerId: ledger,
         campaignMembershipGeneration: member.generation,
       })
       await ctx.db.patch(snapshot._id, { state: 'queued', messageId })
       queued++
     }
     await ctx.db.patch(c._id, {
-      state: page.isDone ? 'fanout_complete' : 'running',
-      fanoutCursor: page.isDone ? undefined : page.continueCursor,
+      state: firstLotComplete
+        ? 'paused'
+        : page.isDone
+          ? 'fanout_complete'
+          : 'running',
+      resumeState: firstLotComplete ? 'sending' : undefined,
+      blockReason: firstLotComplete
+        ? 'first_lot_observation_required'
+        : undefined,
+      firstLotComplete,
+      fanoutCursor: firstLotComplete
+        ? c.fanoutCursor
+        : page.isDone
+          ? undefined
+          : page.continueCursor,
       fanoutQueued: (c.fanoutQueued ?? 0) + queued,
       fanoutExcluded: (c.fanoutExcluded ?? 0) + excluded,
       expansionComplete: page.isDone,
@@ -729,13 +1045,26 @@ export const pump = mutation({
         continue
       }
       if ((c.approvedScheduledAt ?? version.scheduledAt) > now) continue
+      const execution = await currentExecutionPolicy(
+        ctx,
+        business.id,
+        version.route
+      )
       const page = await ctx.db
         .query('emailCampaignRecipients')
         .withIndex('version', (q) => q.eq('versionId', version._id))
         .paginate({ cursor: c.fanoutCursor ?? null, numItems: FANOUT_PAGE })
       let queued = 0,
         excluded = 0
+      let firstLotComplete = c.firstLotComplete ?? false
       for (const snapshot of page.page) {
+        if (
+          !firstLotComplete &&
+          firstLotExhausted(execution.limits, (c.fanoutQueued ?? 0) + queued)
+        ) {
+          firstLotComplete = true
+          break
+        }
         if (snapshot.messageId || snapshot.state !== 'snapshot') continue
         const member = await ctx.db.get(snapshot.membershipId)
         if (
@@ -771,6 +1100,18 @@ export const pump = mutation({
           excluded++
           continue
         }
+        const ledger =
+          snapshot.ledgerId ||
+          (
+            await ledgerForContact(ctx, {
+              businessId: business.id,
+              campaignId: c._id,
+              canonicalContactKey: member.email,
+              planRevision: c.planRevision ?? 1,
+            })
+          )._id
+        if (!snapshot.ledgerId)
+          await ctx.db.patch(snapshot._id, { ledgerId: ledger })
         const messageId = await ctx.db.insert('emailMessages', {
           businessId: business.id,
           email: member.email,
@@ -785,14 +1126,28 @@ export const pump = mutation({
           campaignId: c._id,
           campaignVersionId: version._id,
           campaignRecipientId: snapshot._id,
+          campaignLedgerId: ledger,
           campaignMembershipGeneration: member.generation,
         })
         await ctx.db.patch(snapshot._id, { state: 'queued', messageId })
         queued++
       }
       await ctx.db.patch(c._id, {
-        state: page.isDone ? 'fanout_complete' : 'running',
-        fanoutCursor: page.isDone ? undefined : page.continueCursor,
+        state: firstLotComplete
+          ? 'paused'
+          : page.isDone
+            ? 'fanout_complete'
+            : 'running',
+        resumeState: firstLotComplete ? 'sending' : undefined,
+        blockReason: firstLotComplete
+          ? 'first_lot_observation_required'
+          : undefined,
+        firstLotComplete,
+        fanoutCursor: firstLotComplete
+          ? c.fanoutCursor
+          : page.isDone
+            ? undefined
+            : page.continueCursor,
         fanoutQueued: (c.fanoutQueued ?? 0) + queued,
         fanoutExcluded: (c.fanoutExcluded ?? 0) + excluded,
         counters: {
@@ -883,12 +1238,27 @@ export const read = query({
       page.page.map(async (row) => {
         const message = row.messageId && (await ctx.db.get(row.messageId))
         const state = message?.state ?? row.state
+        const ledger = row.ledgerId && (await ctx.db.get(row.ledgerId))
+        const protectedLedgerStates = [
+          'departure_authorized',
+          'accepted',
+          'delivered',
+          'unknown',
+        ]
+        const protectedByLedger = Boolean(
+          ledger && protectedLedgerStates.includes(ledger.state)
+        )
         counts[state] = (counts[state] ?? 0) + 1
         return {
           recipient_reference: row._id,
           message_id: row.messageId ?? null,
           state,
           reason: row.reason ?? null,
+          reducible:
+            !protectedByLedger &&
+            (!ledger || ledger.state === 'eligible') &&
+            ['snapshot', 'queued'].includes(state),
+          protected: protectedByLedger,
         }
       })
     )

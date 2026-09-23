@@ -5,6 +5,9 @@ export const emailTables = {
   emailCampaigns: defineTable({
     businessId: v.string(),
     revision: v.optional(v.number()),
+    planRevision: v.optional(v.number()),
+    dispatchEpoch: v.optional(v.number()),
+    firstLotComplete: v.optional(v.boolean()),
     counters: v.optional(v.any()),
     expansionComplete: v.optional(v.boolean()),
     reviewCutoff: v.optional(v.number()),
@@ -14,6 +17,7 @@ export const emailTables = {
     approvedRoute: v.optional(v.string()),
     approvedScheduledAt: v.optional(v.number()),
     resumeState: v.optional(v.string()),
+    pausedAt: v.optional(v.number()),
     blockReason: v.optional(v.string()),
     operationId: v.optional(v.id('emailCampaignRequests')),
     snapshotCursor: v.optional(v.string()),
@@ -55,12 +59,30 @@ export const emailTables = {
     versionId: v.id('emailCampaignVersions'),
     membershipId: v.id('emailMemberships'),
     generation: v.number(),
+    canonicalContactKey: v.optional(v.string()),
+    ledgerId: v.optional(v.id('emailCampaignRecipientLedger')),
     state: v.string(),
     messageId: v.optional(v.id('emailMessages')),
     reason: v.optional(v.string()),
   })
     .index('member', ['versionId', 'membershipId'])
-    .index('version', ['versionId']),
+    .index('version', ['versionId'])
+    .index('campaign', ['campaignId']),
+  // This ledger deliberately outlives a content version and a remaining-plan
+  // revision. It is the durable boundary that prevents a resend by alias,
+  // revision, retry, or worker restart.
+  emailCampaignRecipientLedger: defineTable({
+    businessId: v.string(),
+    campaignId: v.id('emailCampaigns'),
+    canonicalContactKey: v.string(),
+    state: v.string(),
+    planRevision: v.number(),
+    reservationAttemptId: v.optional(v.id('emailAttempts')),
+    departureAuthorizedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index('campaign_contact', ['campaignId', 'canonicalContactKey'])
+    .index('campaign', ['campaignId']),
   emailCampaignRequests: defineTable({
     businessId: v.string(),
     clientId: v.string(),
@@ -75,6 +97,7 @@ export const emailTables = {
     revision: v.number(),
     status: v.string(),
     evidenceMaxAge: v.any(),
+    executionLimits: v.optional(v.any()),
     approvedAt: v.number(),
   }).index('scope', ['businessId', 'identityKey', 'revision']),
   emailCampaignEvidence: defineTable({
@@ -113,6 +136,8 @@ export const emailTables = {
     businessId: v.string(),
     action: v.string(),
     scopeDigest: v.string(),
+    reportId: v.optional(v.id('emailCampaignReports')),
+    revision: v.optional(v.number()),
     expiresAt: v.number(),
     usedAt: v.optional(v.number()),
   }).index('challenge', ['challengeId']),
@@ -192,6 +217,7 @@ export const emailTables = {
     campaignId: v.optional(v.id('emailCampaigns')),
     campaignVersionId: v.optional(v.id('emailCampaignVersions')),
     campaignRecipientId: v.optional(v.id('emailCampaignRecipients')),
+    campaignLedgerId: v.optional(v.id('emailCampaignRecipientLedger')),
     campaignMembershipGeneration: v.optional(v.number()),
     rendered: v.any(),
     state: v.string(),
@@ -213,6 +239,15 @@ export const emailTables = {
     errorCode: v.optional(v.string()),
     route: v.optional(v.string()),
     dispatchReservedAt: v.optional(v.number()),
+    campaignId: v.optional(v.id('emailCampaigns')),
+    campaignLedgerId: v.optional(v.id('emailCampaignRecipientLedger')),
+    canonicalContactKey: v.optional(v.string()),
+    identityKey: v.optional(v.string()),
+    dispatchEpoch: v.optional(v.number()),
+    reservedAt: v.optional(v.number()),
+    authorizedAt: v.optional(v.number()),
+    releasedAt: v.optional(v.number()),
+    releaseProof: v.optional(v.string()),
   }).index('message', ['messageId']),
   emailEvents: defineTable({
     businessId: v.string(),

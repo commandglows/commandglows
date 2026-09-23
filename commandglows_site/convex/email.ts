@@ -3,6 +3,12 @@ import { campaignDispatchState } from './emailCampaignPolicy'
 import { commerceEmailCurrent, syncCommerceEmail } from './commerceEmail'
 import { emailChannelPaused } from './emailOperationsPolicy'
 import {
+  authorizeCampaignDeparture,
+  currentExecutionPolicy,
+  releaseCampaignReservation,
+  reserveCampaignAttempt,
+} from './emailCampaignExecution'
+import {
   renderEmail,
   type EmailContent,
 } from '../src/lib/email/central/templates'
@@ -666,8 +672,14 @@ export const claim = mutation({
           .withIndex('message', (q) => q.eq('messageId', m._id))
           .collect()
         for (const attempt of attempts)
-          if (attempt.state === 'sending')
+          if (['sending', 'departure_authorized'].includes(attempt.state)) {
             await ctx.db.patch(attempt._id, { state: 'unknown' })
+            if (attempt.campaignLedgerId)
+              await ctx.db.patch(attempt.campaignLedgerId, {
+                state: 'unknown',
+                updatedAt: now,
+              })
+          }
       }
     const messages = (
       await Promise.all(
@@ -725,13 +737,53 @@ export const claim = mutation({
       }
       if (config.environment === 'production' && !business.retentionDays)
         continue
+      const campaign = m.campaignId && (await ctx.db.get(m.campaignId))
+      const ledger =
+        m.campaignLedgerId && (await ctx.db.get(m.campaignLedgerId))
+      if (m.kind === 'broadcast' && m.campaignId) {
+        if (!campaign || !ledger || ledger.businessId !== business.id) {
+          await patchEmailMessage(ctx, m._id, { state: 'cancelled' })
+          continue
+        }
+        const execution = await currentExecutionPolicy(ctx, business.id, route)
+        if (
+          !(await reserveCampaignAttempt(ctx, {
+            campaign,
+            ledger,
+            identityKey: route,
+            canonicalContactKey: m.email,
+            policy: execution.limits,
+            now,
+            production: config.environment === 'production',
+          }))
+        ) {
+          await patchEmailMessage(ctx, m._id, { nextAt: now + 60_000 })
+          continue
+        }
+      }
       const attemptId = await ctx.db.insert('emailAttempts', {
         businessId: m.businessId,
         messageId: m._id,
-        state: 'sending',
+        state: m.kind === 'broadcast' && campaign ? 'reserved' : 'sending',
         route,
         at: now,
+        ...(campaign && ledger
+          ? {
+              campaignId: campaign._id,
+              campaignLedgerId: ledger._id,
+              canonicalContactKey: m.email,
+              identityKey: route,
+              dispatchEpoch: campaign.dispatchEpoch ?? 0,
+              reservedAt: now,
+            }
+          : {}),
       })
+      if (ledger)
+        await ctx.db.patch(ledger._id, {
+          state: 'reserved',
+          reservationAttemptId: attemptId,
+          updatedAt: now,
+        })
       await patchEmailMessage(ctx, m._id, {
         state: 'sending',
         leaseUntil: now + 60000,
@@ -803,20 +855,42 @@ export const settle = mutation({
       m.businessId !== a.businessId ||
       t.messageId !== m._id ||
       m.state !== 'sending' ||
-      t.state !== 'sending'
+      !['sending', 'reserved', 'departure_authorized'].includes(t.state)
     )
       fail('invalid_state')
     await ctx.db.patch(t._id, {
       state: a.outcome,
       ...(a.errorCode ? { errorCode: str(a.errorCode, 100) } : {}),
     })
+    if (t.campaignLedgerId) {
+      const ledger = await ctx.db.get(t.campaignLedgerId)
+      if (ledger) {
+        const state =
+          a.outcome === 'submitted'
+            ? 'accepted'
+            : a.outcome === 'unknown'
+              ? 'unknown'
+              : ledger.state
+        await ctx.db.patch(ledger._id, { state, updatedAt: Date.now() })
+        if (['retryable_failure', 'permanent_failure'].includes(a.outcome))
+          await releaseCampaignReservation(
+            ctx,
+            { ...t, state: a.outcome } as any,
+            'provider_definitive_non_acceptance',
+            Date.now()
+          )
+      }
+    }
     const attempts = await ctx.db
       .query('emailAttempts')
       .withIndex('message', (q) => q.eq('messageId', m._id))
       .collect()
-    const submittedAttempts = attempts.filter(
-      (attempt) => attempt.state !== 'cancelled'
-    ).length
+    const submittedAttempts = Math.max(
+      1,
+      attempts.filter(
+        (attempt) => !['cancelled', 'released'].includes(attempt.state)
+      ).length
+    )
     await patchEmailMessage(ctx, m._id, {
       state:
         a.outcome === 'retryable_failure'
@@ -937,8 +1011,17 @@ export const webhook = mutation({
           )
           .collect()
         for (const attempt of attempts)
-          if (['sending', 'unknown'].includes(attempt.state))
+          if (
+            ['sending', 'departure_authorized', 'unknown'].includes(
+              attempt.state
+            )
+          )
             await ctx.db.patch(attempt._id, { state: 'submitted' })
+        if (correlatedMessage.campaignLedgerId)
+          await ctx.db.patch(correlatedMessage.campaignLedgerId, {
+            state: a.type === 'delivery' ? 'delivered' : 'accepted',
+            updatedAt: Date.now(),
+          })
       }
     }
     if (
@@ -1036,7 +1119,7 @@ export const recheckDispatch = mutation({
       message.businessId !== args.businessId ||
       attempt.messageId !== message._id ||
       message.state !== 'sending' ||
-      attempt.state !== 'sending' ||
+      !['sending', 'reserved'].includes(attempt.state) ||
       attempt.dispatchReservedAt !== undefined
     )
       return { eligible: false }
@@ -1107,7 +1190,22 @@ export const recheckDispatch = mutation({
           attempts: 1,
         })
     }
-    if (eligible)
+    if (eligible && message.kind === 'broadcast' && message.campaignId) {
+      const campaign =
+        message.campaignId && (await ctx.db.get(message.campaignId))
+      const ledger =
+        message.campaignLedgerId && (await ctx.db.get(message.campaignLedgerId))
+      eligible = Boolean(
+        campaign &&
+        ledger &&
+        (await authorizeCampaignDeparture(ctx, {
+          attempt,
+          campaign,
+          ledger,
+          now: Date.now(),
+        }))
+      )
+    } else if (eligible)
       await ctx.db.patch(attempt._id, { dispatchReservedAt: Date.now() })
     if (!eligible) {
       await patchEmailMessage(ctx, message._id, {
@@ -1116,6 +1214,13 @@ export const recheckDispatch = mutation({
         nextAt: Date.now() + 60_000,
       })
       await ctx.db.patch(attempt._id, { state: 'cancelled' })
+      if (attempt.campaignLedgerId)
+        await releaseCampaignReservation(
+          ctx,
+          attempt,
+          'pre_departure_fenced',
+          Date.now()
+        )
     }
     return { eligible }
   },

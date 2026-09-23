@@ -10,7 +10,9 @@ const env = {
   SUITE_BRIDGE_CONVEX_SECRET: 'server-identity-secret',
   EMAIL_OPERATOR_CREDENTIAL: 'server-email-secret',
 }
-const locals = { auth: () => ({ userId: 'user_admin' }) }
+const locals = {
+  auth: () => ({ userId: 'user_admin', sessionId: 'session-test' }),
+}
 function setup() {
   return {
     authority: vi.fn().mockResolvedValue({ actorId: 'user_admin' }),
@@ -43,6 +45,236 @@ const draft = {
   blocks: [{ id: 'one', type: 'text', text: 'Bonjour' }],
 }
 describe('campaign operator boundary', () => {
+  it('reads remaining recipient references and persisted incidents by tenant scope', async () => {
+    const recipients = setup()
+    recipients.read.mockResolvedValueOnce({
+      campaign: { id: 'campaign1', state: 'paused', version: 7 },
+      page: [
+        {
+          recipient_reference: 'opaque-recipient-1',
+          state: 'queued',
+          reducible: true,
+          protected: false,
+          reason: null,
+        },
+      ],
+      cursor: null,
+      complete: true,
+    })
+    const recipientPath = 'campaigns/campaign1/recipients'
+    const recipientResponse = await handleCampaignApi(
+      {
+        request: new Request(
+          `https://example.com/api/admin/email/${recipientPath}?business_id=shipglows&limit=10`
+        ),
+        locals,
+      },
+      recipientPath,
+      env,
+      recipients
+    )
+    expect(await recipientResponse.json()).toEqual({
+      campaign: {
+        id: 'campaign1',
+        state: 'suspended',
+        version: 7,
+      },
+      recipients: [
+        {
+          recipient_reference: 'opaque-recipient-1',
+          state: 'queued',
+          reducible: true,
+          protected: false,
+          reason: null,
+        },
+      ],
+      next_cursor: null,
+      complete: true,
+    })
+    expect(recipients.read).toHaveBeenCalledWith(
+      'emailCampaigns:read',
+      expect.objectContaining({ view: 'recipients', campaignId: 'campaign1' })
+    )
+
+    const incidents = setup()
+    incidents.read.mockResolvedValueOnce({
+      incidents: [
+        {
+          id: 'incident-1',
+          state: 'open',
+          severity: 0.2,
+          measurement: null,
+          threshold: null,
+          coverage: null,
+          evaluated_at: null,
+          measurement_unavailable_reason: 'not persisted',
+        },
+      ],
+      cursor: null,
+      complete: true,
+    })
+    const incidentPath = 'campaigns/campaign1/incidents'
+    const incidentResponse = await handleCampaignApi(
+      {
+        request: new Request(
+          `https://example.com/api/admin/email/${incidentPath}?business_id=shipglows`
+        ),
+        locals,
+      },
+      incidentPath,
+      env,
+      incidents
+    )
+    expect((await incidentResponse.json()).incidents[0]).toMatchObject({
+      id: 'incident-1',
+      measurement: null,
+      threshold: null,
+      coverage: null,
+      evaluated_at: null,
+    })
+    expect(incidents.read).toHaveBeenCalledWith(
+      'emailIncidentQueries:read',
+      expect.objectContaining({
+        businessId: 'shipglows',
+        campaignId: 'campaign1',
+      })
+    )
+  })
+
+  it('adapts real Convex list and preview receipts to the Flutter wire shape', async () => {
+    const deps = setup()
+    deps.read.mockResolvedValueOnce({
+      page: [
+        { campaign: { id: 'one', state: 'paused', title: 'Paused' } },
+        { campaign: { id: 'two', state: 'running', title: 'Sending' } },
+      ],
+      cursor: 'next-page',
+      complete: false,
+    })
+    const listResponse = await handleCampaignApi(
+      {
+        request: new Request(
+          'https://example.com/api/admin/email/campaigns?business_id=shipglows&limit=2'
+        ),
+        locals,
+      },
+      'campaigns',
+      env,
+      deps
+    )
+    expect(await listResponse.json()).toEqual({
+      campaigns: [
+        { id: 'one', state: 'suspended', title: 'Paused' },
+        { id: 'two', state: 'sending', title: 'Sending' },
+      ],
+      next_cursor: 'next-page',
+    })
+
+    deps.read.mockResolvedValueOnce({
+      campaign: { id: 'one', state: 'paused', title: 'Paused' },
+      rendered: { html: '<p>Draft</p>', text: 'Draft' },
+    })
+    const detailResponse = await handleCampaignApi(
+      {
+        request: new Request(
+          'https://example.com/api/admin/email/campaigns/one?business_id=shipglows'
+        ),
+        locals,
+      },
+      'campaigns/one',
+      env,
+      deps
+    )
+    expect(await detailResponse.json()).toEqual({
+      campaign: { id: 'one', state: 'suspended', title: 'Paused' },
+      rendered: { html: '<p>Draft</p>', text: 'Draft' },
+    })
+    expect(deps.read).toHaveBeenNthCalledWith(
+      2,
+      'emailCampaigns:read',
+      expect.objectContaining({ view: 'preview' })
+    )
+  })
+
+  it('allows pause as a stale-safe stop and binds challenge issue to the server session', async () => {
+    const pauseDeps = setup()
+    const pausePath = 'campaigns/campaign1/pause'
+    expect(
+      (
+        await handleCampaignApi(
+          {
+            request: request(pausePath, { business_id: 'shipglows' }),
+            locals,
+          },
+          pausePath,
+          env,
+          pauseDeps
+        )
+      ).status
+    ).toBe(200)
+    expect(pauseDeps.command).toHaveBeenCalledWith(
+      'emailCampaigns:command',
+      expect.objectContaining({
+        operation: 'pause',
+        input: { campaignId: 'campaign1' },
+      })
+    )
+
+    const challengeDeps = setup()
+    const challengePath = 'campaigns/campaign1/challenge'
+    await handleCampaignApi(
+      {
+        request: request(challengePath, {
+          business_id: 'shipglows',
+          expected_version: 4,
+          action: 'resume',
+          report_id: 'report-current',
+        }),
+        locals,
+      },
+      challengePath,
+      env,
+      challengeDeps
+    )
+    expect(challengeDeps.command).toHaveBeenCalledWith(
+      'emailCampaigns:command',
+      expect.objectContaining({
+        operation: 'challenge',
+        actorId: 'user_admin',
+        sessionRef: 'session-test',
+        input: expect.objectContaining({
+          action: 'resume',
+          reportId: 'report-current',
+          expectedVersion: 4,
+        }),
+      })
+    )
+
+    const receiptDeps = setup()
+    receiptDeps.command.mockResolvedValueOnce({
+      campaign: { id: 'campaign1', state: 'paused', version: 5 },
+      block_reason: 'operator_paused',
+    })
+    const receipt = await handleCampaignApi(
+      {
+        request: request(pausePath, { business_id: 'shipglows' }),
+        locals,
+      },
+      pausePath,
+      env,
+      receiptDeps
+    )
+    expect(await receipt.json()).toEqual({
+      campaign: {
+        id: 'campaign1',
+        state: 'suspended',
+        version: 5,
+        block_reason: 'operator_paused',
+      },
+      block_reason: 'operator_paused',
+    })
+  })
+
   it('accepts incomplete drafts through HTTP', async () => {
     const deps = setup()
     const body = { ...draft, subject: '', blocks: [] }

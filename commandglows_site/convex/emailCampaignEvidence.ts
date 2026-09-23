@@ -18,6 +18,7 @@ export function evidenceScope(input: {
   audienceId: string
   purpose: string
   route: string
+  planRevision?: number
 }) {
   return canonical(input)
 }
@@ -29,7 +30,9 @@ export async function currentReport(
 ) {
   return ctx.db
     .query('emailCampaignReports')
-    .withIndex('campaign', (q) => q.eq('campaignId', campaignId).eq('revision', revision))
+    .withIndex('campaign', (q) =>
+      q.eq('campaignId', campaignId).eq('revision', revision)
+    )
     .order('desc')
     .first()
 }
@@ -44,6 +47,7 @@ export async function createEvidenceReport(
     audienceId: string
     purpose: string
     route: string
+    planRevision: number
     now: number
   }
 ) {
@@ -54,13 +58,17 @@ export async function createEvidenceReport(
     audienceId: args.audienceId,
     purpose: args.purpose,
     route: args.route,
+    planRevision: args.planRevision,
   })
-  const policy = await ctx.db
+  const policies = await ctx.db
     .query('emailCampaignPolicies')
     .withIndex('scope', (q) =>
-      q.eq('businessId', args.businessId).eq('identityKey', args.route).eq('revision', 1)
+      q.eq('businessId', args.businessId).eq('identityKey', args.route)
     )
-    .unique()
+    .collect()
+  const policy = policies
+    .filter((candidate) => candidate.status === 'approved')
+    .sort((a, b) => b.revision - a.revision)[0]
   const blockingChecks: any[] = []
   const warningChecks: any[] = []
   const evidenceIds: string[] = []
@@ -74,29 +82,39 @@ export async function createEvidenceReport(
     const record = await ctx.db
       .query('emailCampaignEvidence')
       .withIndex('campaign', (q) =>
-        q.eq('campaignId', args.campaignId).eq('versionId', args.versionId).eq('kind', kind)
+        q
+          .eq('campaignId', args.campaignId)
+          .eq('versionId', args.versionId)
+          .eq('kind', kind)
       )
       .order('desc')
       .first()
     const maxAge = Number(policy?.evidenceMaxAge?.[kind] ?? 0)
     const valid = Boolean(
       record &&
-        record.businessId === args.businessId &&
-        record.scopeDigest === scopeDigest &&
-        record.status === 'valid' &&
-        maxAge > 0 &&
-        record.validUntil >= args.now &&
-        record.collectedAt + maxAge >= args.now
+      record.businessId === args.businessId &&
+      record.scopeDigest === scopeDigest &&
+      record.status === 'valid' &&
+      maxAge > 0 &&
+      record.validUntil >= args.now &&
+      record.collectedAt + maxAge >= args.now
     )
     if (!valid) {
       blockingChecks.push({
         kind,
-        code: record?.status === 'unavailable' ? 'evidence_unavailable' : 'evidence_invalid',
+        code:
+          record?.status === 'unavailable'
+            ? 'evidence_unavailable'
+            : 'evidence_invalid',
         evidence_ref: record?.evidenceRef ?? null,
       })
     } else {
       evidenceIds.push(record!.evidenceRef)
-      expiresAt = Math.min(expiresAt, record!.validUntil, record!.collectedAt + maxAge)
+      expiresAt = Math.min(
+        expiresAt,
+        record!.validUntil,
+        record!.collectedAt + maxAge
+      )
     }
   }
 
@@ -121,7 +139,17 @@ export async function createEvidenceReport(
 
 export async function consumeHumanChallenge(
   ctx: MutationCtx,
-  input: { challengeId?: string; businessId: string; action: string; scopeDigest: string; now: number }
+  input: {
+    challengeId?: string
+    businessId: string
+    action: string
+    scopeDigest: string
+    reportId: Id<'emailCampaignReports'>
+    revision: number
+    actorId?: string
+    sessionRef?: string
+    now: number
+  }
 ) {
   if (!input.challengeId) fail('human_authority_required')
   const challenge = await ctx.db
@@ -134,7 +162,11 @@ export async function consumeHumanChallenge(
     challenge.expiresAt <= input.now ||
     challenge.businessId !== input.businessId ||
     challenge.action !== input.action ||
-    challenge.scopeDigest !== input.scopeDigest
+    challenge.scopeDigest !== input.scopeDigest ||
+    challenge.reportId !== input.reportId ||
+    challenge.revision !== input.revision ||
+    challenge.actorId !== input.actorId ||
+    challenge.sessionRef !== input.sessionRef
   )
     fail('challenge_rejected')
   await ctx.db.patch(challenge._id, { usedAt: input.now })

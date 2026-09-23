@@ -6,6 +6,7 @@ import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { commerceEventEnvelope } from './commerceEventContract'
 import { commerceOperationsTables } from './commerceOperationsSchema'
+import { emailIncidentTables } from './emailIncidentSchema'
 
 export default defineSchema({
   ...emailTables,
@@ -13,11 +14,21 @@ export default defineSchema({
   ...commerceOperationsTables,
   ...emailLegacyTables,
   ...emailOperationsTables,
+  ...emailIncidentTables,
   siteLoginAttempts: defineTable({
-    attemptId: v.string(), environment: v.string(),
-    status: v.union(v.literal('pending'), v.literal('active'), v.literal('revoked')),
-    expiresAt: v.number(), createdAt: v.number(), updatedAt: v.number(),
-  }).index('by_attemptEnvironment', ['attemptId', 'environment']).index('by_expiresAt', ['expiresAt']),
+    attemptId: v.string(),
+    environment: v.string(),
+    status: v.union(
+      v.literal('pending'),
+      v.literal('active'),
+      v.literal('revoked')
+    ),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_attemptEnvironment', ['attemptId', 'environment'])
+    .index('by_expiresAt', ['expiresAt']),
   globalUsers: defineTable({
     globalUserId: v.string(),
     primaryEmail: v.optional(v.string()),
@@ -42,7 +53,12 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_providerAccount', ['provider', 'providerAccountId'])
-    .index('by_scopedProviderAccount', ['provider', 'issuer', 'providerAccountId', 'environment'])
+    .index('by_scopedProviderAccount', [
+      'provider',
+      'issuer',
+      'providerAccountId',
+      'environment',
+    ])
     .index('by_globalUserId', ['globalUserId'])
     .index('by_email', ['email'])
     .index('by_providerAccountId', ['providerAccountId']),
@@ -195,8 +211,16 @@ export default defineSchema({
   })
     .index('by_eventKey', ['eventKey'])
     .index('by_status', ['status'])
-    .index('by_purchase', ['envelope.provider', 'envelope.environment', 'envelope.productId', 'envelope.sourceRef'])
-    .index('by_environmentIdempotency', ['envelope.environment', 'envelope.idempotencyKey']),
+    .index('by_purchase', [
+      'envelope.provider',
+      'envelope.environment',
+      'envelope.productId',
+      'envelope.sourceRef',
+    ])
+    .index('by_environmentIdempotency', [
+      'envelope.environment',
+      'envelope.idempotencyKey',
+    ]),
 
   commerceEventReviewAttempts: defineTable({
     receiptId: v.id('commerceEventReceipts'),
@@ -229,7 +253,10 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_licenseEnvironment', ['licenseKey', 'environment'])
-    .index('by_previousLicenseEnvironment', ['previousLicenseKey', 'environment'])
+    .index('by_previousLicenseEnvironment', [
+      'previousLicenseKey',
+      'environment',
+    ])
     .index('by_globalUserId', ['globalUserId']),
 
   users: defineTable({
