@@ -220,7 +220,7 @@ void main() {
     expect(bridgeClient.startCalls, 1);
     expect(bridgeClient.lastRequestTrialStart, isTrue);
     expect(
-      find.textContaining('Un essai précédent existe déjà'),
+      find.textContaining('Un essai gratuit a déjà été utilisé pour ce compte'),
       findsOneWidget,
     );
     expect(find.textContaining('denial-request-id'), findsOneWidget);
@@ -245,8 +245,17 @@ void main() {
         responseIdentity,
         ({required requestTrialStart}) {},
       );
+      var identityRefreshCount = 0;
       await tester.pumpWidget(
-        _screen(initialIdentity, _Store(), bridgeClient: bridgeClient),
+        _screen(
+          initialIdentity,
+          _Store(),
+          bridgeClient: bridgeClient,
+          identityAfterRefresh: () {
+            identityRefreshCount += 1;
+            return initialIdentity;
+          },
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -256,14 +265,61 @@ void main() {
       expect(bridgeClient.startCalls, 1);
       expect(bridgeClient.lastRequestTrialStart, isTrue);
       expect(
-        find.textContaining('résultat de la demande est indéterminé'),
+        find.textContaining('Nous n’avons pas reçu de confirmation'),
         findsOneWidget,
       );
       expect(
-        find.textContaining('il a pu recevoir la demande'),
+        find.textContaining('La demande a peut-être été enregistrée'),
         findsOneWidget,
       );
+      expect(find.text('Vérifier mon accès'), findsOneWidget);
       expect(find.textContaining('unconfirmed-request-id'), findsNothing);
+      final refreshesBeforeTap = identityRefreshCount;
+      await tester.tap(find.text('Vérifier mon accès'));
+      await tester.pumpAndSettle();
+      expect(identityRefreshCount, greaterThan(refreshesBeforeTap));
+    },
+  );
+
+  testWidgets(
+    'start trial service error uses clear copy and support reference',
+    (tester) async {
+      const initialIdentity = SuiteIdentitySnapshot(
+        status: SuiteAccountStatus.recognized,
+        globalUserId: 'gu_test',
+      );
+      const responseIdentity = SuiteIdentitySnapshot(
+        status: SuiteAccountStatus.recognized,
+        globalUserId: 'gu_test',
+        trialRequest: TrialRequestResult(
+          state: TrialRequestState.httpError,
+          httpStatus: 503,
+          machineErrorCode: 'bridge_write_failed',
+          requestId: 'service-request-id',
+        ),
+      );
+      final bridgeClient = _TrialBridgeClient(
+        responseIdentity,
+        ({required requestTrialStart}) {},
+      );
+      await tester.pumpWidget(
+        _screen(initialIdentity, _Store(), bridgeClient: bridgeClient),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Démarrer mon essai gratuit'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining(
+          'Le service d’essai n’a pas pu terminer la demande',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('service-request-id'), findsOneWidget);
+      expect(find.text('Vérifier mon accès'), findsOneWidget);
+      expect(find.textContaining('503'), findsNothing);
+      expect(find.textContaining('bridge_write_failed'), findsNothing);
     },
   );
 }

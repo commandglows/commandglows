@@ -156,6 +156,14 @@ next_step: "Run authenticated Firebase and platform-specific production checks b
   denial copy plus correlation reference, and unknown/no-response feedback.
   `doppler run --project commandglows --config dev -- flutter test
   test/auth_gate_screen_test.dart` passes (5 tests).
+- Reworked the error card title and French copy to explain known denial
+  reasons and recovery without showing raw HTTP or internal error codes. The
+  AuthGate and trial-access widget suites pass (14 tests). Uncertain service
+  outcomes now offer a working “Vérifier mon accès” action that refreshes the
+  entitlement snapshot without resending a trial request. The prior Windows
+  executable was timestamped 2026-09-23; the managed Dev app was relaunched
+  from current source and hot reload succeeded. No trial request was sent
+  during the restart.
 
 ## Keyboard Sync Slice Verification — 2026-05-25
 

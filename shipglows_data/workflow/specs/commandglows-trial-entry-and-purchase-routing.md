@@ -6,7 +6,7 @@ project: "CommandGlows"
 created: "2026-09-23"
 created_at: "2026-09-22 23:58:43 UTC"
 updated: "2026-09-24"
-updated_at: "2026-09-24 00:49:56 UTC"
+updated_at: "2026-09-24 08:54:01 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-6"
@@ -211,6 +211,8 @@ First-read files: `commandglows_app/lib/features/auth/presentation/auth_gate_scr
 - HTTP 200 on grant means the awaited Admin/WIF Firestore mirror write succeeded; the bridge returns 500 on mirror-write failure. Direct client access to the server-owned Firestore mirror correctly returns 403 under Firestore rules.
 - Hosted API proof is complete. Interactive Windows sign-in and rendered in-app feedback remain the final UI smoke; the API test does not claim that visual proof.
 - The focused Flutter AuthGate suite passes 5 tests, including CTA request, active-grant transition, denial copy with request reference, and unknown outcome without a false support reference.
+- Follow-up from the stale Windows screenshot: current Dev binary predated the fix, and its generic failure sentence is absent from current source. Failure copy now names the known cause where safe, explains the effect on app access and gives the next step. Technical HTTP/internal codes are hidden; a support reference remains available after a response.
+- For uncertain outcomes and service errors, the access gate now exposes a working “Vérifier mon accès” action that refreshes the authoritative entitlement snapshot without resending the trial-start request.
 
 ## Open Questions
 

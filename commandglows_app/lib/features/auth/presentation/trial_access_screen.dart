@@ -16,6 +16,7 @@ class TrialAccessScreen extends StatelessWidget {
     this.onStartTrial,
     this.isStartingTrial = false,
     this.trialStartError,
+    this.showTrialAccessVerification = false,
     this.restartError,
     this.purchaseError,
     this.checkoutOpened = false,
@@ -33,6 +34,7 @@ class TrialAccessScreen extends StatelessWidget {
   final Future<void> Function()? onStartTrial;
   final bool isStartingTrial;
   final String? trialStartError;
+  final bool showTrialAccessVerification;
   final String? restartError;
   final String? purchaseError;
   final bool checkoutOpened;
@@ -112,12 +114,21 @@ class TrialAccessScreen extends StatelessWidget {
                               AppGaps.x2,
                               AppBannerCard(
                                 icon: Icons.error_outline,
-                                title: 'Essai indisponible',
+                                title: 'Demande d’essai non confirmée',
                                 message: trialStartError!,
                                 accentColor: Theme.of(
                                   context,
                                 ).colorScheme.error,
                               ),
+                              if (showTrialAccessVerification &&
+                                  onVerifyAccess != null) ...[
+                                AppGaps.x2,
+                                OutlinedButton.icon(
+                                  onPressed: onVerifyAccess,
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('Vérifier mon accès'),
+                                ),
+                              ],
                             ],
                             AppGaps.x3,
                             if (_canStartTrial && onStartTrial != null) ...[

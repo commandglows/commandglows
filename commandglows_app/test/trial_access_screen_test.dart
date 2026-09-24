@@ -100,7 +100,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Essai indisponible'), findsOneWidget);
+    expect(find.text('Demande d’essai non confirmée'), findsOneWidget);
     expect(
       find.text('Cet essai n’est pas disponible pour ce compte.'),
       findsOneWidget,

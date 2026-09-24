@@ -25,6 +25,7 @@ class AuthGateScreen extends ConsumerStatefulWidget {
 class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   bool _isRestarting = false;
   bool _isStartingTrial = false;
+  bool _trialNeedsAccessVerification = false;
   bool _isPurchasing = false;
   bool _checkoutOpened = false;
   String? _restartError;
@@ -58,6 +59,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     setState(() {
       _isStartingTrial = true;
       _trialStartError = null;
+      _trialNeedsAccessVerification = false;
     });
     try {
       final session = await ref.read(authSessionProvider.future);
@@ -86,6 +88,15 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         if (mounted) {
           setState(() {
             _trialStartError = _trialRequestFeedback(identity.trialRequest);
+            _trialNeedsAccessVerification =
+                switch (identity.trialRequest?.state) {
+                  TrialRequestState.noResponse ||
+                  TrialRequestState.httpError ||
+                  TrialRequestState.granted ||
+                  TrialRequestState.alreadyActive ||
+                  TrialRequestState.responseUnknown => true,
+                  _ => false,
+                };
           });
         }
         return;
@@ -95,8 +106,9 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
       if (mounted) {
         setState(() {
           _trialStartError = bridgeRequestStarted
-              ? 'Le résultat de la demande est indéterminé. Le serveur a pu recevoir la demande, mais aucune confirmation d’accès n’a été obtenue. Vérifiez votre accès avant de réessayer.'
-              : 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez ou consultez les offres.';
+              ? 'Nous n’avons pas reçu de confirmation. La demande a peut-être été enregistrée : vérifiez votre accès avant de réessayer.'
+              : 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez. Vous pouvez aussi consulter les offres.';
+          _trialNeedsAccessVerification = bridgeRequestStarted;
         });
       }
     } finally {
@@ -106,7 +118,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
 
   String _trialRequestFeedback(TrialRequestResult? result) {
     if (result == null || result.state == TrialRequestState.notSent) {
-      return 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez ou consultez les offres.';
+      return 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez. Vous pouvez aussi consulter les offres.';
     }
 
     final correlation = result.responseReceived && result.requestId != null
@@ -114,32 +126,39 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         : '';
     switch (result.state) {
       case TrialRequestState.notSent:
-        return 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez ou consultez les offres.';
+        return 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez. Vous pouvez aussi consulter les offres.';
       case TrialRequestState.noResponse:
-        return 'Le résultat de la demande est indéterminé : aucune réponse du serveur n’a été reçue, mais il a pu recevoir la demande. Vérifiez votre accès avant de réessayer.$correlation';
+        return 'Nous n’avons pas reçu de confirmation. La demande a peut-être été enregistrée. Vérifiez votre accès avant de recommencer.$correlation';
       case TrialRequestState.httpError:
-        final code = result.machineErrorCode;
-        return 'Une réponse du serveur a été reçue (HTTP ${result.httpStatus ?? 'inconnu'}${code == null ? '' : ', code $code'}). Votre accès reste verrouillé. Réessayez ou consultez les offres.$correlation';
+        final recovery = switch (result.machineErrorCode) {
+          'invalid_firebase_token' =>
+            'Votre session n’a pas pu être vérifiée. Reconnectez-vous, puis réessayez.',
+          'trial_installation_signal_unavailable' =>
+            'Nous n’avons pas pu vérifier cette installation. Réessayez plus tard ou contactez le support.',
+          _ =>
+            'Le service d’essai n’a pas pu terminer la demande. Vérifiez votre accès avant de recommencer, ou réessayez plus tard.',
+        };
+        return '$recovery$correlation';
       case TrialRequestState.denied:
         final reason = switch (result.reasonCode) {
           'installation_not_eligible' =>
-            'L’essai n’est pas disponible pour cette demande. Nous ne pouvons pas préciser si une installation partagée a déjà été utilisée. Consultez les offres ou contactez le support.',
+            'Cette installation ne peut pas bénéficier d’un essai gratuit. Nous ne pouvons pas préciser davantage. Consultez les offres ou contactez le support.',
           'previous_trial_exists' =>
-            'Un essai précédent existe déjà pour cette demande. Consultez les offres ou contactez le support.',
+            'Un essai gratuit a déjà été utilisé pour ce compte. Consultez les offres pour continuer.',
           'trial_cycles_exhausted' =>
-            'Les possibilités d’essai ont été utilisées. Consultez les offres pour continuer.',
+            'Les périodes d’essai disponibles ont toutes été utilisées pour ce compte. Consultez les offres pour continuer.',
           'temporary_rate_limit' =>
-            'Trop de demandes ont été effectuées récemment. Réessayez plus tard ou consultez les offres.',
+            'Le service limite le nombre de demandes sur une courte période. Réessayez plus tard ou consultez les offres.',
           'active_paid_access' =>
-            'Le serveur signale un accès payant déjà actif. Actualisez votre accès ou contactez le support.',
+            'Un accès payant est déjà associé à ce compte. Actualisez votre accès ou contactez le support.',
           _ =>
-            'Le serveur n’a pas accordé l’essai. Consultez les offres ou contactez le support.',
+            'Le serveur n’a pas accordé l’essai. Votre accès à l’app n’a pas changé. Consultez les offres ou contactez le support.',
         };
-        return 'Réponse du serveur reçue : $reason$correlation';
+        return '$reason$correlation';
       case TrialRequestState.granted:
       case TrialRequestState.alreadyActive:
       case TrialRequestState.responseUnknown:
-        return 'Une réponse du serveur a été reçue, mais aucun accès actif n’a été confirmé. Vérifiez votre accès avant de réessayer.$correlation';
+        return 'La réponse ne confirme pas encore l’accès à l’app. Vérifiez votre accès avant de recommencer.$correlation';
     }
   }
 
@@ -295,6 +314,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                   : null,
               isStartingTrial: _isStartingTrial,
               trialStartError: _trialStartError,
+              showTrialAccessVerification: _trialNeedsAccessVerification,
               onRestart: _restartTrial,
               restartError: _restartError,
               purchaseError: _purchaseError,
