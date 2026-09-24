@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: CommandGlows
 created: "2026-09-05"
-updated: "2026-09-07"
+updated: "2026-09-24"
 status: reviewed
 source_skill: sg-development
 scope: central-email-pilot-operations
@@ -34,7 +34,7 @@ next_review: "2026-10-05"
 
 ## What exists
 
-Local additive implementation, not a deployed migration. Convex owns normalized addresses, consent history, audience membership, opaque-token records, suppression state, idempotency, outbox, attempts and delivery events. Astro exposes authenticated v1 controllers and a Postmark adapter. Existing Resend callers and entitlements are unchanged. Commerce alerts now have an explicitly configured durable email channel; its acceptance boundaries are described below. New API contracts are in `central-email-api-contract.md`.
+Local additive implementation, not a deployed migration. Convex owns normalized addresses, consent history, audience membership, opaque-token records, suppression state, idempotency, outbox, attempts and delivery events. Astro exposes authenticated v1 controllers and a Postmark adapter. Newsletter signup uses the central registry with explicit consent and signed preferences; the former buyer newsletter hook cannot subscribe a purchaser without consent. Entitlements are unchanged. Commerce alerts now have an explicitly configured durable email channel; its acceptance boundaries are described below. New API contracts are in `central-email-api-contract.md`.
 
 CommunityGlows is the first pilot. Its static Astro site uses a same-origin Vercel function under `site/api/newsletter/subscribe.js`; adding an Astro POST route to the static build would not provide a server. Its coordinated `site/NEWSLETTER.md` owns product configuration. The form remains disabled until its versioned notice and controller are configured explicitly. Hosting a static build alone does not prove the function exists.
 
@@ -55,9 +55,11 @@ For each authorized business, supply actual values in `businesses`:
 | Field | Meaning |
 | --- | --- |
 | `id`, `brand`, `legalFooter` | Registered business ID, visible brand and approved controller/contact/address footer |
-| `from` | Actual verified Postmark sender; never accept this from a product request |
-| `serverId`, `serverTokenEnv` | Actual Server ID and the name of its server-only credential variable |
-| `transactionalStream`, `broadcastStream` | Actual distinct stream IDs; configured Broadcast uses Postmark-managed unsubscribes |
+| `from` | Actual sender verified by the selected provider; never accept this from a product request |
+| `delivery.provider` | Registered adapter identifier: `postmark` or `capture`; unknown providers are rejected |
+| `delivery.mode` | `sandbox`, `live` or `capture`, as supported by the selected adapter |
+| `delivery.channels` | `{transactional,broadcast}` delivery channel IDs; preserve their physical values when migrating existing suppression records |
+| `delivery.options` | Provider-owned configuration. Postmark uses `serverId`, `serverTokenEnv` (credential variable name, never value) and optional `webhookCredentialEnv`; capture uses `{}` |
 | `publicBaseUrl` | Actual HTTPS CommandGlows integration origin, used for preferences and scheduled dispatch |
 | `audiences` | `{id,purpose,sources,noticeVersions}` records; pilot CommunityGlows source is `communityglows_site`, purpose `marketing`; audience and approved notice version are operator-supplied |
 | `activated` | Explicit transport activation; keep false until the isolated provider setup is approved |
@@ -76,9 +78,11 @@ All credential variable names referenced by clients start with `EMAIL_`; values 
 
 Production dispatch additionally requires `EMAIL_ALLOW_PRODUCTION_SEND=true` in an actual `VERCEL_ENV=production` runtime. These gates do not authorize a production send. The worker reads `/server` and `/message-streams` before claiming a job and checks actual Server ID, Sandbox/Live mode, stream types and Postmark-managed unsubscribe policy. A config label alone cannot turn a Live token into a sandbox.
 
-### Explicit transport and bounded Preview Live test
+### Adapter configuration and bounded Preview Live test
 
-Application `environment` remains sandbox/production. Optional business `transport` is postmark (default) or capture; `providerMode` is Sandbox or Live, defaulting compatibly from application environment. Capture simulates local acceptance only, does not call a provider and does not prove reception. Postmark transport capabilities explicitly report no provider idempotency or automatic evidence lookup.
+Application `environment` remains sandbox/production. New profiles use `delivery: {provider, mode, channels: {transactional, broadcast}, options}`. Postmark requires mode `sandbox` or `live`; capture requires mode `capture`. The adapter descriptor validates its options and reports readiness, resource identity and routing identity. Capture simulates local acceptance only, does not call a provider and does not prove reception. Postmark transport capabilities explicitly report no provider idempotency or automatic evidence lookup.
+
+Old flat profiles are converted only at the configuration boundary. The normalized business model exposes no `serverId`, `serverTokenEnv`, `providerMode` or provider-specific transport enumeration. Registering another provider requires its pure configuration descriptor and runtime adapter; the worker and consent domain remain unchanged. Provider-specific webhooks normalize events before entering the common registry. Equivalent Postmark profiles keep the same persisted route identity. Existing flat capture profiles also keep their identity while read in the old format; explicitly migrating capture to the new format changes that identity, so pending capture jobs must be recreated through the normal controls. Never rewrite stored routes to bypass this refusal. Normalized profiles are immutable during processing; reparse the source configuration after any change.
 
 Sandbox application + Live provider requires a private `liveTest` object `{id,expiresAt,maxAttempts,recipients}`. `expiresAt` is an absolute Unix timestamp in milliseconds; maxAttempts is a positive bounded integer. Both this profile and `allowedRecipients` must admit the recipient. Only an internally created `operator` message can use this profile; newsletter, confirmation and generic service calls cannot. Configuration changes do not grant authority to add a recipient, reset a profile ID or increase the authorized budget.
 

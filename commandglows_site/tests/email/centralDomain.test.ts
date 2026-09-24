@@ -113,6 +113,21 @@ afterEach(() => {
   vi.useRealTimers()
 })
 describe('central domain', () => {
+  test('legacy purchase hook cannot create a marketing subscription', async () => {
+    const t = convexTest(schema, modules)
+    const provider = vi.spyOn(globalThis, 'fetch')
+    const result = await t.action(
+      makeFunctionReference<'action'>('resend:addBuyerToNewsletter'),
+      { email: input.email, name: 'Buyer' }
+    )
+    expect(result).toMatchObject({
+      status: 'skipped',
+      reason: 'explicit_marketing_consent_required',
+    })
+    expect(await rows(t, 'emailMemberships')).toHaveLength(0)
+    expect(provider).not.toHaveBeenCalled()
+    provider.mockRestore()
+  })
   test('normalizes and rejects headers', () => {
     expect(normalizeEmail(' A@Example.test ')).toBe('a@example.test')
     expect(() => normalizeEmail('a@b.test\r\nBcc:x')).toThrow()

@@ -19,7 +19,7 @@ linked_systems:
   - "Clerk"
   - "Convex"
   - "Stripe Managed Payments"
-  - "Resend"
+  - "Postmark via central email registry"
 depends_on:
   - "CLAUDE.md"
   - "shipglows_data/technical/guidelines.md"
@@ -45,7 +45,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 - Clerk authentication
 - Convex-backed user and feature data
 - Stripe-only checkout and webhook handling
-- Resend newsletter flows
+- central newsletter consent flows with pluggable email delivery
 
 ## First Places to Read
 
@@ -61,7 +61,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 - Auth: Clerk middleware and webhook sync
 - Data: Convex schema, queries, mutations, HTTP actions
 - Billing: signed suite handoff, Stripe Managed Payments checkout, AppSumo pending-review intake, central webhooks, and Convex fulfillment
-- Email: Resend subscription and unsubscribe endpoints
+- Email: consent-aware subscription and unsubscribe routes backed by the central Convex registry and Postmark transport
 - Content: Astro content collections for docs, blog, products, services
 
 ## Critical Working Rules
@@ -85,7 +85,7 @@ CommandGlows is a bilingual Astro application for Windows-focused productivity c
 
 ## Environment Assumptions
 
-The codebase expects valid values for Clerk, Convex, Stripe, and Resend. Placeholder env values are explicitly rejected in parts of the runtime, especially checkout and newsletter flows.
+The codebase expects valid values for Clerk, Convex, Stripe, and the central email service. Placeholder env values are explicitly rejected in parts of the runtime, especially checkout and newsletter flows.
 
 ## Change Checklist
 

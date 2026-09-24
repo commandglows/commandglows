@@ -103,11 +103,11 @@ describe('email templates', () => {
       legalFooter: 'Example operator',
       subject: 'Nouvelles',
       paragraphs: ['<script>alert(1)</script>'],
-      unsubscribeUrl: '{{{ pm:unsubscribe }}}',
+      unsubscribeUrl: '{{{ email:unsubscribe }}}',
     }
     const rendered = renderEmail(content)
     expect(rendered.html).toContain('&lt;script&gt;')
-    expect(rendered.text).toContain('{{{ pm:unsubscribe }}}')
+    expect(rendered.text).toContain('{{{ email:unsubscribe }}}')
     expect(() =>
       renderEmail({ ...content, unsubscribeUrl: undefined })
     ).toThrow('unsubscribe_required')

@@ -26,7 +26,7 @@ it('preserves marker-looking text and replacement metacharacters structurally', 
       literal,
       'CAMPAIGN_BODY',
       literal,
-      'Me désabonner de ces emails: {{{ pm:unsubscribe }}}',
+      'Me désabonner de ces emails: {{{ email:unsubscribe }}}',
     ].join('\n\n')
   )
   expect(output.html).toContain('CAMPAIGN_BODY $&amp; $&#39; $`')

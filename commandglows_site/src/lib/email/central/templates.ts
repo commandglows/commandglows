@@ -1,3 +1,4 @@
+import { EMAIL_UNSUBSCRIBE_PLACEHOLDER } from './messageContract'
 export interface EmailContent {
   templateKey:
     | 'subscription_confirmation'
@@ -41,7 +42,7 @@ function checkedText(value: unknown, max: number): string {
 }
 
 function checkedUrl(value: string): string {
-  if (value === '{{{ pm:unsubscribe }}}') return value
+  if (value === EMAIL_UNSUBSCRIBE_PLACEHOLDER) return value
   const url = new URL(value)
   if (
     url.protocol !== 'https:' ||

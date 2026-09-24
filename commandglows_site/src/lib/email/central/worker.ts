@@ -15,11 +15,8 @@ import {
   signPreference,
 } from './security'
 import { renderEmail, type EmailContent } from './templates'
-import {
-  createCaptureTransport,
-  sendPostmark,
-  type TransportMessage,
-} from './transport'
+import type { TransportMessage } from './messageContract'
+import { createConfiguredTransport } from './transports/configured'
 import { signSettlementProof } from './settlementProof'
 
 export function authorizeHttp(
@@ -53,45 +50,6 @@ export function authorizeHttp(
   return { config, business }
 }
 
-type Business = EmailConfig['businesses'][number]
-async function verifyProvider(
-  business: Business,
-  providerMode: 'Sandbox' | 'Live',
-  token: string,
-  fetcher: typeof fetch
-) {
-  const read = async (path: string) => {
-    const response = await fetcher(`https://api.postmarkapp.com${path}`, {
-      redirect: 'error',
-      headers: { Accept: 'application/json', 'X-Postmark-Server-Token': token },
-      signal: AbortSignal.timeout(10_000),
-    })
-    if (!response.ok) throw new EmailHttpError('transport_unavailable', 503)
-    return response.json()
-  }
-  const server = await read('/server')
-  if (server.ID !== business.serverId || server.DeliveryType !== providerMode)
-    throw new EmailHttpError('provider_environment_mismatch', 503)
-  const streams = await read('/message-streams')
-  const transaction = streams.MessageStreams?.find(
-    (s: Record<string, unknown>) => s.ID === business.transactionalStream
-  )
-  const broadcast = streams.MessageStreams?.find(
-    (s: Record<string, unknown>) => s.ID === business.broadcastStream
-  )
-  if (
-    transaction?.MessageStreamType !== 'Transactional' ||
-    broadcast?.MessageStreamType !== 'Broadcasts' ||
-    transaction.ServerID !== business.serverId ||
-    broadcast.ServerID !== business.serverId ||
-    transaction.ArchivedAt ||
-    broadcast.ArchivedAt ||
-    broadcast.SubscriptionManagementConfiguration?.UnsubscribeHandlingType !==
-      'Postmark'
-  )
-    throw new EmailHttpError('provider_stream_mismatch', 503)
-}
-
 interface Job extends TransportMessage {
   attemptId: string
   route: string
@@ -105,7 +63,8 @@ export async function handleDispatch(
   request: Request,
   env = getServerEnv(),
   injected?: Mutation,
-  fetcher: typeof fetch = fetch
+  fetcher: typeof fetch = fetch,
+  transportFactory: typeof createConfiguredTransport = createConfiguredTransport
 ) {
   try {
     const credential = bearer(request)
@@ -128,7 +87,6 @@ export async function handleDispatch(
       env.VERCEL_ENV === 'production'
     const liveTest = requiresLiveTest(config, business)
     const route = deliveryRoute(config, business)
-    const capture = business.transport === 'capture'
     if (
       liveTest &&
       (!business.liveTest || business.liveTest.expiresAt <= Date.now())
@@ -139,24 +97,20 @@ export async function handleDispatch(
       (config.environment === 'production' && !allowProduction)
     )
       throw new EmailHttpError('transport_not_enabled', 503)
-    const token = business.serverTokenEnv && env[business.serverTokenEnv]
-    if (
-      (!capture && (!token || !business.serverId)) ||
-      !business.publicBaseUrl ||
-      !env.EMAIL_TOKEN_SIGNING_KEY
-    )
+    if (!business.publicBaseUrl || !env.EMAIL_TOKEN_SIGNING_KEY)
       throw new EmailHttpError('configuration_unavailable', 503)
     const baseUrl = new URL(business.publicBaseUrl)
     if (baseUrl.protocol !== 'https:' || baseUrl.username || baseUrl.password)
       throw new EmailHttpError('configuration_unavailable', 503)
-    if (!capture)
-      await verifyProvider(
-        business,
-        business.providerMode ??
-          (config.environment === 'sandbox' ? 'Sandbox' : 'Live'),
-        token!,
-        fetcher
-      )
+    const transport = transportFactory({
+      config,
+      business,
+      env,
+      allowProduction,
+      liveTestReserved: liveTest,
+      fetcher,
+    })
+    await transport.verify()
     const mutate = injected ?? convexMutation(env)
     const jobs = (await mutate('email:claim', {
       credential,
@@ -212,19 +166,7 @@ export async function handleDispatch(
         results.push({ message_id: job.messageId, status: 'not_dispatched' })
         continue
       }
-      const outcome = capture
-        ? await createCaptureTransport(() => {}).send(content)
-        : await sendPostmark(
-            content,
-            {
-              serverToken: token!,
-              providerMode: business.providerMode,
-              liveTestReserved: liveTest,
-              environment: config.environment,
-              allowProduction,
-            },
-            fetcher
-          )
+      const outcome = await transport.send(content)
       // If persistence fails after send, the lease becomes unknown; never resend here.
       const settlementIssuedAt = Date.now()
       const settlementProof =

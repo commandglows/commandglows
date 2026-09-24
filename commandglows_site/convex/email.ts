@@ -1,3 +1,4 @@
+import { EMAIL_UNSUBSCRIBE_PLACEHOLDER } from '../src/lib/email/central/messageContract'
 import { patchEmailMessage } from './emailCampaignState'
 import { campaignDispatchState } from './emailCampaignPolicy'
 import { commerceEmailCurrent, syncCommerceEmail } from './commerceEmail'
@@ -538,7 +539,7 @@ export const command = mutation({
         legalFooter: business.legalFooter,
         subject: i.subject,
         paragraphs: i.paragraphs,
-        unsubscribeUrl: '{{{ pm:unsubscribe }}}',
+        unsubscribeUrl: EMAIL_UNSUBSCRIBE_PLACEHOLDER,
       })
       result = {
         status: 'draft',
@@ -701,8 +702,8 @@ export const claim = mutation({
     for (const m of messages) {
       const streamId =
         m.kind === 'broadcast'
-          ? business.broadcastStream
-          : business.transactionalStream
+          ? business.delivery.channels.broadcast
+          : business.delivery.channels.transactional
       const campaignState = await dispatchState(ctx, m, business)
       if (campaignState !== 'eligible') {
         await patchEmailMessage(
@@ -953,7 +954,11 @@ export const webhook = mutation({
     streamId: v.string(),
   },
   handler: async (ctx, a) => {
-    const { business } = authorize(a.credential, a.businessId, 'webhook')
+    const { business, client } = authorize(
+      a.credential,
+      a.businessId,
+      'webhook'
+    )
     if (
       a.occurredAt !== undefined &&
       (!Number.isSafeInteger(a.occurredAt) ||
@@ -962,9 +967,10 @@ export const webhook = mutation({
     )
       fail('invalid_input')
     if (
-      ![business.broadcastStream, business.transactionalStream].includes(
-        a.streamId
-      ) ||
+      ![
+        business.delivery.channels.broadcast,
+        business.delivery.channels.transactional,
+      ].includes(a.streamId) ||
       ![
         'hard_bounce',
         'complaint',
@@ -1007,8 +1013,8 @@ export const webhook = mutation({
         correlatedMessage.businessId !== a.businessId ||
         correlatedMessage.email !== email ||
         (correlatedMessage.kind === 'broadcast'
-          ? business.broadcastStream
-          : business.transactionalStream) !== a.streamId
+          ? business.delivery.channels.broadcast
+          : business.delivery.channels.transactional) !== a.streamId
       )
         fail('forbidden')
       if (
@@ -1069,7 +1075,10 @@ export const webhook = mutation({
         reason: a.type,
         at: Date.now(),
       })
-      if (a.type === 'unsubscribe' && a.streamId === business.broadcastStream) {
+      if (
+        a.type === 'unsubscribe' &&
+        a.streamId === business.delivery.channels.broadcast
+      ) {
         const rows = await ctx.db
           .query('emailMemberships')
           .withIndex('scope', (q) =>
@@ -1088,7 +1097,7 @@ export const webhook = mutation({
             audienceId: m.audienceId,
             purpose: m.purpose,
             action: 'withdrawn',
-            source: 'postmark',
+            source: client.id,
             noticeVersion: 'provider_event',
             locale: 'und',
             at: Date.now(),
@@ -1157,8 +1166,8 @@ export const recheckDispatch = mutation({
       : null
     const stream =
       message.kind === 'broadcast'
-        ? business.broadcastStream
-        : business.transactionalStream
+        ? business.delivery.channels.broadcast
+        : business.delivery.channels.transactional
     const route = deliveryRoute(config, business)
     const campaignState = await dispatchState(ctx, message, business)
     const consentEligible = Boolean(

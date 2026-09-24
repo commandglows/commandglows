@@ -1,3 +1,4 @@
+import { EMAIL_UNSUBSCRIBE_PLACEHOLDER } from '../src/lib/email/central/messageContract'
 import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 import {
@@ -307,7 +308,7 @@ export const command = mutation({
               legalFooter: business.legalFooter,
               subject: value.subject,
               paragraphs: value.paragraphs,
-              unsubscribeUrl: '{{{ pm:unsubscribe }}}',
+              unsubscribeUrl: EMAIL_UNSUBSCRIBE_PLACEHOLDER,
             })
       } catch {
         // Drafts may be incomplete; keep a safe placeholder render while the
@@ -324,7 +325,7 @@ export const command = mutation({
           paragraphs: value.paragraphs.length
             ? value.paragraphs
             : ['Brouillon incomplet'],
-          unsubscribeUrl: '{{{ pm:unsubscribe }}}',
+          unsubscribeUrl: EMAIL_UNSUBSCRIBE_PLACEHOLDER,
         })
       }
       const versionId = await ctx.db.insert('emailCampaignVersions', {
@@ -413,7 +414,7 @@ export const command = mutation({
                 ctx,
                 business.id,
                 member.email,
-                business.broadcastStream
+                business.delivery.channels.broadcast
               ))
             )
               continue
@@ -543,7 +544,7 @@ export const command = mutation({
             ctx,
             business.id,
             normalized,
-            business.broadcastStream
+            business.delivery.channels.broadcast
           ))
         )
           fail('recipient_not_eligible')
@@ -921,7 +922,7 @@ export const expand = mutation({
           ctx,
           business.id,
           member.email,
-          business.broadcastStream
+          business.delivery.channels.broadcast
         ))
       ) {
         await ctx.db.patch(snapshot._id, {
@@ -1081,7 +1082,7 @@ export const pump = mutation({
             ctx,
             business.id,
             member.email,
-            business.broadcastStream
+            business.delivery.channels.broadcast
           ))
         ) {
           await ctx.db.patch(snapshot._id, {

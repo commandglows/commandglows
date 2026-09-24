@@ -1,3 +1,4 @@
+import { EMAIL_UNSUBSCRIBE_PLACEHOLDER } from './messageContract'
 import { escapeHtml, renderEmail } from './templates'
 import { newsletterStyle } from '../../../theme/newsletter-email-theme'
 
@@ -93,7 +94,7 @@ export function renderCampaign(
     legalFooter: business.legalFooter,
     subject: content.subject,
     paragraphs: ['Newsletter'],
-    unsubscribeUrl: '{{{ pm:unsubscribe }}}',
+    unsubscribeUrl: EMAIL_UNSUBSCRIBE_PLACEHOLDER,
   })
   const html = content.blocks
     .map((b) => {
@@ -120,7 +121,7 @@ export function renderCampaign(
     content.locale === 'fr'
       ? 'Me désabonner de ces emails'
       : 'Unsubscribe from these emails'
-  const unsubscribe = '{{{ pm:unsubscribe }}}'
+  const unsubscribe = EMAIL_UNSUBSCRIBE_PLACEHOLDER
   const htmlDocument = `<!doctype html><html lang="${content.locale}" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(base.subject)}</title></head><body style="${newsletterStyle('documentBody')}">${content.preheader ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all">${escapeHtml(content.preheader)}</div>` : ''}<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="${newsletterStyle('shell')}"><tr><td><main lang="${content.locale}"><p style="${newsletterStyle('smallNote')}">${escapeHtml(business.brand.trim())}</p><h1 style="${newsletterStyle('heading')}">${escapeHtml(base.subject)}</h1>${html}<hr style="${newsletterStyle('divider')}"><footer style="${newsletterStyle('footer')}"><p>${escapeHtml(business.brand.trim())}</p><p>${escapeHtml(business.legalFooter.trim())}</p><p><a style="${newsletterStyle('link')}" href="${unsubscribe}">${label}</a></p></footer></main></td></tr></table></body></html>`
   return {
     subject: base.subject,

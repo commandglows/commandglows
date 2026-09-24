@@ -61,7 +61,7 @@ The local dev server runs on `http://localhost:3011`.
 - Clerk
 - Stripe Managed Payments
 - Convex
-- Resend
+- Central email service
 - Vercel
 - Vitest
 - Playwright
@@ -206,10 +206,13 @@ All Checkout Sessions explicitly set `managed_payments.enabled=true`. Every offe
 
 `POST /api/commerce/webhooks/appsumo` accepts AppSumo webhook validation requests with `success: true`, verifies `X-Appsumo-Signature` and `X-Appsumo-Timestamp` when `APPSUMO_API_KEY` is present, and forwards real license events to `bridge:processCommerceEvent`. `GET /api/commerce/oauth/appsumo` returns `200 OK` without a code for AppSumo Partner Portal validation; with a code, it exchanges the OAuth code, fetches the license key, and forwards that license to the same Convex commerce processor. Until AppSumo commercial offers and tier mappings are explicitly fixed, these routes send `provider=appsumo` and `status=pending_review`; the current Convex mutation records the event for review and does not grant access.
 
-### Resend
+### Central email service
 
-- `RESEND_API_KEY`
-- `RESEND_AUDIENCE_ID`
+- A central email profile configured for CommandGlows newsletter consent and an email transport. The routes require `EMAIL_NEWSLETTER_BUSINESS_ID`, `EMAIL_NEWSLETTER_AUDIENCE_ID`, `EMAIL_NEWSLETTER_PURPOSE`, and `EMAIL_NEWSLETTER_NOTICE_VERSION` to match that profile; do not copy values from another product.
+
+Delivery uses `EmailTransport`; Postmark and local capture implement the same interface. Provider verification, HTTP payloads and unsubscribe-marker translation belong to the adapter. A new provider requires its adapter and configuration registration, without changing consent commands. The common profile uses `delivery: {provider, mode, channels, options}`. Provider descriptors own option validation and routing identity. Existing flat profiles are normalized at the input boundary. See the central email operations guide for migration details.
+
+Unsubscribe uses the existing signed preferences token (GET displays, POST confirms). Historical links containing only an email address cannot withdraw a subscription.
 
 ## Scripts
 

@@ -1,4 +1,10 @@
 import { ConvexError } from 'convex/values'
+import type { DeliveryConfig } from './emailTransportConfig/types'
+import { getTransportDescriptor } from './emailTransportConfig/registry'
+import {
+  normalizeBusinessDelivery,
+  legacyRoutingIdentity,
+} from './emailTransportConfig/legacy'
 export type EmailConfig = {
   environment: 'sandbox' | 'production'
   clients: {
@@ -12,20 +18,14 @@ export type EmailConfig = {
     brand: string
     legalFooter: string
     from: string
-    transactionalStream: string
-    broadcastStream: string
+    delivery: DeliveryConfig
     publicBaseUrl?: string
-    serverId?: number
-    serverTokenEnv?: string
-    webhookCredentialEnv?: string
     audiences: {
       id: string
       purpose: string
       sources: string[]
       noticeVersions: string[]
     }[]
-    transport?: 'postmark' | 'capture'
-    providerMode?: 'Sandbox' | 'Live'
     liveTest?: {
       id: string
       expiresAt: number
@@ -50,15 +50,15 @@ export function parseEmailConfig(raw: string | undefined): EmailConfig {
       !Array.isArray(c.businesses)
     )
       fail('configuration_unavailable')
+    c.businesses = c.businesses.map((b: any) =>
+      normalizeBusinessDelivery(b, c.environment)
+    )
     for (const b of c.businesses) {
       if (
         !b.id ||
         !b.from ||
         !b.brand ||
         !b.legalFooter ||
-        !b.transactionalStream ||
-        !b.broadcastStream ||
-        b.transactionalStream === b.broadcastStream ||
         !Array.isArray(b.audiences)
       )
         fail('configuration_unavailable')
@@ -70,16 +70,22 @@ export function parseEmailConfig(raw: string | undefined): EmailConfig {
           ))
       )
         fail('configuration_unavailable')
+      const d = b.delivery
       if (
-        b.transport !== undefined &&
-        !['postmark', 'capture'].includes(b.transport)
+        !d ||
+        typeof d.provider !== 'string' ||
+        !['capture', 'sandbox', 'live'].includes(d.mode) ||
+        !d.channels ||
+        typeof d.channels.transactional !== 'string' ||
+        !d.channels.transactional ||
+        typeof d.channels.broadcast !== 'string' ||
+        !d.channels.broadcast ||
+        !d.options ||
+        typeof d.options !== 'object' ||
+        Array.isArray(d.options)
       )
         fail('configuration_unavailable')
-      if (
-        b.providerMode !== undefined &&
-        !['Sandbox', 'Live'].includes(b.providerMode)
-      )
-        fail('configuration_unavailable')
+      getTransportDescriptor(d.provider).validate(d)
       if (b.liveTest !== undefined) {
         const p = b.liveTest
         if (
@@ -141,15 +147,11 @@ export function parseEmailConfig(raw: string | undefined): EmailConfig {
       new Set(c.businesses.map((b: any) => b.id)).size !== c.businesses.length
     )
       fail('configuration_unavailable')
-    const streams = c.businesses.flatMap((b: any) =>
-      b.serverId === undefined
-        ? []
-        : [
-            `${b.serverId}:${b.transactionalStream}`,
-            `${b.serverId}:${b.broadcastStream}`,
-          ]
+    const resources = c.businesses.flatMap(
+      (b: EmailConfig['businesses'][number]) =>
+        getTransportDescriptor(b.delivery.provider).resourceKeys(b.delivery)
     )
-    if (new Set(streams).size !== streams.length)
+    if (new Set(resources).size !== resources.length)
       fail('configuration_unavailable')
     if (
       new Set(c.clients.map((client: any) => client.id)).size !==
@@ -249,17 +251,15 @@ export function deliveryRoute(
   config: EmailConfig,
   business: EmailConfig['businesses'][number]
 ) {
+  const delivery =
+    business.delivery ??
+    (normalizeBusinessDelivery(business, config.environment)
+      .delivery as DeliveryConfig)
   return canonical({
     environment: config.environment,
-    transport: business.transport ?? 'postmark',
-    providerMode:
-      business.providerMode ??
-      (config.environment === 'sandbox' ? 'Sandbox' : 'Live'),
-    serverId: business.serverId ?? null,
-    serverTokenEnv: business.serverTokenEnv ?? null,
+    ...(legacyRoutingIdentity(delivery) ??
+      getTransportDescriptor(delivery.provider).routingIdentity(delivery)),
     from: business.from,
-    transactionalStream: business.transactionalStream,
-    broadcastStream: business.broadcastStream,
     liveTest: business.liveTest ?? null,
   })
 }
@@ -267,10 +267,14 @@ export function requiresLiveTest(
   config: EmailConfig,
   business: EmailConfig['businesses'][number]
 ) {
+  const delivery =
+    business.delivery ??
+    (normalizeBusinessDelivery(business, config.environment)
+      .delivery as DeliveryConfig)
   return (
     config.environment === 'sandbox' &&
-    (business.transport ?? 'postmark') === 'postmark' &&
-    business.providerMode === 'Live'
+    getTransportDescriptor(delivery.provider).capabilities.externalDelivery &&
+    delivery.mode === 'live'
   )
 }
 export function dispatchAllowed(

@@ -1,3 +1,4 @@
+import { EMAIL_UNSUBSCRIBE_PLACEHOLDER } from './messageContract'
 import { renderEmail } from './templates'
 import { authorizeHttp } from './worker'
 import { bearer, EmailHttpError, onlyKeys, readJson } from './security'
@@ -104,7 +105,7 @@ export async function handleCatalog(request: Request, env = getServerEnv()) {
       legalFooter: business.legalFooter,
       subject: body.subject as string,
       paragraphs: body.paragraphs as string[],
-      unsubscribeUrl: '{{{ pm:unsubscribe }}}',
+      unsubscribeUrl: EMAIL_UNSUBSCRIBE_PLACEHOLDER,
     })
     return json(200, {
       business_id: business.id,

@@ -19,7 +19,7 @@ linked_systems:
   - "Clerk"
   - "Convex"
   - "Stripe Managed Payments"
-  - "Resend"
+  - "Central email service"
 depends_on:
   - "shipglows_data/technical/guidelines.md"
   - "shipglows_data/technical/architecture.md"
@@ -37,7 +37,7 @@ next_step: "pnpm build:check"
 
 ## Repository Execution Contract
 
-This repository is an Astro 6 server application with bilingual routing, Clerk auth, Convex state, Stripe Managed Payments checkout, and Resend newsletter flows.
+This repository is an Astro 6 server application with bilingual routing, Clerk auth, Convex state, Stripe Managed Payments checkout, and central newsletter consent flows with pluggable email delivery.
 
 Use this file as the short operating contract before changing code or docs.
 
@@ -48,7 +48,7 @@ Use this file as the short operating contract before changing code or docs.
 - Auth: Clerk middleware + webhook forwarding
 - Backend/state: Convex (`users`, `apiKeys`, `features`)
 - Billing: Stripe-only shared checkout + Convex webhook fulfillment
-- Email: Resend subscribe/unsubscribe API routes
+- Email: central consent and signed preferences routes; transport adapters for delivery
 - Content: Astro content collections (`docs`, `products`, `blog`, `services`)
 
 ## First Files To Inspect
@@ -65,7 +65,7 @@ Use this file as the short operating contract before changing code or docs.
 - Locale and route normalization: `src/middleware/i18n.ts`, `src/i18n/config.ts`, `src/utils/routing.ts`
 - Checkout and entitlements: `src/pages/api/checkout/start.ts`, `src/pages/api/commerce/checkout.ts`, `src/pages/api/commerce/webhooks/stripe.ts`, `convex/bridge.ts`, `src/utils/courseGating.ts`
 - Auth identity sync: `src/pages/api/clerk/webhook.ts`, `convex/http.ts`, `convex/users.ts`
-- Newsletter side effects: `src/pages/api/newsletter/subscribe.ts`, `src/pages/api/newsletter/unsubscribe.ts`
+- Newsletter side effects: `src/pages/api/newsletter/subscribe.ts`, `src/pages/api/newsletter/unsubscribe.ts`, routed through the central email registry and Postmark transport
 - Content schema contracts: `src/content/config.ts`
 
 ## Runtime Assumptions
@@ -73,7 +73,7 @@ Use this file as the short operating contract before changing code or docs.
 - English routes are unprefixed and French routes are under `/fr`.
 - `PUBLIC_CONVEX_URL` must not be placeholder for Convex-backed logic.
 - Stripe checkout requires `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUITE_COMMERCE_CHECKOUT_SECRET`, and the offer-specific `STRIPE_*_PRICE_ID`.
-- Newsletter routes require `RESEND_API_KEY` and a valid audience id.
+- Newsletter routes require a central email profile with an explicitly mapped business, marketing audience, approved notice version, and a client authorized for `subscribe`. Missing or mismatched mapping fails closed; use mock mutations in tests and never dispatch a real message during local verification.
 
 ## Safe Change Pattern
 

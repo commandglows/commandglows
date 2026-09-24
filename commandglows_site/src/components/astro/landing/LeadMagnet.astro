@@ -13,7 +13,10 @@ const content =
         placeholder: 'Votre email',
         cta: 'Recevoir le guide',
         privacy: 'Pas de spam. Désabonnement en un clic.',
-        success: 'Merci ! Vérifiez votre boîte mail.',
+        consent:
+          'J’accepte de recevoir la newsletter par email. Je pourrai me désabonner à tout moment.',
+        success:
+          'Merci ! Consultez votre boîte mail pour confirmer votre inscription.',
         error: 'Erreur. Veuillez réessayer.',
       }
     : {
@@ -23,7 +26,9 @@ const content =
         placeholder: 'Your email',
         cta: 'Get the Free Guide',
         privacy: 'No spam. Unsubscribe in one click.',
-        success: 'Thanks! Check your inbox.',
+        consent:
+          'I agree to receive the newsletter by email. I can unsubscribe at any time.',
+        success: 'Thanks! Check your inbox to confirm your subscription.',
         error: 'Something went wrong. Please try again.',
       }
 ---
@@ -72,7 +77,7 @@ const content =
         <form
           id="lead-magnet-form"
           data-lang={lang}
-          class="landing-section-form mx-auto flex max-w-md flex-col sm:flex-row"
+          class="landing-section-form mx-auto flex max-w-md flex-col sm:flex-row sm:flex-wrap"
         >
           <label for="lead-magnet-email" class="sr-only"
             >{content.placeholder}</label
@@ -86,6 +91,17 @@ const content =
             placeholder={content.placeholder}
             class="border-content-border bg-content-bg-elevated text-content-text-primary placeholder:text-content-text-muted focus:border-content-border-strong dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:placeholder:text-content-text-muted dark:focus:border-content-border-strong flex-1 rounded-full border px-5 py-3 text-sm focus:outline-none"
           />
+          <label
+            class="text-content-text-secondary order-last flex basis-full items-start gap-2 text-left text-xs"
+          >
+            <input
+              type="checkbox"
+              name="consent"
+              required
+              class="accent-magenta mt-0.5"
+            />
+            <span>{content.consent}</span>
+          </label>
           <button
             type="submit"
             class="landing-primary-action landing-cta-inline shimmer-btn inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium whitespace-nowrap"
@@ -143,6 +159,9 @@ const content =
       'input[type="email"]'
     ) as HTMLInputElement
     const email = emailInput?.value
+    const consentInput = leadForm.querySelector(
+      'input[name="consent"]'
+    ) as HTMLInputElement
     const successEl = document.getElementById('lead-magnet-success')
     const errorEl = document.getElementById('lead-magnet-error')
     const submitBtn = leadForm.querySelector(
@@ -150,10 +169,11 @@ const content =
     ) as HTMLButtonElement
     const currentLang = leadForm.dataset.lang === 'fr' ? 'fr' : 'en'
 
-    if (!email) return
+    if (!email || !consentInput?.checked) return
 
     submitBtn.disabled = true
     emailInput.disabled = true
+    consentInput.disabled = true
 
     try {
       const res = await fetch('/api/newsletter/subscribe', {
@@ -163,6 +183,7 @@ const content =
           email,
           source: 'lead-magnet',
           lang: currentLang,
+          consent: true,
         }),
       })
 
@@ -170,6 +191,7 @@ const content =
         successEl?.classList.remove('hidden')
         errorEl?.classList.add('hidden')
         emailInput.value = ''
+        consentInput.checked = false
         setTimeout(() => successEl?.classList.add('hidden'), 5000)
       } else {
         errorEl?.classList.remove('hidden')
@@ -183,6 +205,7 @@ const content =
     } finally {
       submitBtn.disabled = false
       emailInput.disabled = false
+      consentInput.disabled = false
     }
   })
 </script>

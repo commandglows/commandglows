@@ -778,7 +778,7 @@ it('rejects another business, malformed blocks, missing review and ineligible te
   expect(html).toContain('<h2 style=')
   expect(html).toContain('https://example.test/source')
   expect(html).toContain('Cette semaine')
-  expect(html).toContain('{{{ pm:unsubscribe }}}')
+  expect(html).toContain('{{{ email:unsubscribe }}}')
 })
 it('scheduled campaigns cannot expand early and deleted drafts leave no readable record', async () => {
   const t = setup()

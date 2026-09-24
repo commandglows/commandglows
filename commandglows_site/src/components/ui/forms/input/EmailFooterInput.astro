@@ -1,87 +1,132 @@
 ---
 const {
-  label = "Search",
-  title = Astro.currentLocale === "fr" ? "S'abonner" : "Subscribe",
-  id = "footer-input",
-} = Astro.props;
+  label = 'Search',
+  title = Astro.currentLocale === 'fr' ? "S'abonner" : 'Subscribe',
+  id = 'footer-input',
+} = Astro.props
 
 interface Props {
-  label?: string;
-  title?: string;
-  id?: string;
+  label?: string
+  title?: string
+  id?: string
 }
 
-const placeholder = Astro.currentLocale === "fr" ? "Entrez votre email" : "Enter your email";
-const successMsg = Astro.currentLocale === "fr" ? "Merci ! Vous etes inscrit(e)." : "Thanks! You're subscribed.";
-const errorMsg = Astro.currentLocale === "fr" ? "Erreur. Veuillez reessayer." : "Something went wrong. Please try again.";
+const placeholder =
+  Astro.currentLocale === 'fr' ? 'Entrez votre email' : 'Enter your email'
+const consentLabel =
+  Astro.currentLocale === 'fr'
+    ? 'J’accepte de recevoir la newsletter par email. Je pourrai me désabonner à tout moment.'
+    : 'I agree to receive the newsletter by email. I can unsubscribe at any time.'
+const successMsg =
+  Astro.currentLocale === 'fr'
+    ? 'Merci ! Consultez votre boîte mail pour confirmer votre inscription.'
+    : 'Thanks! Check your inbox to confirm your subscription.'
+const errorMsg =
+  Astro.currentLocale === 'fr'
+    ? 'Erreur. Veuillez reessayer.'
+    : 'Something went wrong. Please try again.'
 ---
 
-<form id="newsletter-form" data-lang={Astro.currentLocale === "fr" ? "fr" : "en"} class="mt-4 flex flex-col items-center gap-2 rounded-lg bg-content-bg-secondary p-2 dark:bg-content-bg-secondary sm:flex-row sm:gap-3">
-  <div class="w-full">
+<form
+  id="newsletter-form"
+  data-lang={Astro.currentLocale === 'fr' ? 'fr' : 'en'}
+  class="bg-content-bg-secondary dark:bg-content-bg-secondary mt-4 flex flex-col items-center gap-2 rounded-lg p-2 sm:flex-row sm:flex-wrap sm:gap-3"
+>
+  <div class="w-full sm:min-w-0 sm:flex-1">
     <label for={id} class="sr-only">{label}</label>
     <input
       type="email"
       id={id}
       name="email"
       required
-      class="block w-full rounded-lg border-transparent bg-content-bg-secondary px-4 py-3 text-content-text-secondary focus:border-magenta focus:ring-magenta disabled:pointer-events-none disabled:opacity-50 dark:border-transparent dark:bg-content-bg-secondary dark:text-content-text-primary dark:placeholder:text-content-text-muted caret-magenta"
+      class="bg-content-bg-secondary text-content-text-secondary focus:border-magenta focus:ring-magenta dark:bg-content-bg-secondary dark:text-content-text-primary dark:placeholder:text-content-text-muted caret-magenta block w-full rounded-lg border-transparent px-4 py-3 disabled:pointer-events-none disabled:opacity-50 dark:border-transparent"
       placeholder={placeholder}
     />
   </div>
+  <label
+    class="text-content-text-secondary order-last flex w-full items-start gap-2 px-2 text-left text-xs sm:basis-full"
+  >
+    <input
+      type="checkbox"
+      name="consent"
+      required
+      class="accent-magenta mt-0.5"
+    />
+    <span>{consentLabel}</span>
+  </label>
   <button
     type="submit"
-    class="inline-flex w-full items-center justify-center gap-x-2 whitespace-nowrap rounded-lg border border-transparent bg-magenta p-3 font-bold text-white outline-none ring-content-text-secondary/50 transition duration-300 hover:opacity-90 focus-visible:ring disabled:pointer-events-none disabled:opacity-50 dark:ring-content-text-secondary/50 dark:focus:outline-none dark:focus:ring-1 sm:w-auto"
+    class="bg-magenta ring-content-text-secondary/50 dark:ring-content-text-secondary/50 inline-flex w-full items-center justify-center gap-x-2 rounded-lg border border-transparent p-3 font-bold whitespace-nowrap text-white transition duration-300 outline-none hover:opacity-90 focus-visible:ring disabled:pointer-events-none disabled:opacity-50 sm:w-auto dark:focus:ring-1 dark:focus:outline-none"
     data-track="newsletter-subscribe"
   >
     {title}
   </button>
 </form>
-<p id="newsletter-success" class="mt-2 hidden text-sm text-green">{successMsg}</p>
-<p id="newsletter-error" class="mt-2 hidden text-sm text-red">{errorMsg}</p>
+<p id="newsletter-success" class="text-green mt-2 hidden text-sm">
+  {successMsg}
+</p>
+<p id="newsletter-error" class="text-red mt-2 hidden text-sm">{errorMsg}</p>
 
 <script>
-  const newsletterForm = document.getElementById('newsletter-form') as HTMLFormElement | null;
+  const newsletterForm = document.getElementById(
+    'newsletter-form'
+  ) as HTMLFormElement | null
   newsletterForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const emailInput = newsletterForm.querySelector('input[type="email"]') as HTMLInputElement;
-    const email = emailInput?.value;
-    const successEl = document.getElementById('newsletter-success');
-    const errorEl = document.getElementById('newsletter-error');
-    const submitBtn = newsletterForm.querySelector('button[type="submit"]') as HTMLButtonElement;
-    const currentLang = newsletterForm.dataset.lang === 'fr' ? 'fr' : 'en';
+    e.preventDefault()
+    const emailInput = newsletterForm.querySelector(
+      'input[type="email"]'
+    ) as HTMLInputElement
+    const consentInput = newsletterForm.querySelector(
+      'input[name="consent"]'
+    ) as HTMLInputElement
+    const email = emailInput?.value
+    const successEl = document.getElementById('newsletter-success')
+    const errorEl = document.getElementById('newsletter-error')
+    const submitBtn = newsletterForm.querySelector(
+      'button[type="submit"]'
+    ) as HTMLButtonElement
+    const currentLang = newsletterForm.dataset.lang === 'fr' ? 'fr' : 'en'
 
-    if (!email) return;
+    if (!email || !consentInput?.checked) return
 
     // Disable form while submitting
-    submitBtn.disabled = true;
-    emailInput.disabled = true;
+    submitBtn.disabled = true
+    emailInput.disabled = true
+    consentInput.disabled = true
 
     try {
       const res = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'footer', lang: currentLang }),
-      });
+        body: JSON.stringify({
+          email,
+          source: 'footer',
+          lang: currentLang,
+          consent: true,
+        }),
+      })
 
       if (res.ok) {
         if (successEl) {
-          successEl.classList.remove('hidden');
-          errorEl?.classList.add('hidden');
-          emailInput.value = '';
-          setTimeout(() => successEl.classList.add('hidden'), 5000);
+          successEl.classList.remove('hidden')
+          errorEl?.classList.add('hidden')
+          emailInput.value = ''
+          consentInput.checked = false
+          setTimeout(() => successEl.classList.add('hidden'), 5000)
         }
       } else {
-        errorEl?.classList.remove('hidden');
-        successEl?.classList.add('hidden');
-        setTimeout(() => errorEl?.classList.add('hidden'), 5000);
+        errorEl?.classList.remove('hidden')
+        successEl?.classList.add('hidden')
+        setTimeout(() => errorEl?.classList.add('hidden'), 5000)
       }
     } catch {
-      errorEl?.classList.remove('hidden');
-      successEl?.classList.add('hidden');
-      setTimeout(() => errorEl?.classList.add('hidden'), 5000);
+      errorEl?.classList.remove('hidden')
+      successEl?.classList.add('hidden')
+      setTimeout(() => errorEl?.classList.add('hidden'), 5000)
     } finally {
-      submitBtn.disabled = false;
-      emailInput.disabled = false;
+      submitBtn.disabled = false
+      emailInput.disabled = false
+      consentInput.disabled = false
     }
-  });
+  })
 </script>

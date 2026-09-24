@@ -2,6 +2,7 @@ import { paginationOptsValidator } from 'convex/server'
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { authorize, canonical, fail } from './emailConfig'
+import { getTransportDescriptor } from './emailTransportConfig/registry'
 import type { Doc } from './_generated/dataModel'
 import { requireSiteAdmin, siteAuthorityArgs } from './siteAuthority'
 
@@ -170,7 +171,10 @@ export const status = query({
       environment: config.environment,
       activated: business.activated === true,
       provider_configuration_present: Boolean(
-        business.serverId && business.serverTokenEnv && business.publicBaseUrl
+        business.publicBaseUrl &&
+        getTransportDescriptor(business.delivery.provider).configurationPresent(
+          business.delivery
+        )
       ),
       provider_verified: false,
       inbox_verified: false,
