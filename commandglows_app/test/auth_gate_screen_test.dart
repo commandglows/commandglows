@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:commandglows_app/core/bootstrap/suite_identity_bridge_bootstrap.dart';
 import 'package:commandglows_app/core/sync/sync_status.dart';
 import 'package:commandglows_app/core/theme/app_theme.dart';
 import 'package:commandglows_app/features/auth/application/auth_session_provider.dart';
 import 'package:commandglows_app/features/auth/application/suite_identity_provider.dart';
+import 'package:commandglows_app/features/auth/data/installation_id_store.dart';
+import 'package:commandglows_app/features/auth/data/suite_identity_bridge_client.dart';
 import 'package:commandglows_app/features/auth/domain/auth_session_store.dart';
+import 'package:commandglows_app/features/auth/domain/product_entitlement.dart';
 import 'package:commandglows_app/features/auth/domain/suite_identity.dart';
 import 'package:commandglows_app/features/auth/presentation/auth_gate_screen.dart';
+import 'package:commandglows_app/features/shell/presentation/app_shell_screen.dart';
 
 const _signedIn = AuthSessionSnapshot(
   user: AuthUserSnapshot(
@@ -55,11 +60,50 @@ class _Store implements AuthSessionStore {
   Future<void> signInWithGoogleIdToken({required String? idToken}) async {}
 }
 
-Widget _screen(SuiteIdentitySnapshot identity, _Store store) => ProviderScope(
+class _InstallationStore extends InstallationIdStore {
+  @override
+  Future<String> readOrCreate() async => 'test-installation';
+}
+
+class _TrialBridgeClient extends SuiteIdentityBridgeClient {
+  _TrialBridgeClient(this.response, this.onRequest);
+
+  final SuiteIdentitySnapshot response;
+  final void Function({required bool requestTrialStart}) onRequest;
+  var startCalls = 0;
+  bool? lastRequestTrialStart;
+
+  @override
+  Future<SuiteIdentitySnapshot> resolveFromFirebaseSession({
+    required SuiteIdentityBridgeRuntimeConfig bridgeConfig,
+    required SuiteIdentityAccount firebaseAccount,
+    required FirebaseIdTokenResolver resolveIdToken,
+    String installationId = 'test-installation-id',
+    bool requestTrialStart = false,
+    bool requestTrialRestart = false,
+  }) async {
+    startCalls += 1;
+    lastRequestTrialStart = requestTrialStart;
+    onRequest(requestTrialStart: requestTrialStart);
+    return response;
+  }
+}
+
+Widget _screen(
+  SuiteIdentitySnapshot identity,
+  _Store store, {
+  SuiteIdentityBridgeClient? bridgeClient,
+  SuiteIdentitySnapshot Function()? identityAfterRefresh,
+}) => ProviderScope(
   overrides: [
     authSessionStoreProvider.overrideWithValue(store),
     authSessionProvider.overrideWith((ref) => Stream.value(_signedIn)),
-    suiteIdentityProvider.overrideWith((ref) => Stream.value(identity)),
+    suiteIdentityProvider.overrideWith(
+      (ref) => Stream.value(identityAfterRefresh?.call() ?? identity),
+    ),
+    if (bridgeClient != null)
+      suiteIdentityBridgeClientProvider.overrideWithValue(bridgeClient),
+    installationIdStoreProvider.overrideWithValue(_InstallationStore()),
   ],
   child: MaterialApp(theme: AppTheme.light, home: const AuthGateScreen()),
 );
@@ -94,4 +138,132 @@ void main() {
 
     expect(store.signOutCalls, 1);
   });
+
+  testWidgets('start trial click requests the grant and opens granted access', (
+    tester,
+  ) async {
+    const initialIdentity = SuiteIdentitySnapshot(
+      status: SuiteAccountStatus.recognized,
+      globalUserId: 'gu_test',
+    );
+    final grantedIdentity = SuiteIdentitySnapshot(
+      status: SuiteAccountStatus.recognized,
+      globalUserId: 'gu_test',
+      entitlements: [
+        ProductEntitlement(
+          productId: ProductId.commandglowsApp,
+          status: ProductEntitlementStatus.trialing,
+          trialExpiresAt: DateTime.utc(2030),
+          trialAttempt: 1,
+        ),
+      ],
+      trialRequest: const TrialRequestResult(
+        state: TrialRequestState.granted,
+        requestId: 'grant-request-id',
+      ),
+    );
+    var currentIdentity = initialIdentity;
+    final bridgeClient = _TrialBridgeClient(grantedIdentity, ({
+      required requestTrialStart,
+    }) {
+      currentIdentity = grantedIdentity;
+    });
+    await tester.pumpWidget(
+      _screen(
+        initialIdentity,
+        _Store(),
+        bridgeClient: bridgeClient,
+        identityAfterRefresh: () => currentIdentity,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Démarrer mon essai gratuit'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(bridgeClient.startCalls, 1);
+    expect(bridgeClient.lastRequestTrialStart, isTrue);
+    expect(find.byType(AppShellScreen), findsOneWidget);
+    expect(find.byType(AuthGateScreen), findsOneWidget);
+    expect(find.text('Démarrer mon essai gratuit'), findsNothing);
+  });
+
+  testWidgets('start trial denial shows server reason and correlation id', (
+    tester,
+  ) async {
+    const initialIdentity = SuiteIdentitySnapshot(
+      status: SuiteAccountStatus.recognized,
+      globalUserId: 'gu_test',
+    );
+    const responseIdentity = SuiteIdentitySnapshot(
+      status: SuiteAccountStatus.recognized,
+      globalUserId: 'gu_test',
+      trialRequest: TrialRequestResult(
+        state: TrialRequestState.denied,
+        reasonCode: 'previous_trial_exists',
+        requestId: 'denial-request-id',
+      ),
+    );
+    final bridgeClient = _TrialBridgeClient(
+      responseIdentity,
+      ({required requestTrialStart}) {},
+    );
+    await tester.pumpWidget(
+      _screen(initialIdentity, _Store(), bridgeClient: bridgeClient),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Démarrer mon essai gratuit'));
+    await tester.pumpAndSettle();
+
+    expect(bridgeClient.startCalls, 1);
+    expect(bridgeClient.lastRequestTrialStart, isTrue);
+    expect(
+      find.textContaining('Un essai précédent existe déjà'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('denial-request-id'), findsOneWidget);
+  });
+
+  testWidgets(
+    'start trial lost response stays indeterminate without reference',
+    (tester) async {
+      const initialIdentity = SuiteIdentitySnapshot(
+        status: SuiteAccountStatus.recognized,
+        globalUserId: 'gu_test',
+      );
+      const responseIdentity = SuiteIdentitySnapshot(
+        status: SuiteAccountStatus.recognized,
+        globalUserId: 'gu_test',
+        trialRequest: TrialRequestResult(
+          state: TrialRequestState.noResponse,
+          requestId: 'unconfirmed-request-id',
+        ),
+      );
+      final bridgeClient = _TrialBridgeClient(
+        responseIdentity,
+        ({required requestTrialStart}) {},
+      );
+      await tester.pumpWidget(
+        _screen(initialIdentity, _Store(), bridgeClient: bridgeClient),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Démarrer mon essai gratuit'));
+      await tester.pumpAndSettle();
+
+      expect(bridgeClient.startCalls, 1);
+      expect(bridgeClient.lastRequestTrialStart, isTrue);
+      expect(
+        find.textContaining('résultat de la demande est indéterminé'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('il a pu recevoir la demande'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('unconfirmed-request-id'), findsNothing);
+    },
+  );
 }

@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.3"
+artifact_version: "1.0.4"
 project: "CommandGlows"
 created: "2026-09-23"
 created_at: "2026-09-22 23:58:43 UTC"
-updated: "2026-09-23"
-updated_at: "2026-09-23 20:25:13 UTC"
+updated: "2026-09-24"
+updated_at: "2026-09-24 00:49:56 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-6"
@@ -37,7 +37,7 @@ evidence:
   - "The existing localized CommandGlows founder offers page is available at /commandglows-founder and /fr/commandglows-founder and owns the product's web checkout choices."
   - "The Windows Dart-define recipe omitted SUITE_IDENTITY_BRIDGE_URL; a fresh managed launch exposed the missing forwarding. The Dev hostname currently aliases a Vercel Production deployment, while Doppler Dev has no bridge-side Firebase Admin or Convex credentials."
   - "The trial-start client currently collapses pre-request failures, HTTP errors and a 200 inactive snapshot into one message; the bridge returns no structured trial decision or client correlation ID."
-next_step: "Configure and verify an isolated Dev Firebase bridge before rendered UI smoke for commandglows-trial-entry-and-purchase-routing"
+next_step: "Verify rendered Windows trial feedback against the isolated Dev bridge for commandglows-trial-entry-and-purchase-routing"
 ---
 
 # Title
@@ -46,7 +46,7 @@ CommandGlows Trial Entry and Purchase Routing
 
 ## Status
 
-Implementation is ready for final UI smoke. This scope fixes the signed-in, no-access journey without changing the trial policy or payment offers.
+The implementation and isolated hosted Dev bridge proof are complete. One final rendered Windows UI smoke remains. This scope fixes the signed-in, no-access journey without changing trial policy or payment offers.
 
 ## User Story
 
@@ -200,7 +200,17 @@ Top 10:2025 A01, A06, A07, A08 and A10 considered. Trust boundary remains Fireba
 
 ## Execution Notes
 
-First-read files: `commandglows_app/lib/features/auth/presentation/auth_gate_screen.dart`, `commandglows_app/lib/features/auth/presentation/trial_access_screen.dart`, `commandglows_app/lib/features/auth/data/suite_identity_bridge_client.dart`, `commandglows_site/src/pages/api/bridge/firebase.ts`, and `commandglows_site/src/pages/[...lang]/commandglows-founder.astro`. Preserve unrelated worktree edits. Use Doppler for Flutter/site checks. Android build/install is not allowed on this VM. No deploy or commit is in this scope.
+First-read files: `commandglows_app/lib/features/auth/presentation/auth_gate_screen.dart`, `commandglows_app/lib/features/auth/presentation/trial_access_screen.dart`, `commandglows_app/lib/features/auth/data/suite_identity_bridge_client.dart`, `commandglows_site/src/pages/api/bridge/firebase.ts`, and `commandglows_site/src/pages/[...lang]/commandglows-founder.astro`. Preserve unrelated worktree edits. Use Doppler for Flutter/site checks. Android build/install is not allowed on this VM. The explicitly approved deployment scope is limited to the isolated Dev Preview and `dev.commandglows.com`; Production deployment and offers/payment execution are out of scope.
+
+### Isolated Dev runtime evidence — 2026-09-24
+
+- Vercel Preview deployment `commandglows-19ttpj1q9` serves `dev.commandglows.com`; the branch uses Firebase Dev `commandglows-dev`, Convex Dev `trial-bridge`, and Vercel OIDC WIF. Production apex and `www` were not changed; no service-account key was created.
+- Anonymous start with installation ID returned `401 missing_bearer_token`.
+- A fresh synthetic Firebase Dev user received `200 granted`, `reasonCode: null`; response and Vercel log request IDs matched. Convex Dev recorded a `commandglows_app` trial entitlement with status `trialing`, environment `development`, plan `trial`, attempt 1.
+- A second synthetic Dev user received `200 denied` with `temporary_rate_limit` and no entitlement. This proves the structured response preserves distinct backend outcomes.
+- HTTP 200 on grant means the awaited Admin/WIF Firestore mirror write succeeded; the bridge returns 500 on mirror-write failure. Direct client access to the server-owned Firestore mirror correctly returns 403 under Firestore rules.
+- Hosted API proof is complete. Interactive Windows sign-in and rendered in-app feedback remain the final UI smoke; the API test does not claim that visual proof.
+- The focused Flutter AuthGate suite passes 5 tests, including CTA request, active-grant transition, denial copy with request reference, and unknown outcome without a false support reference.
 
 ## Open Questions
 

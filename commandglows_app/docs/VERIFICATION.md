@@ -127,6 +127,36 @@ next_step: "Run authenticated Firebase and platform-specific production checks b
   Establish an isolated Dev bridge and verify its Firebase and Convex projects
   before live smoke; do not use the current alias with a Dev Firebase token.
 
+### Isolated Dev bridge proof — 2026-09-24
+
+- The `codex/trial-dev-bridge` Vercel Preview deployment is isolated from
+  Production and uses Firebase `commandglows-dev`, Convex Dev deployment
+  `trial-bridge`, and Vercel OIDC workload identity federation. No service
+  account key was created. `dev.commandglows.com` now aliases this Preview;
+  Production apex and `www` aliases were not changed.
+- An anonymous request with a valid installation ID returned HTTP 401
+  `missing_bearer_token`. A fresh synthetic Firebase Dev account then made an
+  authenticated start request and received HTTP 200 with `trialRequest.outcome`
+  `granted`, no denial reason, and the same request ID in the response and
+  Vercel structured log. Convex Dev recorded `commandglows_app` as `trialing`,
+  environment `development`, plan `trial`, attempt 1.
+- A separate synthetic Dev account received HTTP 200 with
+  `denied/temporary_rate_limit`; it had no entitlement. These distinct live
+  outcomes confirm that the bridge reports the server decision instead of
+  collapsing it into “Essai indisponible”.
+- The successful HTTP response also confirms the awaited Firebase Admin/WIF
+  Firestore mirror write completed: bridge writes fail with HTTP 500 when that
+  write fails. Direct client Firestore reads are denied by rules (403), as
+  expected for this server-owned mirror.
+- The Flutter client and gate have focused automated coverage, but the
+  interactive Windows sign-in and rendered feedback have not yet been
+  verified in this run. Do not treat the hosted API proof as a Windows UI
+  smoke test.
+- Added an AuthGate integration test for explicit start, confirmed grant,
+  denial copy plus correlation reference, and unknown/no-response feedback.
+  `doppler run --project commandglows --config dev -- flutter test
+  test/auth_gate_screen_test.dart` passes (5 tests).
+
 ## Keyboard Sync Slice Verification — 2026-05-25
 
 Executed locally (no Android/Gradle tasks on this VM):
