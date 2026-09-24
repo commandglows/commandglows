@@ -148,7 +148,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           'trial_cycles_exhausted' =>
             'Les périodes d’essai disponibles ont toutes été utilisées pour ce compte. Consultez les offres pour continuer.',
           'temporary_rate_limit' =>
-            'Le service limite le nombre de demandes sur une courte période. Réessayez plus tard ou consultez les offres.',
+            'La limite d’essais depuis ce réseau a été atteinte. Elle est partagée entre les comptes : cela ne signifie pas que cette adresse e-mail a déjà bénéficié d’un essai. Réessayez plus tard ou consultez les offres.',
           'active_paid_access' =>
             'Un accès payant est déjà associé à ce compte. Actualisez votre accès ou contactez le support.',
           _ =>

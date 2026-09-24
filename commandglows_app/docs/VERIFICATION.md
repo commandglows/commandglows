@@ -155,15 +155,21 @@ next_step: "Run authenticated Firebase and platform-specific production checks b
 - Added an AuthGate integration test for explicit start, confirmed grant,
   denial copy plus correlation reference, and unknown/no-response feedback.
   `doppler run --project commandglows --config dev -- flutter test
-  test/auth_gate_screen_test.dart` passes (5 tests).
+  test/auth_gate_screen_test.dart` passes (7 tests).
 - Reworked the error card title and French copy to explain known denial
   reasons and recovery without showing raw HTTP or internal error codes. The
-  AuthGate and trial-access widget suites pass (14 tests). Uncertain service
+  AuthGate and trial-access widget suites pass (15 tests). Uncertain service
   outcomes now offer a working “Vérifier mon accès” action that refreshes the
   entitlement snapshot without resending a trial request. The prior Windows
   executable was timestamped 2026-09-23; the managed Dev app was relaunched
   from current source and hot reload succeeded. No trial request was sent
   during the restart.
+- The `temporary_rate_limit` reason is network-scoped, shared across accounts,
+  and permits three grants in the product/environment's fixed 24-hour window.
+  Runtime verification had already reached that Dev cap with synthetic
+  accounts, so a first-time email could receive the same denial from the same
+  network. Copy and a widget regression test now explain this without implying
+  prior use by that email. No additional grant request was sent.
 
 ## Keyboard Sync Slice Verification — 2026-05-25
 
