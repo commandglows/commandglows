@@ -101,7 +101,8 @@ s.cmd start -ProjectPath "$PWD" -FlutterDevice windows
 Run this from `commandglows_app`. The managed recipe invokes its public
 configuration resolver through `doppler run --project commandglows --config dev`
 and starts the equivalent of `flutter run -d windows` with the resulting Dart
-defines. It forwards only the six Firebase client parameters, not server secrets.
+defines. It forwards the six Firebase client parameters and the environment-bound
+suite identity bridge URL, not server secrets.
 The recipe is currently Windows-only; other platforms need their own validated
 client configuration.
 

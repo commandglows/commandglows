@@ -1,10 +1,10 @@
 ---
 artifact: verification_plan
 metadata_schema_version: "1.0"
-artifact_version: "1.0.3"
+artifact_version: "1.0.4"
 project: "CommandGlows"
 created: "2026-04-27"
-updated: "2026-09-22"
+updated: "2026-09-24"
 status: "reviewed"
 source_skill: "sf-spec"
 scope: "android_firebase_backend_agnostic_migration"
@@ -27,6 +27,7 @@ evidence:
   - "test/auth_gate_screen_test.dart"
   - "test/sign_in_screen_test.dart"
   - "test/app_router_auth_guard_test.dart"
+  - "commandglows_site/src/pages/api/bridge/firebase.ts"
 next_step: "Run authenticated Firebase and platform-specific production checks before release."
 ---
 
@@ -70,11 +71,11 @@ next_step: "Run authenticated Firebase and platform-specific production checks b
   (`unawaited_return_in_try_block`). No auth-file analyzer issue was reported.
 - `git diff --check` passed; Git emitted only the repository's LF-to-CRLF
   working-copy notices.
-- Google sign-in is enabled for Firebase project `commandglows-dev`, and its
+- At the time of this recorded verification, Google sign-in was enabled for Firebase project `commandglows-dev`, and its
   generated Web OAuth client ID is configured in Doppler `commandglows/dev`.
   The Android app `1:9805404731:android:dfbca893b4205de88a1a1e` is registered
   for `com.commandglows.app`, and the local debug SHA-1 is attached. The suite
-  identity bridge URL in Doppler dev points to the public Production endpoint
+  identity bridge URL in Doppler dev pointed to the public Production endpoint
   `www.commandglows.com/api/bridge/firebase`. An unauthenticated probe returns
   the expected `401 missing_bearer_token`, confirming the handler and required
   server config are live. The route uses its deployment environment
@@ -90,6 +91,118 @@ next_step: "Run authenticated Firebase and platform-specific production checks b
 - Awaited the local settings read inside its `try` block so asynchronous storage
   errors are caught and the analyzer warning is addressed. Analyze and tests
   were not rerun after this follow-up.
+- Rechecked the Windows trial configuration: Doppler dev now points to
+  `https://dev.commandglows.com/api/bridge/firebase`, but the managed recipe did
+  not forward `SUITE_IDENTITY_BRIDGE_URL`, leaving the compiled app on its
+  production default. Added the bridge URL to the allowlisted, environment-paired
+  Dart defines and relaunched the managed Windows app through the configured
+  DevServer. The new Debug kernel contains the Dev bridge URL and the registry
+  reports the Windows session running. No authenticated sign-in or trial request
+  was made; the bridge deployment's Firebase Admin and Convex environment still
+  need separate verification.
+- The `dev.commandglows.com` alias currently resolves to a Vercel deployment
+  whose target is Production. Doppler Dev and Vercel Development do not contain
+  the server configuration required for an isolated Dev bridge. Anonymous
+  probes returned `503 trial_installation_signal_unavailable` without an
+  installation ID and `401 missing_bearer_token` with a synthetic ID. This does
+  not verify Firebase Admin project identity, Convex environment, or trial
+  behavior. Do not send a Dev Firebase token to this alias until a dedicated
+  Dev bridge is configured.
+- The app now sends a UUIDv4 correlation ID for each trial-start request and
+  distinguishes a request not sent, no response/unknown outcome, an HTTP error,
+  a structured denial, and confirmed active access. A shared-install denial
+  does not disclose whether another identity used that installation.
+- The bridge returns a structured trial outcome from Convex, echoes the
+  request ID in the response header/body, and logs only request ID, action,
+  outcome, safe reason code, and status. Invalid/missing backend outcomes return
+  HTTP 502 as unknown; they are not presented as user ineligibility.
+- Focused Flutter proof under Doppler: `dart analyze lib/features/auth` has no
+  issues; the identity bridge client, auth gate, and trial access tests pass
+  (24 tests). Focused site bridge/Convex tests pass (19 tests), and
+  `pnpm build:check` completes with zero errors and warnings (one existing
+  hint). `git diff --check` passes.
+- Live UI/authenticated trial proof remains blocked: `dev.commandglows.com`
+  resolves to a Production-target deployment, while Doppler Dev and Vercel
+  Development lack the server-side Firebase Admin/Convex bridge configuration.
+  The managed Windows session was stopped without sending a trial request.
+  Establish an isolated Dev bridge and verify its Firebase and Convex projects
+  before live smoke; do not use the current alias with a Dev Firebase token.
+
+### Isolated Dev bridge proof — 2026-09-24
+
+- The `codex/trial-dev-bridge` Vercel Preview deployment is isolated from
+  Production and uses Firebase `commandglows-dev`, Convex Dev deployment
+  `trial-bridge`, and Vercel OIDC workload identity federation. No service
+  account key was created. `dev.commandglows.com` now aliases this Preview;
+  Production apex and `www` aliases were not changed.
+- An anonymous request with a valid installation ID returned HTTP 401
+  `missing_bearer_token`. A fresh synthetic Firebase Dev account then made an
+  authenticated start request and received HTTP 200 with `trialRequest.outcome`
+  `granted`, no denial reason, and the same request ID in the response and
+  Vercel structured log. Convex Dev recorded `commandglows_app` as `trialing`,
+  environment `development`, plan `trial`, attempt 1.
+- A separate synthetic Dev account received HTTP 200 with
+  `denied/temporary_rate_limit`; it had no entitlement. These distinct live
+  outcomes confirm that the bridge reports the server decision instead of
+  collapsing it into “Essai indisponible”.
+- The successful HTTP response also confirms the awaited Firebase Admin/WIF
+  Firestore mirror write completed: bridge writes fail with HTTP 500 when that
+  write fails. Direct client Firestore reads are denied by rules (403), as
+  expected for this server-owned mirror.
+- The Flutter client and gate have focused automated coverage, but the
+  interactive Windows sign-in and rendered feedback have not yet been
+  verified in this run. Do not treat the hosted API proof as a Windows UI
+  smoke test.
+- Added an AuthGate integration test for explicit start, confirmed grant,
+  denial copy plus correlation reference, and unknown/no-response feedback.
+  `doppler run --project commandglows --config dev -- flutter test
+  test/auth_gate_screen_test.dart` passes (7 tests).
+- Reworked the error card title and French copy to explain known denial
+  reasons and recovery without showing raw HTTP or internal error codes. The
+  AuthGate and trial-access widget suites pass (15 tests). Uncertain service
+  outcomes now offer a working “Vérifier mon accès” action that refreshes the
+  entitlement snapshot without resending a trial request. The prior Windows
+  executable was timestamped 2026-09-23; the managed Dev app was relaunched
+  from current source and hot reload succeeded. No trial request was sent
+  during the restart.
+- The `temporary_rate_limit` reason is network-scoped, shared across accounts,
+  and permits three grants in the product/environment's fixed 24-hour window.
+  Runtime verification had already reached that Dev cap with synthetic
+  accounts, so a first-time email could receive the same denial from the same
+  network. Copy and a widget regression test now explain this without implying
+  prior use by that email. No additional grant request was sent.
+
+### Follow-up — 2026-09-24 explicit trial start and shared-network policy
+
+- Source review found both Firebase identity sync and the generic suite bridge
+  could call the initial trial writer without explicit user intent. CommandGlows
+  now requires `trialAction: start` or `trialAction: restart`; a normal sign-in
+  or access refresh does not create a trial.
+- For CommandGlows only, the three-per-24-hour network threshold is now a
+  redacted `shared_network_velocity` server-log signal. It does not deny an
+  otherwise eligible trial. Per-account cycle limits and the consumed
+  installation check remain in place; other products' network limits are
+  unchanged.
+- Focused Convex regression expectations were updated for explicit activation
+  and four eligible accounts sharing one network. The current source now passes
+  focused tests for the CommandGlows trial decisions and bridge paths. The
+  earlier hosted `temporary_rate_limit` denial is evidence of the old behavior,
+  not proof of the current policy.
+- A new explicit start or restart checks Firebase Admin's current `emailVerified`
+  state before the Convex writer. Unverified accounts receive a specific denial;
+  a Firebase verification lookup failure is reported separately. The Windows
+  gate can resend Firebase's verification email and tells the user to repeat
+  the trial request after confirming the address.
+- The Convex entry points also fail closed when the server does not provide
+  verified-email proof for a CommandGlows trial action. Focused proof now passes:
+  33 Flutter auth-gate/trial-screen/client tests and 36 Firebase bridge-route,
+  parser, and Convex tests. Targeted Dart analysis reports no issues; the Astro
+  check reports zero errors and one existing inline-script hint.
+- These are local source proofs. The hosted Dev grant/denial evidence predates
+  the explicit-action, shared-network, and verified-email changes. The running
+  Windows app currently has active access, so the updated no-access gate,
+  verification-link resend, and grant-after-verification flow have not received
+  a rendered end-to-end check. No trial was requested during this run.
 
 ## Keyboard Sync Slice Verification — 2026-05-25
 

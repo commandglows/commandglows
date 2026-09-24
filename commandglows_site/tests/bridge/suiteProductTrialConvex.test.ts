@@ -22,50 +22,69 @@ describe('shared suite product trial writer', () => {
     'replayglows',
     'communityglows',
     'temu_shopping_lists',
-  ])('makes the common trial reachable for registered product %s', async (productId) => {
-    const t = convexTest(schema, modules)
-    await t.run(async (ctx) => {
-      const now = Date.now()
-      await ctx.db.insert('globalUsers', {
-        globalUserId: `gu_${productId}`,
-        createdAt: now,
-        updatedAt: now,
+  ])(
+    'makes the common trial reachable for registered product %s',
+    async (productId) => {
+      const t = convexTest(schema, modules)
+      await t.run(async (ctx) => {
+        const now = Date.now()
+        await ctx.db.insert('globalUsers', {
+          globalUserId: `gu_${productId}`,
+          createdAt: now,
+          updatedAt: now,
+        })
       })
-    })
 
-    const before = Date.now()
-    const snapshot = await t.mutation(
-      api.bridge.ensureSuiteProductTrialByGlobalUserId,
-      {
-        globalUserId: `gu_${productId}`,
-        productId,
-        installationHash: `installation_${productId}`,
-        environment: 'test',
-        trialAction: 'start',
-        bridgeSecret: BRIDGE_SECRET,
+      const before = Date.now()
+      if (productId === 'commandglows_app') {
+        const identitySync = await t.mutation(
+          api.bridge.ensureSuiteProductTrialByGlobalUserId,
+          {
+            globalUserId: `gu_${productId}`,
+            productId,
+            installationHash: `installation_${productId}`,
+            environment: 'test',
+            bridgeSecret: BRIDGE_SECRET,
+          }
+        )
+        expect(identitySync.hasAccess).toBe(false)
       }
-    )
-
-    expect(snapshot).toMatchObject({
-      productId,
-      hasAccess: true,
-      accessState: 'trial_active',
-      trialAttempt: 1,
-      trialRestartsRemaining: 2,
-      trialRestartEligible: false,
-      planId: 'trial',
-      source: 'product_trial',
-    })
-    const rows = await t.run(async (ctx) =>
-      (await ctx.db.query('productEntitlements').collect()).filter(
-        (row) => row.productId === productId
+      const snapshot = await t.mutation(
+        api.bridge.ensureSuiteProductTrialByGlobalUserId,
+        {
+          globalUserId: `gu_${productId}`,
+          productId,
+          installationHash: `installation_${productId}`,
+          environment: 'test',
+          trialAction: 'start',
+          ...(productId === 'commandglows_app'
+            ? { firebaseEmailVerified: true }
+            : {}),
+          bridgeSecret: BRIDGE_SECRET,
+        }
       )
-    )
-    expect(rows).toHaveLength(1)
-    expect(rows[0].trialExpiresAt).toBeGreaterThanOrEqual(
-      before + TRIAL_DURATION_MS
-    )
-  })
+
+      expect(snapshot).toMatchObject({
+        productId,
+        hasAccess: true,
+        accessState: 'trial_active',
+        trialAttempt: 1,
+        trialRestartsRemaining: 2,
+        trialRestartEligible: false,
+        planId: 'trial',
+        source: 'product_trial',
+      })
+      const rows = await t.run(async (ctx) =>
+        (await ctx.db.query('productEntitlements').collect()).filter(
+          (row) => row.productId === productId
+        )
+      )
+      expect(rows).toHaveLength(1)
+      expect(rows[0].trialExpiresAt).toBeGreaterThanOrEqual(
+        before + TRIAL_DURATION_MS
+      )
+    }
+  )
 
   afterAll(() => {
     if (previousBridgeSecret === undefined) {

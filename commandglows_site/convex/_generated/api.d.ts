@@ -45,6 +45,11 @@ import type * as emailOperatorAuthority from "../emailOperatorAuthority.js";
 import type * as emailSchema from "../emailSchema.js";
 import type * as emailSupport from "../emailSupport.js";
 import type * as emailSupportSchema from "../emailSupportSchema.js";
+import type * as emailTransportConfig_capture from "../emailTransportConfig/capture.js";
+import type * as emailTransportConfig_legacy from "../emailTransportConfig/legacy.js";
+import type * as emailTransportConfig_postmark from "../emailTransportConfig/postmark.js";
+import type * as emailTransportConfig_registry from "../emailTransportConfig/registry.js";
+import type * as emailTransportConfig_types from "../emailTransportConfig/types.js";
 import type * as features from "../features.js";
 import type * as http from "../http.js";
 import type * as licenseAdministration from "../licenseAdministration.js";
@@ -53,6 +58,7 @@ import type * as resend from "../resend.js";
 import type * as siteAuthority from "../siteAuthority.js";
 import type * as siteIdentity from "../siteIdentity.js";
 import type * as siteSessions from "../siteSessions.js";
+import type * as trialMaintenance from "../trialMaintenance.js";
 import type * as users from "../users.js";
 
 import type {
@@ -99,6 +105,11 @@ declare const fullApi: ApiFromModules<{
   emailSchema: typeof emailSchema;
   emailSupport: typeof emailSupport;
   emailSupportSchema: typeof emailSupportSchema;
+  "emailTransportConfig/capture": typeof emailTransportConfig_capture;
+  "emailTransportConfig/legacy": typeof emailTransportConfig_legacy;
+  "emailTransportConfig/postmark": typeof emailTransportConfig_postmark;
+  "emailTransportConfig/registry": typeof emailTransportConfig_registry;
+  "emailTransportConfig/types": typeof emailTransportConfig_types;
   features: typeof features;
   http: typeof http;
   licenseAdministration: typeof licenseAdministration;
@@ -107,6 +118,7 @@ declare const fullApi: ApiFromModules<{
   siteAuthority: typeof siteAuthority;
   siteIdentity: typeof siteIdentity;
   siteSessions: typeof siteSessions;
+  trialMaintenance: typeof trialMaintenance;
   users: typeof users;
 }>;
 

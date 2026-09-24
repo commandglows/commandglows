@@ -719,7 +719,18 @@ export function isTrustedFirebaseIdTokenClaims(
   )
 }
 
-export function resolveBridgeEnvironment(nodeEnv: string | undefined): string {
+export function resolveBridgeEnvironment(
+  nodeEnv: string | undefined,
+  explicitOverride = process.env.SUITE_BRIDGE_ENVIRONMENT
+): string {
+  const configured = explicitOverride?.trim();
+  if (configured) {
+    if (configured === 'preview' || configured === 'staging') return 'development';
+    if (configured === 'development' || configured === 'test' || configured === 'production') {
+      return configured;
+    }
+    throw new Error('invalid_suite_bridge_environment');
+  }
   if (nodeEnv === 'development' || nodeEnv === 'test') {
     return nodeEnv
   }

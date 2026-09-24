@@ -12,14 +12,20 @@ class WindowsConfigurationTest(unittest.TestCase):
             "FIREBASE_MESSAGING_SENDER_ID": "9805404731",
             "FIREBASE_AUTH_DOMAIN": "commandglows-dev.firebaseapp.com",
             "FIREBASE_STORAGE_BUCKET": "",
+            "SUITE_IDENTITY_BRIDGE_URL": "https://dev.commandglows.com/api/bridge/firebase",
             "REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM": "must-not-be-forwarded",
         }
 
     def test_only_public_client_configuration_is_forwarded(self):
         result = resolve("windows", self.env)
-        self.assertEqual(len(result["dartDefines"]), 6)
+        self.assertEqual(len(result["dartDefines"]), 7)
         self.assertNotIn("REPLAYGLOWS_PRODUCT_JWT_PRIVATE_KEY_PEM", result["dartDefines"])
         self.assertEqual(result["environment"], {})
+
+    def test_wrong_bridge_environment_fails(self):
+        self.env["SUITE_IDENTITY_BRIDGE_URL"] = "https://www.commandglows.com/api/bridge/firebase"
+        with self.assertRaises(ValueError):
+            resolve("windows", self.env)
 
     def test_missing_configuration_fails(self):
         del self.env["FIREBASE_API_KEY"]
@@ -46,6 +52,7 @@ class WindowsConfigurationTest(unittest.TestCase):
             "FIREBASE_APP_ID": "1:97562299584:web:979a75b79eef72fef17125",
             "FIREBASE_MESSAGING_SENDER_ID": "97562299584",
             "FIREBASE_AUTH_DOMAIN": "commandglows.firebaseapp.com",
+            "SUITE_IDENTITY_BRIDGE_URL": "https://www.commandglows.com/api/bridge/firebase",
         })
         self.assertEqual(resolve("windows", self.env, "prd")["dartDefines"]["FIREBASE_PROJECT_ID"], "commandglows")
         with self.assertRaises(ValueError):

@@ -10,6 +10,7 @@ const lang = Astro.params.lang === 'fr' ? ('fr' as Language) : ('en' as Language
 const title = lang === 'fr' ? 'Connexion' : 'Sign In'
 const nextUrl = Astro.url.searchParams.get('next')
 const safeNextUrl = getSafeAuthRedirectPath(nextUrl)
+const recoveryHref = lang === 'fr' ? '/fr/account/link-existing' : '/account/link-existing'
 ---
 
 <MainLayout title={title} lang={lang}>
@@ -18,5 +19,10 @@ const safeNextUrl = getSafeAuthRedirectPath(nextUrl)
 			routing="hash"
 			fallbackRedirectUrl={safeNextUrl}
 		/>
+		<p class="mt-4 text-sm text-content-text-muted">
+			<a class="underline" href={recoveryHref}>
+				{lang === 'fr' ? 'Vous avez déjà acheté avec un autre compte ?' : 'Already purchased with another account?'}
+			</a>
+		</p>
 	</div>
 </MainLayout>

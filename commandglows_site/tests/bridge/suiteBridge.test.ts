@@ -22,6 +22,7 @@ import {
   maskProviderAccountId,
   resolveReplayGlowsEntitlementSnapshot,
   resolveCommunityGlowsEntitlementSnapshot,
+  resolveBridgeEnvironment,
 } from '@/lib/suiteBridge'
 import { createPublicKey, generateKeyPairSync } from 'node:crypto'
 
@@ -87,6 +88,15 @@ function buildJwtRsaKeys() {
 }
 
 describe('suiteBridge helpers', () => {
+  test('explicit bridge environment overrides runtime environment safely', () => {
+    expect(resolveBridgeEnvironment('production', 'development')).toBe('development')
+    expect(resolveBridgeEnvironment('production', 'preview')).toBe('development')
+    expect(resolveBridgeEnvironment('development', 'production')).toBe('production')
+    expect(() => resolveBridgeEnvironment('production', 'unknown')).toThrow(
+      'invalid_suite_bridge_environment'
+    )
+  })
+
   test('extracts bearer token from authorization header', () => {
     expect(getBearerTokenFromAuthorizationHeader('Bearer abc.def.ghi')).toBe(
       'abc.def.ghi'

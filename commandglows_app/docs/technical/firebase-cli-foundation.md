@@ -71,6 +71,7 @@ defines through `scripts/flutter_config.py`:
 - `FIREBASE_MESSAGING_SENDER_ID`
 - `FIREBASE_AUTH_DOMAIN`
 - `FIREBASE_STORAGE_BUCKET`
+- `SUITE_IDENTITY_BRIDGE_URL`
 
 The resolver accepts `--environment dev` and `--environment prd` and rejects a
 value set belonging to the other project. `prd` is synchronized and resolver
@@ -104,13 +105,21 @@ Google in dev or enable it in production.
 
 An invalid-credential response was observed for development, but no real user
 sign-in, entitlement bridge, or authenticated Firestore operation has yet been
-proved. `SUITE_IDENTITY_BRIDGE_URL` in Doppler dev currently points to the
-Production endpoint `https://www.commandglows.com/api/bridge/firebase`. Its
-unauthenticated probe returns the expected `401 missing_bearer_token`, but the
-route resolves its bridge environment from the Production deployment. Do not
-claim dev trial access until a dev Firebase token and the target project's
-entitlement response are verified. The available Vercel Preview bridge remains
-SSO-protected and is not an app-usable endpoint.
+proved. Doppler dev currently points to
+`https://dev.commandglows.com/api/bridge/firebase`; the Windows recipe now
+forwards and validates this URL alongside the Firebase client configuration.
+Vercel currently maps the `dev.commandglows.com` alias to a Production-target
+deployment, so it is not an isolated Dev bridge. Vercel Development and Doppler
+Dev do not contain the bridge-side Firebase Admin, Convex URL, bridge secret,
+and trial-signal configuration needed for a standalone Dev deployment. An
+unauthenticated probe without an installation signal returned
+`503 trial_installation_signal_unavailable`; with a synthetic installation ID
+it returned `401 missing_bearer_token`. These probes prove route reachability
+and pre-auth checks only; no Firebase project, Convex environment, or trial
+behavior was authenticated. Do not send a Dev Firebase token to this alias until
+an isolated Dev bridge and its server configuration are established. The
+available Vercel Preview bridge remains SSO-protected and is not an app-usable
+endpoint.
 
 Cloud Storage is not configured. Keyboard-theme backup and restore must remain
 unproven until a bucket, storage rules, and upload/hydrate proof exist.

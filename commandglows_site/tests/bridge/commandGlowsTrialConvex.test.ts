@@ -23,22 +23,36 @@ function createTestBackend() {
   return convexTest(schema, modules)
 }
 
-async function deliverCommerce(t: ReturnType<typeof createTestBackend>, event: CommerceEventEnvelope & { bridgeSecret: string; metadata?: Record<string, string> }) {
+async function deliverCommerce(
+  t: ReturnType<typeof createTestBackend>,
+  event: CommerceEventEnvelope & {
+    bridgeSecret: string
+    metadata?: Record<string, string>
+  }
+) {
   if (event.globalUserId && event.sourceRef) {
     await t.run(async (ctx) => {
       const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
       if (!rows.some((row) => row.idempotencyKey === event.sourceRef)) {
         await ctx.db.insert('commerceCheckoutHandoffs', {
-          jtiHash: event.sourceRef, idempotencyKey: event.sourceRef,
-          globalUserId: event.globalUserId, productId: event.productId, offerId: event.offerId,
-          environment: 'test', status: 'completed', providerOrderId: event.providerOrderId,
-          expiresAt: Date.now() + 60_000, createdAt: Date.now(), updatedAt: Date.now(),
+          jtiHash: event.sourceRef,
+          idempotencyKey: event.sourceRef,
+          globalUserId: event.globalUserId,
+          productId: event.productId,
+          offerId: event.offerId,
+          environment: 'test',
+          status: 'completed',
+          providerOrderId: event.providerOrderId,
+          expiresAt: Date.now() + 60_000,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         })
       }
     })
   }
   return t.mutation(api.bridge.processCommerceEvent, {
-    ...event, providerPaymentIntentId: `pi_${event.sourceRef}`,
+    ...event,
+    providerPaymentIntentId: `pi_${event.sourceRef}`,
   })
 }
 
@@ -48,12 +62,13 @@ async function bridgeIdentity(
     uid: string
     installationHash: string
     networkHash?: string
-    trialAction?: 'restart'
+    trialAction?: 'start' | 'restart'
   }
 ) {
   return t.mutation(api.bridge.upsertFirebaseIdentity, {
     firebaseUid: args.uid,
     firebaseEmail: `${args.uid}@example.test`,
+    firebaseEmailVerified: args.trialAction ? true : undefined,
     environment: 'test',
     sourceRef: `test:${args.uid}`,
     installationHash: args.installationHash,
@@ -70,6 +85,40 @@ async function commandGlowsTrials(t: ReturnType<typeof createTestBackend>) {
       (row) =>
         row.productId === 'commandglows_app' && row.source === 'product_trial'
     ) as TrialEntitlement[]
+  })
+}
+
+async function seedUnconsumedInstallation(
+  t: ReturnType<typeof createTestBackend>,
+  uid: string,
+  installationHash: string
+) {
+  await t.run(async (ctx) => {
+    const now = Date.now()
+    const globalUserId = await ctx.db.insert('globalUsers', {
+      globalUserId: `test-global-${uid}`,
+      primaryEmail: `${uid}@example.test`,
+      createdAt: now,
+      updatedAt: now,
+    })
+    await ctx.db.insert('identityAccounts', {
+      globalUserId,
+      provider: 'firebase',
+      providerAccountId: uid,
+      email: `${uid}@example.test`,
+      source: 'firebase_bridge_api',
+      environment: 'test',
+      createdAt: now,
+      updatedAt: now,
+    })
+    await ctx.db.insert('productTrialInstallations', {
+      productId: 'commandglows_app',
+      environment: 'test',
+      installationHash,
+      globalUserId,
+      firstSeenAt: now,
+      lastSeenAt: now,
+    })
   })
 }
 
@@ -120,7 +169,7 @@ describe('CommandGlows trial Convex integration', () => {
     }
   })
 
-  test('ENT-TRIAL-001/002 creates one 30-day trial idempotently', async () => {
+  test('identity sync creates no trial; an explicit start creates one 30-day trial', async () => {
     const t = createTestBackend()
     const before = Date.now()
 
@@ -128,6 +177,14 @@ describe('CommandGlows trial Convex integration', () => {
       uid: 'firebase-user-1',
       installationHash: 'installation-hash-1',
       networkHash: 'network-hash-1',
+    })
+    expect(await commandGlowsTrials(t)).toHaveLength(0)
+
+    const started = await bridgeIdentity(t, {
+      uid: 'firebase-user-1',
+      installationHash: 'installation-hash-1',
+      networkHash: 'network-hash-1',
+      trialAction: 'start',
     })
     await bridgeIdentity(t, {
       uid: 'firebase-user-1',
@@ -146,7 +203,10 @@ describe('CommandGlows trial Convex integration', () => {
     expect(trials[0].trialExpiresAt).toBeGreaterThanOrEqual(
       before + TRIAL_DURATION_MS
     )
-    expect(first.entitlements).toEqual(
+    expect(
+      first.entitlements.some((entry) => entry.productId === 'commandglows_app')
+    ).toBe(false)
+    expect(started.entitlements).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           productId: 'commandglows_app',
@@ -159,11 +219,82 @@ describe('CommandGlows trial Convex integration', () => {
     )
   })
 
+  test('reports granted and already_active for explicit start requests', async () => {
+    const t = createTestBackend()
+    const first = await bridgeIdentity(t, {
+      uid: 'firebase-start-outcome',
+      installationHash: 'installation-start-outcome',
+      trialAction: 'start',
+    })
+    expect(first.trialRequest).toEqual({ outcome: 'granted', reasonCode: null })
+
+    const repeated = await bridgeIdentity(t, {
+      uid: 'firebase-start-outcome',
+      installationHash: 'installation-start-outcome',
+      trialAction: 'start',
+    })
+    expect(repeated.trialRequest).toEqual({
+      outcome: 'already_active',
+      reasonCode: null,
+    })
+  })
+
+  test('rebinds an installation to a new identity before any trial is consumed', async () => {
+    const t = createTestBackend()
+    await seedUnconsumedInstallation(
+      t,
+      'firebase-installation-owner',
+      'installation-shared-start'
+    )
+
+    const reassigned = await bridgeIdentity(t, {
+      uid: 'firebase-installation-other',
+      installationHash: 'installation-shared-start',
+      trialAction: 'start',
+    })
+
+    expect(reassigned.trialRequest).toEqual({
+      outcome: 'granted',
+      reasonCode: null,
+    })
+
+    const formerIdentity = await bridgeIdentity(t, {
+      uid: 'firebase-installation-owner',
+      installationHash: 'installation-shared-start',
+      trialAction: 'start',
+    })
+    expect(formerIdentity.trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'installation_not_eligible',
+    })
+  })
+
+  test('keeps a consumed installation ineligible for another identity', async () => {
+    const t = createTestBackend()
+    await bridgeIdentity(t, {
+      uid: 'firebase-consumed-installation-owner',
+      installationHash: 'installation-consumed-by-owner',
+      trialAction: 'start',
+    })
+
+    const denied = await bridgeIdentity(t, {
+      uid: 'firebase-consumed-installation-other',
+      installationHash: 'installation-consumed-by-owner',
+      trialAction: 'start',
+    })
+
+    expect(denied.trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'installation_not_eligible',
+    })
+  })
+
   test('ENT-TRIAL-003/004 allows two restarts and denies a fourth period', async () => {
     const t = createTestBackend()
     const first = await bridgeIdentity(t, {
       uid: 'firebase-user-restarts',
       installationHash: 'installation-hash-restarts',
+      trialAction: 'start',
     })
 
     await expireLatestTrial(t, first.globalUserId)
@@ -183,6 +314,15 @@ describe('CommandGlows trial Convex integration', () => {
       uid: 'firebase-user-restarts',
       installationHash: 'installation-hash-restarts',
       trialAction: 'restart',
+    })
+    const exhaustedStart = await bridgeIdentity(t, {
+      uid: 'firebase-user-restarts',
+      installationHash: 'installation-hash-restarts',
+      trialAction: 'start',
+    })
+    expect(exhaustedStart.trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'trial_cycles_exhausted',
     })
 
     const trials = await commandGlowsTrials(t)
@@ -212,10 +352,12 @@ describe('CommandGlows trial Convex integration', () => {
     await bridgeIdentity(t, {
       uid: 'firebase-owner',
       installationHash: 'shared-installation-hash',
+      trialAction: 'start',
     })
     const alternate = await bridgeIdentity(t, {
       uid: 'firebase-alternate-email',
       installationHash: 'shared-installation-hash',
+      trialAction: 'start',
     })
 
     expect(
@@ -231,6 +373,7 @@ describe('CommandGlows trial Convex integration', () => {
     const first = await bridgeIdentity(t, {
       uid: 'firebase-multi-device',
       installationHash: 'installation-hash-device-a',
+      trialAction: 'start',
     })
     await expireLatestTrial(t, first.globalUserId)
 
@@ -248,6 +391,25 @@ describe('CommandGlows trial Convex integration', () => {
     expect(
       (await commandGlowsTrials(t)).map((row) => row.trialAttempt)
     ).toEqual([1, 2])
+  })
+
+  test('reports previous_trial_exists for an expired cycle requested as a new start', async () => {
+    const t = createTestBackend()
+    const first = await bridgeIdentity(t, {
+      uid: 'firebase-previous-cycle',
+      installationHash: 'installation-previous-cycle',
+      trialAction: 'start',
+    })
+    await expireLatestTrial(t, first.globalUserId)
+    const denied = await bridgeIdentity(t, {
+      uid: 'firebase-previous-cycle',
+      installationHash: 'installation-previous-cycle',
+      trialAction: 'start',
+    })
+    expect(denied.trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'previous_trial_exists',
+    })
   })
 
   test('ENT-TRIAL-007 paid access prevents trial creation', async () => {
@@ -304,6 +466,7 @@ describe('CommandGlows trial Convex integration', () => {
     const identity = await bridgeIdentity(t, {
       uid: 'firebase-stripe-lifecycle',
       installationHash: 'installation-hash-stripe-lifecycle',
+      trialAction: 'start',
     })
     await expireLatestTrial(t, identity.globalUserId)
 
@@ -516,65 +679,92 @@ describe('CommandGlows trial Convex integration', () => {
     expect(active).toHaveLength(1)
   })
 
-  test.each([true, false])('does not regrant after an earlier refund (known owner: %s)', async (knownOwner) => {
-    const t = createTestBackend()
-    const identity = await bridgeIdentity(t, {
-      uid: 'firebase-refund-first',
-      installationHash: 'installation-hash-refund-first',
-    })
-    const baseEvent = {
-      provider: 'stripe',
-      offerId: 'commandglows_app/power',
-      productId: 'commandglows_app',
-      plan: 'power',
-      environment: 'test',
-      status: 'applied' as const,
-      globalUserId: identity.globalUserId,
-      sourceRef: 'purchase:refund-first',
-      metadata: { source: 'direct' },
-      bridgeSecret: BRIDGE_SECRET,
-    }
-    await deliverCommerce(t, {
-      ...baseEvent,
-      eventType: 'refunded',
-      globalUserId: knownOwner ? identity.globalUserId : undefined,
-      providerEventId: 'evt_refund_first',
-      providerOrderId: 'ch_refund_first',
-      idempotencyKey: 'stripe:refund.created:evt_refund_first',
-    })
-    const delayedEvent = {
-      ...baseEvent,
-      eventType: 'paid' as const,
-      providerEventId: 'evt_delayed_paid',
-      providerOrderId: 'cs_delayed_paid',
-      idempotencyKey: 'stripe:checkout.session.completed:evt_delayed_paid',
-    }
-    // The completed session is independent of webhook delivery order.
-    await t.run(async (ctx) => {
-      const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
-      for (const row of rows) await ctx.db.patch(row._id, { providerOrderId: delayedEvent.providerOrderId })
-    })
-    const delayedPaid = await deliverCommerce(t, delayedEvent)
-    const receipts = await t.run((ctx) => ctx.db.query('commerceEventReceipts').collect())
-    for (const receipt of receipts.filter((row) => row.status === 'pending_review' && row.envelope.eventType === 'refunded')) {
-      await t.mutation(internal.bridge.retryPendingCommerceEvent, { receiptId: receipt._id, expectedAttempts: 1, operatorId: 'test-operator', reason: 'Payment reference now bound', dryRun: false })
-    }
-    const resolvedPaid = delayedPaid.status === 'pending_review'
-      ? await t.mutation(internal.bridge.retryPendingCommerceEvent, { receiptId: delayedPaid.receiptId, expectedAttempts: 1, operatorId: 'test-operator', reason: 'Negative transition reconciled', dryRun: false })
-      : delayedPaid
-    expect(resolvedPaid).toMatchObject({
-      ok: true,
-      status: 'revoked',
-      reason: 'purchase_already_revoked',
-    })
-    expect(await t.run(async (ctx) =>
-      (await ctx.db.query('productEntitlements').collect()).filter(
-        (row) => row.sourceRef === 'commandglows_app:purchase:refund-first'
+  test.each([true, false])(
+    'does not regrant after an earlier refund (known owner: %s)',
+    async (knownOwner) => {
+      const t = createTestBackend()
+      const identity = await bridgeIdentity(t, {
+        uid: 'firebase-refund-first',
+        installationHash: 'installation-hash-refund-first',
+      })
+      const baseEvent = {
+        provider: 'stripe',
+        offerId: 'commandglows_app/power',
+        productId: 'commandglows_app',
+        plan: 'power',
+        environment: 'test',
+        status: 'applied' as const,
+        globalUserId: identity.globalUserId,
+        sourceRef: 'purchase:refund-first',
+        metadata: { source: 'direct' },
+        bridgeSecret: BRIDGE_SECRET,
+      }
+      await deliverCommerce(t, {
+        ...baseEvent,
+        eventType: 'refunded',
+        globalUserId: knownOwner ? identity.globalUserId : undefined,
+        providerEventId: 'evt_refund_first',
+        providerOrderId: 'ch_refund_first',
+        idempotencyKey: 'stripe:refund.created:evt_refund_first',
+      })
+      const delayedEvent = {
+        ...baseEvent,
+        eventType: 'paid' as const,
+        providerEventId: 'evt_delayed_paid',
+        providerOrderId: 'cs_delayed_paid',
+        idempotencyKey: 'stripe:checkout.session.completed:evt_delayed_paid',
+      }
+      // The completed session is independent of webhook delivery order.
+      await t.run(async (ctx) => {
+        const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
+        for (const row of rows)
+          await ctx.db.patch(row._id, {
+            providerOrderId: delayedEvent.providerOrderId,
+          })
+      })
+      const delayedPaid = await deliverCommerce(t, delayedEvent)
+      const receipts = await t.run((ctx) =>
+        ctx.db.query('commerceEventReceipts').collect()
       )
-    )).toHaveLength(0)
-  })
+      for (const receipt of receipts.filter(
+        (row) =>
+          row.status === 'pending_review' &&
+          row.envelope.eventType === 'refunded'
+      )) {
+        await t.mutation(internal.bridge.retryPendingCommerceEvent, {
+          receiptId: receipt._id,
+          expectedAttempts: 1,
+          operatorId: 'test-operator',
+          reason: 'Payment reference now bound',
+          dryRun: false,
+        })
+      }
+      const resolvedPaid =
+        delayedPaid.status === 'pending_review'
+          ? await t.mutation(internal.bridge.retryPendingCommerceEvent, {
+              receiptId: delayedPaid.receiptId,
+              expectedAttempts: 1,
+              operatorId: 'test-operator',
+              reason: 'Negative transition reconciled',
+              dryRun: false,
+            })
+          : delayedPaid
+      expect(resolvedPaid).toMatchObject({
+        ok: true,
+        status: 'revoked',
+        reason: 'purchase_already_revoked',
+      })
+      expect(
+        await t.run(async (ctx) =>
+          (await ctx.db.query('productEntitlements').collect()).filter(
+            (row) => row.sourceRef === 'commandglows_app:purchase:refund-first'
+          )
+        )
+      ).toHaveLength(0)
+    }
+  )
 
-  test('ENT-TRIAL-011 temporarily denies the fourth network grant in 24 hours', async () => {
+  test('ENT-TRIAL-011 flags shared network velocity without denying a CommandGlows trial', async () => {
     const t = createTestBackend()
     const snapshots = []
     for (let index = 1; index <= 4; index += 1) {
@@ -583,15 +773,21 @@ describe('CommandGlows trial Convex integration', () => {
           uid: `firebase-network-${index}`,
           installationHash: `installation-hash-network-${index}`,
           networkHash: 'shared-network-hash',
+          trialAction: 'start',
         })
       )
     }
 
-    expect(await commandGlowsTrials(t)).toHaveLength(3)
+    expect(await commandGlowsTrials(t)).toHaveLength(4)
+    expect(snapshots[3].trialRequest).toEqual({
+      outcome: 'granted',
+      reasonCode: null,
+      riskSignal: 'shared_network_velocity',
+    })
     expect(
       snapshots[3].entitlements.some(
         (entry) => entry.productId === 'commandglows_app'
       )
-    ).toBe(false)
+    ).toBe(true)
   })
 })

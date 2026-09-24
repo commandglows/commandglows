@@ -160,12 +160,22 @@ void main() {
   test(
     'sends an explicit first-trial request with the installation id',
     () async {
+      String? requestId;
       final client = SuiteIdentityBridgeClient(
         httpClient: MockClient((request) async {
           expect(request.body, '{"trialAction":"start"}');
           expect(
             request.headers['x-commandglows-installation-id'],
             'device-123',
+          );
+          requestId = request.headers['x-commandglows-request-id'];
+          expect(
+            requestId,
+            matches(
+              RegExp(
+                r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+              ),
+            ),
           );
           return http.Response(
             '''
@@ -175,7 +185,8 @@ void main() {
             "accounts": [],
             "entitlements": [
               {"productId": "commandglows_app", "status": "trialing", "trialAttempt": 1}
-            ]
+            ],
+            "trialRequest": {"outcome": "granted", "requestId": "$requestId"}
           }
           ''',
             200,
@@ -195,6 +206,64 @@ void main() {
       );
 
       expect(identity.entitlements.single.trialAttempt, 1);
+      expect(identity.trialRequest?.state, TrialRequestState.granted);
+      expect(identity.trialRequest?.responseReceived, isTrue);
+      expect(identity.trialRequest?.requestId, requestId);
+    },
+  );
+
+  test(
+    'reports a structured denial without exposing an installation identity',
+    () async {
+      String? requestId;
+      final client = SuiteIdentityBridgeClient(
+        httpClient: MockClient((request) async {
+          requestId = request.headers['x-commandglows-request-id'];
+          return http.Response(
+            '{"status":"ok","globalUserId":"gu_123","accounts":[],"entitlements":[],"trialRequest":{"outcome":"denied","reasonCode":"installation_not_eligible","requestId":"$requestId"}}',
+            200,
+          );
+        }),
+      );
+      final identity = await client.resolveFromFirebaseSession(
+        bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+          bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+        ),
+        firebaseAccount: firebaseAccount,
+        resolveIdToken: () async => 'firebase-id-token',
+        requestTrialStart: true,
+      );
+
+      expect(identity.trialRequest?.state, TrialRequestState.denied);
+      expect(identity.trialRequest?.reasonCode, 'installation_not_eligible');
+      expect(identity.trialRequest?.requestId, requestId);
+      expect(
+        identity.statusFor(ProductId.commandglowsApp),
+        SuiteAccountStatus.accessInactive,
+      );
+    },
+  );
+
+  test(
+    'marks a lost response as indeterminate and never claims it was not sent',
+    () async {
+      final client = SuiteIdentityBridgeClient(
+        httpClient: MockClient(
+          (request) async => throw StateError('socket closed'),
+        ),
+      );
+      final identity = await client.resolveFromFirebaseSession(
+        bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+          bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+        ),
+        firebaseAccount: firebaseAccount,
+        resolveIdToken: () async => 'firebase-id-token',
+        requestTrialStart: true,
+      );
+
+      expect(identity.trialRequest?.state, TrialRequestState.noResponse);
+      expect(identity.trialRequest?.responseReceived, isFalse);
+      expect(identity.trialRequest?.requestId, isNotNull);
     },
   );
 
@@ -242,6 +311,7 @@ void main() {
         tokenResolverCalled = true;
         return 'firebase-id-token';
       },
+      requestTrialStart: true,
     );
 
     expect(tokenResolverCalled, isFalse);
@@ -249,6 +319,8 @@ void main() {
     expect(identity.globalUserId, isNull);
     expect(identity.entitlements, isEmpty);
     expect(identity.issue, contains('suite_identity_bridge_missing_env'));
+    expect(identity.trialRequest?.state, TrialRequestState.notSent);
+    expect(identity.trialRequest?.responseReceived, isFalse);
   });
 
   test('missing token and token resolver errors fail closed', () async {
@@ -332,7 +404,7 @@ void main() {
   test('non-200 bridge response fails closed', () async {
     final client = SuiteIdentityBridgeClient(
       httpClient: MockClient((request) async {
-        return http.Response('{"error":"forbidden"}', 403);
+        return http.Response('{"error":"invalid_firebase_token"}', 403);
       }),
     );
 
@@ -349,5 +421,96 @@ void main() {
     expect(identity.entitlements, isEmpty);
     expect(identity.issue, contains('suite_identity_bridge_http_403'));
     expect(identity.issue, isNot(contains('/api/bridge/firebase')));
+    expect(identity.trialRequest, isNull);
+  });
+
+  test(
+    'keeps only allowlisted HTTP machine error codes for trial requests',
+    () async {
+      String? requestId;
+      final client = SuiteIdentityBridgeClient(
+        httpClient: MockClient((request) async {
+          requestId = request.headers['x-commandglows-request-id'];
+          return http.Response(
+            '{"error":"invalid_firebase_token","detail":"private diagnostic"}',
+            401,
+          );
+        }),
+      );
+      final identity = await client.resolveFromFirebaseSession(
+        bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+          bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+        ),
+        firebaseAccount: firebaseAccount,
+        resolveIdToken: () async => 'firebase-id-token',
+        requestTrialStart: true,
+      );
+
+      expect(identity.trialRequest?.state, TrialRequestState.httpError);
+      expect(identity.trialRequest?.httpStatus, 401);
+      expect(identity.trialRequest?.machineErrorCode, 'invalid_firebase_token');
+      expect(identity.trialRequest?.requestId, requestId);
+      expect(identity.trialRequest?.responseReceived, isTrue);
+    },
+  );
+
+  for (final testCase in <({int statusCode, String code})>[
+    (statusCode: 403, code: 'email_not_verified'),
+    (statusCode: 503, code: 'firebase_email_verification_check_unavailable'),
+  ]) {
+    test(
+      'preserves safe trial-verification response code ${testCase.code}',
+      () async {
+        final client = SuiteIdentityBridgeClient(
+          httpClient: MockClient((request) async {
+            return http.Response(
+              '{"error":"${testCase.code}","detail":"private diagnostic"}',
+              testCase.statusCode,
+            );
+          }),
+        );
+
+        final identity = await client.resolveFromFirebaseSession(
+          bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+            bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+          ),
+          firebaseAccount: firebaseAccount,
+          resolveIdToken: () async => 'firebase-id-token',
+          requestTrialStart: true,
+        );
+
+        expect(
+          identity.trialRequest?.state,
+          testCase.code == 'email_not_verified'
+              ? TrialRequestState.denied
+              : TrialRequestState.httpError,
+        );
+        expect(identity.trialRequest?.httpStatus, testCase.statusCode);
+        expect(identity.trialRequest?.machineErrorCode, testCase.code);
+        expect(
+          identity.trialRequest?.reasonCode,
+          testCase.code == 'email_not_verified' ? testCase.code : isNull,
+        );
+        expect(identity.issue, isNot(contains('private diagnostic')));
+      },
+    );
+  }
+
+  test('does not expose unrecognized HTTP error text', () async {
+    final client = SuiteIdentityBridgeClient(
+      httpClient: MockClient((request) async {
+        return http.Response('{"error":"private_provider_detail"}', 500);
+      }),
+    );
+    final identity = await client.resolveFromFirebaseSession(
+      bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+        bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+      ),
+      firebaseAccount: firebaseAccount,
+      resolveIdToken: () async => 'firebase-id-token',
+      requestTrialStart: true,
+    );
+
+    expect(identity.trialRequest?.machineErrorCode, isNull);
   });
 }

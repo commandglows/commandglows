@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/bootstrap/suite_identity_bridge_bootstrap.dart';
@@ -25,10 +26,14 @@ class AuthGateScreen extends ConsumerStatefulWidget {
 class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   bool _isRestarting = false;
   bool _isStartingTrial = false;
+  bool _trialNeedsAccessVerification = false;
+  bool _trialNeedsEmailVerification = false;
+  bool _isSendingEmailVerification = false;
   bool _isPurchasing = false;
   bool _checkoutOpened = false;
   String? _restartError;
   String? _trialStartError;
+  String? _emailVerificationFeedback;
   String? _purchaseError;
 
   Uri get _offersUri => Uri.https(
@@ -54,9 +59,12 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   }
 
   Future<void> _startTrial() async {
+    var bridgeRequestStarted = false;
     setState(() {
       _isStartingTrial = true;
       _trialStartError = null;
+      _trialNeedsAccessVerification = false;
+      _trialNeedsEmailVerification = false;
     });
     try {
       final session = await ref.read(authSessionProvider.future);
@@ -65,6 +73,10 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         throw StateError('signed_in_account_required');
       }
       final bridgeClient = ref.read(suiteIdentityBridgeClientProvider);
+      final installationId = await ref
+          .read(installationIdStoreProvider)
+          .readOrCreate();
+      bridgeRequestStarted = true;
       final identity = await bridgeClient.resolveFromFirebaseSession(
         bridgeConfig: SuiteIdentityBridgeBootstrap.config,
         firebaseAccount: SuiteIdentityAccount(
@@ -73,25 +85,124 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           email: user.email,
         ),
         resolveIdToken: ref.read(firebaseIdTokenResolverProvider),
-        installationId: await ref
-            .read(installationIdStoreProvider)
-            .readOrCreate(),
+        installationId: installationId,
         requestTrialStart: true,
       );
       if (identity.statusFor(ProductId.commandglowsApp) !=
           SuiteAccountStatus.accessActive) {
-        throw StateError('trial_not_granted');
+        if (mounted) {
+          setState(() {
+            _trialStartError = _trialRequestFeedback(identity.trialRequest);
+            _trialNeedsEmailVerification =
+                identity.trialRequest?.reasonCode == 'email_not_verified' ||
+                identity.trialRequest?.machineErrorCode == 'email_not_verified';
+            _trialNeedsAccessVerification =
+                switch (identity.trialRequest?.state) {
+                  TrialRequestState.noResponse ||
+                  TrialRequestState.httpError ||
+                  TrialRequestState.granted ||
+                  TrialRequestState.alreadyActive ||
+                  TrialRequestState.responseUnknown => true,
+                  _ => false,
+                };
+          });
+        }
+        return;
       }
       ref.invalidate(suiteIdentityProvider);
     } catch (_) {
       if (mounted) {
         setState(() {
-          _trialStartError =
-              'L’essai n’a pas pu être activé pour ce compte. Réessayez ou consultez les offres.';
+          _trialStartError = bridgeRequestStarted
+              ? 'Nous n’avons pas reçu de confirmation. La demande a peut-être été enregistrée : vérifiez votre accès avant de réessayer.'
+              : 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez. Vous pouvez aussi consulter les offres.';
+          _trialNeedsAccessVerification = bridgeRequestStarted;
         });
       }
     } finally {
       if (mounted) setState(() => _isStartingTrial = false);
+    }
+  }
+
+  String _trialRequestFeedback(TrialRequestResult? result) {
+    if (result == null || result.state == TrialRequestState.notSent) {
+      return 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez. Vous pouvez aussi consulter les offres.';
+    }
+
+    final correlation = result.responseReceived && result.requestId != null
+        ? ' Référence support : ${result.requestId}.'
+        : '';
+    switch (result.state) {
+      case TrialRequestState.notSent:
+        return 'La demande n’a pas été envoyée. Vérifiez votre connexion ou votre session, puis réessayez. Vous pouvez aussi consulter les offres.';
+      case TrialRequestState.noResponse:
+        return 'Nous n’avons pas reçu de confirmation. La demande a peut-être été enregistrée. Vérifiez votre accès avant de recommencer.$correlation';
+      case TrialRequestState.httpError:
+        final recovery = switch (result.machineErrorCode) {
+          'invalid_firebase_token' =>
+            'Votre session n’a pas pu être vérifiée. Reconnectez-vous, puis réessayez.',
+          'email_not_verified' =>
+            'Pour démarrer votre essai, confirmez d’abord votre adresse e-mail. Ouvrez le message de vérification ou demandez un nouvel envoi ci-dessous.',
+          'firebase_email_verification_check_unavailable' =>
+            'Nous n’avons pas pu vérifier la confirmation de votre adresse e-mail. Réessayez dans quelques instants.',
+          'trial_installation_signal_unavailable' =>
+            'Nous n’avons pas pu vérifier cette installation. Réessayez plus tard ou contactez le support.',
+          _ =>
+            'Le service d’essai n’a pas pu terminer la demande. Vérifiez votre accès avant de recommencer, ou réessayez plus tard.',
+        };
+        return '$recovery$correlation';
+      case TrialRequestState.denied:
+        final reason = switch (result.reasonCode) {
+          'email_not_verified' =>
+            'Pour démarrer votre essai, confirmez d’abord votre adresse e-mail. Ouvrez le message de vérification ou demandez un nouvel envoi ci-dessous.',
+          'installation_not_eligible' =>
+            'Cette installation ne peut pas bénéficier d’un essai gratuit. Nous ne pouvons pas préciser davantage. Consultez les offres ou contactez le support.',
+          'previous_trial_exists' =>
+            'Un essai gratuit a déjà été utilisé pour ce compte. Consultez les offres pour continuer.',
+          'trial_cycles_exhausted' =>
+            'Les périodes d’essai disponibles ont toutes été utilisées pour ce compte. Consultez les offres pour continuer.',
+          'temporary_rate_limit' =>
+            'Une limite temporaire s’applique aux demandes depuis ce réseau partagé. Elle peut concerner plusieurs comptes et ne signifie pas que votre compte a déjà bénéficié d’un essai. Réessayez plus tard ou consultez les offres.',
+          'active_paid_access' =>
+            'Un accès payant est déjà associé à ce compte. Actualisez votre accès ou contactez le support.',
+          _ =>
+            'Le serveur n’a pas accordé l’essai. Votre accès à l’app n’a pas changé. Consultez les offres ou contactez le support.',
+        };
+        return '$reason$correlation';
+      case TrialRequestState.granted:
+      case TrialRequestState.alreadyActive:
+      case TrialRequestState.responseUnknown:
+        return 'La réponse ne confirme pas encore l’accès à l’app. Vérifiez votre accès avant de recommencer.$correlation';
+    }
+  }
+
+  Future<void> _resendEmailVerification() async {
+    setState(() {
+      _isSendingEmailVerification = true;
+      _trialStartError = null;
+      _emailVerificationFeedback = null;
+    });
+    try {
+      final user = firebase_auth.FirebaseAuth.instance.currentUser;
+      if (user == null || (user.email?.trim().isEmpty ?? true)) {
+        throw StateError('firebase_email_unavailable');
+      }
+      await user.sendEmailVerification();
+      if (mounted) {
+        setState(() {
+          _emailVerificationFeedback =
+              'Un nouveau lien de vérification a été envoyé. Confirmez votre adresse, puis relancez votre demande d’essai.';
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _trialStartError =
+              'Nous n’avons pas pu envoyer le lien de vérification. Vérifiez votre connexion ou réessayez plus tard.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isSendingEmailVerification = false);
     }
   }
 
@@ -146,6 +257,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     setState(() {
       _isRestarting = true;
       _restartError = null;
+      _trialNeedsEmailVerification = false;
     });
     try {
       final session = await ref.read(authSessionProvider.future);
@@ -177,7 +289,11 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           SuiteAccountStatus.accessActive) {
         final entitlement = identity.entitlementFor(ProductId.commandglowsApp);
         setState(() {
-          _restartError = (entitlement?.trialAttempt ?? 0) >= 3
+          _trialNeedsEmailVerification =
+              identity.issue?.contains('code=email_not_verified') ?? false;
+          _restartError = _trialNeedsEmailVerification
+              ? 'Confirmez votre adresse e-mail avant de relancer l’essai. Après confirmation, demandez à nouveau la relance.'
+              : (entitlement?.trialAttempt ?? 0) >= 3
               ? 'Les deux relances autorisées ont déjà été utilisées. L’achat est désormais nécessaire.'
               : 'La relance n’a pas pu être accordée. Vérifiez votre connexion ou choisissez une offre.';
         });
@@ -247,6 +363,11 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                   : null,
               isStartingTrial: _isStartingTrial,
               trialStartError: _trialStartError,
+              showTrialAccessVerification: _trialNeedsAccessVerification,
+              showEmailVerification: _trialNeedsEmailVerification,
+              isSendingEmailVerification: _isSendingEmailVerification,
+              emailVerificationFeedback: _emailVerificationFeedback,
+              onResendEmailVerification: _resendEmailVerification,
               onRestart: _restartTrial,
               restartError: _restartError,
               purchaseError: _purchaseError,

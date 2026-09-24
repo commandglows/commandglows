@@ -20,6 +20,6 @@ test('new sign-in and account settings keep legacy purchase recovery discoverabl
 test('recovery routes and stale-session feedback preserve the selected language', () => {
   expect(source('src/pages/account/link-existing.astro')).toContain('<AccountRecovery lang="en" />')
   expect(source('src/pages/fr/account/link-existing.astro')).toContain('<AccountRecovery lang="fr" />')
-  expect(source('src/layouts/MainLayout.astro')).toContain('<SiteSessionGuard lang={lang} />')
+  expect(source('src/layouts/MainLayout.astro')).toContain("<SiteSessionGuard lang={lang === 'fr' ? 'fr' : 'en'} />")
   expect(source('src/components/shared/site/SiteSessionGuard.astro')).toContain('data-sign-in-path={signInPath}')
 })

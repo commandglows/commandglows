@@ -135,7 +135,22 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
     }
     return response
-  } catch {
+  } catch (error) {
+    const errorCode =
+      typeof error === 'object' && error !== null && 'message' in error &&
+      typeof error.message === 'string' && /^[a-z0-9_/-]{1,80}$/i.test(error.message)
+        ? error.message
+        : 'unknown'
+    const errorType = error instanceof Error ? error.name : typeof error
+    const errorDetail = error instanceof Error
+      ? error.message
+          .replace(/https?:\/\/\S+/gi, '[url]')
+          .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
+          .replace(/\beyJ[A-Za-z0-9._-]{16,}\b/g, '[token]')
+          .replace(/\b[A-Za-z0-9_+/-]{32,}={0,2}\b/g, '[redacted]')
+          .slice(0, 160)
+      : 'non_error_throwable'
+    console.warn(JSON.stringify({ diagnostic: 'auth_middleware_failed', errorCode, errorType, errorDetail }))
     return new Response('Authentication is temporarily unavailable. Please retry.', { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '30' } })
   }
 };
