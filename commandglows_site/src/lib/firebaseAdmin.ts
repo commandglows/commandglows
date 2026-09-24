@@ -1,6 +1,7 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 import { getVercelOidcToken } from "@vercel/oidc";
 import { IdentityPoolClient } from "google-auth-library";
 import type { Credential } from "firebase-admin/app";
@@ -21,8 +22,157 @@ type FirebaseAdminWifConfig = {
 type FirebaseAdminState = {
   projectId: string;
   auth: ReturnType<typeof getAuth>;
-  firestore: ReturnType<typeof getFirestore>;
+  firestore: FirebaseAdminFirestoreWriter;
+  serverTimestamp: () => unknown;
 };
+
+type FirebaseAdminFirestoreWriter = {
+  collection: (name: string) => {
+    doc: (id: string) => {
+      set: (
+        data: Record<string, unknown>,
+        options: { merge: true }
+      ) => Promise<unknown>;
+    };
+  };
+};
+
+type FirestoreRestValue = Record<string, unknown>;
+type AccessTokenSupplier = () => Promise<string>;
+const REST_SERVER_TIMESTAMP = Symbol("firestore-rest-server-timestamp");
+
+function encodeFirestoreValue(value: unknown): FirestoreRestValue {
+  if (value === null) return { nullValue: null };
+  if (value === REST_SERVER_TIMESTAMP) {
+    throw new Error("firestore_server_timestamp_requires_transform");
+  }
+  if (value instanceof Date) {
+    if (!Number.isFinite(value.getTime())) throw new Error("invalid_firestore_date");
+    return { timestampValue: value.toISOString() };
+  }
+  if (typeof value === "string") return { stringValue: value };
+  if (typeof value === "boolean") return { booleanValue: value };
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("invalid_firestore_number");
+    return Number.isSafeInteger(value)
+      ? { integerValue: String(value) }
+      : { doubleValue: value };
+  }
+  if (Array.isArray(value)) {
+    return { arrayValue: { values: value.map(encodeFirestoreValue) } };
+  }
+  if (value instanceof Map) {
+    return {
+      mapValue: {
+        fields: Object.fromEntries(
+          [...value.entries()]
+            .filter(([, entry]) => entry !== REST_SERVER_TIMESTAMP)
+            .map(([key, entry]) => [key, encodeFirestoreValue(entry)])
+        ),
+      },
+    };
+  }
+  if (typeof value === "object") {
+    return {
+      mapValue: {
+        fields: Object.fromEntries(
+          Object.entries(value)
+            .filter(([, entry]) => entry !== REST_SERVER_TIMESTAMP)
+            .map(([key, entry]) => [key, encodeFirestoreValue(entry)])
+        ),
+      },
+    };
+  }
+  throw new Error("unsupported_firestore_value");
+}
+
+function encodeFieldPathSegment(segment: string): string {
+  if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(segment)) return segment;
+  return `\`${segment.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\``;
+}
+
+function collectMergeFieldPaths(
+  value: unknown,
+  prefix = ""
+): { paths: string[]; transforms: string[] } {
+  if (value === REST_SERVER_TIMESTAMP) {
+    return { paths: [], transforms: [prefix] };
+  }
+  if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
+    const entries = value instanceof Map ? [...value.entries()] : Object.entries(value);
+    if (entries.length === 0 && prefix) return { paths: [prefix], transforms: [] };
+    return entries.reduce(
+      (result, [key, entry]) => {
+        const path = prefix
+          ? `${prefix}.${encodeFieldPathSegment(String(key))}`
+          : encodeFieldPathSegment(String(key));
+        const child = collectMergeFieldPaths(entry, path);
+        result.paths.push(...child.paths);
+        result.transforms.push(...child.transforms);
+        return result;
+      },
+      { paths: [] as string[], transforms: [] as string[] }
+    );
+  }
+  return prefix ? { paths: [prefix], transforms: [] } : { paths: [], transforms: [] };
+}
+
+function getFirestoreRestFields(data: Record<string, unknown>): Record<string, FirestoreRestValue> {
+  return Object.fromEntries(
+    Object.entries(data)
+      .filter(([, value]) => value !== REST_SERVER_TIMESTAMP)
+      .map(([key, value]) => [key, encodeFirestoreValue(value)])
+  );
+}
+
+export function getFirestoreRestServerTimestamp(): unknown {
+  return REST_SERVER_TIMESTAMP;
+}
+
+export function createFirestoreRestWriter(
+  projectId: string,
+  getAccessToken: AccessTokenSupplier,
+  fetchImpl: typeof fetch = fetch
+): FirebaseAdminFirestoreWriter {
+  return {
+    collection: (collectionName) => ({
+      doc: (documentId) => ({
+        set: async (data, options) => {
+          if (options?.merge !== true) {
+            throw new Error("firestore_rest_writer_requires_merge");
+          }
+
+          const { paths, transforms } = collectMergeFieldPaths(data);
+          const query = new URLSearchParams();
+          for (const path of paths) query.append("updateMask.fieldPaths", path);
+          for (const fieldPath of transforms) {
+            query.append("updateTransforms.fieldPath", fieldPath);
+            query.append("updateTransforms.setToServerValue", "REQUEST_TIME");
+          }
+          const documentPath = [
+            "projects", projectId, "databases", "(default)", "documents",
+            collectionName, documentId,
+          ].map(encodeURIComponent).join("/");
+          const accessToken = await getAccessToken();
+          const response = await fetchImpl(
+            `https://firestore.googleapis.com/v1/${documentPath}?${query.toString()}`,
+            {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ fields: getFirestoreRestFields(data) }),
+            }
+          );
+          if (!response.ok) {
+            throw new Error(`firestore_rest_write_failed:${response.status}`);
+          }
+        },
+      }),
+    }),
+  };
+}
 
 const cachedStates = new Map<string, FirebaseAdminState>();
 
@@ -100,7 +250,10 @@ export function getFirebaseAdminWifConfigFromEnv(
   };
 }
 
-function createFirebaseWifCredential(config: FirebaseAdminWifConfig): Credential {
+function createFirebaseWifCredential(config: FirebaseAdminWifConfig): {
+  credential: Credential;
+  getAccessToken: AccessTokenSupplier;
+} {
   const externalAccountClient = new IdentityPoolClient({
     audience: config.audience,
     subject_token_type: "urn:ietf:params:oauth:token-type:jwt",
@@ -112,17 +265,24 @@ function createFirebaseWifCredential(config: FirebaseAdminWifConfig): Credential
     },
   });
 
+  const getAccessToken = async (): Promise<string> => {
+    const { token } = await externalAccountClient.getAccessToken();
+    if (!token) throw new Error("firebase_wif_access_token_unavailable");
+    return token;
+  };
   return {
-    getAccessToken: async () => {
-      const { token } = await externalAccountClient.getAccessToken();
-      if (!token) throw new Error("firebase_wif_access_token_unavailable");
-      const expiryDate = externalAccountClient.credentials.expiry_date;
-      return {
-        access_token: token,
-        expires_in: expiryDate
-          ? Math.max(1, Math.floor((expiryDate - Date.now()) / 1000))
-          : 3600,
-      };
+    getAccessToken,
+    credential: {
+      getAccessToken: async () => {
+        const accessToken = await getAccessToken();
+        const expiryDate = externalAccountClient.credentials.expiry_date;
+        return {
+          access_token: accessToken,
+          expires_in: expiryDate
+            ? Math.max(1, Math.floor((expiryDate - Date.now()) / 1000))
+            : 3600,
+        };
+      },
     },
   };
 }
@@ -154,6 +314,7 @@ export function getFirebaseAdminState(
         .update(`${wifConfig.projectId}:${wifConfig.audience}:${wifConfig.serviceAccountEmail}`)
         .digest("hex")}`
     : undefined;
+  const wifAuth = wifConfig ? createFirebaseWifCredential(wifConfig) : null;
   const existingApp = wifConfig
     ? getApps().find((app) => app.name === wifAppName)
     : getApps()[0];
@@ -161,7 +322,7 @@ export function getFirebaseAdminState(
     existingApp ??
     initializeApp({
       credential: wifConfig
-        ? createFirebaseWifCredential(wifConfig)
+        ? wifAuth!.credential
         : cert({
             projectId: config!.projectId,
             clientEmail: config!.clientEmail,
@@ -170,10 +331,15 @@ export function getFirebaseAdminState(
       projectId: wifConfig?.projectId ?? config!.projectId,
     }, wifAppName);
 
-  const state = {
+  const state: FirebaseAdminState = {
     projectId: wifConfig?.projectId ?? config!.projectId,
     auth: getAuth(app),
-    firestore: getFirestore(app),
+    firestore: wifConfig
+      ? createFirestoreRestWriter(wifConfig.projectId, wifAuth!.getAccessToken)
+      : (getFirestore(app) as unknown as FirebaseAdminFirestoreWriter),
+    serverTimestamp: wifConfig
+      ? getFirestoreRestServerTimestamp
+      : () => FieldValue.serverTimestamp(),
   };
   cachedStates.set(cacheKey, state);
   return state;

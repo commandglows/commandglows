@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => {
   const initializeApp = vi.fn((options, name) => ({ options, name }))
   const getAuth = vi.fn(() => ({}))
   const getFirestore = vi.fn(() => ({}))
+  const fieldServerTimestamp = vi.fn(() => ({ serverTimestamp: true }))
   const getVercelOidcToken = vi.fn(async () => 'vercel-oidc-token')
   const IdentityPoolClient = vi.fn(function (options: {
     subject_token_supplier: { getSubjectToken: () => Promise<string> }
@@ -24,6 +25,7 @@ const mocks = vi.hoisted(() => {
     initializeApp,
     getAuth,
     getFirestore,
+    fieldServerTimestamp,
     getVercelOidcToken,
     IdentityPoolClient,
   }
@@ -35,7 +37,10 @@ vi.mock('firebase-admin/app', () => ({
   initializeApp: mocks.initializeApp,
 }))
 vi.mock('firebase-admin/auth', () => ({ getAuth: mocks.getAuth }))
-vi.mock('firebase-admin/firestore', () => ({ getFirestore: mocks.getFirestore }))
+vi.mock('firebase-admin/firestore', () => ({
+  getFirestore: mocks.getFirestore,
+  FieldValue: { serverTimestamp: mocks.fieldServerTimestamp },
+}))
 vi.mock('@vercel/oidc', () => ({ getVercelOidcToken: mocks.getVercelOidcToken }))
 vi.mock('google-auth-library', () => ({ IdentityPoolClient: mocks.IdentityPoolClient }))
 
@@ -67,6 +72,7 @@ describe('Firebase Admin workload identity federation', () => {
 
     expect(state?.projectId).toBe('commandglows-dev')
     expect(mocks.cert).not.toHaveBeenCalled()
+    expect(mocks.getFirestore).not.toHaveBeenCalled()
     const appOptions = mocks.initializeApp.mock.calls[0]?.[0]
     expect(appOptions.credential).toBeDefined()
     await expect(appOptions.credential.getAccessToken()).resolves.toMatchObject({
@@ -133,7 +139,10 @@ describe('Firebase Admin workload identity federation', () => {
       clientEmail: 'legacy@example.test',
       privateKey: 'legacy-private-key',
     })
+    expect(mocks.getFirestore).toHaveBeenCalledOnce()
     expect(mocks.IdentityPoolClient).not.toHaveBeenCalled()
+    expect(state?.serverTimestamp()).toEqual({ serverTimestamp: true })
+    expect(mocks.fieldServerTimestamp).toHaveBeenCalledOnce()
   })
 
   test('does not reuse a service-key Firebase app for an explicit WIF request', async () => {
@@ -166,5 +175,82 @@ describe('Firebase Admin workload identity federation', () => {
     )
     expect(state?.projectId).toBe('commandglows-dev')
     expect(mocks.cert).not.toHaveBeenCalled()
+  })
+
+  test('serializes merge writes, maps, nulls, dates, and server timestamps through Firestore REST', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 200 }))
+    const { createFirestoreRestWriter, getFirestoreRestServerTimestamp } =
+      await import('@/lib/firebaseAdmin')
+    const writer = createFirestoreRestWriter(
+      'commandglows-dev',
+      async () => 'mock-access-token',
+      fetchMock
+    )
+    await writer.collection('suiteAccess').doc('uid/one').set(
+      {
+        globalUserId: 'gu_1',
+        products: new Map([
+          ['commandglows_app', { active: true, plan: null }],
+        ]),
+        syncedAt: new Date('2026-09-24T10:00:00.000Z'),
+        updatedAt: getFirestoreRestServerTimestamp(),
+      },
+      { merge: true }
+    )
+
+    expect(fetchMock).toHaveBeenCalledOnce()
+    const [requestUrl, requestInit] = fetchMock.mock.calls[0]
+    const url = new URL(requestUrl)
+    expect(url.pathname).toBe(
+      '/v1/projects/commandglows-dev/databases/(default)/documents/suiteAccess/uid%2Fone'
+    )
+    expect(url.searchParams.getAll('updateMask.fieldPaths')).toEqual([
+      'globalUserId',
+      'products.commandglows_app.active',
+      'products.commandglows_app.plan',
+      'syncedAt',
+    ])
+    expect(url.searchParams.getAll('updateTransforms.fieldPath')).toEqual(['updatedAt'])
+    expect(url.searchParams.getAll('updateTransforms.setToServerValue')).toEqual([
+      'REQUEST_TIME',
+    ])
+    expect(requestInit.method).toBe('PATCH')
+    expect(requestInit.headers).toMatchObject({
+      Authorization: 'Bearer mock-access-token',
+      'Content-Type': 'application/json',
+    })
+    expect(JSON.parse(String(requestInit.body))).toEqual({
+      fields: {
+        globalUserId: { stringValue: 'gu_1' },
+        products: {
+          mapValue: {
+            fields: {
+              commandglows_app: {
+                mapValue: {
+                  fields: {
+                    active: { booleanValue: true },
+                    plan: { nullValue: null },
+                  },
+                },
+              },
+            },
+          },
+        },
+        syncedAt: { timestampValue: '2026-09-24T10:00:00.000Z' },
+      },
+    })
+  })
+
+  test('reports REST failures without including bearer tokens', async () => {
+    const fetchMock = vi.fn(async () => new Response('secret response', { status: 403 }))
+    const { createFirestoreRestWriter } = await import('@/lib/firebaseAdmin')
+    const writer = createFirestoreRestWriter(
+      'commandglows-dev',
+      async () => 'do-not-log-token',
+      fetchMock
+    )
+    await expect(
+      writer.collection('suiteAccess').doc('uid').set({ active: true }, { merge: true })
+    ).rejects.toThrow('firestore_rest_write_failed:403')
   })
 })

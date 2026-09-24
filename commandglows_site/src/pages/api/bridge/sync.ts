@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 import { ConvexHttpClient } from "convex/browser";
-import { FieldValue } from "firebase-admin/firestore";
 import { getFirebaseAdminState } from "@/lib/firebaseAdmin";
 import { getServerEnv } from "@/lib/serverEnv";
 import {
@@ -107,7 +106,7 @@ export const POST: APIRoute = async ({ request }) => {
           {
             ...mirror,
             source: "suite_bridge_sync_api",
-            updatedAt: FieldValue.serverTimestamp(),
+            updatedAt: firebaseAdmin.serverTimestamp(),
           },
           { merge: true }
         );
