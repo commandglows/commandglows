@@ -7,6 +7,7 @@ import {
   MANDATORY_EVIDENCE,
 } from '../../convex/emailCampaignEvidence'
 import { handleCampaigns } from '../../src/lib/email/central/campaigns'
+import { signSettlementProof } from '../../src/lib/email/central/settlementProof'
 const modules = import.meta.glob('../../convex/**/*.ts')
 const credential = 'x'.repeat(40)
 const start = 1_800_000_000_000
@@ -238,6 +239,16 @@ async function fixture(count = 3) {
           evidenceMaxAge: Object.fromEntries(
             MANDATORY_EVIDENCE.map((kind) => [kind, 86_400_000])
           ),
+          executionLimits: {
+            campaignUniqueRecipientLimit: 100,
+            campaignAttemptLimit: 500,
+            businessAttemptWindowLimit: 500,
+            identityAttemptWindowLimit: 500,
+            contactAttemptWindowLimit: 1,
+            businessAttemptWindowMs: 86_400_000,
+            identityAttemptWindowMs: 86_400_000,
+            contactAttemptWindowMs: 86_400_000,
+          },
           approvedAt: Date.now(),
         })
       for (const kind of MANDATORY_EVIDENCE) {
@@ -647,8 +658,12 @@ test('operator lane precedes a large marketing queue, and each pump handles at m
   expect((await f.read('status', b)).fanout.queued).toBe(30)
 })
 
-test('four pre-send pauses do not exhaust the first provider retry budget', async () => {
+test('four pre-send pauses do not consume attempts and Broadcast failure is not retried', async () => {
   const f = await fixture(1)
+  vi.stubEnv(
+    'EMAIL_WORKER_GATE_SECRET',
+    'test-worker-gate-secret-at-least-32-chars'
+  )
   const c = await f.post('approve', await f.snapshot(await f.draft()))
   await f.pump()
   const control = await f.t.run((ctx) =>
@@ -669,19 +684,34 @@ test('four pre-send pauses do not exhaust the first provider retry budget', asyn
   }
   const [job] = await f.claim()
   expect(await f.recheck(job)).toEqual({ eligible: true })
+  const settlementIssuedAt = Date.now()
+  const settlementProof = await signSettlementProof({
+    secret: 'test-worker-gate-secret-at-least-32-chars',
+    businessId: 'test',
+    messageId: job.messageId,
+    attemptId: job.attemptId,
+    outcome: 'retryable_failure',
+    reasonCode: 'provider_rate_limited',
+    issuedAt: settlementIssuedAt,
+  })
   await f.t.mutation(anyApi.email.settle, {
     credential,
     businessId: 'test',
     messageId: job.messageId,
     attemptId: job.attemptId,
     outcome: 'retryable_failure',
+    errorCode: 'provider_rate_limited',
     retryAfterMs: 1000,
+    settlementIssuedAt,
+    settlementProof,
   })
   const message = await f.t.run((ctx) => ctx.db.get(job.messageId))
   expect(message).toMatchObject({
-    state: 'queued',
+    state: 'permanent_failure',
     nextAt: Date.now() + 60_000,
   })
+  vi.setSystemTime(Date.now() + 60_001)
+  expect(await f.claim()).toEqual([])
   expect((await f.read('status', c)).fanout.queued).toBe(1)
 })
 

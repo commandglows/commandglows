@@ -20,6 +20,7 @@ import {
   sendPostmark,
   type TransportMessage,
 } from './transport'
+import { signSettlementProof } from './settlementProof'
 
 export function authorizeHttp(
   env: Record<string, string | undefined>,
@@ -225,6 +226,20 @@ export async function handleDispatch(
             fetcher
           )
       // If persistence fails after send, the lease becomes unknown; never resend here.
+      const settlementIssuedAt = Date.now()
+      const settlementProof =
+        outcome.status === 'retryable_failure' ||
+        outcome.status === 'permanent_failure'
+          ? await signSettlementProof({
+              secret: env.EMAIL_WORKER_GATE_SECRET,
+              businessId: business.id,
+              messageId: job.messageId,
+              attemptId: job.attemptId,
+              outcome: outcome.status,
+              reasonCode: outcome.reasonCode,
+              issuedAt: settlementIssuedAt,
+            })
+          : undefined
       await mutate('email:settle', {
         credential,
         businessId: business.id,
@@ -236,6 +251,7 @@ export async function handleDispatch(
           : {}),
         ...(outcome.reasonCode ? { errorCode: outcome.reasonCode } : {}),
         ...(outcome.retryAfterMs ? { retryAfterMs: outcome.retryAfterMs } : {}),
+        ...(settlementProof ? { settlementIssuedAt, settlementProof } : {}),
       })
       results.push({ message_id: job.messageId, status: outcome.status })
       if (

@@ -210,52 +210,87 @@ describe('central domain', () => {
     expect((await rows(t, 'emailMemberships'))[0].state).toBe('subscribed')
     expect(await rows(t, 'emailMessages')).toHaveLength(1)
   })
-  test('unconfirmed or withdrawn cannot dispatch broadcast', async () => {
+  test('legacy machine broadcast approval fails closed without mutating draft', async () => {
     const t = convexTest(schema, modules)
     await invoke(t, 'subscribe')
     const d = await draft(t)
-    await invoke(
-      t,
-      'broadcast_approve',
-      { businessId: business.id, draftId: d.draftId },
-      'approval-key-001'
-    )
+    const requestsBefore = await rows(t, 'emailRequests')
+    const rateLimitsBefore = await rows(t, 'emailRateLimits')
+    await expect(
+      invoke(
+        t,
+        'broadcast_approve',
+        { businessId: business.id, draftId: d.draftId },
+        'approval-key-001'
+      )
+    ).rejects.toThrow('legacy_guard_required')
+    await expect(
+      invoke(
+        t,
+        'broadcast_approve',
+        { businessId: business.id, draftId: d.draftId },
+        'approval-key-001'
+      )
+    ).rejects.toThrow('legacy_guard_required')
+    await expect(
+      invoke(
+        t,
+        'broadcast_approve',
+        {
+          businessId: business.id,
+          draftId: d.draftId,
+          actorId: 'forged-human',
+        },
+        'approval-key-00002'
+      )
+    ).rejects.toThrow('invalid_input')
+    expect(
+      (await rows(t, 'emailMessages')).find((m: any) => m._id === d.draftId)
+        .state
+    ).toBe('draft')
+    expect(await rows(t, 'emailRequests')).toEqual(requestsBefore)
+    expect(await rows(t, 'emailRateLimits')).toEqual(rateLimitsBefore)
     const jobs = await claim(t)
     expect(jobs.every((j: any) => j.streamClass === 'transactional')).toBe(true)
     expect(await claim(t)).toHaveLength(0)
     expect(
       (await rows(t, 'emailMessages')).find((m: any) => m.kind === 'broadcast')
         .state
-    ).toBe('cancelled')
+    ).toBe('draft')
   })
-  test('preview escapes HTML and approval precedes durable exclusive claim', async () => {
+  test('preview escapes HTML and legacy approval cannot queue delivery', async () => {
     const t = convexTest(schema, modules)
     await invoke(t, 'subscribe')
     await confirm(t)
     const d = await draft(t)
     expect(await claim(t)).toHaveLength(0)
-    await invoke(
-      t,
-      'broadcast_approve',
-      { businessId: business.id, draftId: d.draftId },
-      'approval-key-001'
-    )
-    const jobs = await claim(t)
-    expect(jobs).toHaveLength(1)
-    expect(jobs[0].html).toContain('&lt;img')
+    await expect(
+      invoke(
+        t,
+        'broadcast_approve',
+        { businessId: business.id, draftId: d.draftId },
+        'approval-key-001'
+      )
+    ).rejects.toThrow('legacy_guard_required')
     expect(await claim(t)).toHaveLength(0)
+    expect(
+      (await rows(t, 'emailMessages')).find((m: any) => m._id === d.draftId)
+        .state
+    ).toBe('draft')
   })
-  test('withdraw before claim cancels queued broadcast', async () => {
+  test('withdrawal after refused legacy approval leaves no broadcast to claim', async () => {
     const t = convexTest(schema, modules)
     await invoke(t, 'subscribe')
     await confirm(t)
     const d = await draft(t)
-    await invoke(
-      t,
-      'broadcast_approve',
-      { businessId: business.id, draftId: d.draftId },
-      'approval-key-001'
-    )
+    await expect(
+      invoke(
+        t,
+        'broadcast_approve',
+        { businessId: business.id, draftId: d.draftId },
+        'approval-key-001'
+      )
+    ).rejects.toThrow('legacy_guard_required')
     await invoke(
       t,
       'unsubscribe',
@@ -297,12 +332,14 @@ describe('central domain', () => {
     expect((await rows(t, 'emailMemberships'))[0].state).toBe('pending')
     await confirm(t)
     const d = await draft(t)
-    await invoke(
-      t,
-      'broadcast_approve',
-      { businessId: business.id, draftId: d.draftId },
-      'approval-key-001'
-    )
+    await expect(
+      invoke(
+        t,
+        'broadcast_approve',
+        { businessId: business.id, draftId: d.draftId },
+        'approval-key-001'
+      )
+    ).rejects.toThrow('legacy_guard_required')
     expect(await claim(t)).toHaveLength(0)
   })
   test('erasure removes contact evidence tokens and message content, retains suppressions', async () => {
@@ -364,30 +401,59 @@ describe('dispatch and privacy boundaries', () => {
     await invoke(t, 'subscribe')
     await confirm(t)
     const d = await draft(t)
-    await invoke(
-      t,
-      'broadcast_approve',
-      { businessId: business.id, draftId: d.draftId },
-      'approval-key-001'
-    )
-    const [job] = await claim(t)
-    await invoke(
-      t,
-      'unsubscribe',
-      {
+    await expect(
+      invoke(
+        t,
+        'broadcast_approve',
+        { businessId: business.id, draftId: d.draftId },
+        'approval-key-001'
+      )
+    ).rejects.toThrow('legacy_guard_required')
+    expect(await claim(t)).toHaveLength(0)
+  })
+  test('queued legacy broadcast without campaign id is cancelled, never dispatched', async () => {
+    const t = convexTest(schema, modules)
+    await invoke(t, 'subscribe')
+    await confirm(t)
+    const d = await draft(t)
+    await t.run((ctx) => ctx.db.patch(d.draftId, { state: 'queued' }))
+
+    expect(await claim(t)).toHaveLength(0)
+    expect(
+      (await rows(t, 'emailMessages')).find((m: any) => m._id === d.draftId)
+        .state
+    ).toBe('cancelled')
+  })
+  test('direct final-check of a sending legacy broadcast without campaign id is fenced', async () => {
+    const t = convexTest(schema, modules)
+    await invoke(t, 'subscribe')
+    await confirm(t)
+    const d = await draft(t)
+    const attemptId = await t.run(async (ctx) => {
+      await ctx.db.patch(d.draftId, {
+        state: 'sending',
+        leaseUntil: Date.now() + 60_000,
+      })
+      return ctx.db.insert('emailAttempts', {
         businessId: business.id,
-        tokenDigest: await nonceDigest(input.unsubscribeNonce),
-      },
-      'withdraw-key-001'
-    )
+        messageId: d.draftId,
+        state: 'sending',
+        at: Date.now(),
+      })
+    })
+
     expect(
       await t.mutation(ref('recheckDispatch'), {
         credential,
         businessId: business.id,
-        messageId: job.messageId,
-        attemptId: job.attemptId,
+        messageId: d.draftId,
+        attemptId,
       })
     ).toEqual({ eligible: false })
+    expect(
+      (await rows(t, 'emailMessages')).find((m: any) => m._id === d.draftId)
+        .state
+    ).toBe('cancelled')
   })
   test('explicit retryable response schedules a retry but ambiguous never does', async () => {
     const t = convexTest(schema, modules)
@@ -413,6 +479,35 @@ describe('dispatch and privacy boundaries', () => {
       outcome: 'unknown',
     })
     expect(await claim(t)).toHaveLength(0)
+  })
+  test('retryable Broadcast failure is terminal and is not automatically enqueued', async () => {
+    const t = convexTest(schema, modules)
+    const d = await draft(t)
+    const attemptId = await t.run(async (ctx) => {
+      await ctx.db.patch(d.draftId, { state: 'sending' })
+      return ctx.db.insert('emailAttempts', {
+        businessId: business.id,
+        messageId: d.draftId,
+        state: 'sending',
+        at: Date.now(),
+      })
+    })
+
+    await t.mutation(ref('settle'), {
+      credential,
+      businessId: business.id,
+      messageId: d.draftId,
+      attemptId,
+      outcome: 'retryable_failure',
+      errorCode: 'rate_limited',
+    })
+
+    expect(
+      (await rows(t, 'emailMessages')).find((m: any) => m._id === d.draftId)
+        .state
+    ).toBe('permanent_failure')
+    expect(await claim(t)).toHaveLength(0)
+    expect((await rows(t, 'emailAttempts'))[0].state).toBe('retryable_failure')
   })
   test('recipient abuse threshold is atomic and does not add fourth confirmation', async () => {
     const t = convexTest(schema, modules)

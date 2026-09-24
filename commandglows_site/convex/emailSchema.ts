@@ -7,6 +7,8 @@ export const emailTables = {
     revision: v.optional(v.number()),
     planRevision: v.optional(v.number()),
     dispatchEpoch: v.optional(v.number()),
+    campaignAttemptCount: v.optional(v.number()),
+    campaignUniqueRecipientCount: v.optional(v.number()),
     firstLotComplete: v.optional(v.boolean()),
     counters: v.optional(v.any()),
     expansionComplete: v.optional(v.boolean()),
@@ -79,6 +81,7 @@ export const emailTables = {
     planRevision: v.number(),
     reservationAttemptId: v.optional(v.id('emailAttempts')),
     departureAuthorizedAt: v.optional(v.number()),
+    everAuthorized: v.optional(v.boolean()),
     updatedAt: v.number(),
   })
     .index('campaign_contact', ['campaignId', 'canonicalContactKey'])
@@ -99,7 +102,39 @@ export const emailTables = {
     evidenceMaxAge: v.any(),
     executionLimits: v.optional(v.any()),
     approvedAt: v.number(),
-  }).index('scope', ['businessId', 'identityKey', 'revision']),
+  })
+    .index('scope', ['businessId', 'identityKey', 'revision'])
+    .index('approved_scope', [
+      'status',
+      'businessId',
+      'identityKey',
+      'revision',
+    ]),
+  emailCampaignQuotaSlots: defineTable({
+    dimension: v.string(),
+    scopeKey: v.string(),
+    ledgerId: v.id('emailCampaignRecipientLedger'),
+    campaignId: v.id('emailCampaigns'),
+    attemptId: v.optional(v.id('emailAttempts')),
+    state: v.string(),
+    reservedAt: v.number(),
+    authorizedAt: v.optional(v.number()),
+  })
+    .index('scope_time', ['dimension', 'scopeKey', 'reservedAt'])
+    .index('scope_state_time', ['dimension', 'scopeKey', 'state', 'reservedAt'])
+    .index('ledger_dimension', ['ledgerId', 'dimension'])
+    .index('scope_state', ['dimension', 'scopeKey', 'state']),
+  emailCampaignQuotaAggregates: defineTable({
+    dimension: v.string(),
+    scopeKey: v.string(),
+    activeReservations: v.number(),
+  }).index('scope', ['dimension', 'scopeKey']),
+  emailCampaignQuotaTree: defineTable({
+    dimension: v.string(),
+    scopeKey: v.string(),
+    node: v.string(),
+    count: v.number(),
+  }).index('node', ['dimension', 'scopeKey', 'node']),
   emailCampaignEvidence: defineTable({
     businessId: v.string(),
     campaignId: v.id('emailCampaigns'),
@@ -248,7 +283,17 @@ export const emailTables = {
     authorizedAt: v.optional(v.number()),
     releasedAt: v.optional(v.number()),
     releaseProof: v.optional(v.string()),
-  }).index('message', ['messageId']),
+  })
+    .index('message', ['messageId'])
+    .index('campaign', ['campaignId'])
+    .index('quota_campaign_business', ['businessId', 'campaignId'])
+    .index('quota_campaign_identity', ['identityKey', 'campaignId'])
+    .index('quota_route_campaign', ['route', 'campaignId'])
+    .index('quota_campaign_contact', [
+      'businessId',
+      'canonicalContactKey',
+      'campaignId',
+    ]),
   emailEvents: defineTable({
     businessId: v.string(),
     eventId: v.string(),

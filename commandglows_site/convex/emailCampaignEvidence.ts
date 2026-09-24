@@ -60,15 +60,16 @@ export async function createEvidenceReport(
     route: args.route,
     planRevision: args.planRevision,
   })
-  const policies = await ctx.db
+  const policy = await ctx.db
     .query('emailCampaignPolicies')
-    .withIndex('scope', (q) =>
-      q.eq('businessId', args.businessId).eq('identityKey', args.route)
+    .withIndex('approved_scope', (q) =>
+      q
+        .eq('status', 'approved')
+        .eq('businessId', args.businessId)
+        .eq('identityKey', args.route)
     )
-    .collect()
-  const policy = policies
-    .filter((candidate) => candidate.status === 'approved')
-    .sort((a, b) => b.revision - a.revision)[0]
+    .order('desc')
+    .first()
   const blockingChecks: any[] = []
   const warningChecks: any[] = []
   const evidenceIds: string[] = []

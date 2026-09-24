@@ -69,7 +69,7 @@ test('scheduled poll is disabled without configuration and reports safe worker f
   }
 })
 
-test('persisted signup → confirmation delivery → confirm → reviewed newsletter → opt-out → no further dispatch', async () => {
+test('persisted signup → confirmation delivery → confirm → legacy newsletter approval refused → opt-out', async () => {
   const credential = 'test-lifecycle-credential-at-least-32-chars'
   const workerGateSecret = 'test-lifecycle-worker-gate-secret-32chars'
   const env = {
@@ -264,29 +264,24 @@ test('persisted signup → confirmation delivery → confirm → reviewed newsle
       provider
     )
     expect(sends).toHaveLength(1)
-    expect(
-      (
-        await handleCommand(
-          request(
-            { business_id: 'communityglows', draft_id: draft.draft_id },
-            'broadcasts/approve',
-            'broadcast-approve-1'
-          ),
-          'broadcast_approve',
-          env,
-          mutate
-        )
-      ).status
-    ).toBe(200)
+    const legacyApproval = await handleCommand(
+      request(
+        { business_id: 'communityglows', draft_id: draft.draft_id },
+        'broadcasts/approve',
+        'broadcast-approve-1'
+      ),
+      'broadcast_approve',
+      env,
+      mutate
+    )
+    expect(legacyApproval.status).toBe(503)
     await handleDispatch(
       request({ business_id: 'communityglows' }, 'dispatch', 'dispatch-news-1'),
       env,
       mutate,
       provider
     )
-    expect(sends).toHaveLength(2)
-    expect(sends[1].MessageStream).toBe('news')
-    expect(String(sends[1].TextBody)).toContain('{{{ pm:unsubscribe }}}')
+    expect(sends).toHaveLength(1)
     const unsubscribe = signPreference(
       env.EMAIL_TOKEN_SIGNING_KEY,
       'communityglows',
@@ -342,7 +337,7 @@ test('persisted signup → confirmation delivery → confirm → reviewed newsle
       mutate
     )
     const next = await after.json()
-    await handleCommand(
+    const secondLegacyApproval = await handleCommand(
       request(
         { business_id: 'communityglows', draft_id: next.draft_id },
         'broadcasts/approve',
@@ -352,13 +347,14 @@ test('persisted signup → confirmation delivery → confirm → reviewed newsle
       env,
       mutate
     )
+    expect(secondLegacyApproval.status).toBe(503)
     await handleDispatch(
       request({ business_id: 'communityglows' }, 'dispatch', 'dispatch-news-2'),
       env,
       mutate,
       provider
     )
-    expect(sends).toHaveLength(2)
+    expect(sends).toHaveLength(1)
   } finally {
     vi.unstubAllEnvs()
   }

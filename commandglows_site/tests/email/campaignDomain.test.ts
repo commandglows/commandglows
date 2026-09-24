@@ -3,6 +3,7 @@ import { makeFunctionReference } from 'convex/server'
 import schema from '../../convex/schema'
 import { handleCampaignApi } from '../../src/lib/email/central/campaignApi'
 import { handleDispatch } from '../../src/lib/email/central/worker'
+import { signSettlementProof } from '../../src/lib/email/central/settlementProof'
 import {
   campaignContent,
   renderCampaign,
@@ -55,6 +56,8 @@ const content = {
 let key = 0
 function setup(recipients = ['reader@example.test']) {
   process.env.EMAIL_TEST_CAMPAIGNS = credential
+  process.env.EMAIL_WORKER_GATE_SECRET =
+    'fake-worker-gate-secret-at-least-32-chars'
   process.env.EMAIL_CONTROL_CONFIG = JSON.stringify({
     environment: 'sandbox',
     clients: [
@@ -75,6 +78,76 @@ function setup(recipients = ['reader@example.test']) {
   })
   return convexTest(schema, modules)
 }
+
+it('requires a worker-signed definitive settlement before releasing an authorized campaign quota', async () => {
+  const t = setup()
+  await member(t)
+  const c = await create(t)
+  await approve(t, c)
+  await t.mutation(ref('emailCampaigns:expand'), {
+    credential,
+    businessId: 'studio',
+    campaignId: c.id,
+  })
+  const [job] = await t.mutation(ref('email:claim'), {
+    credential,
+    businessId: 'studio',
+  })
+  expect(
+    await t.mutation(ref('email:recheckDispatch'), {
+      credential,
+      businessId: 'studio',
+      messageId: job.messageId,
+      attemptId: job.attemptId,
+    })
+  ).toEqual({ eligible: true })
+
+  await expect(
+    t.mutation(ref('email:settle'), {
+      credential,
+      businessId: 'studio',
+      messageId: job.messageId,
+      attemptId: job.attemptId,
+      outcome: 'permanent_failure',
+      errorCode: 'provider_rejected',
+    })
+  ).rejects.toThrow('settlement_proof_required')
+  expect(await t.run((ctx: any) => ctx.db.get(job.attemptId))).toMatchObject({
+    state: 'departure_authorized',
+  })
+
+  const settlementIssuedAt = Date.now()
+  const settlementProof = await signSettlementProof({
+    secret: process.env.EMAIL_WORKER_GATE_SECRET,
+    businessId: 'studio',
+    messageId: job.messageId,
+    attemptId: job.attemptId,
+    outcome: 'permanent_failure',
+    reasonCode: 'provider_rejected',
+    issuedAt: settlementIssuedAt,
+  })
+  await t.mutation(ref('email:settle'), {
+    credential,
+    businessId: 'studio',
+    messageId: job.messageId,
+    attemptId: job.attemptId,
+    outcome: 'permanent_failure',
+    errorCode: 'provider_rejected',
+    settlementIssuedAt,
+    settlementProof,
+  })
+  const ledger = await t.run((ctx: any) =>
+    ctx.db
+      .query('emailCampaignRecipientLedger')
+      .withIndex('campaign_contact', (q: any) =>
+        q
+          .eq('campaignId', c.id)
+          .eq('canonicalContactKey', 'reader@example.test')
+      )
+      .unique()
+  )
+  expect(ledger).toMatchObject({ state: 'rejected_before_acceptance' })
+})
 function command(
   t: any,
   operation: string,
@@ -270,10 +343,20 @@ it('binds immutable approval and excludes withdrawal after approval', async () =
     businessId: 'studio',
     campaignId: c.id,
   })
+  const [job] = await t.mutation(ref('email:claim'), {
+    credential,
+    businessId: 'studio',
+  })
+  expect(job).toBeDefined()
   await t.run((ctx: any) => ctx.db.patch(m, { state: 'withdrawn' }))
   expect(
-    await t.mutation(ref('email:claim'), { credential, businessId: 'studio' })
-  ).toEqual([])
+    await t.mutation(ref('email:recheckDispatch'), {
+      credential,
+      businessId: 'studio',
+      messageId: job.messageId,
+      attemptId: job.attemptId,
+    })
+  ).toEqual({ eligible: false })
   const detail = await t.query(
     makeFunctionReference<'query'>('emailCampaigns:read'),
     {
@@ -480,6 +563,22 @@ it('counts submitted and late delivered exactly once, keeps unknown distinct', a
   stored = await t.run((ctx: any) => ctx.db.get(c.id))
   expect(stored.counters.delivered).toBe(1)
   expect(stored.counters.unknown).toBe(0)
+  const detail = await t.query(
+    makeFunctionReference<'query'>('emailCampaigns:read'),
+    {
+      credential,
+      actorId: 'user_admin',
+      businessId: 'studio',
+      operation: 'get',
+      input: { campaignId: c.id },
+    }
+  )
+  expect(detail.campaign.counters).toMatchObject({
+    queued: 0,
+    delivered: 1,
+    unknown: 0,
+  })
+  expect(detail.fanout.queued).toBe(1)
 })
 
 it('keeps a durable recipient ledger across a reduced remaining plan', async () => {
@@ -881,7 +980,7 @@ it.each(['success', 'unknown', 'rate_limit'] as const)(
       (name, args) => t.mutation(ref(name), args),
       fetcher
     )
-    expect(response.status).toBe(200)
+    expect(response.status, await response.clone().text()).toBe(200)
     expect(sends).toBe(mode === 'success' ? 10 : 1)
     expect(
       fetcher.mock.calls.filter(([url]) => String(url).endsWith('/server'))
@@ -896,6 +995,9 @@ it.each(['success', 'unknown', 'rate_limit'] as const)(
       expect(stored.counters.unknown).toBe(1)
       expect(stored.counters.queued).toBe(2)
     }
-    if (mode === 'rate_limit') expect(stored.counters.queued).toBe(3)
+    if (mode === 'rate_limit') {
+      expect(stored.counters.queued).toBe(2)
+      expect(stored.counters.failed).toBe(1)
+    }
   }
 )

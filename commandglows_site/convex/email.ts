@@ -3,15 +3,17 @@ import { campaignDispatchState } from './emailCampaignPolicy'
 import { commerceEmailCurrent, syncCommerceEmail } from './commerceEmail'
 import { emailChannelPaused } from './emailOperationsPolicy'
 import {
-  authorizeCampaignDeparture,
   currentExecutionPolicy,
   releaseCampaignReservation,
   reserveCampaignAttempt,
+  validateAndAuthorizeCampaignDeparture,
 } from './emailCampaignExecution'
+import { evidenceScope } from './emailCampaignEvidence'
 import {
   renderEmail,
   type EmailContent,
 } from '../src/lib/email/central/templates'
+import { verifySettlementProof } from '../src/lib/email/central/settlementProof'
 import { mutation } from './_generated/server'
 import { v } from 'convex/values'
 import {
@@ -38,6 +40,12 @@ async function digest(value: string) {
   )
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
+}
+async function dispatchState(ctx: any, message: any, business: any) {
+  // Legacy one-off broadcasts do not carry the campaign approval, recipient
+  // ledger, or departure permit required by the human-controlled path.
+  if (message.kind === 'broadcast' && !message.campaignId) return 'cancelled'
+  return campaignDispatchState(ctx, message, business)
 }
 export async function nonceDigest(nonce: unknown) {
   if (typeof nonce !== 'string' || !/^[a-f0-9]{64}$/.test(nonce))
@@ -546,18 +554,10 @@ export const command = mutation({
         ),
       }
     } else if (args.operation === 'broadcast_approve') {
-      const draftId = ctx.db.normalizeId('emailMessages', str(i.draftId))
-      const m = draftId ? await ctx.db.get(draftId) : null
-      if (
-        !m ||
-        !('businessId' in m) ||
-        m.businessId !== businessId ||
-        !('state' in m) ||
-        m.state !== 'draft'
-      )
-        fail('invalid_input')
-      await patchEmailMessage(ctx, m._id, { state: 'queued' } as any)
-      result = { status: 'queued', messageId: m._id }
+      // This machine-authenticated legacy operation has no verified human
+      // authority envelope or bounded campaign guard. Keep the adapter, but
+      // never let it turn a preview into queued delivery.
+      fail('legacy_guard_required')
     } else if (args.operation === 'erase') {
       if (!business.retentionDays) fail('retention_unconfigured')
       const email = normalizeEmail(i.email)
@@ -703,7 +703,7 @@ export const claim = mutation({
         m.kind === 'broadcast'
           ? business.broadcastStream
           : business.transactionalStream
-      const campaignState = await campaignDispatchState(ctx, m, business)
+      const campaignState = await dispatchState(ctx, m, business)
       if (campaignState !== 'eligible') {
         await patchEmailMessage(
           ctx,
@@ -820,6 +820,8 @@ export const settle = mutation({
     providerMessageId: v.optional(v.string()),
     errorCode: v.optional(v.string()),
     retryAfterMs: v.optional(v.number()),
+    settlementIssuedAt: v.optional(v.number()),
+    settlementProof: v.optional(v.string()),
   },
   handler: async (ctx, a) => {
     authorize(a.credential, a.businessId, 'dispatch')
@@ -858,6 +860,25 @@ export const settle = mutation({
       !['sending', 'reserved', 'departure_authorized'].includes(t.state)
     )
       fail('invalid_state')
+    if (
+      t.campaignLedgerId &&
+      t.state === 'departure_authorized' &&
+      ['retryable_failure', 'permanent_failure'].includes(a.outcome)
+    ) {
+      const settlementSecret = process.env.EMAIL_WORKER_GATE_SECRET
+      if (!settlementSecret) fail('settlement_verification_unavailable')
+      const valid = await verifySettlementProof({
+        secret: settlementSecret,
+        businessId: a.businessId,
+        messageId: m._id,
+        attemptId: t._id,
+        outcome: a.outcome as 'retryable_failure' | 'permanent_failure',
+        reasonCode: a.errorCode,
+        issuedAt: a.settlementIssuedAt ?? 0,
+        proof: a.settlementProof,
+      })
+      if (!valid) fail('settlement_proof_required')
+    }
     await ctx.db.patch(t._id, {
       state: a.outcome,
       ...(a.errorCode ? { errorCode: str(a.errorCode, 100) } : {}),
@@ -891,12 +912,15 @@ export const settle = mutation({
         (attempt) => !['cancelled', 'released'].includes(attempt.state)
       ).length
     )
+    const shouldRetry =
+      a.outcome === 'retryable_failure' && m.kind !== 'broadcast'
     await patchEmailMessage(ctx, m._id, {
-      state:
-        a.outcome === 'retryable_failure'
-          ? submittedAttempts < 5
-            ? 'queued'
-            : 'permanent_failure'
+      state: shouldRetry
+        ? submittedAttempts < 5
+          ? 'queued'
+          : 'permanent_failure'
+        : a.outcome === 'retryable_failure'
+          ? 'permanent_failure'
           : a.outcome,
       nextAt:
         Date.now() +
@@ -1136,7 +1160,7 @@ export const recheckDispatch = mutation({
         ? business.broadcastStream
         : business.transactionalStream
     const route = deliveryRoute(config, business)
-    const campaignState = await campaignDispatchState(ctx, message, business)
+    const campaignState = await dispatchState(ctx, message, business)
     const consentEligible = Boolean(
       campaignState !== 'cancelled' &&
       (message.kind !== 'operator' ||
@@ -1195,16 +1219,35 @@ export const recheckDispatch = mutation({
         message.campaignId && (await ctx.db.get(message.campaignId))
       const ledger =
         message.campaignLedgerId && (await ctx.db.get(message.campaignLedgerId))
-      eligible = Boolean(
-        campaign &&
-        ledger &&
-        (await authorizeCampaignDeparture(ctx, {
+      const versionId = message.campaignVersionId
+      const version = versionId && (await ctx.db.get(versionId))
+      const now = Date.now()
+      const expectedScopeDigest =
+        campaign && version
+          ? evidenceScope({
+              businessId: campaign.businessId,
+              campaignId: campaign._id,
+              versionId: version._id,
+              audienceId: version.audienceId,
+              purpose: version.purpose,
+              route: version.route,
+              planRevision: campaign.planRevision ?? 1,
+            })
+          : ''
+      if (campaign && ledger && version && version._id === campaign.versionId) {
+        const result = await validateAndAuthorizeCampaignDeparture(ctx, {
           attempt,
           campaign,
           ledger,
-          now: Date.now(),
-        }))
-      )
+          versionId: version._id,
+          expectedScopeDigest,
+          identityKey: route,
+          now,
+        })
+        eligible = result.authorized
+      } else {
+        eligible = false
+      }
     } else if (eligible)
       await ctx.db.patch(attempt._id, { dispatchReservedAt: Date.now() })
     if (!eligible) {

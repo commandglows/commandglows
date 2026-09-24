@@ -126,12 +126,12 @@ function receipt(
       : null,
     updated_at: new Date(c.updatedAt).toISOString(),
     counters: {
-      queued: c.fanoutQueued,
+      queued: c.counters?.queued ?? c.fanoutQueued,
       cancelled: c.counters?.cancelled ?? c.fanoutExcluded,
-      delivered: 0,
-      submitted: 0,
-      failed: 0,
-      unknown: 0,
+      delivered: c.counters?.delivered ?? 0,
+      submitted: c.counters?.submitted ?? 0,
+      failed: c.counters?.failed ?? 0,
+      unknown: c.counters?.unknown ?? 0,
     },
     eligible_count: c.eligible,
     excluded_count: c.excluded,
@@ -378,7 +378,8 @@ export const command = mutation({
         fail('invalid_input')
       if (!oldVersion) fail('invalid_state')
       if (operation === 'snapshot') {
-        if (!['draft', 'paused'].includes(c.state)) fail('invalid_state')
+        if (!['draft', 'paused', 'suspended'].includes(c.state))
+          fail('invalid_state')
         if (!oldVersion.subject.trim() || !oldVersion.paragraphs.length)
           fail('invalid_input')
         if (!c.snapshotComplete) {
@@ -581,7 +582,7 @@ export const command = mutation({
         void operationId
         return result
       } else if (operation === 'pause') {
-        if (['completed', 'cancelled'].includes(c.state)) {
+        if (['completed', 'cancelled', 'suspended'].includes(c.state)) {
           // A terminal stop is an idempotent receipt, never a state rewrite.
         } else if (c.state === 'draft') {
           await ctx.db.patch(c._id, { blockReason: 'operator_paused' })
@@ -613,7 +614,7 @@ export const command = mutation({
                   c.blockReason === 'remaining_plan_reduced'
                 )))) ||
           (action === 'resume' &&
-            (c.state !== 'paused' ||
+            (!['paused', 'suspended'].includes(c.state) ||
               !c.resumeState ||
               c.approvedVersionId !== oldVersion._id))
         )
@@ -703,7 +704,7 @@ export const command = mutation({
           now,
         })
         if (
-          c.state !== 'paused' ||
+          !['paused', 'suspended'].includes(c.state) ||
           !c.resumeState ||
           c.approvedVersionId !== oldVersion._id ||
           oldVersion.route !== deliveryRoute(config, business) ||
@@ -732,6 +733,7 @@ export const command = mutation({
             'running',
             'fanout_complete',
             'paused',
+            'suspended',
             'completed',
           ].includes(c.state)
         )

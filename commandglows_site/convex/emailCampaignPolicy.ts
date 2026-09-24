@@ -39,9 +39,14 @@ export async function campaignDispatchState(
     member.purpose !== version.purpose
   )
     return 'cancelled'
-  if (campaign.state === 'paused' || version.scheduledAt > Date.now())
+  if (
+    ['paused', 'suspended'].includes(campaign.state) ||
+    version.scheduledAt > Date.now()
+  )
     return 'paused'
-  return ['scheduled', 'sending', 'running', 'fanout_complete'].includes(campaign.state)
+  return ['scheduled', 'sending', 'running', 'fanout_complete'].includes(
+    campaign.state
+  )
     ? 'eligible'
     : 'cancelled'
 }
