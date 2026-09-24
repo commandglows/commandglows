@@ -493,12 +493,18 @@ export const POST: APIRoute = async ({ request }) => {
     };
 
     return respond(response, 200);
-  } catch (error) {
-    if (isTrialStart) {
-      trialOutcome = "unknown";
-      trialReasonCode = null;
-      return respond({ status: "error", error: "bridge_write_failed" }, 500);
-    }
+    } catch (error) {
+      if (isTrialStart) {
+        trialOutcome = "unknown";
+        trialReasonCode = null;
+        const errorCode =
+          error instanceof Error &&
+          /^(firestore_rest_write_failed:\d{3}|firebase_wif_[a-z0-9_]+|bridge_secret_(?:not_configured|mismatch)|unsupported_firestore_value|invalid_firestore_[a-z_]+)$/i.test(error.message)
+            ? error.message
+            : "unknown";
+        console.warn(JSON.stringify({ requestId, action: "start", diagnostic: "bridge_write_failed", errorCode }));
+        return respond({ status: "error", error: "bridge_write_failed" }, 500);
+      }
     console.error("Firebase bridge sync failed:", error);
     return respond({ status: "error", error: "bridge_write_failed" }, 500);
   }

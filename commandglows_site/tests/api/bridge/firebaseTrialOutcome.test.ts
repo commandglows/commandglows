@@ -18,6 +18,7 @@ vi.mock('@/lib/firebaseAdmin', () => ({
     firestore: {
       collection: () => ({ doc: () => ({ set: vi.fn() }) }),
     },
+    serverTimestamp: () => 'server-timestamp',
   })),
 }))
 
