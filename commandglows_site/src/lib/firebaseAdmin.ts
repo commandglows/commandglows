@@ -43,9 +43,6 @@ const REST_SERVER_TIMESTAMP = Symbol("firestore-rest-server-timestamp");
 
 function encodeFirestoreValue(value: unknown): FirestoreRestValue {
   if (value === null) return { nullValue: null };
-  if (value === REST_SERVER_TIMESTAMP) {
-    throw new Error("firestore_server_timestamp_requires_transform");
-  }
   if (value instanceof Date) {
     if (!Number.isFinite(value.getTime())) throw new Error("invalid_firestore_date");
     return { timestampValue: value.toISOString() };
@@ -66,7 +63,6 @@ function encodeFirestoreValue(value: unknown): FirestoreRestValue {
       mapValue: {
         fields: Object.fromEntries(
           [...value.entries()]
-            .filter(([, entry]) => entry !== REST_SERVER_TIMESTAMP)
             .map(([key, entry]) => [key, encodeFirestoreValue(entry)])
         ),
       },
@@ -77,7 +73,6 @@ function encodeFirestoreValue(value: unknown): FirestoreRestValue {
       mapValue: {
         fields: Object.fromEntries(
           Object.entries(value)
-            .filter(([, entry]) => entry !== REST_SERVER_TIMESTAMP)
             .map(([key, entry]) => [key, encodeFirestoreValue(entry)])
         ),
       },
@@ -94,35 +89,40 @@ function encodeFieldPathSegment(segment: string): string {
 function collectMergeFieldPaths(
   value: unknown,
   prefix = ""
-): { paths: string[]; transforms: string[] } {
-  if (value === REST_SERVER_TIMESTAMP) {
-    return { paths: [], transforms: [prefix] };
-  }
+): string[] {
   if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
     const entries = value instanceof Map ? [...value.entries()] : Object.entries(value);
-    if (entries.length === 0 && prefix) return { paths: [prefix], transforms: [] };
+    if (entries.length === 0 && prefix) return [prefix];
     return entries.reduce(
-      (result, [key, entry]) => {
+      (paths, [key, entry]) => {
         const path = prefix
           ? `${prefix}.${encodeFieldPathSegment(String(key))}`
           : encodeFieldPathSegment(String(key));
-        const child = collectMergeFieldPaths(entry, path);
-        result.paths.push(...child.paths);
-        result.transforms.push(...child.transforms);
-        return result;
+        paths.push(...collectMergeFieldPaths(entry, path));
+        return paths;
       },
-      { paths: [] as string[], transforms: [] as string[] }
+      [] as string[]
     );
   }
-  return prefix ? { paths: [prefix], transforms: [] } : { paths: [], transforms: [] };
+  return prefix ? [prefix] : [];
+}
+
+function resolveServerTimestamps(value: unknown): unknown {
+  if (value === REST_SERVER_TIMESTAMP) return new Date();
+  if (Array.isArray(value)) return value.map(resolveServerTimestamps);
+  if (value instanceof Map) {
+    return new Map([...value.entries()].map(([key, entry]) => [key, resolveServerTimestamps(entry)]));
+  }
+  if (value && typeof value === "object" && !(value instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, resolveServerTimestamps(entry)])
+    );
+  }
+  return value;
 }
 
 function getFirestoreRestFields(data: Record<string, unknown>): Record<string, FirestoreRestValue> {
-  return Object.fromEntries(
-    Object.entries(data)
-      .filter(([, value]) => value !== REST_SERVER_TIMESTAMP)
-      .map(([key, value]) => [key, encodeFirestoreValue(value)])
-  );
+  return Object.fromEntries(Object.entries(data).map(([key, value]) => [key, encodeFirestoreValue(value)]));
 }
 
 export function getFirestoreRestServerTimestamp(): unknown {
@@ -142,13 +142,10 @@ export function createFirestoreRestWriter(
             throw new Error("firestore_rest_writer_requires_merge");
           }
 
-          const { paths, transforms } = collectMergeFieldPaths(data);
+          const resolvedData = resolveServerTimestamps(data) as Record<string, unknown>;
+          const paths = collectMergeFieldPaths(resolvedData);
           const query = new URLSearchParams();
           for (const path of paths) query.append("updateMask.fieldPaths", path);
-          for (const fieldPath of transforms) {
-            query.append("updateTransforms.fieldPath", fieldPath);
-            query.append("updateTransforms.setToServerValue", "REQUEST_TIME");
-          }
           const documentPath = [
             "projects", projectId, "databases", "(default)", "documents",
             collectionName, documentId,
@@ -162,7 +159,7 @@ export function createFirestoreRestWriter(
                 Authorization: `Bearer ${accessToken}`,
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ fields: getFirestoreRestFields(data) }),
+              body: JSON.stringify({ fields: getFirestoreRestFields(resolvedData) }),
             }
           );
           if (!response.ok) {

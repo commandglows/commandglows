@@ -209,17 +209,17 @@ describe('Firebase Admin workload identity federation', () => {
       'products.commandglows_app.active',
       'products.commandglows_app.plan',
       'syncedAt',
+      'updatedAt',
     ])
-    expect(url.searchParams.getAll('updateTransforms.fieldPath')).toEqual(['updatedAt'])
-    expect(url.searchParams.getAll('updateTransforms.setToServerValue')).toEqual([
-      'REQUEST_TIME',
-    ])
+    expect(url.searchParams.has('updateTransforms.fieldPath')).toBe(false)
+    expect(url.searchParams.has('updateTransforms.setToServerValue')).toBe(false)
     expect(requestInit.method).toBe('PATCH')
     expect(requestInit.headers).toMatchObject({
       Authorization: 'Bearer mock-access-token',
       'Content-Type': 'application/json',
     })
-    expect(JSON.parse(String(requestInit.body))).toEqual({
+    const body = JSON.parse(String(requestInit.body))
+    expect(body).toEqual({
       fields: {
         globalUserId: { stringValue: 'gu_1' },
         products: {
@@ -237,6 +237,7 @@ describe('Firebase Admin workload identity federation', () => {
           },
         },
         syncedAt: { timestampValue: '2026-09-24T10:00:00.000Z' },
+        updatedAt: { timestampValue: expect.stringMatching(/^\d{4}-\d\d-\d\dT.*Z$/) },
       },
     })
   })
