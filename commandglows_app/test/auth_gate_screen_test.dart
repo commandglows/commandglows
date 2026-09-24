@@ -226,7 +226,7 @@ void main() {
     expect(find.textContaining('denial-request-id'), findsOneWidget);
   });
 
-  testWidgets('network trial limit does not imply prior use by this email', (
+  testWidgets('network trial limit explains only why the trial was denied', (
     tester,
   ) async {
     const initialIdentity = SuiteIdentitySnapshot(
@@ -255,18 +255,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('La limite d’essais depuis ce réseau a été atteinte'),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('Elle est partagée entre les comptes'),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('cela ne signifie pas que cette adresse e-mail'),
+      find.textContaining('Trop de demandes d’essai ont été faites depuis ce réseau récemment'),
       findsOneWidget,
     );
     expect(find.textContaining('network-limit-request-id'), findsOneWidget);
+    expect(
+      find.textContaining('L’accès à l’application reste disponible'),
+      findsNothing,
+    );
   });
 
   testWidgets(

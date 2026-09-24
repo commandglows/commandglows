@@ -360,9 +360,23 @@ async function registerProductTrialInstallation(
     .first()
 
   if (existing) {
-    await ctx.db.patch(existing._id, { lastSeenAt: args.now })
+    const ownedByAnotherIdentity =
+      existing.globalUserId !== args.globalUserDocId
+    const trialAlreadyConsumed = existing.trialConsumedAt !== undefined
+    if (ownedByAnotherIdentity && trialAlreadyConsumed) {
+      await ctx.db.patch(existing._id, { lastSeenAt: args.now })
+      return { eligible: false, installationId: existing._id }
+    }
+
+    // Identity sync may register an installation before any trial is granted.
+    // Such a record can move to the current identity; only a consumed trial
+    // makes the installation ineligible for another identity.
+    await ctx.db.patch(existing._id, {
+      globalUserId: args.globalUserDocId,
+      lastSeenAt: args.now,
+    })
     return {
-      eligible: existing.globalUserId === args.globalUserDocId,
+      eligible: true,
       installationId: existing._id,
     }
   }

@@ -53,6 +53,7 @@ import type * as resend from "../resend.js";
 import type * as siteAuthority from "../siteAuthority.js";
 import type * as siteIdentity from "../siteIdentity.js";
 import type * as siteSessions from "../siteSessions.js";
+import type * as trialMaintenance from "../trialMaintenance.js";
 import type * as users from "../users.js";
 
 import type {
@@ -107,6 +108,7 @@ declare const fullApi: ApiFromModules<{
   siteAuthority: typeof siteAuthority;
   siteIdentity: typeof siteIdentity;
   siteSessions: typeof siteSessions;
+  trialMaintenance: typeof trialMaintenance;
   users: typeof users;
 }>;
 

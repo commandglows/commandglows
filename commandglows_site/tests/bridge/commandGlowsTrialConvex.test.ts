@@ -73,6 +73,40 @@ async function commandGlowsTrials(t: ReturnType<typeof createTestBackend>) {
   })
 }
 
+async function seedUnconsumedInstallation(
+  t: ReturnType<typeof createTestBackend>,
+  uid: string,
+  installationHash: string
+) {
+  await t.run(async (ctx) => {
+    const now = Date.now()
+    const globalUserId = await ctx.db.insert('globalUsers', {
+      globalUserId: `test-global-${uid}`,
+      primaryEmail: `${uid}@example.test`,
+      createdAt: now,
+      updatedAt: now,
+    })
+    await ctx.db.insert('identityAccounts', {
+      globalUserId,
+      provider: 'firebase',
+      providerAccountId: uid,
+      email: `${uid}@example.test`,
+      source: 'firebase_bridge_api',
+      environment: 'test',
+      createdAt: now,
+      updatedAt: now,
+    })
+    await ctx.db.insert('productTrialInstallations', {
+      productId: 'commandglows_app',
+      environment: 'test',
+      installationHash,
+      globalUserId,
+      firstSeenAt: now,
+      lastSeenAt: now,
+    })
+  })
+}
+
 async function expireLatestTrial(
   t: ReturnType<typeof createTestBackend>,
   globalUserPublicId: string
@@ -176,17 +210,47 @@ describe('CommandGlows trial Convex integration', () => {
     expect(repeated.trialRequest).toEqual({ outcome: 'already_active', reasonCode: null })
   })
 
-  test('uses the generic installation reason for a different identity', async () => {
+  test('rebinds an installation to a new identity before any trial is consumed', async () => {
     const t = createTestBackend()
-    await bridgeIdentity(t, {
-      uid: 'firebase-installation-owner',
-      installationHash: 'installation-shared-start',
-    })
-    const denied = await bridgeIdentity(t, {
+    await seedUnconsumedInstallation(
+      t,
+      'firebase-installation-owner',
+      'installation-shared-start'
+    )
+
+    const reassigned = await bridgeIdentity(t, {
       uid: 'firebase-installation-other',
       installationHash: 'installation-shared-start',
       trialAction: 'start',
     })
+
+    expect(reassigned.trialRequest).toEqual({ outcome: 'granted', reasonCode: null })
+
+    const formerIdentity = await bridgeIdentity(t, {
+      uid: 'firebase-installation-owner',
+      installationHash: 'installation-shared-start',
+      trialAction: 'start',
+    })
+    expect(formerIdentity.trialRequest).toEqual({
+      outcome: 'denied',
+      reasonCode: 'installation_not_eligible',
+    })
+  })
+
+  test('keeps a consumed installation ineligible for another identity', async () => {
+    const t = createTestBackend()
+    await bridgeIdentity(t, {
+      uid: 'firebase-consumed-installation-owner',
+      installationHash: 'installation-consumed-by-owner',
+      trialAction: 'start',
+    })
+
+    const denied = await bridgeIdentity(t, {
+      uid: 'firebase-consumed-installation-other',
+      installationHash: 'installation-consumed-by-owner',
+      trialAction: 'start',
+    })
+
     expect(denied.trialRequest).toEqual({
       outcome: 'denied',
       reasonCode: 'installation_not_eligible',
