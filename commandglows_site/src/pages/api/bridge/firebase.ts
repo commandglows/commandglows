@@ -330,13 +330,22 @@ export const POST: APIRoute = async ({ request }) => {
     return respond({ status: "unavailable", error: "convex_not_configured" }, 503);
   }
 
-  let decodedToken;
-  try {
-    decodedToken = await firebaseAdmin.auth.verifyIdToken(bearerToken, true);
-  } catch {
-    if (!isTrialStart) console.error("Firebase bridge token verification failed.");
-    return respond({ status: "unauthorized", error: "invalid_firebase_token" }, 401);
-  }
+    let decodedToken;
+    try {
+      decodedToken = await firebaseAdmin.auth.verifyIdToken(bearerToken, true);
+    } catch (error) {
+      const code =
+        typeof error === "object" && error !== null && "code" in error &&
+        typeof error.code === "string" && /^[a-z0-9_/-]{1,80}$/i.test(error.code)
+          ? error.code
+          : "unknown";
+      if (isTrialStart) {
+        console.warn(JSON.stringify({ requestId, action: "start", diagnostic: "firebase_token_verification_failed", errorCode: code }));
+      } else {
+        console.error("Firebase bridge token verification failed.");
+      }
+      return respond({ status: "unauthorized", error: "invalid_firebase_token" }, 401);
+    }
 
   if (!isTrustedFirebaseIdTokenClaims(decodedToken, firebaseAdmin.projectId)) {
     return respond(
