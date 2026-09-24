@@ -17,6 +17,10 @@ class TrialAccessScreen extends StatelessWidget {
     this.isStartingTrial = false,
     this.trialStartError,
     this.showTrialAccessVerification = false,
+    this.showEmailVerification = false,
+    this.emailVerificationFeedback,
+    this.isSendingEmailVerification = false,
+    this.onResendEmailVerification,
     this.restartError,
     this.purchaseError,
     this.checkoutOpened = false,
@@ -35,6 +39,10 @@ class TrialAccessScreen extends StatelessWidget {
   final bool isStartingTrial;
   final String? trialStartError;
   final bool showTrialAccessVerification;
+  final bool showEmailVerification;
+  final String? emailVerificationFeedback;
+  final bool isSendingEmailVerification;
+  final Future<void> Function()? onResendEmailVerification;
   final String? restartError;
   final String? purchaseError;
   final bool checkoutOpened;
@@ -114,7 +122,9 @@ class TrialAccessScreen extends StatelessWidget {
                               AppGaps.x2,
                               AppBannerCard(
                                 icon: Icons.error_outline,
-                                title: 'Demande d’essai non confirmée',
+                                title: showEmailVerification
+                                    ? 'Adresse e-mail à confirmer'
+                                    : 'Demande d’essai non confirmée',
                                 message: trialStartError!,
                                 accentColor: Theme.of(
                                   context,
@@ -129,6 +139,41 @@ class TrialAccessScreen extends StatelessWidget {
                                   label: const Text('Vérifier mon accès'),
                                 ),
                               ],
+                            ],
+                            if (showEmailVerification &&
+                                onResendEmailVerification != null) ...[
+                              AppGaps.x2,
+                              OutlinedButton.icon(
+                                onPressed: isSendingEmailVerification
+                                    ? null
+                                    : onResendEmailVerification,
+                                icon: isSendingEmailVerification
+                                    ? const SizedBox.square(
+                                        dimension: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.mark_email_unread_outlined,
+                                      ),
+                                label: Text(
+                                  isSendingEmailVerification
+                                      ? 'Envoi…'
+                                      : 'Envoyer un lien de vérification',
+                                ),
+                              ),
+                            ],
+                            if (emailVerificationFeedback != null) ...[
+                              AppGaps.x2,
+                              AppBannerCard(
+                                icon: Icons.mark_email_read_outlined,
+                                title: 'Vérification de l’e-mail',
+                                message: emailVerificationFeedback!,
+                                accentColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary,
+                              ),
                             ],
                             AppGaps.x3,
                             if (_canStartTrial && onStartTrial != null) ...[

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 const mockMutation = vi.fn()
 const mockVerifyIdToken = vi.fn()
+const mockGetUser = vi.fn()
 const mockInfo = vi.spyOn(console, 'info').mockImplementation(() => undefined)
 const mockError = vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
@@ -14,7 +15,7 @@ vi.mock('convex/browser', () => ({
 vi.mock('@/lib/firebaseAdmin', () => ({
   getFirebaseAdminState: vi.fn(() => ({
     projectId: 'commandglows-test',
-    auth: { verifyIdToken: mockVerifyIdToken },
+    auth: { verifyIdToken: mockVerifyIdToken, getUser: mockGetUser },
     firestore: {
       collection: () => ({ doc: () => ({ set: vi.fn() }) }),
     },
@@ -59,6 +60,7 @@ describe('Firebase bridge trial outcome contract', () => {
       iss: 'https://securetoken.google.com/commandglows-test',
       sub: 'sensitive-uid',
     })
+    mockGetUser.mockReset().mockResolvedValue({ emailVerified: true })
     mockInfo.mockClear()
     mockError.mockClear()
     process.env.SUITE_BRIDGE_CONVEX_SECRET = 'test-bridge-secret'
@@ -171,6 +173,55 @@ describe('Firebase bridge trial outcome contract', () => {
     expect(mockMutation).not.toHaveBeenCalled()
   })
 
+  test.each(['start', 'restart'] as const)(
+    'denies a %s request when Firebase reports an unverified email',
+    async (trialAction) => {
+      mockGetUser.mockResolvedValueOnce({ emailVerified: false })
+
+      const response = await callBridge(makeRequest({ trialAction }))
+      const body = await response.json()
+
+      expect(response.status).toBe(403)
+      expect(body).toMatchObject({
+        status: 'denied',
+        error: 'email_not_verified',
+      })
+      expect(mockGetUser).toHaveBeenCalledWith('sensitive-uid')
+      expect(mockMutation).not.toHaveBeenCalled()
+    }
+  )
+
+  test('fails closed when Firebase email verification lookup is unavailable', async () => {
+    mockGetUser.mockRejectedValueOnce(new Error('private provider detail'))
+
+    const response = await callBridge(makeRequest({ trialAction: 'start' }))
+    const body = await response.json()
+
+    expect(response.status).toBe(503)
+    expect(body.error).toBe('firebase_email_verification_check_unavailable')
+    expect(JSON.stringify(body)).not.toContain('private provider detail')
+    expect(mockMutation).not.toHaveBeenCalled()
+  })
+
+  test('passes server-confirmed email verification to Convex before a trial decision', async () => {
+    mockMutation.mockResolvedValueOnce({
+      status: 'ok',
+      globalUserId: 'public-user',
+      accounts: [],
+      entitlements: [],
+      trialRequest: { outcome: 'denied', reasonCode: 'previous_trial_exists' },
+    })
+
+    const response = await callBridge(makeRequest({ trialAction: 'start' }))
+
+    expect(response.status).toBe(200)
+    expect(mockGetUser).toHaveBeenCalledWith('sensitive-uid')
+    expect(mockMutation.mock.calls[0]?.[1]).toMatchObject({
+      firebaseEmailVerified: true,
+      trialAction: 'start',
+    })
+  })
+
   test('returns a correlated service error for an absent Convex outcome', async () => {
     mockMutation.mockResolvedValueOnce({
       status: 'ok',
@@ -179,7 +230,9 @@ describe('Firebase bridge trial outcome contract', () => {
       entitlements: [],
     })
     const requestId = '93c21844-cafa-4c96-9fc3-a7ab24f81a02'
-    const response = await callBridge(makeRequest({ trialAction: 'start', requestId }))
+    const response = await callBridge(
+      makeRequest({ trialAction: 'start', requestId })
+    )
     const body = await response.json()
     expect(response.status).toBe(502)
     expect(response.headers.get('x-commandglows-request-id')).toBe(requestId)
@@ -188,12 +241,14 @@ describe('Firebase bridge trial outcome contract', () => {
       error: 'invalid_trial_request_outcome',
       requestId,
     })
-    expect(mockInfo).toHaveBeenCalledWith(JSON.stringify({
-      requestId,
-      action: 'start',
-      outcome: 'unknown',
-      reasonCode: null,
-      status: 502,
-    }))
+    expect(mockInfo).toHaveBeenCalledWith(
+      JSON.stringify({
+        requestId,
+        action: 'start',
+        outcome: 'unknown',
+        reasonCode: null,
+        status: 502,
+      })
+    )
   })
 })

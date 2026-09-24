@@ -1,10 +1,10 @@
 ---
 artifact: verification_plan
 metadata_schema_version: "1.0"
-artifact_version: "1.0.3"
+artifact_version: "1.0.4"
 project: "CommandGlows"
 created: "2026-04-27"
-updated: "2026-09-22"
+updated: "2026-09-24"
 status: "reviewed"
 source_skill: "sf-spec"
 scope: "android_firebase_backend_agnostic_migration"
@@ -27,6 +27,7 @@ evidence:
   - "test/auth_gate_screen_test.dart"
   - "test/sign_in_screen_test.dart"
   - "test/app_router_auth_guard_test.dart"
+  - "commandglows_site/src/pages/api/bridge/firebase.ts"
 next_step: "Run authenticated Firebase and platform-specific production checks before release."
 ---
 
@@ -170,6 +171,38 @@ next_step: "Run authenticated Firebase and platform-specific production checks b
   accounts, so a first-time email could receive the same denial from the same
   network. Copy and a widget regression test now explain this without implying
   prior use by that email. No additional grant request was sent.
+
+### Follow-up — 2026-09-24 explicit trial start and shared-network policy
+
+- Source review found both Firebase identity sync and the generic suite bridge
+  could call the initial trial writer without explicit user intent. CommandGlows
+  now requires `trialAction: start` or `trialAction: restart`; a normal sign-in
+  or access refresh does not create a trial.
+- For CommandGlows only, the three-per-24-hour network threshold is now a
+  redacted `shared_network_velocity` server-log signal. It does not deny an
+  otherwise eligible trial. Per-account cycle limits and the consumed
+  installation check remain in place; other products' network limits are
+  unchanged.
+- Focused Convex regression expectations were updated for explicit activation
+  and four eligible accounts sharing one network. The current source now passes
+  focused tests for the CommandGlows trial decisions and bridge paths. The
+  earlier hosted `temporary_rate_limit` denial is evidence of the old behavior,
+  not proof of the current policy.
+- A new explicit start or restart checks Firebase Admin's current `emailVerified`
+  state before the Convex writer. Unverified accounts receive a specific denial;
+  a Firebase verification lookup failure is reported separately. The Windows
+  gate can resend Firebase's verification email and tells the user to repeat
+  the trial request after confirming the address.
+- The Convex entry points also fail closed when the server does not provide
+  verified-email proof for a CommandGlows trial action. Focused proof now passes:
+  33 Flutter auth-gate/trial-screen/client tests and 36 Firebase bridge-route,
+  parser, and Convex tests. Targeted Dart analysis reports no issues; the Astro
+  check reports zero errors and one existing inline-script hint.
+- These are local source proofs. The hosted Dev grant/denial evidence predates
+  the explicit-action, shared-network, and verified-email changes. The running
+  Windows app currently has active access, so the updated no-access gate,
+  verification-link resend, and grant-after-verification flow have not received
+  a rendered end-to-end check. No trial was requested during this run.
 
 ## Keyboard Sync Slice Verification — 2026-05-25
 

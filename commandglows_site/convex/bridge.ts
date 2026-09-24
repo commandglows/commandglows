@@ -1,4 +1,8 @@
-import { commerceEnvironment, commerceEventFields, type CommerceEventEnvelope } from './commerceEventContract'
+import {
+  commerceEnvironment,
+  commerceEventFields,
+  type CommerceEventEnvelope,
+} from './commerceEventContract'
 import { receiveAppSumoLicenseEvent } from './appSumoFulfillment'
 import { receiveCommerceEvent, reviewCommerceEvent } from './commerceProcessor'
 import { internalMutation, mutation, query } from './_generated/server'
@@ -204,6 +208,7 @@ async function maybeStartProductTrialEntitlement(
     allowRestart: boolean
     trialEligible: boolean
     networkHash?: string
+    enforceNetworkGrantLimit?: boolean
     entitlements: SuiteEntitlementLike[]
   }
 ) {
@@ -254,6 +259,7 @@ async function maybeStartProductTrialEntitlement(
       .first()
 
     if (
+      args.enforceNetworkGrantLimit !== false &&
       existingRiskWindow &&
       existingRiskWindow.grantCount >= SUITE_TRIAL_NETWORK_MAX_GRANTS
     ) {
@@ -501,7 +507,6 @@ function requireBridgeSecret(providedSecret: string) {
   }
 }
 
-
 export const upsertClerkIdentityForCheckout = mutation({
   args: {
     clerkId: v.string(),
@@ -710,7 +715,10 @@ export const completeCommerceCheckoutHandoff = mutation({
     }
     assertCheckoutHandoffContext(existing, args)
     if (existing.status === 'completed') {
-      if (existing.providerOrderId !== args.providerOrderId || existing.checkoutUrl !== args.checkoutUrl) {
+      if (
+        existing.providerOrderId !== args.providerOrderId ||
+        existing.checkoutUrl !== args.checkoutUrl
+      ) {
         throw new Error('checkout_completion_binding_conflict')
       }
       return {
@@ -719,12 +727,26 @@ export const completeCommerceCheckoutHandoff = mutation({
         providerOrderId: existing.providerOrderId,
       }
     }
-    if (!args.providerOrderId.startsWith('cs_') || args.providerOrderId !== args.providerOrderId.trim()) {
+    if (
+      !args.providerOrderId.startsWith('cs_') ||
+      args.providerOrderId !== args.providerOrderId.trim()
+    ) {
       throw new Error('invalid_checkout_reference')
     }
-    const sessions = await ctx.db.query('commerceCheckoutHandoffs')
-      .withIndex('by_providerOrderId', (q) => q.eq('providerOrderId', args.providerOrderId)).collect()
-    if (sessions.some((row) => row._id !== existing._id && normalizeCommerceEnvironment(row.environment) === normalizeCommerceEnvironment(args.environment))) {
+    const sessions = await ctx.db
+      .query('commerceCheckoutHandoffs')
+      .withIndex('by_providerOrderId', (q) =>
+        q.eq('providerOrderId', args.providerOrderId)
+      )
+      .collect()
+    if (
+      sessions.some(
+        (row) =>
+          row._id !== existing._id &&
+          normalizeCommerceEnvironment(row.environment) ===
+            normalizeCommerceEnvironment(args.environment)
+      )
+    ) {
       throw new Error('checkout_session_already_bound')
     }
     await ctx.db.patch(existing._id, {
@@ -920,13 +942,15 @@ async function buildSuiteCommerceAccessSnapshot(
   }
 
   const entitlement = selectPreferredActiveProductEntitlement(
-    rawEntitlements.filter((entry) => commerceEnvironment(entry.environment) === environment).map((entry) => ({
-      productId: entry.productId,
-      status: entry.status,
-      plan: entry.plan,
-      source: entry.source,
-      expiresAt: entry.trialExpiresAt,
-    })),
+    rawEntitlements
+      .filter((entry) => commerceEnvironment(entry.environment) === environment)
+      .map((entry) => ({
+        productId: entry.productId,
+        status: entry.status,
+        plan: entry.plan,
+        source: entry.source,
+        expiresAt: entry.trialExpiresAt,
+      })),
     productId
   )
 
@@ -1429,6 +1453,7 @@ export const upsertFirebaseIdentity = mutation({
   args: {
     firebaseUid: v.string(),
     firebaseEmail: v.optional(v.string()),
+    firebaseEmailVerified: v.optional(v.boolean()),
     environment: v.optional(v.string()),
     sourceRef: v.optional(v.string()),
     installationHash: v.optional(v.string()),
@@ -1564,45 +1589,49 @@ export const upsertFirebaseIdentity = mutation({
             )
             .first()
         : null
-    const trialNetworkRateLimited =
+    const sharedNetworkVelocityDetected =
       Boolean(existingTrialNetworkWindow) &&
       existingTrialNetworkWindow!.grantCount >= SUITE_TRIAL_NETWORK_MAX_GRANTS
     const trialPolicy = getSuiteProductTrialPolicy(COMMANDGLOWS_APP_PRODUCT_ID)
-    const trialDenialReason = !installation.eligible
-      ? ('installation_not_eligible' as const)
-      : hadActiveCommandGlowsPaidAccess
-        ? ('active_paid_access' as const)
-        : commandGlowsTrialsBefore.length >= (trialPolicy?.maxTrialCycles ?? 0)
-          ? ('trial_cycles_exhausted' as const)
-          : args.trialAction === 'start' && commandGlowsTrialsBefore.length > 0
-            ? ('previous_trial_exists' as const)
-            : trialNetworkRateLimited
-              ? ('temporary_rate_limit' as const)
-              : null
-    const didStartCommandGlowsTrial = await maybeStartProductTrialEntitlement(
-      ctx,
-      {
-        productId: COMMANDGLOWS_APP_PRODUCT_ID,
-        globalUserDocId: identity.globalUserId,
-        globalUserPublicId: globalUser.globalUserId,
-        sourceRef: args.sourceRef ?? args.firebaseUid,
-        environment,
-        now,
-        allowRestart: args.trialAction === 'restart',
-        trialEligible: installation.eligible,
-        networkHash: args.networkHash,
-        entitlements: rawEntitlements.map((entry) => ({
-          productId: entry.productId,
-          status: entry.status,
-          plan: entry.plan,
-          source: entry.source,
-          sourceRef: entry.sourceRef,
-          trialStartedAt: entry.trialStartedAt,
-          trialExpiresAt: entry.trialExpiresAt,
-          trialAttempt: entry.trialAttempt,
-        })),
-      }
-    )
+    const trialDenialReason =
+      args.trialAction && args.firebaseEmailVerified !== true
+        ? ('email_not_verified' as const)
+        : !installation.eligible
+          ? ('installation_not_eligible' as const)
+          : hadActiveCommandGlowsPaidAccess
+            ? ('active_paid_access' as const)
+            : commandGlowsTrialsBefore.length >=
+                (trialPolicy?.maxTrialCycles ?? 0)
+              ? ('trial_cycles_exhausted' as const)
+              : args.trialAction === 'start' &&
+                  commandGlowsTrialsBefore.length > 0
+                ? ('previous_trial_exists' as const)
+                : null
+    const didStartCommandGlowsTrial =
+      args.trialAction && args.firebaseEmailVerified === true
+        ? await maybeStartProductTrialEntitlement(ctx, {
+            productId: COMMANDGLOWS_APP_PRODUCT_ID,
+            globalUserDocId: identity.globalUserId,
+            globalUserPublicId: globalUser.globalUserId,
+            sourceRef: args.sourceRef ?? args.firebaseUid,
+            environment,
+            now,
+            allowRestart: args.trialAction === 'restart',
+            trialEligible: installation.eligible,
+            networkHash: args.networkHash,
+            enforceNetworkGrantLimit: false,
+            entitlements: rawEntitlements.map((entry) => ({
+              productId: entry.productId,
+              status: entry.status,
+              plan: entry.plan,
+              source: entry.source,
+              sourceRef: entry.sourceRef,
+              trialStartedAt: entry.trialStartedAt,
+              trialExpiresAt: entry.trialExpiresAt,
+              trialAttempt: entry.trialAttempt,
+            })),
+          })
+        : false
 
     if (didStartCommandGlowsTrial) {
       await markProductTrialInstallationConsumed(
@@ -1616,8 +1645,13 @@ export const upsertFirebaseIdentity = mutation({
       args.trialAction === 'start'
         ? didStartCommandGlowsTrial
           ? {
-              outcome: hadActiveCommandGlowsTrial ? ('already_active' as const) : ('granted' as const),
+              outcome: hadActiveCommandGlowsTrial
+                ? ('already_active' as const)
+                : ('granted' as const),
               reasonCode: null,
+              ...(sharedNetworkVelocityDetected
+                ? { riskSignal: 'shared_network_velocity' as const }
+                : {}),
             }
           : { outcome: 'denied' as const, reasonCode: trialDenialReason }
         : undefined
@@ -1810,8 +1844,8 @@ export const upsertContentGlowsAuth0Identity = mutation({
     const contentGlowsEntitlements = entitlements
       .filter(
         (entry) =>
-          normalizeSuiteProductId(entry.productId) === CONTENTGLOWZ_PRODUCT_ID &&
-          entry.environment === environment
+          normalizeSuiteProductId(entry.productId) ===
+            CONTENTGLOWZ_PRODUCT_ID && entry.environment === environment
       )
       .map((entry) => ({
         productId: entry.productId,
@@ -1941,6 +1975,7 @@ export const ensureSuiteProductTrialByGlobalUserId = mutation({
     installationHash: v.string(),
     networkHash: v.optional(v.string()),
     trialAction: v.optional(v.union(v.literal('start'), v.literal('restart'))),
+    firebaseEmailVerified: v.optional(v.boolean()),
     sourceRef: v.optional(v.string()),
     environment: v.optional(v.string()),
     bridgeSecret: v.string(),
@@ -1979,18 +2014,28 @@ export const ensureSuiteProductTrialByGlobalUserId = mutation({
       environment,
       now,
     })
-    const didEnsureTrial = await maybeStartProductTrialEntitlement(ctx, {
-      productId,
-      globalUserDocId: globalUser._id,
-      globalUserPublicId: globalUser.globalUserId,
-      sourceRef: args.sourceRef ?? `${productId}:${globalUser.globalUserId}`,
-      environment,
-      now,
-      allowRestart: args.trialAction === 'restart',
-      trialEligible: installation.eligible,
-      networkHash: args.networkHash,
-      entitlements,
-    })
+    const requiresVerifiedEmail =
+      productId === COMMANDGLOWS_APP_PRODUCT_ID &&
+      Boolean(args.trialAction) &&
+      args.firebaseEmailVerified !== true
+    const didEnsureTrial =
+      (productId === COMMANDGLOWS_APP_PRODUCT_ID && !args.trialAction) ||
+      requiresVerifiedEmail
+        ? false
+        : await maybeStartProductTrialEntitlement(ctx, {
+            productId,
+            globalUserDocId: globalUser._id,
+            globalUserPublicId: globalUser.globalUserId,
+            sourceRef:
+              args.sourceRef ?? `${productId}:${globalUser.globalUserId}`,
+            environment,
+            now,
+            allowRestart: args.trialAction === 'restart',
+            trialEligible: installation.eligible,
+            networkHash: args.networkHash,
+            enforceNetworkGrantLimit: productId !== COMMANDGLOWS_APP_PRODUCT_ID,
+            entitlements,
+          })
     if (didEnsureTrial) {
       await markProductTrialInstallationConsumed(
         ctx,
@@ -2025,9 +2070,11 @@ export const ensureSuiteProductTrialByGlobalUserId = mutation({
       planId: entitlement?.plan ?? null,
       source: entitlement?.source ?? null,
       ...decision,
-      reasonCode: entitlement
-        ? ('active_entitlement' as const)
-        : ('missing_product_entitlement' as const),
+      reasonCode: requiresVerifiedEmail
+        ? ('email_not_verified' as const)
+        : entitlement
+          ? ('active_entitlement' as const)
+          : ('missing_product_entitlement' as const),
     }
   },
 })
@@ -3093,16 +3140,31 @@ const commerceMutationArgs = {
 
 async function processVerifiedCommerceEvent(
   ctx: MutationCtx,
-  args: CommerceEventEnvelope & { bridgeSecret: string; metadata?: Record<string, string> }
+  args: CommerceEventEnvelope & {
+    bridgeSecret: string
+    metadata?: Record<string, string>
+  }
 ) {
   requireBridgeSecret(args.bridgeSecret)
   const { bridgeSecret: _secret, metadata: _metadata, ...envelope } = args
-  const result = await receiveCommerceEvent(ctx, envelope, { supportsOffer: isSupportedSuiteCommerceOffer })
-  const { globalUserDocId, ...response } = result as typeof result & { globalUserDocId?: Id<'globalUsers'> }
+  const result = await receiveCommerceEvent(ctx, envelope, {
+    supportsOffer: isSupportedSuiteCommerceOffer,
+  })
+  const { globalUserDocId, ...response } = result as typeof result & {
+    globalUserDocId?: Id<'globalUsers'>
+  }
   return {
     ...response,
-    ...(globalUserDocId ? { snapshot: await buildSuiteCommerceAccessSnapshot(ctx, globalUserDocId,
-      args.productId, normalizeCommerceEnvironment(args.environment)) } : {}),
+    ...(globalUserDocId
+      ? {
+          snapshot: await buildSuiteCommerceAccessSnapshot(
+            ctx,
+            globalUserDocId,
+            args.productId,
+            normalizeCommerceEnvironment(args.environment)
+          ),
+        }
+      : {}),
   }
 }
 
@@ -3116,12 +3178,21 @@ export const processAppSumoLicenseEvent = mutation({
     bridgeSecret: v.string(),
     licenseKey: v.string(),
     previousLicenseKey: v.optional(v.string()),
-    event: v.union(v.literal('purchase'), v.literal('activate'), v.literal('upgrade'),
-      v.literal('downgrade'), v.literal('deactivate')),
+    event: v.union(
+      v.literal('purchase'),
+      v.literal('activate'),
+      v.literal('upgrade'),
+      v.literal('downgrade'),
+      v.literal('deactivate')
+    ),
     eventTimestamp: v.number(),
     tier: v.optional(v.number()),
     test: v.boolean(),
-    desiredStatus: v.union(v.literal('inactive'), v.literal('active'), v.literal('deactivated')),
+    desiredStatus: v.union(
+      v.literal('inactive'),
+      v.literal('active'),
+      v.literal('deactivated')
+    ),
     environment: v.string(),
     providerEventId: v.string(),
     productId: v.optional(v.string()),
@@ -3132,13 +3203,21 @@ export const processAppSumoLicenseEvent = mutation({
   handler: async (ctx, args) => {
     requireBridgeSecret(args.bridgeSecret)
     const { bridgeSecret: _secret, ...event } = args
-    const result = await receiveAppSumoLicenseEvent(ctx, event, { supportsOffer: isSupportedSuiteCommerceOffer })
+    const result = await receiveAppSumoLicenseEvent(ctx, event, {
+      supportsOffer: isSupportedSuiteCommerceOffer,
+    })
     const { globalUserDocId, ...response } = result
     return {
       ...response,
       ...(globalUserDocId && event.productId
-        ? { snapshot: await buildSuiteCommerceAccessSnapshot(ctx, globalUserDocId,
-          event.productId, normalizeCommerceEnvironment(event.environment)) }
+        ? {
+            snapshot: await buildSuiteCommerceAccessSnapshot(
+              ctx,
+              globalUserDocId,
+              event.productId,
+              normalizeCommerceEnvironment(event.environment)
+            ),
+          }
         : {}),
     }
   },
@@ -3149,7 +3228,8 @@ export const processCommunityGlowsCommerceEvent = mutation({
   args: commerceMutationArgs,
   handler: async (ctx, args) => {
     requireBridgeSecret(args.bridgeSecret)
-    if (args.productId !== COMMUNITYGLOWS_PRODUCT_ID) throw new Error('product_not_allowed')
+    if (args.productId !== COMMUNITYGLOWS_PRODUCT_ID)
+      throw new Error('product_not_allowed')
     return processVerifiedCommerceEvent(ctx, args)
   },
 })
@@ -3163,5 +3243,8 @@ export const retryPendingCommerceEvent = internalMutation({
     reason: v.string(),
     dryRun: v.boolean(),
   },
-  handler: (ctx, args) => reviewCommerceEvent(ctx, args, { supportsOffer: isSupportedSuiteCommerceOffer }),
+  handler: (ctx, args) =>
+    reviewCommerceEvent(ctx, args, {
+      supportsOffer: isSupportedSuiteCommerceOffer,
+    }),
 })

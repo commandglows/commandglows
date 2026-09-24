@@ -109,6 +109,40 @@ void main() {
     expect(find.text('Acheter CommandGlows'), findsOneWidget);
   });
 
+  testWidgets('shows a verification resend action and confirmation feedback', (
+    tester,
+  ) async {
+    var resendCalls = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: TrialAccessScreen(
+          entitlement: null,
+          isRestarting: false,
+          onRestart: () async {},
+          isPurchasing: false,
+          onPurchase: () async {},
+          onStartTrial: () async {},
+          isStartingTrial: false,
+          trialStartError:
+              'Confirmez votre adresse e-mail avant de demander un essai.',
+          showEmailVerification: true,
+          emailVerificationFeedback:
+              'Un nouveau lien a été envoyé. Confirmez votre adresse, puis relancez votre demande d’essai.',
+          onResendEmailVerification: () async => resendCalls += 1,
+        ),
+      ),
+    );
+
+    expect(find.text('Adresse e-mail à confirmer'), findsOneWidget);
+    expect(find.text('Envoyer un lien de vérification'), findsOneWidget);
+    expect(find.text('Vérification de l’e-mail'), findsOneWidget);
+    expect(find.textContaining('Un nouveau lien a été envoyé'), findsOneWidget);
+
+    await tester.tap(find.text('Envoyer un lien de vérification'));
+    expect(resendCalls, 1);
+  });
+
   testWidgets('opens offers when the direct checkout handoff is absent', (
     tester,
   ) async {

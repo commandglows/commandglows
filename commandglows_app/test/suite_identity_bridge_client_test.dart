@@ -454,6 +454,48 @@ void main() {
     },
   );
 
+  for (final testCase in <({int statusCode, String code})>[
+    (statusCode: 403, code: 'email_not_verified'),
+    (statusCode: 503, code: 'firebase_email_verification_check_unavailable'),
+  ]) {
+    test(
+      'preserves safe trial-verification response code ${testCase.code}',
+      () async {
+        final client = SuiteIdentityBridgeClient(
+          httpClient: MockClient((request) async {
+            return http.Response(
+              '{"error":"${testCase.code}","detail":"private diagnostic"}',
+              testCase.statusCode,
+            );
+          }),
+        );
+
+        final identity = await client.resolveFromFirebaseSession(
+          bridgeConfig: SuiteIdentityBridgeBootstrap.resolveConfig(
+            bridgeUrl: 'https://suite.commandglows.test/api/bridge/firebase',
+          ),
+          firebaseAccount: firebaseAccount,
+          resolveIdToken: () async => 'firebase-id-token',
+          requestTrialStart: true,
+        );
+
+        expect(
+          identity.trialRequest?.state,
+          testCase.code == 'email_not_verified'
+              ? TrialRequestState.denied
+              : TrialRequestState.httpError,
+        );
+        expect(identity.trialRequest?.httpStatus, testCase.statusCode);
+        expect(identity.trialRequest?.machineErrorCode, testCase.code);
+        expect(
+          identity.trialRequest?.reasonCode,
+          testCase.code == 'email_not_verified' ? testCase.code : isNull,
+        );
+        expect(identity.issue, isNot(contains('private diagnostic')));
+      },
+    );
+  }
+
   test('does not expose unrecognized HTTP error text', () async {
     final client = SuiteIdentityBridgeClient(
       httpClient: MockClient((request) async {

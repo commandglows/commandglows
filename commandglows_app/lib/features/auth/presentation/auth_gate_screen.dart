@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/bootstrap/suite_identity_bridge_bootstrap.dart';
@@ -26,10 +27,13 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   bool _isRestarting = false;
   bool _isStartingTrial = false;
   bool _trialNeedsAccessVerification = false;
+  bool _trialNeedsEmailVerification = false;
+  bool _isSendingEmailVerification = false;
   bool _isPurchasing = false;
   bool _checkoutOpened = false;
   String? _restartError;
   String? _trialStartError;
+  String? _emailVerificationFeedback;
   String? _purchaseError;
 
   Uri get _offersUri => Uri.https(
@@ -60,6 +64,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
       _isStartingTrial = true;
       _trialStartError = null;
       _trialNeedsAccessVerification = false;
+      _trialNeedsEmailVerification = false;
     });
     try {
       final session = await ref.read(authSessionProvider.future);
@@ -88,6 +93,9 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         if (mounted) {
           setState(() {
             _trialStartError = _trialRequestFeedback(identity.trialRequest);
+            _trialNeedsEmailVerification =
+                identity.trialRequest?.reasonCode == 'email_not_verified' ||
+                identity.trialRequest?.machineErrorCode == 'email_not_verified';
             _trialNeedsAccessVerification =
                 switch (identity.trialRequest?.state) {
                   TrialRequestState.noResponse ||
@@ -133,6 +141,10 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         final recovery = switch (result.machineErrorCode) {
           'invalid_firebase_token' =>
             'Votre session n’a pas pu être vérifiée. Reconnectez-vous, puis réessayez.',
+          'email_not_verified' =>
+            'Pour démarrer votre essai, confirmez d’abord votre adresse e-mail. Ouvrez le message de vérification ou demandez un nouvel envoi ci-dessous.',
+          'firebase_email_verification_check_unavailable' =>
+            'Nous n’avons pas pu vérifier la confirmation de votre adresse e-mail. Réessayez dans quelques instants.',
           'trial_installation_signal_unavailable' =>
             'Nous n’avons pas pu vérifier cette installation. Réessayez plus tard ou contactez le support.',
           _ =>
@@ -141,6 +153,8 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         return '$recovery$correlation';
       case TrialRequestState.denied:
         final reason = switch (result.reasonCode) {
+          'email_not_verified' =>
+            'Pour démarrer votre essai, confirmez d’abord votre adresse e-mail. Ouvrez le message de vérification ou demandez un nouvel envoi ci-dessous.',
           'installation_not_eligible' =>
             'Cette installation ne peut pas bénéficier d’un essai gratuit. Nous ne pouvons pas préciser davantage. Consultez les offres ou contactez le support.',
           'previous_trial_exists' =>
@@ -148,7 +162,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           'trial_cycles_exhausted' =>
             'Les périodes d’essai disponibles ont toutes été utilisées pour ce compte. Consultez les offres pour continuer.',
           'temporary_rate_limit' =>
-            'Trop de demandes d’essai ont été faites depuis ce réseau récemment. Réessayez plus tard ou consultez les offres.',
+            'Une limite temporaire s’applique aux demandes depuis ce réseau partagé. Elle peut concerner plusieurs comptes et ne signifie pas que votre compte a déjà bénéficié d’un essai. Réessayez plus tard ou consultez les offres.',
           'active_paid_access' =>
             'Un accès payant est déjà associé à ce compte. Actualisez votre accès ou contactez le support.',
           _ =>
@@ -159,6 +173,36 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
       case TrialRequestState.alreadyActive:
       case TrialRequestState.responseUnknown:
         return 'La réponse ne confirme pas encore l’accès à l’app. Vérifiez votre accès avant de recommencer.$correlation';
+    }
+  }
+
+  Future<void> _resendEmailVerification() async {
+    setState(() {
+      _isSendingEmailVerification = true;
+      _trialStartError = null;
+      _emailVerificationFeedback = null;
+    });
+    try {
+      final user = firebase_auth.FirebaseAuth.instance.currentUser;
+      if (user == null || (user.email?.trim().isEmpty ?? true)) {
+        throw StateError('firebase_email_unavailable');
+      }
+      await user.sendEmailVerification();
+      if (mounted) {
+        setState(() {
+          _emailVerificationFeedback =
+              'Un nouveau lien de vérification a été envoyé. Confirmez votre adresse, puis relancez votre demande d’essai.';
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _trialStartError =
+              'Nous n’avons pas pu envoyer le lien de vérification. Vérifiez votre connexion ou réessayez plus tard.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isSendingEmailVerification = false);
     }
   }
 
@@ -213,6 +257,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     setState(() {
       _isRestarting = true;
       _restartError = null;
+      _trialNeedsEmailVerification = false;
     });
     try {
       final session = await ref.read(authSessionProvider.future);
@@ -244,7 +289,11 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           SuiteAccountStatus.accessActive) {
         final entitlement = identity.entitlementFor(ProductId.commandglowsApp);
         setState(() {
-          _restartError = (entitlement?.trialAttempt ?? 0) >= 3
+          _trialNeedsEmailVerification =
+              identity.issue?.contains('code=email_not_verified') ?? false;
+          _restartError = _trialNeedsEmailVerification
+              ? 'Confirmez votre adresse e-mail avant de relancer l’essai. Après confirmation, demandez à nouveau la relance.'
+              : (entitlement?.trialAttempt ?? 0) >= 3
               ? 'Les deux relances autorisées ont déjà été utilisées. L’achat est désormais nécessaire.'
               : 'La relance n’a pas pu être accordée. Vérifiez votre connexion ou choisissez une offre.';
         });
@@ -315,6 +364,10 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
               isStartingTrial: _isStartingTrial,
               trialStartError: _trialStartError,
               showTrialAccessVerification: _trialNeedsAccessVerification,
+              showEmailVerification: _trialNeedsEmailVerification,
+              isSendingEmailVerification: _isSendingEmailVerification,
+              emailVerificationFeedback: _emailVerificationFeedback,
+              onResendEmailVerification: _resendEmailVerification,
               onRestart: _restartTrial,
               restartError: _restartError,
               purchaseError: _purchaseError,

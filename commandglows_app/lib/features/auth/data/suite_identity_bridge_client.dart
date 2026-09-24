@@ -21,11 +21,14 @@ class SuiteIdentityBridgeClient {
     'trial_cycles_exhausted',
     'temporary_rate_limit',
     'active_paid_access',
+    'email_not_verified',
   };
   static const _safeBridgeErrorCodes = <String>{
     'invalid_json',
     'bridge_secret_not_configured',
     'trial_installation_signal_unavailable',
+    'firebase_email_verification_check_unavailable',
+    'email_not_verified',
     'firebase_admin_not_configured',
     'missing_bearer_token',
     'convex_not_configured',
@@ -139,19 +142,27 @@ class SuiteIdentityBridgeClient {
     }
 
     if (response.statusCode != 200) {
+      final machineErrorCode = _safeMachineError(response.body);
+      final trialRequest = requestId == null
+          ? null
+          : TrialRequestResult(
+              state: machineErrorCode == 'email_not_verified'
+                  ? TrialRequestState.denied
+                  : TrialRequestState.httpError,
+              requestId: requestId,
+              httpStatus: response.statusCode,
+              reasonCode: machineErrorCode == 'email_not_verified'
+                  ? machineErrorCode
+                  : null,
+              machineErrorCode: machineErrorCode,
+            );
       return _conservativeAccountSnapshot(
         account: firebaseAccount,
         issue:
             'suite_identity_bridge_http_${response.statusCode}'
-            '(endpoint=${bridgeConfig.endpointLabel})',
-        trialRequest: requestId == null
-            ? null
-            : TrialRequestResult(
-                state: TrialRequestState.httpError,
-                requestId: requestId,
-                httpStatus: response.statusCode,
-                machineErrorCode: _safeMachineError(response.body),
-              ),
+            '(endpoint=${bridgeConfig.endpointLabel}'
+            '${machineErrorCode == null ? '' : ',code=$machineErrorCode'})',
+        trialRequest: trialRequest,
       );
     }
 

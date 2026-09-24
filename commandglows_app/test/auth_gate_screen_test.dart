@@ -226,6 +226,43 @@ void main() {
     expect(find.textContaining('denial-request-id'), findsOneWidget);
   });
 
+  testWidgets('unverified email denial explains verification and recovery', (
+    tester,
+  ) async {
+    const initialIdentity = SuiteIdentitySnapshot(
+      status: SuiteAccountStatus.recognized,
+      globalUserId: 'gu_test',
+    );
+    const responseIdentity = SuiteIdentitySnapshot(
+      status: SuiteAccountStatus.recognized,
+      globalUserId: 'gu_test',
+      trialRequest: TrialRequestResult(
+        state: TrialRequestState.denied,
+        reasonCode: 'email_not_verified',
+        requestId: 'email-verification-request-id',
+      ),
+    );
+    final bridgeClient = _TrialBridgeClient(
+      responseIdentity,
+      ({required requestTrialStart}) {},
+    );
+    await tester.pumpWidget(
+      _screen(initialIdentity, _Store(), bridgeClient: bridgeClient),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Démarrer mon essai gratuit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Adresse e-mail à confirmer'), findsOneWidget);
+    expect(
+      find.textContaining('confirmez d’abord votre adresse e-mail'),
+      findsOneWidget,
+    );
+    expect(find.text('Envoyer un lien de vérification'), findsOneWidget);
+    expect(find.text('Démarrer mon essai gratuit'), findsOneWidget);
+  });
+
   testWidgets('network trial limit explains only why the trial was denied', (
     tester,
   ) async {
@@ -255,7 +292,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('Trop de demandes d’essai ont été faites depuis ce réseau récemment'),
+      find.textContaining(
+        'Une limite temporaire s’applique aux demandes depuis ce réseau partagé',
+      ),
       findsOneWidget,
     );
     expect(find.textContaining('network-limit-request-id'), findsOneWidget);

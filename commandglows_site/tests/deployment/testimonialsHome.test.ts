@@ -111,8 +111,8 @@ describe('Homepage testimonial proof', () => {
     expect(hero.indexOf('href="#testimonials"')).toBeLessThan(
       hero.indexOf('<LogoMarquee embedded />')
     )
-    expect(hero.indexOf('<LogoMarquee embedded />')).toBeLessThan(
-      hero.indexOf('<!-- Stats -->')
+    expect(hero.indexOf('<LogoMarquee embedded />')).toBeGreaterThan(
+      hero.indexOf('href="#testimonials"')
     )
     expect(homepage).toContain(
       "{ params: { lang: 'en' }, props: { lang: 'en' as Language } }"
