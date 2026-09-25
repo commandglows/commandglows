@@ -59,6 +59,7 @@ describe('Stripe-only commerce checkout route', () => {
     const fetch = vi.fn(); globalThis.fetch = fetch
     const body = { offerId: 'communityglows/lifetime_deal', identityToken: token('communityglows') }
     expect((await POST({ request: request(body) })).status).toBe(503)
+    expect((await POST({ request: request({ offerId: body.offerId }) })).status).toBe(503)
     expect(fetch).not.toHaveBeenCalled()
     expect(mockMutation).not.toHaveBeenCalled()
   })

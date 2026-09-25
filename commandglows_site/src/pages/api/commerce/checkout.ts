@@ -68,6 +68,10 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
 
   const env = getServerEnv()
   const merchant = stripeMerchantForOffer(data.offerId, env)
+  if (offer.productId === 'communityglows' && runtimeEnvironment(env) === 'production' &&
+    env.COMMUNITYGLOWS_DIRECT_SALES_ENABLED !== 'true') {
+    return { ok: false as const, status: 503, message: 'CommunityGlows checkout is not open yet' }
+  }
   const secret = env.SUITE_COMMERCE_CHECKOUT_SECRET
   if (!secret || !data.identityToken) {
     return { ok: false as const, status: 401, message: 'Checkout must be started from an authenticated suite product' }
@@ -82,10 +86,6 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
   }
   if (!merchant || !getOfferProviderConfig(data.offerId, 'stripe', env)) {
     return { ok: false as const, status: 503, message: 'Stripe checkout is not configured for this business' }
-  }
-  if (merchant.business === 'communityglows' && runtimeEnvironment(env) === 'production' &&
-    env.COMMUNITYGLOWS_DIRECT_SALES_ENABLED !== 'true') {
-    return { ok: false as const, status: 503, message: 'CommunityGlows checkout is not open yet' }
   }
 
   const convexUrl = env.PUBLIC_CONVEX_URL
