@@ -3,6 +3,7 @@ import MainLayout from '@/layouts/MainLayout.astro'
 import CheckoutButton from '@/components/commerce/CheckoutButton.astro'
 import type { Language } from '@/types'
 import { getLocalizedSiteUrl } from '@/constants'
+import { getServerEnv } from '@/lib/serverEnv'
 
 export const prerender = true
 
@@ -177,7 +178,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		],
 		finalHeading: 'Open the founder window for CommunityGlows',
 		finalText:
-			'Use this page as the direct sales surface for the €149 incl. VAT CommunityGlows Lifetime Deal while you finalize the remaining public launch copy.',
+			'The €149 incl. VAT CommunityGlows Lifetime Deal will open here once its payment and access flow is verified.',
 		finalAction: 'Get CommunityGlows Founder Access',
 	},
 	fr: {
@@ -282,7 +283,7 @@ const copyByLang: Record<Language, CopyBlock> = {
 		],
 		finalHeading: 'Ouvrir la fenetre founder CommunityGlows',
 		finalText:
-			'Utilise cette page comme surface de vente directe pour le Lifetime Deal CommunityGlows a 149 € TTC pendant que tu finalises le reste du copy public.',
+			'Le Lifetime Deal CommunityGlows à 149 € TTC sera proposé ici une fois le paiement et les droits d’accès vérifiés.',
 		finalAction: 'Obtenir CommunityGlows Founder Access',
 	},
 }
@@ -290,6 +291,10 @@ const copyByLang: Record<Language, CopyBlock> = {
 const { lang = 'en' as Language } = Astro.props
 const copy = copyByLang[lang]
 const pagePath = lang === 'fr' ? '/fr/communityglows-founder' : '/communityglows-founder'
+const env = getServerEnv()
+const checkoutAvailable = (env.VERCEL_ENV ?? env.NODE_ENV) !== 'production' ||
+  env.COMMUNITYGLOWS_DIRECT_SALES_ENABLED === 'true'
+const checkoutLabel = checkoutAvailable ? null : lang === 'fr' ? 'Paiement bientôt disponible' : 'Checkout opening soon'
 
 function checkoutUrl() {
 	const successUrl = `/purchase/success?offerId=${encodeURIComponent(OFFER_ID)}`
@@ -333,9 +338,10 @@ function checkoutUrl() {
 					<div class="mt-8 flex flex-col gap-3 sm:flex-row">
 						<CheckoutButton
 							action={checkoutUrl()}
+							disabled={!checkoutAvailable}
 							class="no-hover-animation inline-flex items-center justify-center rounded-xl bg-content-bg-elevated px-6 py-3 text-sm font-bold text-content-text-primary transition-colors hover:bg-content-bg-hover"
 						>
-							{copy.primaryAction}
+							{checkoutLabel ?? copy.primaryAction}
 						</CheckoutButton>
 						<a
 							href="#offer"
@@ -457,10 +463,11 @@ function checkoutUrl() {
 						</div>
 						<CheckoutButton
 							action={checkoutUrl()}
+							disabled={!checkoutAvailable}
 							formClass="mt-6"
 							class="no-hover-animation inline-flex w-full items-center justify-center rounded-xl bg-content-bg-inverse px-6 py-4 text-sm font-bold text-white transition-colors hover:bg-content-bg-strong dark:bg-content-bg-elevated dark:text-content-text-primary dark:hover:bg-content-bg-hover"
 						>
-							{copy.checkoutAction}
+							{checkoutLabel ?? copy.checkoutAction}
 						</CheckoutButton>
 					</div>
 				</div>
@@ -515,11 +522,12 @@ function checkoutUrl() {
 					<h2 class="text-3xl font-bold text-white">{copy.finalHeading}</h2>
 					<p class="mt-4 text-lg text-white/90">{copy.finalText}</p>
 				</div>
-				<CheckoutButton
-					action={checkoutUrl()}
+					<CheckoutButton
+						action={checkoutUrl()}
+						disabled={!checkoutAvailable}
 					class="no-hover-animation inline-flex items-center justify-center rounded-xl bg-content-bg-elevated px-6 py-3 text-sm font-bold text-content-text-primary transition-colors hover:bg-content-bg-hover"
 				>
-					{copy.finalAction}
+						{checkoutLabel ?? copy.finalAction}
 				</CheckoutButton>
 			</div>
 		</section>

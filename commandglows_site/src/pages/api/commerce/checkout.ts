@@ -83,6 +83,10 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
   if (!merchant || !getOfferProviderConfig(data.offerId, 'stripe', env)) {
     return { ok: false as const, status: 503, message: 'Stripe checkout is not configured for this business' }
   }
+  if (merchant.business === 'communityglows' && runtimeEnvironment(env) === 'production' &&
+    env.COMMUNITYGLOWS_DIRECT_SALES_ENABLED !== 'true') {
+    return { ok: false as const, status: 503, message: 'CommunityGlows checkout is not open yet' }
+  }
 
   const convexUrl = env.PUBLIC_CONVEX_URL
   const bridgeSecret = env.SUITE_BRIDGE_CONVEX_SECRET

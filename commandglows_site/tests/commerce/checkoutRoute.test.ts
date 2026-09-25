@@ -53,6 +53,16 @@ afterEach(() => {
 })
 
 describe('Stripe-only commerce checkout route', () => {
+  test('keeps CommunityGlows production sales closed until explicitly enabled', async () => {
+    const { POST } = await import('@/pages/api/commerce/checkout')
+    process.env.VERCEL_ENV = 'production'
+    const fetch = vi.fn(); globalThis.fetch = fetch
+    const body = { offerId: 'communityglows/lifetime_deal', identityToken: token('communityglows') }
+    expect((await POST({ request: request(body) })).status).toBe(503)
+    expect(fetch).not.toHaveBeenCalled()
+    expect(mockMutation).not.toHaveBeenCalled()
+  })
+
   test('provider failure leaves a retryable handoff and never finalizes an absent checkout', async () => {
     const { POST } = await import('@/pages/api/commerce/checkout')
     process.env.STRIPE_SECRET_KEY = 'sk_test_route'
