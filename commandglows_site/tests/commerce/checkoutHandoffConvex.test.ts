@@ -24,6 +24,7 @@ describe('one-time commerce checkout handoff authority', () => {
       globalUserId: 'gu_checkout',
       productId: 'communityglows',
       offerId: 'communityglows/lifetime_deal',
+      businessId: 'communityglows', providerAccountId: 'acct_communityglows123',
       environment: 'test',
       expiresAt: Date.now() + 60_000,
       bridgeSecret: BRIDGE_SECRET,
@@ -37,6 +38,7 @@ describe('one-time commerce checkout handoff authority', () => {
       globalUserId: args.globalUserId,
       productId: args.productId,
       offerId: args.offerId,
+      businessId: args.businessId, providerAccountId: args.providerAccountId,
       environment: args.environment,
       bridgeSecret: args.bridgeSecret,
       checkoutUrl: 'https://checkout.stripe.test/session',
@@ -63,6 +65,7 @@ describe('one-time commerce checkout handoff authority', () => {
       globalUserId: 'gu_checkout',
       productId: 'communityglows',
       offerId: 'communityglows/lifetime_deal',
+      businessId: 'communityglows', providerAccountId: 'acct_communityglows123',
       environment: 'test',
       expiresAt: Date.now() + 60_000,
       bridgeSecret: BRIDGE_SECRET,
@@ -72,6 +75,7 @@ describe('one-time commerce checkout handoff authority', () => {
       ...base,
       productId: 'commandglows_app',
       offerId: 'commandglows_app/power',
+      businessId: 'commandglows',
     })).rejects.toThrow('checkout_handoff_context_mismatch')
   })
 })

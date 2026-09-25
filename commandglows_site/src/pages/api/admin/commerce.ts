@@ -3,6 +3,7 @@ import { ConvexHttpClient } from 'convex/browser'
 import Stripe from 'stripe'
 import { getServerEnv } from '@/lib/serverEnv'
 import { normalizeVerifiedStripeEvent } from '@/lib/commerce/providers/stripe'
+import { businessForOffer, stripeMerchant, STRIPE_BUSINESSES, type StripeBusiness } from '@/lib/commerce/stripeMerchants'
 
 export const prerender = false
 const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
@@ -81,20 +82,35 @@ export const POST: APIRoute = async ({ request, locals }) => {
         { ...common, expectedAttempts: payload.expectedAttempts, dryRun: action === 'dry_run' } as never))
     }
     if (!['reconcile', 'recover', 'repair_checkout'].includes(action)) return json({ error: 'invalid_action' }, 400)
-    if (!access.env.STRIPE_SECRET_KEY) return json({ error: 'stripe_not_configured' }, 503)
-    const stripe = new Stripe(access.env.STRIPE_SECRET_KEY, {
-      ...(access.env.STRIPE_API_VERSION ? { apiVersion: access.env.STRIPE_API_VERSION as Stripe.LatestApiVersion } : {}),
+    let businessId = text(payload.businessId)
+    let receiptAccountId = ''
+    if (action === 'recover') {
+      const detail = await access.convex.query('commerceOperations:getIncident' as never,
+        { ...access.auth, incidentId } as never) as { receipt: { providerEventId: string; businessId?: string; providerAccountId?: string } | null }
+      if (!detail.receipt?.businessId || !detail.receipt.providerAccountId) return json({ error: 'merchant_evidence_required' }, 409)
+      businessId = detail.receipt.businessId
+      receiptAccountId = detail.receipt.providerAccountId
+    }
+    if (!STRIPE_BUSINESSES.includes(businessId as StripeBusiness)) return json({ error: 'business_required' }, 400)
+    const merchant = stripeMerchant(businessId as StripeBusiness, access.env)
+    if (!merchant || (receiptAccountId && receiptAccountId !== merchant.accountId)) return json({ error: 'stripe_merchant_not_configured_or_mismatched' }, 503)
+    const stripe = new Stripe(merchant.secretKey, {
+      ...(merchant.apiVersion ? { apiVersion: merchant.apiVersion as Stripe.LatestApiVersion } : {}),
       timeout: 10_000, maxNetworkRetries: 1,
     })
+    if ((await stripe.accounts.retrieve(null)).id !== merchant.accountId) return json({ error: 'stripe_merchant_mismatch' }, 503)
     if (action === 'repair_checkout') {
       const sessionId = text(payload.sessionId)
       if (!/^cs_[A-Za-z0-9_]{1,250}$/.test(sessionId)) return json({ error: 'invalid_session_reference' }, 400)
       const session = await stripe.checkout.sessions.retrieve(sessionId)
       if (session.id !== sessionId || session.status !== 'complete' || session.livemode !== (access.environment === 'production')) return json({ error: 'session_evidence_mismatch' }, 400)
       const metadata = session.metadata ?? {}
+      if (metadata.business_id !== merchant.business || metadata.provider_account_id !== merchant.accountId ||
+        businessForOffer(metadata.offer_id ?? '') !== merchant.business) return json({ error: 'session_merchant_mismatch' }, 400)
       return json(await access.convex.mutation('commerceOperations:repairCheckout' as never, {
         ...access.auth, reason, sourceRef: metadata.source_ref, environment: metadata.environment,
         globalUserId: metadata.global_user_id, productId: metadata.product_id, offerId: metadata.offer_id,
+        businessId: merchant.business, providerAccountId: merchant.accountId,
         providerOrderId: session.id, checkoutUrl: session.url ?? undefined,
       } as never))
     }
@@ -108,7 +124,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!/^evt_[A-Za-z0-9_]{1,250}$/.test(eventId)) return json({ error: 'invalid_event_reference' }, 400)
     const event = await stripe.events.retrieve(eventId)
     if (event.id !== eventId || event.livemode !== (access.environment === 'production')) return json({ error: 'event_environment_mismatch' }, 400)
-    const parsed = await normalizeVerifiedStripeEvent(event, stripe)
+    const parsed = await normalizeVerifiedStripeEvent(event, stripe, merchant)
     if (!parsed.ok) return json({ error: 'event_not_supported_or_invalid' }, 400)
     const normalized = parsed.normalizedEvent
     if ((access.environment === 'production' && normalized.environment !== 'production') ||

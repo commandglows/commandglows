@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro'
 import { ConvexHttpClient } from 'convex/browser'
 import { getServerEnv } from '@/lib/serverEnv'
 import { parseStripeManagedPaymentsWebhook } from '@/lib/commerce/providers/stripe'
+import { stripeMerchant, type StripeBusiness } from '@/lib/commerce/stripeMerchants'
 
 const JSON_HEADERS = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
 
@@ -11,8 +12,10 @@ function jsonResponse(payload: unknown, status: number) {
   return new Response(JSON.stringify(payload), { status, headers: JSON_HEADERS })
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export async function handleStripeWebhook(request: Request, business: StripeBusiness) {
   const env = getServerEnv()
+  const merchant = stripeMerchant(business, env)
+  if (!merchant?.webhookSecret) return jsonResponse({ message: 'Stripe merchant is not configured' }, 503)
   const convexUrl = env.PUBLIC_CONVEX_URL
   if (!convexUrl || convexUrl === 'https://PLACEHOLDER.convex.cloud') {
     return jsonResponse({ message: 'Convex is not configured' }, 500)
@@ -24,7 +27,7 @@ export const POST: APIRoute = async ({ request }) => {
   const recordFailure = async (event: { providerEventId: string; providerPayloadHash?: string; providerEventType?: string; environment: string }, reason: string) => {
     try {
       await convex.mutation('commerceOperations:recordCommerceIngressFailure' as never, {
-        ...event, reason, bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET,
+        ...event, providerAccountId: merchant.accountId, reason, bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET,
       } as never)
     } catch {
       // No payload or provider error details: this is the last-resort hosting alarm.
@@ -36,10 +39,12 @@ export const POST: APIRoute = async ({ request }) => {
     {
       rawBody: await request.text(),
       signature: request.headers.get('stripe-signature') ?? '',
-      webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+      webhookSecret: merchant.webhookSecret,
     },
-    env.STRIPE_SECRET_KEY,
-    env.STRIPE_API_VERSION
+    merchant.secretKey,
+    merchant.apiVersion,
+    undefined,
+    merchant
   )
 
   if (!parsed.ok) {
@@ -64,3 +69,5 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ message: 'Webhook fulfillment failed' }, 500)
   }
 }
+
+export const POST: APIRoute = async ({ request }) => handleStripeWebhook(request, 'commandglows')

@@ -94,6 +94,8 @@ export type CommerceWebhookEventType =
 
 export type CommerceNormalizedEvent = {
   provider: CommerceProviderId
+  businessId?: string
+  providerAccountId?: string
   offerId: string
   productId: string
   plan: string

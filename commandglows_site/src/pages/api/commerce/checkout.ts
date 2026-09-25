@@ -8,6 +8,7 @@ import {
   verifyCommerceCheckoutIdentityToken,
 } from '@/lib/commerce/checkoutIdentity'
 import { getCommerceOffer, getOfferProviderConfig } from '@/lib/commerce/offers'
+import { stripeMerchantForOffer } from '@/lib/commerce/stripeMerchants'
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
@@ -66,6 +67,7 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
   }
 
   const env = getServerEnv()
+  const merchant = stripeMerchantForOffer(data.offerId, env)
   const secret = env.SUITE_COMMERCE_CHECKOUT_SECRET
   if (!secret || !data.identityToken) {
     return { ok: false as const, status: 401, message: 'Checkout must be started from an authenticated suite product' }
@@ -77,6 +79,9 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
     verified.environment !== runtimeEnvironment(env)
   ) {
     return { ok: false as const, status: 401, message: 'Checkout must be started from an authenticated suite product' }
+  }
+  if (!merchant || !getOfferProviderConfig(data.offerId, 'stripe', env)) {
+    return { ok: false as const, status: 503, message: 'Stripe checkout is not configured for this business' }
   }
 
   const convexUrl = env.PUBLIC_CONVEX_URL
@@ -99,6 +104,8 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
         globalUserId: verified.globalUserId,
         productId: verified.productId,
         offerId: offer.id,
+        businessId: merchant.business,
+        providerAccountId: merchant.accountId,
         environment: verified.environment,
         expiresAt: verified.expiresAt * 1000,
         bridgeSecret,
@@ -109,10 +116,6 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
   }
   if (claim.status === 'completed' && claim.checkoutUrl) {
     return { ok: true as const, provider: 'stripe', checkoutUrl: claim.checkoutUrl }
-  }
-
-  if (!getOfferProviderConfig(data.offerId, 'stripe', env)) {
-    return { ok: false as const, status: 503, message: 'Stripe checkout is not configured for this offer' }
   }
 
   const request: Omit<CommerceCheckoutRequest, 'offerId'> = {
@@ -135,7 +138,7 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
   if (!result.ok) {
     return {
       ok: false as const,
-      status: result.code === 'bad_request' ? 400 : 502,
+      status: result.code === 'bad_request' ? 400 : result.code === 'provider_not_configured' ? 503 : 502,
       message: result.message,
     }
   }
@@ -147,6 +150,8 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
         globalUserId: verified.globalUserId,
         productId: verified.productId,
         offerId: offer.id,
+        businessId: merchant.business,
+        providerAccountId: merchant.accountId,
         environment: verified.environment,
         checkoutUrl: result.checkoutUrl,
         providerOrderId: result.providerOrderId,

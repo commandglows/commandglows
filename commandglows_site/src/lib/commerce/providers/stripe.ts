@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { createHash } from 'node:crypto'
 import { buildCommerceCheckoutHints, getCommerceOffer, getOfferProviderConfig } from '../offers'
+import { businessForOffer, stripeMerchantForOffer, type StripeBusiness } from '../stripeMerchants'
 import type {
   CommerceCheckoutRequest,
   CommerceCheckoutResponse,
@@ -26,7 +27,7 @@ function stripeClient(secretKey: string, apiVersion?: string) {
   })
 }
 
-function metadataFromRequest(offerId: string, request: CommerceCheckoutRequest) {
+function metadataFromRequest(offerId: string, request: CommerceCheckoutRequest, business: StripeBusiness, accountId: string) {
   const offer = getCommerceOffer(offerId)
   if (!offer) return null
 
@@ -36,6 +37,8 @@ function metadataFromRequest(offerId: string, request: CommerceCheckoutRequest) 
       ...hints,
       provider: 'stripe',
       managed_payments: 'true',
+      business_id: business,
+      provider_account_id: accountId,
     }).filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].length > 0)
   )
 }
@@ -48,29 +51,34 @@ export async function createStripeManagedPaymentsCheckout(
 ): Promise<CommerceCheckoutResponse> {
   const offer = getCommerceOffer(offerId)
   const config = getOfferProviderConfig(offerId, 'stripe', env)
+  const merchant = stripeMerchantForOffer(offerId, env)
   if (!offer) {
     return { ok: false, code: 'offer_not_found', message: 'Offer not found' }
   }
-  if (!env.STRIPE_SECRET_KEY || !config?.priceId) {
+  if (!merchant || !config?.priceId) {
     return { ok: false, code: 'provider_not_configured', message: 'Stripe Managed Payments is not configured' }
   }
   if (!request.successUrl || !request.cancelUrl) {
     return { ok: false, code: 'bad_request', message: 'Missing checkout redirect URLs' }
   }
 
-  const metadata = metadataFromRequest(offerId, { ...request, offerId })
+  const metadata = metadataFromRequest(offerId, { ...request, offerId }, merchant.business, merchant.accountId)
   if (!metadata) {
     return { ok: false, code: 'offer_not_found', message: 'Offer not found' }
   }
 
   const publicCode = env.STRIPE_COMMANDGLOWS_FOUNDER_DISCOUNT_CODE ?? 'FOUNDER'
   const promotionCodeId =
-    request.discountCode === publicCode
+    merchant.business === 'commandglows' && request.discountCode === publicCode
       ? nonEmpty(env.STRIPE_COMMANDGLOWS_FOUNDER_PROMOTION_CODE_ID)
       : undefined
 
   try {
-    const stripe = client ?? stripeClient(env.STRIPE_SECRET_KEY, env.STRIPE_API_VERSION)
+    const stripe = client ?? stripeClient(merchant.secretKey, merchant.apiVersion)
+    const account = await stripe.accounts.retrieve(null)
+    if (account.id !== merchant.accountId) {
+      return { ok: false, code: 'provider_not_configured', message: 'Stripe merchant account does not match configuration' }
+    }
     const checkoutParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       managed_payments: { enabled: true },
@@ -137,15 +145,21 @@ function normalized(
   providerOrderId: string,
   metadata: Record<string, string>,
   details: { email?: string; customer?: string; invoice?: string; paymentIntent?: string } = {},
-  status: CommerceNormalizedEvent['status'] = 'applied'
+  status: CommerceNormalizedEvent['status'] = 'applied',
+  merchant?: { business: StripeBusiness; accountId: string }
 ): CommerceNormalizedEvent | null {
   const offerId = nonEmpty(metadata.offer_id)
   const productId = nonEmpty(metadata.product_id)
   const plan = nonEmpty(metadata.plan)
-  const missingMetadata = !offerId || !productId || !plan
+  const bindingValid = merchant && offerId && businessForOffer(offerId) === merchant.business &&
+    metadata.business_id === merchant.business &&
+    metadata.provider_account_id === merchant.accountId && (!event.account || event.account === merchant.accountId)
+  const missingMetadata = !offerId || !productId || !plan || !bindingValid
 
   return {
     provider: 'stripe',
+    businessId: merchant?.business,
+    providerAccountId: merchant?.accountId,
     offerId: offerId ?? 'unknown',
     productId: productId ?? 'unknown',
     plan: plan ?? 'unknown',
@@ -153,7 +167,7 @@ function normalized(
     environment: event.livemode ? 'production' : 'sandbox',
     providerEventId: event.id,
     providerOrderId,
-    idempotencyKey: `stripe:${event.type}:${event.id}`,
+    idempotencyKey: `stripe:${merchant?.accountId ?? 'unknown'}:${event.type}:${event.id}`,
     status: missingMetadata ? 'pending_review' : status,
     providerPayloadHash: stripeEventPayloadHash(event),
     providerCreatedAt: event.created ?? 0,
@@ -182,7 +196,8 @@ export async function parseStripeManagedPaymentsWebhook(
   context: CommerceWebhookContext,
   secretKey?: string,
   apiVersion?: string,
-  client?: Stripe
+  client?: Stripe,
+  merchant?: { business: StripeBusiness; accountId: string }
 ): Promise<CommerceWebhookParseResult> {
   if (!context.webhookSecret || !context.signature) {
     return { ok: false, ignored: false, reason: 'invalid_signature', message: 'Missing Stripe webhook signature configuration', status: 400 }
@@ -199,13 +214,24 @@ export async function parseStripeManagedPaymentsWebhook(
     return { ok: false, ignored: false, reason: 'invalid_signature', message: 'Invalid Stripe webhook signature', status: 400 }
   }
 
-  return normalizeVerifiedStripeEvent(event, stripe)
+  if (!merchant) return { ok: false, ignored: false, reason: 'invalid_provider', message: 'Stripe merchant is not configured', status: 500 }
+  try {
+    const account = await stripe.accounts.retrieve(null)
+    if (account.id !== merchant.accountId) throw new Error('account_mismatch')
+  } catch {
+    return { ok: false, ignored: false, reason: 'invalid_provider', message: 'Stripe merchant account could not be verified',
+      status: 500, verifiedEvent: { providerEventId: event.id, providerPayloadHash: stripeEventPayloadHash(event),
+        providerEventType: event.type, environment: event.livemode ? 'production' : 'sandbox' } }
+  }
+
+  return normalizeVerifiedStripeEvent(event, stripe, merchant)
 }
 
 // Only call with a verified webhook or an Event retrieved by the server's Stripe SDK.
 export async function normalizeVerifiedStripeEvent(
   event: Stripe.Event,
-  stripe: Stripe
+  stripe: Stripe,
+  merchant?: { business: StripeBusiness; accountId: string }
 ): Promise<CommerceWebhookParseResult> {
 
   let result: CommerceNormalizedEvent | null = null
@@ -217,7 +243,7 @@ export async function normalizeVerifiedStripeEvent(
           customer: customerId(session.customer),
           invoice: typeof session.invoice === 'string' ? session.invoice : session.invoice?.id,
           paymentIntent: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
-      })
+      }, 'applied', merchant)
       if (result && session.amount_total != null) result.chargeAmount = session.amount_total
       if (result && session.currency) result.currency = session.currency
     } else if (event.type === 'checkout.session.async_payment_failed' || event.type === 'checkout.session.expired') {
@@ -226,7 +252,7 @@ export async function normalizeVerifiedStripeEvent(
         session.id, metadataRecord(session.metadata), {
           customer: customerId(session.customer),
           paymentIntent: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
-        })
+        }, 'applied', merchant)
     } else if (event.type === 'refund.created' || event.type === 'refund.updated' || event.type === 'refund.failed') {
       const refund = event.data.object
       const charge = await chargeFor(stripe, refund.charge)
@@ -236,7 +262,7 @@ export async function normalizeVerifiedStripeEvent(
           'refund_updated',
           charge.id,
           metadataRecord(charge.metadata),
-          { customer: customerId(charge.customer), paymentIntent: typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id }
+          { customer: customerId(charge.customer), paymentIntent: typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id }, 'applied', merchant
         )
         if (result) Object.assign(result, {
           providerRefundId: refund.id, refundStatus: refund.status ?? 'unknown', refundAmount: refund.amount,
@@ -250,7 +276,7 @@ export async function normalizeVerifiedStripeEvent(
         result = normalized(event, 'dispute_updated', charge.id, metadataRecord(charge.metadata), {
           customer: customerId(charge.customer),
           paymentIntent: typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id,
-        })
+        }, 'applied', merchant)
         if (result) Object.assign(result, { providerDisputeId: dispute.id, disputeStatus: dispute.status })
       }
     } else {

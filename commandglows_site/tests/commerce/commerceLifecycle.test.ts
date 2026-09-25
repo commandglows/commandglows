@@ -8,13 +8,16 @@ import { normalizeVerifiedStripeEvent, parseStripeManagedPaymentsWebhook, stripe
 const modules = import.meta.glob('../../convex/**/*.ts')
 const secret = 'synthetic-commerce-secret'
 const metadata = { offer_id: 'communityglows/lifetime_deal', product_id: 'communityglows', plan: 'lifetime_deal',
+  business_id: 'communityglows', provider_account_id: 'acct_communityglows123',
   global_user_id: 'gu_buyer', source_ref: 'suite-checkout:lifecycle' }
+const merchant = { business: 'communityglows' as const, accountId: 'acct_communityglows123' }
 const session = { id: 'cs_lifecycle', payment_intent: 'pi_lifecycle', payment_status: 'paid',
   amount_total: 100, currency: 'eur', metadata }
 
 async function fixture() {
   const t = convexTest(schema, modules)
   const stripe = new Stripe('sk_test_synthetic')
+  vi.spyOn(stripe.accounts, 'retrieve').mockResolvedValue({ id: merchant.accountId } as Stripe.Account)
   const charge = { id: 'ch_lifecycle', payment_intent: 'pi_lifecycle', amount: 100, amount_refunded: 0,
     currency: 'eur', metadata }
   const retrieve = vi.spyOn(stripe.charges, 'retrieve').mockImplementation(async () => charge as unknown as Stripe.Charge)
@@ -22,6 +25,7 @@ async function fixture() {
     await ctx.db.insert('globalUsers', { globalUserId: 'gu_buyer', createdAt: 1, updatedAt: 1 })
     await ctx.db.insert('commerceCheckoutHandoffs', { jtiHash: 'hash', idempotencyKey: metadata.source_ref,
       globalUserId: metadata.global_user_id, productId: metadata.product_id, offerId: metadata.offer_id,
+      businessId: merchant.business, providerAccountId: merchant.accountId,
       environment: 'sandbox', status: 'completed', providerOrderId: session.id,
       expiresAt: 9999999999999, createdAt: 1, updatedAt: 1 })
   })
@@ -31,7 +35,7 @@ async function fixture() {
     const event = rawEvent(id, type, object, created)
     const rawBody = JSON.stringify(event)
     const parsed = await parseStripeManagedPaymentsWebhook({ rawBody, webhookSecret: 'whsec_lifecycle',
-      signature: stripe.webhooks.generateTestHeaderString({ payload: rawBody, secret: 'whsec_lifecycle' }) }, undefined, undefined, stripe)
+      signature: stripe.webhooks.generateTestHeaderString({ payload: rawBody, secret: 'whsec_lifecycle' }) }, undefined, undefined, stripe, merchant)
     if (!parsed.ok) throw new Error(parsed.reason)
     return t.mutation(api.bridge.processCommerceEvent, { ...parsed.normalizedEvent, bridgeSecret: secret })
   }
@@ -196,7 +200,7 @@ describe('purchase lifecycle through signed Stripe events and Convex', () => {
     const f = await fixture()
     f.retrieve.mockRejectedValueOnce(new Error('provider unavailable'))
     const event = f.rawEvent('evt_failure', 'refund.updated', { id: 're_one', charge: f.charge.id }, 200)
-    const result = await normalizeVerifiedStripeEvent(event, f.stripe)
+    const result = await normalizeVerifiedStripeEvent(event, f.stripe, merchant)
     expect(result).toMatchObject({ ok: false, status: 500, verifiedEvent: {
       providerEventId: 'evt_failure', environment: 'sandbox', providerPayloadHash: stripeEventPayloadHash(event) } })
     expect(JSON.stringify(result)).not.toContain(metadata.global_user_id)

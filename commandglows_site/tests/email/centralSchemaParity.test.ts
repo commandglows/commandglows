@@ -3,6 +3,16 @@ import { readFileSync } from 'node:fs'
 import schema from '../../convex/schema'
 import crons from '../../convex/crons'
 
+function assertAdditiveFields(current: any, previous: any, path: string) {
+  const currentFields = current?.fieldType?.type === 'object' ? current.fieldType.value : undefined
+  const previousFields = previous?.fieldType?.type === 'object' ? previous.fieldType.value : undefined
+  if (!currentFields || !previousFields) return
+  for (const [name, field] of Object.entries(currentFields) as [string, any][]) {
+    if (!(name in previousFields)) expect(field.optional, `${path}.${name} must be additive`).toBe(true)
+    else assertAdditiveFields(field, previousFields[name], `${path}.${name}`)
+  }
+}
+
 test('recovered legacy indexes keep records unconstrained and restore exact fields', () => {
   const local = JSON.parse(schema.export())
   const expected = {
@@ -80,7 +90,9 @@ test('local schema retains every captured shared table, field and index', () => 
       expect(
         current.documentType.value[field],
         `${previous.tableName}.${field}`
-      ).toEqual(previous.documentType.value[field])
+      ).toMatchObject(previous.documentType.value[field])
+      assertAdditiveFields(current.documentType.value[field], previous.documentType.value[field],
+        `${previous.tableName}.${field}`)
     }
     for (const [name, field] of Object.entries(current.documentType.value) as [
       string,
