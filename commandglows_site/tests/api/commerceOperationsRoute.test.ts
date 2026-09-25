@@ -1,8 +1,8 @@
 import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest'
 
-const mocks = vi.hoisted(() => ({ query: vi.fn(), mutation: vi.fn(), event: vi.fn(), session: vi.fn(), normalize: vi.fn() }))
+const mocks = vi.hoisted(() => ({ query: vi.fn(), mutation: vi.fn(), event: vi.fn(), session: vi.fn(), account: vi.fn(), normalize: vi.fn() }))
 vi.mock('convex/browser', () => ({ ConvexHttpClient: vi.fn().mockImplementation(function () { return { query: mocks.query, mutation: mocks.mutation } }) }))
-vi.mock('stripe', () => ({ default: vi.fn().mockImplementation(function () { return { events: { retrieve: mocks.event }, checkout: { sessions: { retrieve: mocks.session } } } }) }))
+vi.mock('stripe', () => ({ default: vi.fn().mockImplementation(function () { return { accounts: { retrieve: mocks.account }, events: { retrieve: mocks.event }, checkout: { sessions: { retrieve: mocks.session } } } }) }))
 vi.mock('@/lib/commerce/providers/stripe', () => ({ normalizeVerifiedStripeEvent: mocks.normalize }))
 import { GET, POST } from '@/pages/api/admin/commerce'
 
@@ -13,6 +13,7 @@ const request = (payload: unknown, headers: Record<string, string> = {}) => new 
 })
 const post = (payload: unknown, options: Record<string, string> = {}) => POST({ request: request(payload, options), locals: locals() } as never)
 const envelope = { provider: 'stripe', environment: 'sandbox', providerEventId: 'evt_trusted', providerOrderId: 'cs_trusted',
+  businessId: 'communityglows', providerAccountId: 'acct_communityglows123',
   productId: 'communityglows', offerId: 'communityglows/lifetime_deal', plan: 'lifetime_deal', sourceRef: 'suite-checkout:trusted',
   eventType: 'paid', status: 'applied', idempotencyKey: 'trusted', providerPayloadHash: 'a'.repeat(64), metadata: { source: 'provider' } }
 
@@ -21,10 +22,13 @@ beforeEach(() => {
   vi.stubEnv('PUBLIC_CONVEX_URL', 'https://convex.example.test')
   vi.stubEnv('SUITE_BRIDGE_CONVEX_SECRET', 'server-only-secret')
   vi.stubEnv('STRIPE_SECRET_KEY', 'sk_test_synthetic')
+  vi.stubEnv('STRIPE_COMMUNITYGLOWS_SECRET_KEY', 'sk_test_community')
+  vi.stubEnv('STRIPE_COMMUNITYGLOWS_ACCOUNT_ID', 'acct_communityglows123')
   mocks.query.mockImplementation(async (name: string) => name === 'commerceOperations:authorize'
-    ? { environment: 'sandbox' } : { receipt: { providerEventId: 'evt_trusted' } })
+    ? { environment: 'sandbox' } : { receipt: { providerEventId: 'evt_trusted', businessId: 'communityglows', providerAccountId: 'acct_communityglows123' } })
   mocks.mutation.mockResolvedValue({ status: 'granted' })
   mocks.event.mockResolvedValue({ id: 'evt_trusted', livemode: false })
+  mocks.account.mockResolvedValue({ id: 'acct_communityglows123' })
   mocks.normalize.mockResolvedValue({ ok: true, normalizedEvent: envelope })
 })
 afterEach(() => vi.unstubAllEnvs())
@@ -68,7 +72,7 @@ describe('administrator commerce API', () => {
     expect(await response.json()).toEqual({ error: 'case_changed_refresh_required' })
   })
   test('reconciles authenticated provider envelope and discards all caller granting fields', async () => {
-    const response = await post({ action: 'reconcile', eventId: 'evt_trusted', reason: 'Verified missing webhook',
+    const response = await post({ action: 'reconcile', businessId: 'communityglows', eventId: 'evt_trusted', reason: 'Verified missing webhook',
       environment: 'production', globalUserId: 'gu_attacker', productId: 'attack', providerPayloadHash: 'fake', operatorId: 'forged' })
     expect(response.status).toBe(200)
     expect(mocks.event).toHaveBeenCalledWith('evt_trusted')
@@ -79,14 +83,14 @@ describe('administrator commerce API', () => {
   })
   test('rejects live-mode evidence in sandbox before normalizing', async () => {
     mocks.event.mockResolvedValueOnce({ id: 'evt_trusted', livemode: true })
-    const response = await post({ action: 'reconcile', eventId: 'evt_trusted', reason: 'Verify event environment' })
+    const response = await post({ action: 'reconcile', businessId: 'communityglows', eventId: 'evt_trusted', reason: 'Verify event environment' })
     expect(response.status).toBe(400)
     expect(mocks.normalize).not.toHaveBeenCalled()
     expect(mocks.mutation).not.toHaveBeenCalled()
   })
   test('rejects metadata environment mismatch after normalization', async () => {
     mocks.normalize.mockResolvedValueOnce({ ok: true, normalizedEvent: { ...envelope, environment: 'production' } })
-    expect((await post({ action: 'reconcile', eventId: 'evt_trusted', reason: 'Verify metadata environment' })).status).toBe(400)
+    expect((await post({ action: 'reconcile', businessId: 'communityglows', eventId: 'evt_trusted', reason: 'Verify metadata environment' })).status).toBe(400)
     expect(mocks.mutation).not.toHaveBeenCalled()
   })
   test('exceptional recovery retrieves the event from the stored case and passes only its verified digest', async () => {
@@ -100,17 +104,17 @@ describe('administrator commerce API', () => {
   })
   test('provider outages leave the case intact and return a retryable service error', async () => {
     mocks.event.mockRejectedValueOnce(new Error('network down secret details'))
-    const response = await post({ action: 'reconcile', eventId: 'evt_trusted', reason: 'Verify original event' })
+    const response = await post({ action: 'reconcile', businessId: 'communityglows', eventId: 'evt_trusted', reason: 'Verify original event' })
     expect(response.status).toBe(503)
     expect(mocks.mutation).not.toHaveBeenCalled()
     expect(await response.text()).not.toContain('secret')
   })
   test('repairs only complete sessions retrieved from Stripe and forwards real metadata', async () => {
-    const metadata = { source_ref: 'suite-checkout:trusted', environment: 'test', global_user_id: 'gu_true', product_id: 'communityglows', offer_id: 'communityglows/lifetime_deal' }
+    const metadata = { source_ref: 'suite-checkout:trusted', environment: 'test', global_user_id: 'gu_true', product_id: 'communityglows', offer_id: 'communityglows/lifetime_deal', business_id: 'communityglows', provider_account_id: 'acct_communityglows123' }
     mocks.session.mockResolvedValueOnce({ id: 'cs_true', status: 'open', livemode: false, metadata })
-    expect((await post({ action: 'repair_checkout', sessionId: 'cs_true', reason: 'Verify failed binding' })).status).toBe(400)
+    expect((await post({ action: 'repair_checkout', businessId: 'communityglows', sessionId: 'cs_true', reason: 'Verify failed binding' })).status).toBe(400)
     mocks.session.mockResolvedValueOnce({ id: 'cs_true', status: 'complete', livemode: false, metadata, url: null })
-    expect((await post({ action: 'repair_checkout', sessionId: 'cs_true', reason: 'Verify failed binding', globalUserId: 'gu_forged' })).status).toBe(200)
+    expect((await post({ action: 'repair_checkout', businessId: 'communityglows', sessionId: 'cs_true', reason: 'Verify failed binding', globalUserId: 'gu_forged' })).status).toBe(200)
     expect(mocks.mutation).toHaveBeenCalledWith('commerceOperations:repairCheckout', expect.objectContaining({ globalUserId: 'gu_true', checkoutUrl: undefined }))
   })
 })

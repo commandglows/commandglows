@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.3.2"
 project: CommandGlows
 created: "2026-08-11"
-updated: "2026-09-06"
+updated: "2026-09-25"
 status: active
 source_skill: sg-docs
 scope: stripe-managed-payments-usage
@@ -21,7 +21,7 @@ linked_systems:
   - /home/claude/communityglows
 depends_on:
   - artifact: "/home/claude/shipglows/shipglows_data/technical/external-platforms/stripe-managed-payments.md"
-artifact_version: "1.1.0"
+    artifact_version: "2.0.1"
     required_status: active
 supersedes: []
 evidence:
@@ -33,8 +33,9 @@ evidence:
   - "Operator decision later on 2026-08-11: Stripe Managed Payments becomes the only provider for every current and future suite product, including CommunityGlows; Lemon Squeezy and Polar are superseded."
   - "Local batch B on 2026-08-11: CommunityGlows and Formation offers use Stripe Price-ID placeholders; active Lemon Squeezy and Polar adapters/routes/webhooks/tests/dependency were removed; all checkout offers require product/environment-bound signed identity handoff; Convex rejects non-Stripe providers."
   - "Local licence administration slice on 2026-08-18: CommandGlows exposes admin-gated search/detail/manual grant/revoke over the canonical Convex ledger; CommunityGlows consumes an additive account-scoped licence summary."
+  - "Operator clarification on 2026-09-25: each business owns its Stripe merchant account; the current CommunityGlows offer in the CommandGlows adapter is a migration gap."
 next_review: "2026-09-11"
-next_step: "Configure Stripe test-mode Product/Price and webhook values, then capture hosted checkout, replay, refund/dispute, Convex, and app-refresh proof before launch."
+next_step: "Verify each business account ID and configure business-owned secrets, Price IDs, and webhook destinations; complete hosted proof before direct-sale activation."
 ---
 
 # Stripe Managed Payments Usage
@@ -51,19 +52,27 @@ returns never grant access directly.
 
 ## Migration State
 
-- Current CommandGlows adapter: Stripe Managed Payments, implemented and locally verified but not provider-proven.
-- CommunityGlows, CommandGlows App and CommandGlows Formation use the same
-  central Stripe adapter; no product-local Stripe secret or webhook exists.
+- Current CommandGlows adapter: Stripe Managed Payments; hosted test purchase, signed webhook, entitlement and refund revocation were recorded in `shipglows_data/workflow/specs/commerce-launch-readiness.md`.
+- CommandGlows App and Formation use the CommandGlows business account.
+- The local adapter now routes CommunityGlows through dedicated account credentials,
+  Price ID, `/api/commerce/webhooks/communityglows`, and account-bound recovery.
+  Its direct sales remain unavailable until the real account ID, credentials,
+  Price ID, endpoint, and hosted lifecycle are verified.
 - Lemon Squeezy and Polar: superseded historical migration-test evidence only,
   never granting providers.
-- Customer migration: none; there are no users or paid orders to preserve.
+- Historical no-user assumption is not a basis for deleting current identities, orders, or receipts.
 - Reuse allowed: internal offer IDs, product IDs, plan IDs, source-independent entitlement transitions and idempotency principles.
 - Reuse forbidden: Lemon Squeezy product/variant IDs, API fields, signatures, event names and customer/order identifiers.
 
 ## Required Configuration Contract
 
-Use server-only `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, plus one
-allowlisted Price ID for each suite offer. `STRIPE_API_VERSION` is an
+Use server-only `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and
+`STRIPE_COMMANDGLOWS_ACCOUNT_ID` for the CommandGlows business. CommunityGlows
+uses `STRIPE_COMMUNITYGLOWS_SECRET_KEY`, `STRIPE_COMMUNITYGLOWS_WEBHOOK_SECRET`,
+and `STRIPE_COMMUNITYGLOWS_ACCOUNT_ID` with its own allowlisted Price ID.
+The adapter verifies the account returned by Stripe before accepting checkout
+or a signed webhook.
+Do not attach another business's Price IDs to this credential pair. `STRIPE_API_VERSION` is an
 optional override; otherwise the installed Stripe SDK default is used. Keep
 values out of documentation. Every Checkout Session explicitly enables Managed
 Payments.
@@ -96,6 +105,7 @@ modified, cross-product or cross-environment handoffs fail closed.
 - Clerk-backed public/Formation start: `POST /api/checkout/start`
 - Public hosted checkout creation: `POST /api/commerce/checkout`
 - Signed provider events: `POST /api/commerce/webhooks/stripe`
+- CommunityGlows signed provider events: `POST /api/commerce/webhooks/communityglows`
 
 ## Event Contract
 
@@ -166,7 +176,7 @@ and app-refresh proof remain required before launch.
 
 ## Reader Checklist
 
-- Offer or Price mapping changed -> update `.env.example`, tests, and this note.
+- Offer or Price mapping changed -> update Doppler variables, tests, and this note.
 - Checkout or webhook code changed -> rerun commerce tests and verify the event contract.
 - Identity bridge changed -> verify expiration, signature, audience, and replay boundaries.
 - Hosted proof completed -> attach redacted evidence and update this note plus the entitlement spec.

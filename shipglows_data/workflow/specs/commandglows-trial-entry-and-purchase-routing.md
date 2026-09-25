@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.7"
+artifact_version: "1.0.9"
 project: "CommandGlows"
 created: "2026-09-23"
 created_at: "2026-09-22 23:58:43 UTC"
-updated: "2026-09-24"
-updated_at: "2026-09-24 16:28:37 UTC"
+updated: "2026-09-25"
+updated_at: "2026-09-25 00:14:09 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-6"
@@ -38,7 +38,8 @@ evidence:
   - "The Windows Dart-define recipe now forwards the environment-paired bridge URL; an isolated Vercel Preview bridge on Firebase Dev and Convex Dev returned correlated granted and denied outcomes on 2026-09-24."
   - "A source audit on 2026-09-24 found the Firebase identity sync and generic suite bridge could invoke the initial trial writer without trialAction, and CommandGlows still hard-denied grants after three shared-network grants; all conflict with the explicit-click and shared-network fairness contracts."
   - "Operator decision on 2026-09-24: require a verified Firebase email before awarding a CommandGlows trial; a shared-network signal must not block otherwise eligible accounts."
-next_step: "Complete refreshed isolated-Dev proof and user-owned Windows email-verification smoke"
+  - "On 2026-09-25 the operator confirmed the Windows app opened after a verified-email retry; the correlated Dev bridge returned 200 already_active and a subsequent access read returned 200."
+next_step: "Keep fresh-initial-grant proof and Production rollout separate from the confirmed Dev access recovery"
 ---
 
 # Title
@@ -47,7 +48,7 @@ CommandGlows Trial Entry and Purchase Routing
 
 ## Status
 
-The explicit trial-entry UI and earlier isolated hosted Dev bridge proof are in place. Current source requires an explicit request, keeps shared-network velocity non-blocking, and requires Firebase-confirmed email verification. Focused automated checks pass; refreshed hosted proof and one rendered Windows UI smoke remain.
+The explicit trial-entry UI and isolated Dev bridge proof are in place. Current source requires an explicit request, keeps shared-network velocity non-blocking, and requires Firebase-confirmed email verification. Focused automated checks passed. After the Convex Dev contract repair, the operator confirmed that the verified-email retry opened the Windows app. The correlated start response was `200 already_active`, which proves active access and the rendered transition but does not by itself prove creation of a fresh initial trial on that request.
 
 ## User Story
 
@@ -237,6 +238,12 @@ First-read files: `commandglows_app/lib/features/auth/presentation/auth_gate_scr
 - The follow-up denial-copy test verifies that `temporary_rate_limit` is explained as a shared network limit and explicitly does not imply prior use by the entered email. Earlier synthetic Dev grants exhausted this network's test allowance; no further grant request was sent during diagnosis.
 - The hosted denial and focused tests above describe the pre-change network-denial behavior. They do not verify the current source, which requires an explicit trial action and treats shared-network velocity as non-blocking for CommandGlows.
 
+### Verified-email retry repair — 2026-09-25
+
+- An operator verified the emailed Firebase Dev link, but the next trial-start attempt still left the app gated. Redacted Vercel logs showed earlier `403 email_not_verified` responses followed by `500 bridge_write_failed`; the matching Convex Dev log identified `ArgumentValidationError: Object contains extra field firebaseEmailVerified`. The later `500` proves the bridge passed the Admin email check and reached Convex, but no grant outcome was returned.
+- The Preview bridge was ahead of the Convex Dev validator. At 2026-09-24 23:55 UTC, the trial Preview branch's Convex functions were pushed to `fabulous-raven-247` using Doppler Dev and `convex dev --once`. The deployment source also retained the current development-only guard in `trialMaintenance.ts`; Production was not deployed. The published Convex function spec now lists both `firebaseEmailVerified` and `trialAction` for `bridge:upsertFirebaseIdentity`.
+- At 2026-09-25 00:12:51 UTC, the next authenticated start returned `200 already_active` with request ID `25920f8f-f905-4385-b627-3189f2edaee9`; the subsequent access read returned 200. The operator confirmed that the Windows app opened. This closes the reported verified-email access blocker in Dev, while the exact initial-grant provenance remains unproven from this response.
+
 ## Open Questions
 
 None. The operator requested a first-trial action and a direct route to the existing app offers page; existing policy and route evidence resolve duration and destination.
@@ -255,7 +262,9 @@ Zero/one: absent entitlement and first start; boundary: unverified versus verifi
 | 2026-09-24 15:43:38 UTC | sg-development | GPT-6 | Required explicit trial actions on both CommandGlows bridge paths and changed shared-network velocity from denial to internal risk signal; updated regression expectations and verification docs | Local changes only; automated checks and rendered UI not rerun; earlier hosted denial proof predates this change | Run focused Doppler Convex/Flutter checks, then refresh isolated Dev and Windows UI proof |
 | 2026-09-24 16:16:42 UTC | sg-development | GPT-6 | Added operator-approved verified-email requirement to explicit CommandGlows trial actions, with server check and app resend recovery | Local changes only; checks and rendered UI not run | Run focused Doppler Convex/Flutter checks, then isolated Dev and Windows UI proof for unverified denial, verified grant, and resend recovery |
 | 2026-09-24 16:57:05 UTC | sg-development | GPT-6 | Added regression coverage for unverified email denial, Firebase verification lookup failure, verified proof forwarding, and app recovery copy | 33 focused Flutter tests, 36 focused bridge/Convex tests, targeted Dart analysis, site build check, and targeted metadata lint pass; full metadata lint has one unrelated pre-existing invalid status | Refresh isolated Dev deployment, then verify email resend and post-verification grant with a dedicated test account |
+| 2026-09-25 00:00:09 UTC | sg-bug | GPT-6 | Correlated the operator's verified-email retry with Preview and Convex Dev logs; deployed the matching Dev validator | Remote function spec confirms the new argument; authenticated post-deployment grant and rendered transition remain unverified | Observe one operator-controlled retry and correlate its safe request ID |
+| 2026-09-25 00:14:09 UTC | sg-bug | GPT-6 | Correlated the operator's post-deployment retry and confirmed the rendered app result | Bridge start returned 200 already_active; follow-up access read returned 200; operator confirmed entry into the app | Keep fresh initial-grant and Production proof separate |
 
 ## Current Chantier Flow
 
-`100-sg-spec` -> `101-sg-ready` -> `/102-sg-start commandglows-trial-entry-and-purchase-routing` -> focused verification (passed) -> isolated Dev refresh and operator visual smoke. The app is currently open with active access, so do not sign out the operator or consume a trial; use a dedicated Dev test account after the refreshed preview is available.
+`100-sg-spec` -> `101-sg-ready` -> `/102-sg-start commandglows-trial-entry-and-purchase-routing` -> focused verification (passed) -> isolated Dev validator refresh (deployed) -> authenticated `already_active` response and operator-confirmed Windows app entry. The reported Dev access blocker is resolved; a fresh first-grant proof and Production rollout remain separate release evidence.

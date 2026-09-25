@@ -5,6 +5,7 @@ import {
 } from './commerceEventContract'
 import { receiveAppSumoLicenseEvent } from './appSumoFulfillment'
 import { receiveCommerceEvent, reviewCommerceEvent } from './commerceProcessor'
+import { commerceBusinessForProduct } from './commerceBusiness'
 import { internalMutation, mutation, query } from './_generated/server'
 import { v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
@@ -619,12 +620,16 @@ function assertCheckoutHandoffContext(
     globalUserId: string
     productId: string
     offerId: string
+    businessId?: string
+    providerAccountId?: string
     environment: string
   },
   incoming: {
     globalUserId: string
     productId: string
     offerId: string
+    businessId: string
+    providerAccountId: string
     environment: string
   }
 ) {
@@ -632,6 +637,8 @@ function assertCheckoutHandoffContext(
     existing.globalUserId !== incoming.globalUserId ||
     existing.productId !== incoming.productId ||
     existing.offerId !== incoming.offerId ||
+    existing.businessId !== incoming.businessId ||
+    existing.providerAccountId !== incoming.providerAccountId ||
     existing.environment !== incoming.environment
   ) {
     throw new Error('checkout_handoff_context_mismatch')
@@ -644,12 +651,16 @@ export const claimCommerceCheckoutHandoff = mutation({
     globalUserId: v.string(),
     productId: v.string(),
     offerId: v.string(),
+    businessId: v.string(),
+    providerAccountId: v.string(),
     environment: v.string(),
     expiresAt: v.number(),
     bridgeSecret: v.string(),
   },
   handler: async (ctx, args) => {
     requireBridgeSecret(args.bridgeSecret)
+    if (commerceBusinessForProduct(args.productId) !== args.businessId ||
+      !/^acct_[A-Za-z0-9]+$/.test(args.providerAccountId)) throw new Error('checkout_merchant_mismatch')
     const now = Date.now()
     const existing = await ctx.db
       .query('commerceCheckoutHandoffs')
@@ -677,6 +688,8 @@ export const claimCommerceCheckoutHandoff = mutation({
       globalUserId: args.globalUserId,
       productId: args.productId,
       offerId: args.offerId,
+      businessId: args.businessId,
+      providerAccountId: args.providerAccountId,
       environment: args.environment,
       status: 'claimed',
       idempotencyKey,
@@ -699,6 +712,8 @@ export const completeCommerceCheckoutHandoff = mutation({
     globalUserId: v.string(),
     productId: v.string(),
     offerId: v.string(),
+    businessId: v.string(),
+    providerAccountId: v.string(),
     environment: v.string(),
     checkoutUrl: v.string(),
     providerOrderId: v.string(),

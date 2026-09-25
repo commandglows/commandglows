@@ -70,6 +70,7 @@ export default function CommerceIncidentConsole() {
   const [evidence, setEvidence] = useState('')
   const [eventId, setEventId] = useState('')
   const [sessionId, setSessionId] = useState('')
+  const [businessId, setBusinessId] = useState<'commandglows' | 'communityglows' | 'replayglows' | 'contentglows'>('commandglows')
   const reasonRef = useRef<HTMLTextAreaElement | null>(null)
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
@@ -125,7 +126,7 @@ export default function CommerceIncidentConsole() {
     setBusy(true); setError(''); setMessage('')
     try {
       const data = await request('/api/admin/commerce', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, reason, evidenceReference: evidence, eventId, sessionId,
+        body: JSON.stringify({ action, reason, evidenceReference: evidence, eventId, sessionId, businessId,
           incidentId: detail?.incident._id, expectedVersion: detail?.incident.version, expectedAttempts: detail?.incident.attempts }) })
       setMessage(action === 'dry_run'
         ? data.eligible ? 'Reprise autorisée. Cette vérification ne modifie aucun droit.' : 'Reprise indisponible. Récupérez la preuve fournisseur ou escaladez le dossier.'
@@ -265,6 +266,14 @@ export default function CommerceIncidentConsole() {
     <div className={panel}>
       <h3 className="text-dashboard-text-primary font-bold">Outils Stripe contrôlés</h3>
       <p className="text-dashboard-text-muted mt-2 text-sm">Copiez l’identifiant exact dans Stripe. Le serveur récupère et vérifie les preuves avant de traiter l’achat. Un événement déjà reçu conserve son résultat.</p>
+      <label htmlFor="commerce-business" className="text-dashboard-text-primary mt-3 block text-sm">Compte business pour la recherche Stripe</label>
+      <select id="commerce-business" className={`${input} mt-2`} value={businessId}
+        onChange={(event) => setBusinessId(event.target.value as typeof businessId)}>
+        <option value="commandglows">CommandGlows</option>
+        <option value="communityglows">CommunityGlows</option>
+        <option value="replayglows">ReplayGlows</option>
+        <option value="contentglows">ContentGlows</option>
+      </select>
       <label htmlFor="commerce-event" className="text-dashboard-text-primary mt-3 block text-sm">Identifiant d’événement Stripe</label>
       <input id="commerce-event" className={`${input} mt-2`} value={eventId} maxLength={255} onChange={(event) => setEventId(event.target.value)} placeholder="evt_…" />
       <button className={`${button} mt-3`} disabled={busy || !eventId.startsWith('evt_')} onClick={() => void act('reconcile')}>Vérifier et récupérer l’événement</button>

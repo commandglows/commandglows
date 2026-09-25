@@ -2,6 +2,7 @@ import { convexTest } from 'convex-test'
 import { api, internal } from '../../convex/_generated/api'
 import schema from '../../convex/schema'
 import type { CommerceEventEnvelope } from '../../convex/commerceEventContract'
+import { commerceBusinessForProduct } from '../../convex/commerceBusiness'
 
 const modules = import.meta.glob('../../convex/**/*.ts')
 const BRIDGE_SECRET = 'convex-trial-test-secret'
@@ -30,6 +31,9 @@ async function deliverCommerce(
     metadata?: Record<string, string>
   }
 ) {
+  const businessId = event.businessId ?? commerceBusinessForProduct(event.productId)
+  if (!businessId) throw new Error('test_business_required')
+  const providerAccountId = event.providerAccountId ?? `acct_${businessId}123`
   if (event.globalUserId && event.sourceRef) {
     await t.run(async (ctx) => {
       const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
@@ -40,6 +44,8 @@ async function deliverCommerce(
           globalUserId: event.globalUserId,
           productId: event.productId,
           offerId: event.offerId,
+          businessId,
+          providerAccountId,
           environment: 'test',
           status: 'completed',
           providerOrderId: event.providerOrderId,
@@ -52,6 +58,8 @@ async function deliverCommerce(
   }
   return t.mutation(api.bridge.processCommerceEvent, {
     ...event,
+    businessId,
+    providerAccountId,
     providerPaymentIntentId: `pi_${event.sourceRef}`,
   })
 }

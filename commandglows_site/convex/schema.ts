@@ -65,6 +65,8 @@ export default defineSchema({
 
   productEntitlements: defineTable({
     globalUserId: v.id('globalUsers'),
+    businessId: v.optional(v.string()),
+    providerAccountId: v.optional(v.string()),
     productId: v.string(),
     plan: v.string(),
     status: v.string(),
@@ -159,6 +161,7 @@ export default defineSchema({
 
   productAccessEvents: defineTable({
     source: v.string(),
+    providerAccountId: v.optional(v.string()),
     eventType: v.string(),
     eventId: v.optional(v.string()),
     webhookId: v.optional(v.string()),
@@ -180,6 +183,8 @@ export default defineSchema({
 
   commerceCheckoutHandoffs: defineTable({
     jtiHash: v.string(),
+    businessId: v.optional(v.string()),
+    providerAccountId: v.optional(v.string()),
     globalUserId: v.string(),
     productId: v.string(),
     offerId: v.string(),
