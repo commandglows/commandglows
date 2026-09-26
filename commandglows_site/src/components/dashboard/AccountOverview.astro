@@ -1,0 +1,61 @@
+---
+import type { SiteAuth } from '@/lib/auth/siteAuth'
+
+interface Props {
+  auth: SiteAuth
+  lang: 'en' | 'fr'
+}
+
+const { auth, lang } = Astro.props
+const isFrench = lang === 'fr'
+const formationUrl = isFrench ? '/fr/formations/' : '/en/formations/'
+const offerUrl = isFrench ? '/fr/maitrise-windows' : '/windows-mastery'
+const recoveryUrl = isFrench ? '/fr/account/link-existing' : '/account/link-existing'
+const title = isFrench ? 'Vue d’ensemble' : 'Account overview'
+const greeting = auth.name
+  ? (isFrench ? `Bonjour, ${auth.name}` : `Welcome, ${auth.name}`)
+  : (isFrench ? 'Bienvenue dans votre compte' : 'Welcome to your account')
+---
+
+<div class="min-w-0">
+  <header class="mb-6 border-b border-dashboard-border pb-5">
+    <h1 class="text-dashboard-text-primary break-words text-3xl font-bold">{greeting}</h1>
+    <p class="text-dashboard-text-muted mt-2">{title}</p>
+  </header>
+
+  {auth.unavailable ? (
+    <section class="rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong" aria-live="polite">
+      <h2 class="text-content-text-primary text-lg font-semibold">{isFrench ? 'Informations temporairement indisponibles' : 'Account information is temporarily unavailable'}</h2>
+      <p class="text-content-text-secondary mt-2">{isFrench ? 'Nous ne pouvons pas vérifier votre profil ni vos accès pour le moment. Aucun état d’abonnement ou d’achat n’est affiché.' : 'We cannot verify your profile or access right now. No subscription or purchase status is being shown.'}</p>
+      <a class="dashboard-action-link brand-text-magenta mt-4 inline-flex min-h-11 items-center font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={Astro.url.pathname} data-astro-reload>{isFrench ? 'Réessayer' : 'Try again'}</a>
+      <a class="dashboard-action-link brand-text-magenta mt-4 inline-flex min-h-11 items-center font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={recoveryUrl}>{isFrench ? 'Retrouver mes achats' : 'Recover purchases'}</a>
+    </section>
+  ) : auth.formationAccess === true ? (
+    <section class="rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong">
+      <p class="text-content-text-tertiary text-sm font-semibold">{isFrench ? 'Accès vérifié' : 'Verified access'}</p>
+      <h2 class="text-content-text-primary mt-2 text-xl font-semibold">{isFrench ? 'Votre accès à la formation est actif' : 'Your formation access is active'}</h2>
+      <p class="text-content-text-secondary mt-2">{isFrench ? 'Ouvrez votre espace de formation pour continuer.' : 'Open your formation space to continue.'}</p>
+      <a class="dashboard-action-link brand-text-magenta mt-5 inline-flex min-h-11 items-center rounded-lg border border-content-border px-4 py-2 font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={formationUrl}>{isFrench ? 'Accéder aux formations' : 'Open formations'}</a>
+    </section>
+  ) : (
+    <section class="rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong">
+      <p class="text-content-text-tertiary text-sm font-semibold">{isFrench ? 'Accès à la formation' : 'Formation access'}</p>
+      <h2 class="text-content-text-primary mt-2 text-xl font-semibold">{isFrench ? 'Aucun accès actif à la formation n’est associé à ce compte.' : 'No active formation access is associated with this account.'}</h2>
+      <p class="text-content-text-secondary mt-2">{isFrench ? 'Si vous avez déjà acheté une offre, vous pouvez retrouver vos achats. Sinon, découvrez Maîtrise Windows.' : 'If you have already purchased an offer, you can recover your purchases. Otherwise, explore Windows Mastery.'}</p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a class="dashboard-action-link brand-text-magenta inline-flex min-h-11 items-center rounded-lg border border-content-border px-4 py-2 font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={recoveryUrl}>{isFrench ? 'Retrouver mes achats' : 'Recover purchases'}</a>
+        <a class="dashboard-action-link brand-text-magenta inline-flex min-h-11 items-center rounded-lg border border-content-border px-4 py-2 font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={offerUrl}>{isFrench ? 'Découvrir Maîtrise Windows' : 'Explore Windows Mastery'}</a>
+      </div>
+    </section>
+  )}
+
+  {auth.email && (
+    <section class="mt-6 rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong">
+      <h2 class="text-content-text-primary text-lg font-semibold">{isFrench ? 'Compte' : 'Account'}</h2>
+      <dl class="mt-4">
+        <dt class="text-content-text-tertiary text-sm">{isFrench ? 'Adresse email' : 'Email address'}</dt>
+        <dd class="text-content-text-primary mt-1 break-words">{auth.email}</dd>
+      </dl>
+    </section>
+  )}
+</div>

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { APIContext } from 'astro'
 
-const mock = vi.hoisted(() => ({ query: vi.fn(), session: vi.fn(), config: vi.fn(), env: {} as Record<string, string> }))
-vi.mock('convex/browser', () => ({ ConvexHttpClient: class { query = mock.query } }))
+const mock = vi.hoisted(() => ({ query: vi.fn(), mutation: vi.fn(), session: vi.fn(), config: vi.fn(), env: {} as Record<string, string> }))
+vi.mock('convex/browser', () => ({ ConvexHttpClient: class { query = mock.query; mutation = mock.mutation } }))
 vi.mock('../src/lib/serverEnv', () => ({ getServerEnv: () => mock.env }))
 vi.mock('../src/lib/auth/auth0Session', () => ({ AUTH_SESSION_COOKIE: 'commandglows_session', readAuth0Config: mock.config, readAuth0Session: mock.session }))
 import { initializeSiteAuth } from '../src/lib/auth/siteAuth'
@@ -47,6 +47,14 @@ describe('server identity middleware', () => {
     expect(ctx.locals.siteAuth().userId).toBe('gu_canonical')
     expect(mock.session).not.toHaveBeenCalled()
     expect(mock.query).toHaveBeenCalledWith('siteIdentity:resolveClerk', expect.objectContaining({ clerkId: 'user_legacy' }))
+  })
+  it('provisions an empty account only for a verified Clerk session with no mapping', async () => {
+    mock.env.SITE_AUTH_PROVIDER = 'clerk'
+    mock.query.mockResolvedValue(null)
+    mock.mutation.mockResolvedValue(projection)
+    const ctx = context('user_new'); await initializeSiteAuth(ctx)
+    expect(ctx.locals.siteAuth()).toMatchObject({ userId: 'gu_canonical', role: 'user', formationAccess: false })
+    expect(mock.mutation).toHaveBeenCalledWith('siteIdentity:ensureClerk', expect.objectContaining({ clerkId: 'user_new', environment: 'preview' }))
   })
   it('makes no backend call for signed-out users', async () => {
     mock.session.mockResolvedValue(null)

@@ -49,6 +49,17 @@ test('transitional Clerk projection requires verified server authority and match
   await t.run(async ctx => { const row = await ctx.db.query('identityAccounts').unique(); await ctx.db.patch(row!._id, { environment: 'production' }) })
   expect(await t.query(anyApi.siteIdentity.resolveClerk, args)).toBeNull()
 })
+test('verified Clerk sign-in creates one empty account without entitlements', async () => {
+  const t = backend()
+  const args = { clerkId: 'user_new', environment: 'sandbox', bridgeSecret: identity.bridgeSecret }
+  const created = await t.mutation(anyApi.siteIdentity.ensureClerk, args)
+  expect(created).toMatchObject({ role: 'user', formationAccess: false })
+  expect(await t.mutation(anyApi.siteIdentity.ensureClerk, args)).toEqual(created)
+  expect(await t.query(anyApi.siteIdentity.resolveClerk, args)).toEqual(created)
+  expect(await t.run(ctx => ctx.db.query('globalUsers').collect())).toHaveLength(1)
+  await expect(t.mutation(anyApi.siteIdentity.ensureClerk, { ...args, bridgeSecret: 'bad' })).rejects.toThrow('identity_forbidden')
+  await expect(t.mutation(anyApi.siteIdentity.ensureClerk, { ...args, environment: 'production' })).rejects.toThrow('identity_environment_mismatch')
+})
 test('deleting migrated Clerk identity preserves canonical role but prevents legacy sign in', async () => {
   const t = backend(); await legacy(t)
   await t.mutation(anyApi.siteIdentity.linkVerifiedClerk, { ...identity, clerkId: 'user_old' })

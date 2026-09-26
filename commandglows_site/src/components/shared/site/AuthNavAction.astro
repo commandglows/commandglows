@@ -1,13 +1,13 @@
 ---
 interface Props {
   className: string
-  signInLabel: string
-  signInUrl: string
+  accountLabel: string
+  accountUrl: string
 }
 
-const { className, signInLabel, signInUrl } = Astro.props
+const { className, accountLabel, accountUrl } = Astro.props
 ---
 
-<a href={signInUrl} class={className}>
-  {signInLabel}
+<a href={accountUrl} class={className} data-astro-reload>
+  {accountLabel}
 </a>

@@ -46,6 +46,19 @@ describe('authenticated checkout start route', () => {
     expect(response.headers.get('location')).not.toContain('identityToken')
   })
 
+  test('keeps French buyers on the French offer journey after sign-in', async () => {
+    const { POST } = await import('@/pages/api/checkout/start')
+    const response = await POST({
+      request: new Request('https://commandglows.test/api/checkout/start?offerId=commandglows_app/power&sourceRef=%2Ffr%2Fcommandglows-founder', { method: 'POST' }),
+      locals: { siteAuth: () => ({ userId: null }) },
+      redirect: (location: string) => new Response(null, { status: 302, headers: { location } }),
+    } as never)
+    const location = new URL(response.headers.get('location')!, 'https://commandglows.test')
+    expect(location.pathname).toBe('/fr/signin')
+    expect(location.searchParams.get('next')).toBe('/fr/commandglows-founder')
+    expect(mockCheckout).not.toHaveBeenCalled()
+  })
+
   test('keeps the handoff server-side and returns a recoverable Stripe transition page', async () => {
     mockCheckout.mockResolvedValueOnce({
       ok: true,
@@ -72,5 +85,18 @@ describe('authenticated checkout start route', () => {
     expect(checkoutArgs.identityToken).toEqual(expect.any(String))
     expect(verifyCommerceCheckoutIdentityToken(checkoutArgs.identityToken, process.env.SUITE_COMMERCE_CHECKOUT_SECRET!)).toMatchObject({ globalUserId: 'gu_formation', productId: 'commandglows_formation' })
     expect(body).not.toContain(checkoutArgs.identityToken)
+  })
+
+  test('returns a French app buyer to localized payment outcome pages', async () => {
+    mockCheckout.mockResolvedValueOnce({ ok: true, provider: 'stripe', checkoutUrl: 'https://checkout.stripe.test/app' })
+    const { POST } = await import('@/pages/api/checkout/start')
+    const response = await POST({
+      request: new Request('https://commandglows.test/api/checkout/start?offerId=commandglows_app/power&sourceRef=%2Ffr%2Fcommandglows-founder', { method: 'POST' }),
+      locals: { siteAuth: () => ({ userId: 'gu_buyer' }) },
+    } as never)
+    const checkoutArgs = mockCheckout.mock.calls[0]?.[0]
+    expect(new URL(checkoutArgs.successUrl).searchParams.get('lang')).toBe('fr')
+    expect(new URL(checkoutArgs.cancelUrl).searchParams.get('lang')).toBe('fr')
+    expect(await response.text()).toContain('<html lang="fr">')
   })
 })

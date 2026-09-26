@@ -2,6 +2,7 @@
 import MainLayout from '@/layouts/MainLayout.astro'
 import type { Language } from '@/types'
 import { getSafeAuthRedirectPath } from '@/utils/courseGating'
+import { siteProvider } from '@/lib/auth/siteAuth'
 import { SignIn } from '@clerk/astro/components'
 
 export const prerender = false
@@ -9,19 +10,34 @@ export const prerender = false
 const lang = Astro.params.lang === 'fr' ? ('fr' as Language) : ('en' as Language)
 const title = lang === 'fr' ? 'Connexion' : 'Sign In'
 const nextUrl = Astro.url.searchParams.get('next')
-const safeNextUrl = getSafeAuthRedirectPath(nextUrl)
+const safeNextUrl = getSafeAuthRedirectPath(nextUrl, lang === 'fr' ? '/fr/dashboard/' : '/dashboard')
 const recoveryHref = lang === 'fr' ? '/fr/account/link-existing' : '/account/link-existing'
+const provider = siteProvider()
+const auth0LoginHref = `/api/auth/login?${new URLSearchParams({ next: safeNextUrl })}`
+const error = Astro.url.searchParams.get('error')
+const errorMessage = error === 'configuration_required'
+  ? (lang === 'fr' ? 'La connexion est momentanément indisponible. Réessayez plus tard.' : 'Sign-in is temporarily unavailable. Please try again later.')
+  : error === 'account_link_conflict'
+    ? (lang === 'fr' ? 'Ce compte est déjà associé à une autre identité. Contactez le support.' : 'This account is already linked to another identity. Contact support.')
+    : error === 'auth_failed'
+      ? (lang === 'fr' ? 'La connexion a échoué. Réessayez.' : 'Sign-in failed. Please try again.')
+      : null
 ---
 
-<MainLayout title={title} lang={lang}>
-	<div class="flex min-h-screen items-center justify-center px-4 py-12">
-		<SignIn
-			routing="hash"
-			fallbackRedirectUrl={safeNextUrl}
-		/>
-		<p class="mt-4 text-sm text-content-text-muted">
-			<a class="underline" href={recoveryHref}>
-				{lang === 'fr' ? 'Vous avez déjà acheté avec un autre compte ?' : 'Already purchased with another account?'}
+<MainLayout title={title} lang={lang} clientNavigation={false} noindex structuredData={null}>
+	<div class="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+		{errorMessage && <p role="alert" class="text-content-text-primary mb-5 max-w-sm text-center text-sm">{errorMessage}</p>}
+		{provider === 'auth0' ? (
+			<a href={auth0LoginHref} class="btn-primary inline-flex min-h-11 items-center justify-center px-6 py-3" data-astro-reload>
+				{lang === 'fr' ? 'Se connecter' : 'Sign in'}
+			</a>
+		) : (
+			<SignIn routing="hash" fallbackRedirectUrl={safeNextUrl} />
+		)}
+		<p class="mt-5 max-w-sm text-center text-sm text-content-text-muted">
+			{lang === 'fr' ? 'Un achat lié à un ancien compte ?' : 'Have a purchase linked to an older account?'}{' '}
+			<a class="underline" href={recoveryHref} data-astro-reload>
+				{lang === 'fr' ? 'Retrouver mes achats' : 'Recover my purchases'}
 			</a>
 		</p>
 	</div>

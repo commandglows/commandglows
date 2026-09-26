@@ -16,14 +16,14 @@ function runtimeEnvironment(env: Record<string, string | undefined>) {
   return env.VERCEL_ENV ?? env.NODE_ENV ?? 'production'
 }
 
-function transitionPage(checkoutUrl: string) {
+function transitionPage(checkoutUrl: string, lang: 'en' | 'fr') {
   return new Response(`<!doctype html>
-<html lang="fr">
+<html lang="${lang}">
   <head>
     <meta charset="utf-8" />
     <meta name="robots" content="noindex" />
     <meta http-equiv="refresh" content="0; url=${checkoutUrl}" />
-    <title>Redirection Stripe</title>
+    <title>${lang === 'fr' ? 'Redirection vers le paiement' : 'Opening checkout'}</title>
     <style>
       body { font-family: system-ui, sans-serif; display: grid; min-height: 100vh; place-items: center; margin: 0; }
       main { max-width: 32rem; padding: 2rem; text-align: center; }
@@ -34,8 +34,8 @@ function transitionPage(checkoutUrl: string) {
   <body>
     <main>
       <div class="spinner" aria-hidden="true"></div>
-      <p>Stripe va s’ouvrir dans un instant.</p>
-      <a href="${checkoutUrl}">Continuer vers Stripe</a>
+      <p>${lang === 'fr' ? 'Stripe va s’ouvrir dans un instant.' : 'Stripe will open in a moment.'}</p>
+      <a href="${checkoutUrl}">${lang === 'fr' ? 'Continuer vers Stripe' : 'Continue to Stripe'}</a>
       <script>location.replace(${JSON.stringify(checkoutUrl)})</script>
     </main>
   </body>
@@ -56,6 +56,9 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const offerId = url.searchParams.get('offerId')?.trim() ?? ''
   const offer = getCommerceOffer(offerId)
   if (!offer) return new Response('Offer not found', { status: 404 })
+  const lesson = url.searchParams.get('lesson')?.replace(/^\/+/, '')
+  const sourceRef = url.searchParams.get('sourceRef')?.trim() ?? ''
+  const lang: 'en' | 'fr' = url.searchParams.get('lang') === 'fr' || sourceRef.startsWith('/fr/') || lesson?.startsWith('fr/') ? 'fr' : 'en'
 
   const siteAuthSource = (locals as { siteAuth?: unknown }).siteAuth
   const siteAuth = typeof siteAuthSource === 'function'
@@ -69,6 +72,9 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
       headers: { 'Retry-After': '30' },
     })
   }
+  if (offer.productId === 'commandglows_formation' && (!lesson || !isPremiumFormationSlug(lesson))) {
+    return new Response('Invalid lesson', { status: 400 })
+  }
 
   const authSource = (locals as { auth?: unknown }).auth
   const auth = typeof authSource === 'function'
@@ -78,18 +84,11 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
       : { userId: undefined }
   const userId = siteAuth?.userId ?? auth.userId
   if (!userId) {
-    const lang = url.searchParams.get('lang') === 'fr' ? 'fr' : 'en'
     const signInPath = lang === 'fr' ? '/fr/signin' : '/signin'
-    const lesson = url.searchParams.get('lesson')?.replace(/^\/+/, '')
-    const sourceRef = url.searchParams.get('sourceRef')?.trim()
     const fallbackPage = offer.productId === 'communityglows'
       ? (lang === 'fr' ? '/fr/communityglows-founder' : '/communityglows-founder')
       : (lang === 'fr' ? '/fr/commandglows-founder' : '/commandglows-founder')
-    const returnPath = lesson && isPremiumFormationSlug(lesson)
-      ? getPublicCoursePath(lesson)
-      : sourceRef?.startsWith('/') && !sourceRef.startsWith('//')
-        ? sourceRef
-        : fallbackPage
+    const returnPath = lesson ? getPublicCoursePath(lesson) : fallbackPage
     return redirect(`${signInPath}?next=${encodeURIComponent(returnPath)}`)
   }
 
@@ -123,7 +122,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
           clerkId: auth.userId,
           email,
           environment: runtimeEnvironment(env),
-          sourceRef: url.searchParams.get('sourceRef')?.trim() || url.pathname,
+          sourceRef: sourceRef || url.pathname,
           bridgeSecret,
         } as never
       ) as { globalUserId?: string } | null
@@ -139,25 +138,26 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     runtimeEnvironment(env),
     checkoutSecret
   )
-  let successUrl = new URL(offer.successPath, url).toString()
-  let cancelUrl = new URL(offer.cancelPath, url).toString()
+  const success = new URL(offer.successPath, url)
+  const cancel = new URL(offer.cancelPath, url)
+  success.searchParams.set('lang', lang)
+  cancel.searchParams.set('lang', lang)
+  let successUrl = success.toString()
+  let cancelUrl = cancel.toString()
 
-  const lesson = url.searchParams.get('lesson')?.replace(/^\/+/, '')
   if (offer.productId === 'commandglows_formation') {
-    if (!lesson || !isPremiumFormationSlug(lesson)) {
-      return new Response('Invalid lesson', { status: 400 })
-    }
-    const success = new URL('/purchase/success', url)
-    success.searchParams.set('next', getPrivateCoursePath(lesson))
-    successUrl = success.toString()
-    cancelUrl = new URL(getPublicCoursePath(lesson), url).toString()
+    const formationSuccess = new URL('/purchase/success', url)
+    formationSuccess.searchParams.set('next', getPrivateCoursePath(lesson!))
+    formationSuccess.searchParams.set('lang', lang)
+    successUrl = formationSuccess.toString()
+    cancelUrl = new URL(getPublicCoursePath(lesson!), url).toString()
   }
 
   const result = await createCommerceCheckout({
     offerId: offer.id,
     provider: 'stripe',
     source: url.searchParams.get('source')?.trim() || 'direct',
-    sourceRef: url.searchParams.get('sourceRef')?.trim() || url.pathname,
+    sourceRef: sourceRef || url.pathname,
     discountCode: url.searchParams.get('discountCode')?.trim() || undefined,
     successUrl,
     cancelUrl,
@@ -166,5 +166,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   if (!result.ok) {
     return new Response(result.message, { status: result.status })
   }
-  return transitionPage(result.checkoutUrl)
+  return transitionPage(result.checkoutUrl, lang)
 }

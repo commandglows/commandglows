@@ -63,6 +63,12 @@ const routeMappings: Record<string, string> = {
 }
 
 function getTranslatedPath(path: string, targetLang: string): string {
+  if (path === '/dashboard/settings' || path === '/dashboard/parametres' || path === '/fr/dashboard/parametres') {
+    return targetLang === 'fr' ? '/fr/dashboard/parametres' : '/dashboard/settings'
+  }
+  if (path === '/dashboard/licences') {
+    return targetLang === 'fr' ? '/fr/dashboard/' : '/dashboard'
+  }
   if (path === '/' || path === '/fr' || path === '/fr/') {
     return targetLang === 'fr' ? '/fr' : '/'
   }
@@ -89,8 +95,8 @@ function getTranslatedPath(path: string, targetLang: string): string {
 
 const altLangUrl = getTranslatedPath(Astro.url.pathname, altLang)
 
-const signInLabel = lang === 'fr' ? 'Connexion' : 'Sign In'
-const signInUrl = lang === 'fr' ? '/fr/signin' : '/signin'
+const accountLabel = lang === 'fr' ? 'Mon compte' : 'My account'
+const accountUrl = lang === 'fr' ? '/fr/dashboard/' : '/dashboard'
 const menuLabel = lang === 'fr' ? 'Ouvrir le menu' : 'Open menu'
 const closeMenuLabel = lang === 'fr' ? 'Fermer le menu' : 'Close menu'
 const darkModeLabel = lang === 'fr' ? 'Mode sombre' : 'Dark mode'
@@ -172,8 +178,8 @@ const ctaButtonClass = forceDark
 
     <AuthNavAction
       className={ctaButtonClass}
-      signInLabel={signInLabel}
-      signInUrl={signInUrl}
+      accountLabel={accountLabel}
+      accountUrl={accountUrl}
     />
 
     <details class="mobile-menu relative md:hidden">

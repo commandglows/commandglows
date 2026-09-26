@@ -8,6 +8,11 @@ Disallow:
 Allow: /
 Disallow: /api/
 Disallow: /dashboard/
+Disallow: /dashboard
+Disallow: /fr/dashboard
+Disallow: /fr/account
+Disallow: /fr/admin
+Disallow: /fr/purchase
 Disallow: /admin/
 Disallow: /purchase/
 Disallow: /signin
@@ -17,31 +22,37 @@ User-agent: GPTBot
 Allow: /
 Disallow: /api/
 Disallow: /dashboard/
+Disallow: /fr/dashboard
 
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /api/
 Disallow: /dashboard/
+Disallow: /fr/dashboard
 
 User-agent: ClaudeBot
 Allow: /
 Disallow: /api/
 Disallow: /dashboard/
+Disallow: /fr/dashboard
 
 User-agent: PerplexityBot
 Allow: /
 Disallow: /api/
 Disallow: /dashboard/
+Disallow: /fr/dashboard
 
 User-agent: Google-Extended
 Allow: /
 Disallow: /api/
 Disallow: /dashboard/
+Disallow: /fr/dashboard
 
 User-agent: CCBot
 Allow: /
 Disallow: /api/
 Disallow: /dashboard/
+Disallow: /fr/dashboard
 
 Sitemap: ${new URL('sitemap-index.xml', import.meta.env.SITE).href}
 `.trim();

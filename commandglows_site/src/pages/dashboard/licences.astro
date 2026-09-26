@@ -7,6 +7,12 @@ const auth = Astro.locals.siteAuth()
 if (!auth.userId) {
   return Astro.redirect('/signin?next=%2Fdashboard%2Flicences')
 }
+if (auth.role !== 'admin') {
+  return new Response('Accès réservé à l’administration.', {
+    status: 403,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+  })
+}
 ---
 
 <DashboardLayout title="Licences - Dashboard" currentPath="/dashboard/licences" lang="fr">

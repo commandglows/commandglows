@@ -1,5 +1,13 @@
 import { describe, expect, test } from 'vitest'
 import { siteAuthContentSecurityPolicy } from '@/lib/auth/siteAuthCsp'
+
+test('allows only the configured Clerk development origin', () => {
+  const key = `pk_test_${Buffer.from('polished-asp-5812.clerk.accounts.dev$').toString('base64')}`
+  const policy = siteAuthContentSecurityPolicy(undefined, key)
+  const scripts = policy.split(';').find(directive => directive.trim().startsWith('script-src'))
+  expect(scripts).toContain('https://polished-asp-5812.clerk.accounts.dev')
+  expect(scripts).not.toContain('https://*.clerk.accounts.dev')
+})
 describe('OIDC form redirect policy', () => {
  test('preserves every directive except exact configured form destination', () => {
   const baseline=siteAuthContentSecurityPolicy()

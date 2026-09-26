@@ -1,0 +1,50 @@
+---
+import type { SiteAuth } from '@/lib/auth/siteAuth'
+
+interface Props {
+  auth: SiteAuth
+  lang: 'en' | 'fr'
+}
+
+const { auth, lang } = Astro.props
+const isFrench = lang === 'fr'
+const recoveryUrl = isFrench ? '/fr/account/link-existing' : '/account/link-existing'
+---
+
+<div class="min-w-0">
+  <header class="mb-6 border-b border-dashboard-border pb-5">
+    <h1 class="text-dashboard-text-primary text-3xl font-bold">{isFrench ? 'Paramètres du compte' : 'Account settings'}</h1>
+    <p class="text-dashboard-text-muted mt-2">{isFrench ? 'Consultez les informations associées à votre connexion.' : 'Review the information associated with your sign-in.'}</p>
+  </header>
+
+  {auth.unavailable ? (
+    <section class="rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong" aria-live="polite">
+      <h2 class="text-content-text-primary text-lg font-semibold">{isFrench ? 'Profil temporairement indisponible' : 'Profile temporarily unavailable'}</h2>
+      <p class="text-content-text-secondary mt-2">{isFrench ? 'Votre profil n’a pas pu être vérifié. Aucun renseignement de compte n’est affiché.' : 'Your profile could not be verified. No account details are being shown.'}</p>
+      <a class="brand-text-magenta mt-4 inline-flex min-h-11 items-center font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={Astro.url.pathname} data-astro-reload>{isFrench ? 'Réessayer' : 'Try again'}</a>
+    </section>
+  ) : (
+    <section class="rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong">
+      <h2 class="text-content-text-primary text-lg font-semibold">{isFrench ? 'Profil' : 'Profile'}</h2>
+      <dl class="mt-5 grid gap-5">
+        <div>
+          <dt class="text-content-text-tertiary text-sm">{isFrench ? 'Nom' : 'Name'}</dt>
+          <dd class="text-content-text-primary mt-1 break-words">{auth.name || (isFrench ? 'Non renseigné' : 'Not provided')}</dd>
+        </div>
+        <div>
+          <dt class="text-content-text-tertiary text-sm">{isFrench ? 'Adresse email' : 'Email address'}</dt>
+          <dd class="text-content-text-primary mt-1 break-words">{auth.email || (isFrench ? 'Non renseignée' : 'Not provided')}</dd>
+        </div>
+      </dl>
+      <p class="text-content-text-secondary mt-5 text-sm">{isFrench ? 'Ces informations proviennent de votre connexion. Leur modification n’est pas disponible dans cet espace.' : 'This information comes from your sign-in provider. Editing it is not available here.'}</p>
+      <a class="dashboard-action-link brand-text-magenta mt-5 inline-flex min-h-11 items-center rounded-lg border border-content-border px-4 py-2 font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={recoveryUrl}>{isFrench ? 'Retrouver mes achats existants' : 'Recover existing purchases'}</a>
+    </section>
+  )}
+  {!auth.unavailable && auth.userId && (
+    <form method="post" action="/api/auth/logout" class="mt-6">
+      <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
+        {isFrench ? 'Se déconnecter' : 'Sign out'}
+      </button>
+    </form>
+  )}
+</div>

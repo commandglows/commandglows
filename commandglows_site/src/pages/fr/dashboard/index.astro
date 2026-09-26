@@ -4,7 +4,7 @@ import AccountOverview from '@/components/dashboard/AccountOverview.astro'
 
 const auth = Astro.locals.siteAuth()
 if (!auth.userId && !auth.unavailable) {
-  return Astro.redirect('/signin')
+  return Astro.redirect('/fr/signin')
 }
 if (auth.unavailable) {
   Astro.response.status = 503
@@ -12,6 +12,6 @@ if (auth.unavailable) {
 }
 ---
 
-<DashboardLayout title="Dashboard" currentPath="/dashboard">
-  <AccountOverview auth={auth} lang="en" />
+<DashboardLayout title="Mon compte" currentPath="/fr/dashboard/" lang="fr">
+  <AccountOverview auth={auth} lang="fr" />
 </DashboardLayout>

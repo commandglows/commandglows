@@ -248,7 +248,7 @@
   );
 }
 
-@screen xl {
+@media (min-width: 1280px) {
   .docs-shell {
     @apply grid-cols-3;
   }

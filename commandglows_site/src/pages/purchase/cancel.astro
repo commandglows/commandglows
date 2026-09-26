@@ -1,39 +1,41 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro'
 
+const lang = Astro.url.searchParams.get('lang') === 'fr' ? 'fr' : 'en'
 const offerId = Astro.url.searchParams.get('offerId')
 const isCommandGlowsAppOffer = offerId?.startsWith('commandglows_app/') ?? false
 const isCommunityGlowsOffer = offerId === 'communityglows/lifetime_deal'
 const returnUrl = isCommandGlowsAppOffer
-	? '/commandglows-founder'
+	? (lang === 'fr' ? '/fr/commandglows-founder' : '/commandglows-founder')
 	: isCommunityGlowsOffer
-		? '/communityglows-founder'
-		: '/products'
+		? (lang === 'fr' ? '/fr/communityglows-founder' : '/communityglows-founder')
+		: (lang === 'fr' ? '/fr/produits' : '/products')
+const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
+const title = lang === 'fr' ? 'Paiement interrompu' : 'Checkout interrupted'
 ---
 
-<MainLayout title="Checkout Cancelled">
+<MainLayout title={title} lang={lang} noindex structuredData={null}>
 	<div class="site-main-shell flex min-h-screen items-center justify-center py-12">
 		<div class="mx-auto max-w-lg text-center">
 			<div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-content-bg-subtle dark:bg-content-bg-strong">
-				<svg class="h-8 w-8 text-content-text-tertiary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<svg class="h-8 w-8 text-content-text-tertiary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 					<path d="M18 6 6 18"/>
 					<path d="m6 6 12 12"/>
 				</svg>
 			</div>
 
-			<h1 class="mb-4 text-3xl font-bold text-content-text-primary dark:text-content-text-primary">Checkout cancelled</h1>
-			<p class="mb-8 text-lg text-content-text-tertiary dark:text-content-text-muted">
-				You left checkout. This page does not confirm whether a payment was completed.
-				If you submitted a payment or see a charge, check your account or contact support before trying again.
+			<h1 class="mb-4 text-3xl font-bold text-content-text-primary">{title}</h1>
+			<p class="mb-8 text-lg text-content-text-secondary">
+				{lang === 'fr'
+					? 'Vous avez quitté la page de paiement. Nous ne pouvons pas confirmer ici si un paiement a été effectué. Si vous avez validé un paiement ou voyez un débit, contactez le support avant de réessayer.'
+					: 'You left checkout. This page cannot confirm whether a payment was completed. If you submitted a payment or see a charge, contact support before trying again.'}
 			</p>
-			<p class="mb-8 text-content-text-secondary">
-				<a href="/dashboard/licences" class="underline">Check my purchases</a>
-				 · <a href="/contact" class="underline">Contact support</a>
-			</p>
-
-			<a href={returnUrl} class="btn-primary inline-flex items-center justify-center">
-				Return to the offer
-			</a>
+			<div class="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+				<a href={contactUrl} class="text-content-text-primary underline">{lang === 'fr' ? 'Contacter le support' : 'Contact support'}</a>
+				<a href={returnUrl} class="btn-primary inline-flex items-center justify-center">
+					{lang === 'fr' ? 'Revenir à l’offre' : 'Return to the offer'}
+				</a>
+			</div>
 		</div>
 	</div>
 </MainLayout>

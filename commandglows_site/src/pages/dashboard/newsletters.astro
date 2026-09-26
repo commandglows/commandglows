@@ -2,8 +2,19 @@
 import DashboardLayout from '@/layouts/DashboardLayout.astro'
 import NewsletterEngineHost from '@/components/NewsletterEngineHost.astro'
 export const prerender = false
-if (!Astro.locals.auth().userId) return Astro.redirect('/signin')
+const auth = Astro.locals.siteAuth()
+if (!auth.userId) return Astro.redirect('/signin?next=%2Fdashboard%2Fnewsletters')
+const forbidden = auth.role !== 'admin'
+const unavailable = auth.provider === 'auth0'
+if (forbidden) Astro.response.status = 403
+else if (unavailable) Astro.response.status = 503
 ---
 <DashboardLayout title="Newsletters" currentPath="/dashboard/newsletters">
-  <NewsletterEngineHost lang="en" />
+  {forbidden ? (
+    <p role="status">This workspace requires an authorized administrator account.</p>
+  ) : unavailable ? (
+    <p role="status">The newsletter studio is temporarily unavailable while account access is being updated.</p>
+  ) : (
+    <NewsletterEngineHost lang="en" />
+  )}
 </DashboardLayout>

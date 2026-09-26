@@ -1,5 +1,6 @@
 ---
-export const status = 410
-export const title = "Assistant Temu — déplacé"
+return new Response('L’espace Temu du dashboard a été retiré.', {
+  status: 410,
+  headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+})
 ---
-<p>L'espace Temu du dashboard a été déplacé hors de CMDglows.</p>

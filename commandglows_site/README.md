@@ -94,7 +94,7 @@ commandglows_site/
 - `/landing` and `/fr/landing` — landing surfaces
 - `/windows-mastery` and `/fr/maitrise-windows` — flagship offer surfaces
 - `/products` and `/fr/produits` — product catalog routes
-- `/dashboard/*` — authenticated surfaces
+- `/dashboard/*` and `/fr/dashboard/*` — authenticated English/French account and operator surfaces
 - `/api/newsletter/*` — newsletter subscribe and unsubscribe
 - `/api/checkout/start` — Clerk-authenticated purchase start for public and Formation surfaces
 - `/api/commerce/checkout` — signed-handoff Stripe Managed Payments checkout

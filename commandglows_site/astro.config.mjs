@@ -75,7 +75,7 @@ export default defineConfig({
           '/fr/shipglowz',
         ])
         return !excludedPaths.has(pathname)
-          && !/^(?:\/(?:account|admin|dashboard|purchase|signin))(?:\/|$)/.test(pathname)
+          && !/^\/(?:fr\/)?(?:account|admin|dashboard|purchase|signin)(?:\/|$)/.test(pathname)
       },
       i18n: {
         defaultLocale: "en",

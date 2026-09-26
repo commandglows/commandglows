@@ -10,10 +10,10 @@ test('recovery uses verified legacy authentication then an explicit POST account
   expect(page).toContain('method="post" action="/api/auth/link"')
   expect(page).toContain('<LegacySignIn routing="hash" fallbackRedirectUrl={recoveryPath}')
   expect(page).not.toContain('searchParams.get(')
-  expect(page).not.toContain('type="hidden"')
+  expect(page).toContain('type="hidden" name="lang" value={lang}')
 })
 test('new sign-in and account settings keep legacy purchase recovery discoverable', () => {
-  for (const path of ['src/pages/[...lang]/signin.astro', 'src/pages/dashboard/parametres.astro']) {
+  for (const path of ['src/pages/[...lang]/signin.astro', 'src/components/dashboard/AccountSettings.astro']) {
     expect(source(path)).toContain('/fr/account/link-existing')
   }
 })

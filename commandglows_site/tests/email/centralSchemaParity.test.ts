@@ -3,6 +3,30 @@ import { readFileSync } from 'node:fs'
 import schema from '../../convex/schema'
 import crons from '../../convex/crons'
 
+function expectAdditiveField(current: any, previous: any, path: string) {
+  expect(current, path).toBeDefined()
+  if (
+    current.fieldType?.type !== 'object' ||
+    previous.fieldType?.type !== 'object'
+  ) {
+    expect(current, path).toEqual(previous)
+    return
+  }
+
+  expect(current.optional, path).toBe(previous.optional)
+  for (const [name, field] of Object.entries(previous.fieldType.value)) {
+    expectAdditiveField(current.fieldType.value[name], field, `${path}.${name}`)
+  }
+  for (const [name, field] of Object.entries(current.fieldType.value) as [
+    string,
+    any,
+  ][]) {
+    if (!(name in previous.fieldType.value)) {
+      expect(field.optional, `${path}.${name} must be additive`).toBe(true)
+    }
+  }
+}
+
 test('recovered legacy indexes keep records unconstrained and restore exact fields', () => {
   const local = JSON.parse(schema.export())
   const expected = {
@@ -77,10 +101,11 @@ test('local schema retains every captured shared table, field and index', () => 
     )
     expect(current, previous.tableName).toBeDefined()
     for (const field of Object.keys(previous.documentType.value)) {
-      expect(
+      expectAdditiveField(
         current.documentType.value[field],
+        previous.documentType.value[field],
         `${previous.tableName}.${field}`
-      ).toEqual(previous.documentType.value[field])
+      )
     }
     for (const [name, field] of Object.entries(current.documentType.value) as [
       string,

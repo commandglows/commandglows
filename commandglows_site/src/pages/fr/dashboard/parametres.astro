@@ -1,0 +1,17 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro'
+import AccountSettings from '@/components/dashboard/AccountSettings.astro'
+
+const auth = Astro.locals.siteAuth()
+if (!auth.userId && !auth.unavailable) {
+  return Astro.redirect('/fr/signin?next=%2Ffr%2Fdashboard%2Fparametres')
+}
+if (auth.unavailable) {
+  Astro.response.status = 503
+  Astro.response.headers.set('Retry-After', '30')
+}
+---
+
+<DashboardLayout title="Paramètres du compte" currentPath="/fr/dashboard/parametres" lang="fr">
+  <AccountSettings auth={auth} lang="fr" />
+</DashboardLayout>

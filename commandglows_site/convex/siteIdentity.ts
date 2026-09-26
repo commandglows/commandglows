@@ -63,6 +63,21 @@ export const resolveClerk = query({ args: { clerkId: v.string(), environment: v.
   return snapshot(ctx, existing.globalUserId, identity.environment)
 } })
 
+/** Provision an empty account only after the site has verified the Clerk session. */
+export const ensureClerk = mutation({ args: { clerkId: v.string(), environment: v.string(), bridgeSecret: v.string() }, handler: async (ctx, args) => {
+  const identity = checked({ ...args, provider: 'clerk', subject: args.clerkId, issuer: 'https://legacy-clerk.invalid/' })
+  const existing = await ctx.db.query('identityAccounts').withIndex('by_providerAccount', q => q.eq('provider', 'clerk').eq('providerAccountId', identity.subject)).unique()
+  if (existing) {
+    if (commerceEnvironment(existing.environment || '') !== identity.environment) throw new Error('identity_environment_mismatch')
+    return snapshot(ctx, existing.globalUserId, identity.environment)
+  }
+  const now = Date.now()
+  const globalUserId = await ctx.db.insert('globalUsers', { globalUserId: `gu_${crypto.randomUUID()}`, createdAt: now, updatedAt: now })
+  await ctx.db.insert('identityAccounts', { globalUserId, provider: 'clerk', providerAccountId: identity.subject,
+    environment: identity.environment, source: 'site_verified_session', createdAt: now, updatedAt: now })
+  return snapshot(ctx, globalUserId, identity.environment)
+} })
+
 export const upsert = mutation({ args: { ...identityArgs, email: v.optional(v.string()), name: v.optional(v.string()), imageUrl: v.optional(v.string()) }, handler: async (ctx, args) => {
   const identity = checked(args)
   const existing = await find(ctx, identity)

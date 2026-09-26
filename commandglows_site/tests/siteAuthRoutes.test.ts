@@ -53,6 +53,38 @@ test('link uses only verified legacy identity in the encrypted transaction', asy
   expect((await link(ctx as never)).status).toBe(303)
   expect(mocks.begin).toHaveBeenCalledWith(expect.anything(), '/dashboard/parametres', 'verified-clerk')
 })
+
+test.each([
+  ['fr', '/fr/account/link-existing'],
+  ['en', '/account/link-existing'],
+  ['https://evil.example', '/account/link-existing'],
+])('link configuration failure returns to the bounded recovery page for %s', async (lang, destination) => {
+  const ctx = context('/api/auth/link', 'POST')
+  ctx.request = new Request(ctx.url, { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ lang }) })
+  mocks.config.mockImplementationOnce(() => { throw new Error('private configuration detail') })
+  const response = await link(ctx as never)
+  expect(response.status).toBe(303)
+  expect(response.headers.get('Location')).toBe(`${destination}?error=configuration_required`)
+  expect(mocks.begin).not.toHaveBeenCalled()
+  expect(mocks.mutate).not.toHaveBeenCalled()
+  expect(ctx.cookies.set).not.toHaveBeenCalled()
+})
+
+test('link origin configuration mismatch returns to recovery without beginning authentication', async () => {
+  const ctx = context('/api/auth/link', 'POST')
+  mocks.config.mockReturnValue({ origin: 'https://different.example' })
+  expect((await link(ctx as never)).headers.get('Location')).toBe('/account/link-existing?error=configuration_required')
+  expect(mocks.begin).not.toHaveBeenCalled()
+  expect(ctx.cookies.set).not.toHaveBeenCalled()
+})
+
+test('link backend failure keeps the user on recovery without setting authentication cookies', async () => {
+  const ctx = context('/api/auth/link', 'POST')
+  ctx.request = new Request(ctx.url, { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ lang: 'fr' }) })
+  mocks.mutate.mockRejectedValueOnce(new Error('private backend detail'))
+  expect((await link(ctx as never)).headers.get('Location')).toBe('/fr/account/link-existing?error=configuration_required')
+  expect(ctx.cookies.set).not.toHaveBeenCalled()
+})
 test('callback consumes transaction then binds identity before setting session', async () => {
   const ctx = context('/api/auth/callback?code=trusted')
   const response = await callback(ctx as never)

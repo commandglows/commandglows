@@ -50,7 +50,12 @@ export function isSafePrivateCoursePath(pathname: string | null) {
 }
 
 export function isSafeAccountPath(pathname: string | null) {
-	return pathname === '/dashboard/parametres'
+	return pathname === '/dashboard/parametres' ||
+		pathname === '/dashboard/settings' ||
+		pathname === '/fr/dashboard/parametres' ||
+		pathname === '/dashboard/licences' ||
+		pathname === '/dashboard/newsletters' ||
+		pathname === '/fr/dashboard/newsletters'
 }
 
 export function isSafeCourseCheckoutPath(pathname: string | null) {
@@ -70,18 +75,28 @@ export function isSafeCourseCheckoutPath(pathname: string | null) {
 	}
 }
 
-export function getSafeAuthRedirectPath(pathname: string | null) {
-	if (!pathname || !pathname.startsWith('/') || pathname.startsWith('//') || /[\\\u0000-\u0020]/.test(pathname)) return '/dashboard'
-	try { if (new URL(pathname, SITE.url).origin !== new URL(SITE.url).origin) return '/dashboard' } catch { return '/dashboard' }
+export function getSafeAuthRedirectPath(pathname: string | null, fallback: '/dashboard' | '/fr/dashboard/' = '/dashboard') {
+	if (!pathname || !pathname.startsWith('/') || pathname.startsWith('//') || /[\\\u0000-\u0020]/.test(pathname)) return fallback
+	let url: URL
+	try {
+		url = new URL(pathname, SITE.url)
+		if (url.origin !== new URL(SITE.url).origin) return fallback
+	} catch { return fallback }
+	const purchaseLanding = [
+		'/commandglows-founder', '/fr/commandglows-founder',
+		'/communityglows-founder', '/fr/communityglows-founder',
+	].includes(url.pathname)
+	const formationLesson = /^\/(?:fr|en)\/formations\/(?:[a-z0-9-]+\/)*[a-z0-9-]+\/?$/.test(url.pathname)
 	if (
 		isSafePrivateCoursePath(pathname) ||
 		isSafeAccountPath(pathname) ||
-		isSafeCourseCheckoutPath(pathname)
+		isSafeCourseCheckoutPath(pathname) ||
+		((purchaseLanding || formationLesson) && !url.search && !url.hash)
 	) {
 		return pathname
 	}
 
-	return '/dashboard'
+	return fallback
 }
 
 export function extractCoursePreview(body: string, maxParagraphs = 4) {

@@ -6,7 +6,7 @@ const auth = Astro.locals.siteAuth()
 const nextUrl = Astro.url.searchParams.get('next')
 const offerId = Astro.url.searchParams.get('offerId')
 const safeNextUrl = isSafePrivateCoursePath(nextUrl) ? nextUrl : null
-const lang = safeNextUrl?.includes('/dashboard/docs/fr/') ? 'fr' : 'en'
+const lang = Astro.url.searchParams.get('lang') === 'fr' || safeNextUrl?.includes('/dashboard/docs/fr/') ? 'fr' : 'en'
 const isCommandGlowsAppOffer = offerId?.startsWith('commandglows_app/') ?? false
 const isCommunityGlowsOffer = offerId === 'communityglows/lifetime_deal'
 const labels =
@@ -43,7 +43,7 @@ const productsUrl = lang === 'fr' ? '/fr/produits' : '/products'
 const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
 ---
 
-<MainLayout title={labels.title}>
+<MainLayout title={labels.title} lang={lang} noindex structuredData={null}>
 	<div class="site-main-shell flex min-h-screen items-center justify-center py-12">
 		<div class="mx-auto max-w-lg text-center">
 			<div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-content-bg-subtle dark:bg-content-bg-strong">
@@ -63,11 +63,11 @@ const contactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
 						{labels.contact}
 					</a>
 				) : auth.userId ? (
-					<a href={safeNextUrl || '/dashboard'} class="btn-primary inline-flex items-center justify-center">
+					<a href={safeNextUrl || (lang === 'fr' ? '/fr/dashboard/' : '/dashboard')} class="btn-primary inline-flex items-center justify-center">
 						{safeNextUrl ? labels.openLesson : labels.goToDashboard}
 					</a>
 				) : (
-					<a href={safeNextUrl ? `/signin?next=${encodeURIComponent(safeNextUrl)}` : '/signin'} class="btn-primary inline-flex items-center justify-center">
+					<a href={safeNextUrl ? `${lang === 'fr' ? '/fr/signin' : '/signin'}?next=${encodeURIComponent(safeNextUrl)}` : (lang === 'fr' ? '/fr/signin' : '/signin')} class="btn-primary inline-flex items-center justify-center" data-astro-reload>
 						{labels.signIn}
 					</a>
 				)}

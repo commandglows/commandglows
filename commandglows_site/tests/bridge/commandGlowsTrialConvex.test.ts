@@ -6,6 +6,7 @@ import type { CommerceEventEnvelope } from '../../convex/commerceEventContract'
 const modules = import.meta.glob('../../convex/**/*.ts')
 const BRIDGE_SECRET = 'convex-trial-test-secret'
 const TRIAL_DURATION_MS = 30 * 24 * 60 * 60 * 1000
+const COMMANDGLOWS_ACCOUNT_ID = 'acct_commandglows123'
 
 type TrialEntitlement = {
   _id: string
@@ -30,6 +31,12 @@ async function deliverCommerce(
     metadata?: Record<string, string>
   }
 ) {
+  const commerceEvent = {
+    ...event,
+    businessId: event.businessId ?? 'commandglows',
+    providerAccountId: event.providerAccountId ?? COMMANDGLOWS_ACCOUNT_ID,
+    providerPaymentIntentId: `pi_${event.sourceRef}`,
+  }
   if (event.globalUserId && event.sourceRef) {
     await t.run(async (ctx) => {
       const rows = await ctx.db.query('commerceCheckoutHandoffs').collect()
@@ -40,6 +47,8 @@ async function deliverCommerce(
           globalUserId: event.globalUserId,
           productId: event.productId,
           offerId: event.offerId,
+          businessId: commerceEvent.businessId,
+          providerAccountId: commerceEvent.providerAccountId,
           environment: 'test',
           status: 'completed',
           providerOrderId: event.providerOrderId,
@@ -51,8 +60,7 @@ async function deliverCommerce(
     })
   }
   return t.mutation(api.bridge.processCommerceEvent, {
-    ...event,
-    providerPaymentIntentId: `pi_${event.sourceRef}`,
+    ...commerceEvent,
   })
 }
 

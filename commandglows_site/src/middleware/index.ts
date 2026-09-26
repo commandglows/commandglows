@@ -47,7 +47,12 @@ function getLegacyRedirect(pathname: string): string | null {
 
 const appMiddleware = async (context: APIContext, next: MiddlewareNext): Promise<Response> => {
   const url = new URL(context.request.url);
-  if (context.locals.siteAuth?.().unavailable && !url.pathname.startsWith('/api/auth/') && !['/account/link-existing', '/fr/account/link-existing'].includes(url.pathname)) {
+  const accountRecoveryPaths = new Set([
+    '/dashboard', '/dashboard/settings', '/dashboard/parametres',
+    '/fr/dashboard', '/fr/dashboard/parametres',
+  ]);
+  const normalizedPath = url.pathname.length > 1 ? url.pathname.replace(/\/$/, '') : url.pathname;
+  if (context.locals.siteAuth?.().unavailable && !url.pathname.startsWith('/api/auth/') && !['/account/link-existing', '/fr/account/link-existing'].includes(normalizedPath) && !accountRecoveryPaths.has(normalizedPath)) {
     return new Response('Account verification is temporarily unavailable. Please reload this page to retry.', { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '30' } });
   }
   const legacyRedirect = getLegacyRedirect(url.pathname);
@@ -67,6 +72,7 @@ const CLERK_PROTECTED_PATH_PREFIXES = [
   '/account',
   '/fr/account',
   '/dashboard',
+  '/fr/dashboard',
   '/purchase/success',
   '/signin',
   '/fr/signin',
@@ -129,7 +135,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     if (shouldUseClerkMiddleware(context.url.pathname)) {
       const headers = new Headers(response.headers)
       headers.set('Cache-Control', 'no-store')
-      headers.set('Content-Security-Policy', siteAuthContentSecurityPolicy(getServerEnv().AUTH0_ISSUER))
+      const env = getServerEnv()
+      headers.set('Content-Security-Policy', siteAuthContentSecurityPolicy(env.AUTH0_ISSUER, env.PUBLIC_CLERK_PUBLISHABLE_KEY))
       const vary = headers.get('Vary')
       headers.set('Vary', [...new Set([...(vary?.split(',').map(value => value.trim()) ?? []), 'Cookie'])].join(', '))
       return new Response(response.body, { status: response.status, statusText: response.statusText, headers })

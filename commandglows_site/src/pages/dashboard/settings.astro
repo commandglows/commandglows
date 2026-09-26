@@ -1,10 +1,10 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro'
-import AccountOverview from '@/components/dashboard/AccountOverview.astro'
+import AccountSettings from '@/components/dashboard/AccountSettings.astro'
 
 const auth = Astro.locals.siteAuth()
 if (!auth.userId && !auth.unavailable) {
-  return Astro.redirect('/signin')
+  return Astro.redirect('/signin?next=%2Fdashboard%2Fsettings')
 }
 if (auth.unavailable) {
   Astro.response.status = 503
@@ -12,6 +12,6 @@ if (auth.unavailable) {
 }
 ---
 
-<DashboardLayout title="Dashboard" currentPath="/dashboard">
-  <AccountOverview auth={auth} lang="en" />
+<DashboardLayout title="Account settings" currentPath="/dashboard/settings" lang="en">
+  <AccountSettings auth={auth} lang="en" />
 </DashboardLayout>

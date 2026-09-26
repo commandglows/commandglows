@@ -66,12 +66,14 @@ describe('Firebase bridge trial outcome contract', () => {
     process.env.SUITE_BRIDGE_CONVEX_SECRET = 'test-bridge-secret'
     process.env.SUITE_TRIAL_SIGNAL_SECRET = 'test-trial-secret'
     process.env.PUBLIC_CONVEX_URL = 'https://convex.example.test'
+    vi.stubEnv('SUITE_BRIDGE_ENVIRONMENT', 'test')
   })
 
   afterEach(() => {
     delete process.env.SUITE_BRIDGE_CONVEX_SECRET
     delete process.env.SUITE_TRIAL_SIGNAL_SECRET
     delete process.env.PUBLIC_CONVEX_URL
+    vi.unstubAllEnvs()
   })
 
   test('echoes the supplied UUID in body and header and logs only safe fields', async () => {

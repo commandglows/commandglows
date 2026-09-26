@@ -47,6 +47,7 @@ export async function initializeSiteAuth(context: APIContext) {
       if (!clerkId) return
       const { client, authority } = siteBackend()
       rawAccount = await client.query('siteIdentity:resolveClerk' as never, { ...authority, clerkId } as never)
+      if (rawAccount === null) rawAccount = await client.mutation('siteIdentity:ensureClerk' as never, { ...authority, clerkId } as never)
     } else {
       const config = readAuth0Config(getServerEnv())
       if (context.url.origin !== config.origin) throw new Error('site_auth_origin_mismatch')

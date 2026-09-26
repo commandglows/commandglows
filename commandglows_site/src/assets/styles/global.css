@@ -1128,7 +1128,7 @@
     pointer-events: none;
     opacity: 0.5;
   }
-  @screen sm {
+  @media (min-width: 640px) {
     :root {
       --landing-hero-shell-padding-bottom: 4rem;
       --landing-hero-title-margin-bottom: 1.5rem;
@@ -1231,7 +1231,7 @@
     pointer-events: none;
     opacity: 0.5;
   }
-  @screen sm {
+  @media (min-width: 640px) {
     .btn-secondary {
       padding: var(--btn-secondary-padding-y) var(--ui-button-padding-x-lg);
       font-size: var(--btn-secondary-font-size);
