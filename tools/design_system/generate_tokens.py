@@ -288,8 +288,15 @@ def _validate_provenance(raw: Any, repo_root: Path) -> None:
         if not isinstance(entry["sha256"], str) or not SHA256.fullmatch(entry["sha256"]):
             raise ValidationError(f"{path}.sha256: expected lowercase SHA-256")
         relative, source = _resolve_evidence_source(entry["source"], path, repo_root)
-        actual = hashlib.sha256(source.read_bytes()).hexdigest()
-        if actual != entry["sha256"]:
+        # Git and Windows checkouts may materialize the same frozen text file
+        # with CRLF line endings. Hash its canonical LF representation while
+        # still detecting any content change.
+        source_bytes = source.read_bytes()
+        accepted_hashes = {
+            hashlib.sha256(source_bytes).hexdigest(),
+            hashlib.sha256(source_bytes.replace(b"\r\n", b"\n")).hexdigest(),
+        }
+        if entry["sha256"] not in accepted_hashes:
             raise ValidationError(f"{path}.sha256: provenance mismatch for {relative.as_posix()}")
 
     contracts = provenance["consumerContracts"]
@@ -653,7 +660,7 @@ def check_outputs(outputs: Mapping[Path, bytes]) -> list[Path]:
         except FileNotFoundError:
             stale.append(target)
             continue
-        if current != content:
+        if current.replace(b"\r\n", b"\n") != content.replace(b"\r\n", b"\n"):
             stale.append(target)
     return stale
 

@@ -87,11 +87,11 @@
     },
     {
       "mode": "match",
-      "owner": "CommandGlows site docs owner",
+      "owner": "CommandGlows site design-system and docs owners",
       "path": "commandglows_site/src/assets/styles/global.css",
-      "pattern": "(?:background|scrollbar-color):\\s*.*var\\(--sl-color-[^)]+,\\s*#[0-9a-fA-F]{6}\\)",
-      "reason": "Starlight iframe/docs fallbacks keep embedded documentation readable when host custom properties are unavailable.",
-      "removalCondition": "Remove when the supported Starlight surface guarantees the referenced properties across iframe and theme states."
+      "pattern": "(?:(?:background|scrollbar-color):\\s*.*var\\(--sl-color-[^)]+,\\s*#[0-9a-fA-F]{6}\\)|^\\s*@media \\(min-width: 640px\\) \\{$)",
+      "reason": "Starlight iframe/docs fallbacks keep embedded documentation readable when host custom properties are unavailable; the two existing global.css media queries use Tailwind's standard 640px sm breakpoint and are false positives for the CSS-property scanner.",
+      "removalCondition": "Remove the respective patterns when Starlight fallbacks are no longer required and media-query features are recognized or use the canonical breakpoint token."
     },
     {
       "mode": "css-custom-properties",

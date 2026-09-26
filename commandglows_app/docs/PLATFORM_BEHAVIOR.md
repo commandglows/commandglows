@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.1.0"
 project: "CommandGlows"
 created: "2026-04-27"
-updated: "2026-05-30"
+updated: "2026-09-26"
 status: "reviewed"
 source_skill: "sf-spec"
 scope: "platform_behavior"
@@ -108,6 +108,7 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
   typed Flutter status/events/delivery results and a native runner host for
   `Ctrl+Alt+Space`, topmost show/hide, clipboard copy, and `Ctrl+V` paste
   delivery back to the last foreground window.
+
 - Windows must not promise an IME. The expected equivalent is desktop quick
   actions: hotkey -> overlay -> correction/dictation/snippet/clipboard action ->
   clipboard or best-effort delivery into the active app.
@@ -119,6 +120,30 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
 - macOS, Linux, iOS and web should follow in that order, each with its own host
   or degraded-parity proof. Browser/store limits are documented product
   constraints rather than silent omissions.
+
+### Global desktop pointer control
+
+- A separate Windows native host provides an opt-in keyboard pointer grid over
+  the monitor containing the cursor. It is independent of the text overlay and
+  uses `Ctrl+Alt+G` so the existing `Ctrl+Alt+Space` workflow remains available.
+- The default recursive grid has 3×3 cells. Tab shows a coarse 5×5 coordinate
+  grid; one physical key selects a cell, after which recursive refinement is
+  available. Backspace returns one selection, Space resets, Escape closes, and
+  PageUp/PageDown moves to another monitor. F1–F7 cover clicks, drag and wheel;
+  arrow keys nudge the cursor. The native overlay displays the key map and
+  action guide.
+- Physical key positions remain stable under AZERTY/QWERTY. Labels use the
+  foreground keyboard layout captured at activation. Close and reopen the grid
+  after changing input language. The local opt-in persists, defaults off, and
+  does not sync to an account.
+- The overlay and input hook are Windows-only. Ordinary applications can be
+  targeted without their cooperation. An elevated target, secure desktop or
+  locked session can reject input; failure feedback does not assert a cause
+  Windows cannot identify. Hints based on UI Automation remain a separate
+  candidate until their latency and coverage are measured.
+- The feature has compiled and run in the managed Windows debug session. Live
+  selection, click and drag in another app are still pending authenticated
+  interactive verification; compilation does not establish that proof.
 
 ## macOS Desktop Overlay
 

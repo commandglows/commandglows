@@ -1,11 +1,11 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "CommandGlows"
 created: "2026-09-26"
 updated: "2026-09-26"
-status: ready
+status: active
 source_skill: sg-development
 scope: "windows-global-desktop-grid-control"
 owner: Diane
@@ -26,7 +26,7 @@ evidence:
   - "Diane 2026-09-17: CommandGlows hosts keyboard control of the entire desktop with a full-screen grid; recursive grid is the priority."
   - "Diane 2026-09-17: hints and a coordinate grid remain candidates, with at most one key to select a coordinate cell."
   - "Diane 2026-09-26: prepare a spec, delegate verification and implementation, and complete the work without micromanagement."
-next_step: "Implement and verify the Windows desktop control host."
+next_step: "Verify authenticated interactive Windows pointer control in another application."
 ---
 
 # Windows global desktop grid control
@@ -41,7 +41,7 @@ Windows is the implementation target for this chantier. The host must leave a po
 
 1. In Windows settings the person enables desktop control. Disabled is the initial state on first launch; the local opt-in persists across app restarts and is restored when the app starts. CommandGlows registers a distinct global shortcut (default Ctrl+Alt+G); a collision produces a visible error and never silently enables the feature. The existing Ctrl+Alt+Space text overlay remains independent.
 2. The shortcut starts on the monitor containing the cursor. The overlay covers that monitor, stays visible above ordinary windows, accepts no mouse hits and does not steal keyboard focus. A temporary keyboard hook consumes the assigned keydown **and matching keyup**, including repeat, only for the active session; all other keys are forwarded. The main `RegisterHotKey` stays independent of this hook so a second shortcut invocation can dismiss the session.
-3. Nine labelled cells cover the current region. One physical key chooses one cell; the region becomes that cell and the pointer goes to its centre. The next nine cells subdivide it. Resolve physical scan codes against the foreground keyboard layout for displayed labels, including AZERTY; keep selection positions spatially stable. Five 3×3 levels produce cells of at most 8×5 physical pixels on a 1920×1080 screen, modulo integer rounding. Prevent zero-sized cells and clamp pointer coordinates inside monitor bounds.
+3. Nine labelled cells cover the current region. One physical key chooses one cell; the region becomes that cell and the pointer goes to its centre. The next nine cells subdivide it. Resolve physical scan codes against the foreground keyboard layout at activation for displayed labels, including AZERTY; keep selection positions spatially stable. The layout remains fixed for this session and the on-screen guide says so; closing and reopening the grid refreshes it after a language switch. Five 3×3 levels produce cells of at most 8×5 physical pixels on a 1920×1080 screen, modulo integer rounding. Prevent zero-sized cells and clamp pointer coordinates inside monitor bounds.
 4. Backspace returns one level, Space resets to the whole monitor, Escape cancels and removes the overlay and keyboard hook. A selection history makes backtracking deterministic. A visible indicator shows the selected region and current pointer centre. Activation while active must dismiss the session.
 5. The user can click left, right and middle, press and release left button for drag, wheel up/down, and nudge the pointer by arrow keys. Click actions end the session; drag keeps it active until explicit release or cancellation. Movement while dragging must emit intermediate pointer motion that target applications recognize, rather than only teleporting the cursor. On cancellation, shutdown, display change, or detected hook failure, release any held button. Escape exits while the hook is active; the separately registered global shortcut remains the independent exit if the hook stops receiving keys.
 6. Tab switches to a coarse coordinate view on the current monitor. Its cells each have one visible key label and exactly one keypress selects a cell; the selected area becomes the recursive grid region for further precision. There may be no more cells than available single keys. Coarse selection alone is never described as pixel-level precision. Backspace returns to the full coordinate view, while Escape and Space retain their global cancellation/reset semantics.
@@ -69,7 +69,7 @@ Channel `commandglows_app/desktop_control` methods: `getStatus` returns `{suppor
 - Pure geometry tests cover subdivision, backtracking, non-zero cell sizes, negative monitor origins, edges, reset, the one-key coordinate layout and monitor switching. Hook key mapping is checked for QWERTY and AZERTY, including visible labels, physical keys, repeat and paired keyup suppression.
 - `flutter analyze` and focused Flutter tests pass. A configured Doppler-backed `flutter run -d windows` compiles and attaches the live Windows app; if a managed session is used, its declared recipe and live registry state are checked first.
 - Live Windows proof starts from another app: invoke shortcut, see a monitor-sized transparent grid, choose several cells by single keys, click a visible target, then verify Escape, Backspace, reset, coordinate Tab, successful movement/selection by drag, reliable drag release, scrolling and disable. Verify PageUp/PageDown on two monitors when available and mixed DPI if the display arrangement supports it. Capture the observable result without sensitive desktop content.
-- Failure proof includes shortcut collision, app exit during an active session, display change and input-injection refusal. Windows does not reliably identify UIPI as the cause of a `SendInput` refusal, so error copy says input could not be sent without inventing a cause. Distinguish static/build proof from live desktop and external-app proof; an unexecuted manual scenario remains open rather than being labelled successful.
+- Failure proof includes shortcut collision, app exit during an active session, display change and input-injection refusal. A failed global pointer action shows a visible message in the native overlay while the session remains available for retry or cancellation. Windows does not reliably identify UIPI as the cause of a `SendInput` refusal, so error copy says input could not be sent without inventing a cause. Distinguish static/build proof from live desktop and external-app proof; an unexecuted manual scenario remains open rather than being labelled successful.
 
 ## Sources informing the design
 
@@ -81,7 +81,8 @@ Channel `commandglows_app/desktop_control` methods: `getStatus` returns `{suppor
 ## Skill Run History
 
 - 2026-09-26: sg-development — research and repository inspection; ready implementation contract recorded. Implementation and live proof pending.
+- 2026-09-26: GPT-6 Luna native and Flutter batches — Windows host, persisted local opt-in, settings and focused tests implemented. C++17 geometry/keymap harness, seven Flutter tests and Flutter analyzer passed through Doppler; managed Windows runner recompiled and launched. Independent static review found and prompted hook teardown, button-release, drag-motion and fine-grid readability fixes. Live external-app proof awaits an authenticated CommandGlows Dev session.
 
 ## Current Chantier Flow
 
-- Ready for disjoint native and Flutter implementation, then integration and live Windows verification.
+- Native and Flutter batches integrated; static/build checks pass. Authenticated Windows interaction proof and any resulting correction remain open. Hints stay a separate research candidate.

@@ -1,29 +1,24 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro'
 import { SignIn as LegacySignIn } from '@clerk/astro/components'
-import { readAuth0Config } from '@/lib/auth/auth0Session'
-import { siteBackend } from '@/lib/auth/siteAuth'
-import { getServerEnv } from '@/lib/serverEnv'
+import { isAccountRecoveryAvailable } from '@/lib/auth/accountRecoveryAvailability'
 interface Props { lang: 'en' | 'fr' }
 const { lang } = Astro.props
 const french = lang === 'fr'
 // Only the verified legacy session can authorize the account-link transaction.
 const legacyAccount = Astro.locals.auth?.().userId
 const failed = Astro.url.searchParams.has('error')
-let recoveryAvailable = false
-try {
-  const config = readAuth0Config(getServerEnv())
-  siteBackend()
-  recoveryAvailable = config.origin === Astro.url.origin && !Astro.locals.siteAuth?.().unavailable
-} catch { /* Keep account linking unavailable until the server is configured. */ }
+const recoveryAvailable = isAccountRecoveryAvailable(Astro.url.origin, Astro.locals.siteAuth?.().unavailable)
 const recoveryPath = french ? '/fr/account/link-existing' : '/account/link-existing'
 const signInPath = french ? '/fr/signin' : '/signin'
+const dashboardPath = french ? '/fr/dashboard/' : '/dashboard/'
+const contactPath = french ? '/fr/contact' : '/contact'
 const title = french ? 'Retrouver mes achats' : 'Recover my purchases'
 ---
 <MainLayout title={title} lang={lang} clientNavigation={false} noindex structuredData={null}>
   <section class="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 py-12">
     <h1 class="text-content-text-primary text-3xl font-bold">{title}</h1>
-    {recoveryAvailable ? <p class="text-content-text-secondary">{french ? 'Pour retrouver vos achats et vos accès, connectez-vous d’abord à votre compte existant. Vous pourrez ensuite le relier à votre nouvelle connexion.' : 'To recover your purchases and access, first sign in to your existing account. You can then link it to your new sign-in.'}</p> : <p role="alert" class="text-content-text-secondary">{french ? 'La récupération de vos achats n’est pas encore disponible.' : 'Purchase recovery is not available yet.'}</p>}
+    {recoveryAvailable ? <p class="text-content-text-secondary">{french ? 'Pour retrouver vos achats et vos accès, connectez-vous d’abord à votre compte existant. Vous pourrez ensuite le relier à votre nouvelle connexion.' : 'To recover your purchases and access, first sign in to your existing account. You can then link it to your new sign-in.'}</p> : <div role="status" class="rounded-xl border border-content-border bg-content-bg-elevated p-5"><p class="text-content-text-secondary">{french ? 'La récupération des achats n’est pas disponible pour le moment. Gardez votre confirmation d’achat ; notre support peut vous aider à examiner la situation.' : 'Purchase recovery is not available right now. Keep your purchase confirmation; our support team can help review the situation.'}</p><div class="mt-4 flex flex-wrap gap-4"><a class="brand-text-magenta font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={contactPath}>{french ? 'Contacter le support' : 'Contact support'}</a><a class="brand-text-magenta font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={dashboardPath}>{french ? 'Revenir à mon compte' : 'Return to my account'}</a></div></div>}
     {failed && recoveryAvailable && <p role="alert" class="text-content-text-primary">{french ? 'Le rapprochement n’a pas abouti. Vous pouvez réessayer depuis votre compte existant.' : 'Account linking could not be completed. You can try again from your existing account.'}</p>}
     {legacyAccount ? recoveryAvailable && <div class="rounded-xl border border-content-border bg-content-bg-elevated p-6">
       <p class="mb-4 text-content-text-secondary">{french ? 'Votre compte existant est connecté. Continuez pour confirmer également votre nouvelle connexion.' : 'You are signed in to your existing account. Continue to verify your new sign-in as well.'}</p>
@@ -32,6 +27,6 @@ const title = french ? 'Retrouver mes achats' : 'Recover my purchases'
         <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-5 py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">{french ? 'Relier mon compte à ma nouvelle connexion' : 'Link my account to my new sign-in'}</button>
       </form>
     </div> : recoveryAvailable && <LegacySignIn routing="hash" fallbackRedirectUrl={recoveryPath} />}
-    <a href={recoveryAvailable ? signInPath : french ? '/fr' : '/'} class="brand-text-magenta underline" data-astro-reload>{recoveryAvailable ? french ? 'Revenir à la connexion' : 'Return to sign-in' : french ? 'Revenir à l’accueil' : 'Return home'}</a>
+    {recoveryAvailable && <a href={signInPath} class="brand-text-magenta underline" data-astro-reload>{french ? 'Revenir à la connexion' : 'Return to sign-in'}</a>}
   </section>
 </MainLayout>

@@ -30,10 +30,38 @@ test('shows an accessible empty queue and a failed fetch can be retried', async 
   vi.mocked(fetch).mockRejectedValueOnce(new Error('Queue unavailable'))
   await act(async () => root.render(createElement(CommerceIncidentConsole)))
   expect(container.querySelector('[role="alert"]')?.textContent).toContain('Queue unavailable')
+  expect(container.textContent).not.toContain('Aucun dossier dans cette page.')
   expect(container.textContent).toContain('Vérification')
   await click('Actualiser')
   expect(container.textContent).toContain('Aucun dossier dans cette page.')
   expect(container.querySelector('[role="alert"]')).toBeNull()
+})
+
+test('shows queue states with action, warning, and resolved semantics', async () => {
+  const open = { ...fixture, status: 'processing', queueState: 'open', overdue: false }
+  const resolved = { ...fixture, status: 'resolved', queueState: 'resolved', overdue: false }
+  vi.mocked(fetch).mockImplementation(async (url) => String(url).includes('view=resolved')
+    ? response({ page: [resolved], environment: 'sandbox', isDone: true, continueCursor: '' })
+    : response({ page: [open], environment: 'sandbox', isDone: true, continueCursor: '' }))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  const openCard = container.querySelector('article')!
+  expect(openCard.className).toContain('border-l-amber-500')
+  expect(openCard.querySelector('span')?.className).toContain('bg-amber-50')
+  expect(openCard.querySelector('span')?.className).not.toContain('bg-emerald-50')
+  await click('Résolus')
+  const resolvedCard = container.querySelector('article')!
+  expect(resolvedCard.className).toContain('border-l-emerald-500')
+  expect(resolvedCard.querySelector('span')?.className).toContain('bg-emerald-50')
+})
+
+test('does not show an empty candidates state after a failed load', async () => {
+  vi.mocked(fetch).mockImplementation(async (url) => String(url).includes('view=missing')
+    ? Promise.reject(new Error('Candidates unavailable'))
+    : response({ page: [], environment: 'sandbox', isDone: true, continueCursor: '' }))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Événements absents à vérifier')
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain('Candidates unavailable')
+  expect(container.textContent).not.toContain('Aucune session à vérifier dans cette page.')
 })
 
 test('clears the previous queue when another view fails to load', async () => {

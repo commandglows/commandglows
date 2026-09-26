@@ -25,12 +25,14 @@ namespace {
 constexpr char kChannelName[] = "commandglows_app/desktop_control";
 constexpr wchar_t kOverlayClassName[] = L"COMMANDGLOWS_DESKTOP_CONTROL";
 constexpr int kActivationHotkeyId = 0x4347;
+constexpr UINT_PTR kHookTeardownTimerId = 0x4348;
 constexpr UINT kHookKeyMessage = WM_APP + 0x4C1;
 constexpr UINT kHookCleanupMessage = WM_APP + 0x4C2;
 constexpr COLORREF kTransparentColor = RGB(1, 2, 3);
 constexpr COLORREF kGridColor = RGB(255, 196, 32);
 constexpr COLORREF kGridTextColor = RGB(18, 22, 28);
 constexpr COLORREF kRegionColor = RGB(70, 190, 240);
+constexpr COLORREF kErrorColor = RGB(122, 35, 35);
 constexpr UINT kDefaultWheelDelta = WHEEL_DELTA;
 
 using commandglows::desktop_control::CenterOf;
@@ -145,6 +147,11 @@ class WindowsDesktopControlHost::Impl {
     }
     if (message == kHookCleanupMessage) {
       FinishHookTeardown();
+      return true;
+    }
+    if (message == WM_TIMER && wparam == kHookTeardownTimerId) {
+      swallowed_keys_.clear();
+      ForceHookTeardown();
       return true;
     }
     if ((message == WM_DISPLAYCHANGE || message == WM_DPICHANGED) && active_) {
@@ -374,6 +381,8 @@ class WindowsDesktopControlHost::Impl {
     teardown_pending_ = keyboard_hook_ != nullptr;
     if (swallowed_keys_.empty()) {
       FinishHookTeardown();
+    } else {
+      SetTimer(owner_, kHookTeardownTimerId, 3000, nullptr);
     }
     if (overlay_ != nullptr && IsWindow(overlay_)) {
       DestroyWindow(overlay_);
@@ -559,6 +568,18 @@ class WindowsDesktopControlHost::Impl {
                                   L"   Espace: reset   Retour: precedent   Echap: fermer   PagePrec/PageSuiv: ecran";
     DrawTextW(dc, text, -1, &hint, DT_LEFT | DT_VCENTER | DT_SINGLELINE |
                                       DT_END_ELLIPSIS | DT_NOPREFIX);
+    if (error_code_ == "INPUT_UNAVAILABLE") {
+      RECT error{16, std::max<LONG>(16, client.bottom - 64),
+                 std::min<LONG>(client.right - 16, 580),
+                 std::max<LONG>(48, client.bottom - 20)};
+      HBRUSH error_bg = CreateSolidBrush(kErrorColor);
+      FillRect(dc, &error, error_bg);
+      DeleteObject(error_bg);
+      DrawTextW(dc,
+                L"Action non envoy\u00e9e. V\u00e9rifiez la cible ou fermez la grille.",
+                -1, &error, DT_CENTER | DT_VCENTER | DT_SINGLELINE |
+                                DT_END_ELLIPSIS | DT_NOPREFIX);
+    }
     EndPaint(hwnd, &paint);
   }
 
@@ -701,6 +722,8 @@ class WindowsDesktopControlHost::Impl {
                                     monitors_[monitor_index_].bounds.bottom - 1);
         if (!MoveCursorTo(cursor)) {
           error_code_ = "INPUT_UNAVAILABLE";
+        } else {
+          error_code_.clear();
         }
         Redraw();
       }
@@ -713,14 +736,20 @@ class WindowsDesktopControlHost::Impl {
         input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
         if (SendInput(1, &input, sizeof(input)) == 1) {
           held_button_up_ = MOUSEEVENTF_LEFTUP;
+          error_code_.clear();
         } else {
           error_code_ = "INPUT_UNAVAILABLE";
+          Redraw();
         }
       }
       return;
     }
     if (action == InputAction::drag_release) {
       ReleaseHeldButtons();
+      if (held_button_up_ == 0) {
+        error_code_.clear();
+      }
+      Redraw();
       return;
     }
     if (action == InputAction::wheel_up || action == InputAction::wheel_down) {
@@ -732,6 +761,10 @@ class WindowsDesktopControlHost::Impl {
                                : static_cast<DWORD>(-static_cast<int>(kDefaultWheelDelta));
       if (SendInput(1, &input, sizeof(input)) != 1) {
         error_code_ = "INPUT_UNAVAILABLE";
+        Redraw();
+      } else {
+        error_code_.clear();
+        Redraw();
       }
       return;
     }
@@ -752,9 +785,10 @@ class WindowsDesktopControlHost::Impl {
     input.mi.dwFlags = down;
     if (SendInput(1, &input, sizeof(INPUT)) != 1) {
       error_code_ = "INPUT_UNAVAILABLE";
-      Cancel();
+      Redraw();
       return;
     }
+    error_code_.clear();
     held_button_up_ = up;
     input.mi.dwFlags = up;
     if (SendInput(1, &input, sizeof(INPUT)) == 1) {
@@ -762,7 +796,12 @@ class WindowsDesktopControlHost::Impl {
     } else {
       error_code_ = "INPUT_UNAVAILABLE";
     }
-    Cancel();
+    if (error_code_ == "INPUT_UNAVAILABLE") {
+      ReleaseHeldButtons();
+      Redraw();
+    } else {
+      Cancel();
+    }
   }
 
   void ReleaseHeldButtons() {
@@ -786,6 +825,7 @@ class WindowsDesktopControlHost::Impl {
       return;
     }
     teardown_pending_ = false;
+    KillTimer(owner_, kHookTeardownTimerId);
     if (keyboard_hook_ != nullptr) {
       UnhookWindowsHookEx(keyboard_hook_);
       keyboard_hook_ = nullptr;
@@ -796,6 +836,7 @@ class WindowsDesktopControlHost::Impl {
   }
 
   void ForceHookTeardown() {
+    KillTimer(owner_, kHookTeardownTimerId);
     if (keyboard_hook_ != nullptr) {
       UnhookWindowsHookEx(keyboard_hook_);
       keyboard_hook_ = nullptr;
@@ -840,6 +881,9 @@ class WindowsDesktopControlHost::Impl {
     center.y = std::clamp<LONG>(center.y, monitor.top, monitor.bottom - 1);
     if (!MoveCursorTo(center)) {
       error_code_ = "INPUT_UNAVAILABLE";
+      Redraw();
+    } else {
+      error_code_.clear();
     }
   }
 

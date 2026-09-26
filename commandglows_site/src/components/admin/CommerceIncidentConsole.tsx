@@ -37,14 +37,23 @@ const label = (value: string) => ({ open: 'À traiter', escalated: 'Escaladé', 
   delivering: 'Envoi en cours', delivered: 'Transport accepté', failed: 'Échec de notification', pending_review: 'Vérification nécessaire',
   granted: 'Accès accordé', revoked: 'Accès retiré', suspended: 'Accès suspendu', awaiting_payment: 'Paiement en attente', ingress_failed: 'Événement à récupérer', checkout_unverified: 'Paiement non vérifié — consulter Stripe',
 }[value] ?? value)
-const severity = (incident: Incident) => incident.overdue || incident.status === 'pending_review' || incident.queueState === 'escalated'
-  ? 'border-l-4 border-l-red-500'
-  : 'border-l-4 border-l-emerald-500'
 const badge = (tone: 'neutral' | 'warning' | 'danger' | 'success') => ({
   neutral: 'border-dashboard-border bg-dashboard-bg text-dashboard-text-muted',
   warning: 'border-amber-300 bg-amber-50 text-amber-900',
   danger: 'border-red-300 bg-red-50 text-red-900',
   success: 'border-emerald-300 bg-emerald-50 text-emerald-900',
+}[tone])
+const incidentTone = (incident: Incident): 'neutral' | 'warning' | 'danger' | 'success' => {
+  if (incident.overdue || incident.queueState === 'escalated') return 'danger'
+  if (incident.queueState === 'resolved') return 'success'
+  if (incident.queueState === 'open' || incident.status === 'pending_review') return 'warning'
+  return 'neutral'
+}
+const incidentAccent = (tone: ReturnType<typeof incidentTone>) => ({
+  neutral: 'border-l-4 border-l-dashboard-border',
+  warning: 'border-l-4 border-l-amber-500',
+  danger: 'border-l-4 border-l-red-500',
+  success: 'border-l-4 border-l-emerald-500',
 }[tone])
 const alertTone = (status?: string | null, error?: string | null) => error || status === 'failed'
   ? 'danger'
@@ -179,12 +188,12 @@ export default function CommerceIncidentConsole() {
     {message && <p className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm font-semibold text-emerald-950" role="status">{message}</p>}
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.85fr)]">
     {view !== 'missing' ? <div className="grid content-start gap-3">
-      {!busy && incidents.length === 0 && <p className={panel}>Aucun dossier dans cette page.</p>}
-      {incidents.map((incident) => <article className={`${panel} ${severity(incident)}`} key={incident._id}>
+      {!busy && !error && incidents.length === 0 && <p className={panel}>Aucun dossier dans cette page.</p>}
+      {incidents.map((incident) => <article className={`${panel} ${incidentAccent(incidentTone(incident))}`} key={incident._id}>
         <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-dashboard-text-primary font-bold">{incident.productId}</h3>
-            <span className={`rounded-full border px-2 py-1 text-xs font-bold ${badge(severity(incident) ? 'danger' : 'success')}`}>{label(incident.queueState)}</span>
+            <span className={`rounded-full border px-2 py-1 text-xs font-bold ${badge(incidentTone(incident))}`}>{label(incident.queueState)}</span>
             {incident.overdue && <span className={`rounded-full border px-2 py-1 text-xs font-bold ${badge('danger')}`}>Échéance dépassée</span>}
           </div>
           <p className={`${meta} mt-2 break-all`}>{incident._id} · {incident.providerEventId}</p>
@@ -210,7 +219,7 @@ export default function CommerceIncidentConsole() {
         </div><button className={button} disabled={busy} onClick={() => void select(incident)}>Ouvrir le dossier</button></div>
       </article>)}
     </div> : <div className="grid content-start gap-3"><p className={panel}>Ces sessions anciennes n’ont pas de reçu de paiement. Un abandon est possible : vérifiez Stripe avant toute conclusion. Parcourez toutes les pages, y compris les pages vides.</p>
-      {!busy && candidates.length === 0 && <p className={panel}>Aucune session à vérifier dans cette page.</p>}
+      {!busy && !error && candidates.length === 0 && <p className={panel}>Aucune session à vérifier dans cette page.</p>}
       {candidates.map((candidate) => <article className={panel} key={candidate.handoffId}>
         <h3 className="text-dashboard-text-primary font-bold">{candidate.productId} · Paiement non vérifié</h3>
         <p className="text-dashboard-text-muted mt-2 break-all text-sm">{candidate.sourceRef} · {candidate.providerOrderId ?? 'Session non rattachée'} · {candidate.checkoutState}</p>

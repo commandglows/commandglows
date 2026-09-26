@@ -516,7 +516,7 @@
     --dashboard-bg-hover: 0 0% 91%;
     --dashboard-text-primary: 0 0% 9%;
     --dashboard-text-secondary: 0 0% 27%;
-    --dashboard-text-muted: 0 0% 47%;
+    --dashboard-text-muted: 0 0% 40%;
     --dashboard-icon-bg: 0 0% 95%;
     --dashboard-icon-bg-hover: 0 0% 91%;
     --dashboard-icon-text: 0 0% 44%;
@@ -613,6 +613,10 @@
     --eyebrow-badge-radius: 9999px;
     --bio-background-z-index: 0;
     --bio-container-z-index: 1;
+  }
+
+  .skip-to-content:focus-visible {
+    z-index: var(--overlay-z-critical);
   }
 
   .landing-page {

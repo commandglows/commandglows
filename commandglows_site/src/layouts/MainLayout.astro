@@ -53,10 +53,16 @@ interface Props {
 		{clientNavigation && <ClientRouter />}
 	</head>
 	<body id="top" class="bg-content-bg dark:bg-content-bg">
+		<a
+			href="#main-content"
+			class="skip-to-content sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:rounded-md focus-visible:bg-content-bg focus-visible:px-4 focus-visible:py-2 focus-visible:text-content-text-primary focus-visible:ring-2 focus-visible:ring-navbar-ring"
+		>
+			{lang === 'fr' ? 'Aller au contenu principal' : 'Skip to main content'}
+		</a>
 		<Navbar />
   <SiteSessionGuard lang={lang === 'fr' ? 'fr' : 'en'} />
 		<div class="site-page-shell site-main-shell">
-			<main>
+			<main id="main-content" tabindex="-1">
 				<slot />
 			</main>
 		</div>

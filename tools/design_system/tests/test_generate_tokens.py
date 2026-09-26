@@ -92,6 +92,27 @@ class TokenFoundationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValidationError, "provenance mismatch"):
                 _validate_provenance(provenance, root)
 
+    def test_immutable_baseline_hash_is_independent_of_windows_line_endings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            baseline = root / "baseline.json"
+            canonical = b'{"frozen": true}\n'
+            baseline.write_bytes(canonical.replace(b"\n", b"\r\n"))
+            provenance = {
+                "immutableBaselines": [
+                    {
+                        "source": "baseline.json",
+                        "sha256": hashlib.sha256(canonical).hexdigest(),
+                    }
+                ],
+                "consumerContracts": [],
+            }
+
+            _validate_provenance(provenance, root)
+            baseline.write_bytes(b'{"changed": true}\r\n')
+            with self.assertRaisesRegex(ValidationError, "provenance mismatch"):
+                _validate_provenance(provenance, root)
+
     def test_consumer_contract_requires_an_existing_path_but_no_hash(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -120,6 +141,18 @@ class TokenFoundationTests(unittest.TestCase):
             self.assertEqual([], check_outputs(outputs))
             target = next(iter(outputs))
             target.write_text("stale\n", encoding="utf-8")
+            self.assertEqual([target], check_outputs(outputs))
+
+    def test_check_outputs_accepts_crlf_but_rejects_stale_content(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            outputs = build_outputs(self.bundle, ["resolved-matrix"], root)
+            target, content = next(iter(outputs.items()))
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content.replace(b"\n", b"\r\n"))
+
+            self.assertEqual([], check_outputs(outputs))
+            target.write_bytes(b"stale\r\n")
             self.assertEqual([target], check_outputs(outputs))
 
     def test_target_scoping_does_not_touch_another_adapter(self) -> None:

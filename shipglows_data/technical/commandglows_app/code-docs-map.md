@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: "CommandGlows"
 created: "2026-05-04"
-updated: "2026-09-25"
+updated: "2026-09-26"
 status: draft
 source_skill: sf-docs
 scope: "code-docs-map"
@@ -26,6 +26,7 @@ evidence:
   - "Updated for keyboard account-sync panel and backup service V1."
   - "Updated for local-cloud sync playbook and Flutter sync implementation guide."
   - "Updated for custom action buttons, action-bar layout rows, bounded desktop key-sequence delivery, and clipboard commands."
+  - "Mapped Windows global desktop pointer control, native grid geometry, local opt-in, and runtime proof."
 next_review: "2026-06-04"
 next_step: "/sf-docs technical audit"
 ---
@@ -38,6 +39,7 @@ next_step: "/sf-docs technical audit"
 | `lib/features/custom_action_buttons/**`, `lib/features/snippets/presentation/custom_action_buttons_panel.dart`, `lib/core/platform/desktop_overlay_bridge.dart` | Custom action-bar buttons and desktop action delivery | `docs/technical/flutter-app.md` | `flutter analyze`; `flutter test test/custom_action_button_store_test.dart test/custom_action_button_runner_test.dart test/custom_action_buttons_screen_test.dart test/desktop_overlay_bridge_test.dart test/windows_overlay_bridge_test.dart` | Typed action catalog, action-bar row/order layout, button library UX, desktop key-sequence delivery, clipboard commands, unsupported-platform behavior, or backend-agnostic button store changes |
 | `lib/features/clipboard/application/**`, `lib/features/clipboard/domain/**`, `lib/features/clipboard/data/**` | Clipboard product API and stores | `docs/technical/flutter-app.md` | `flutter analyze`; `flutter test test/clipboard_domain_test.dart test/clipboard_history_api_test.dart test/in_memory_clipboard_history_store_test.dart test/persistent_clipboard_history_store_test.dart` | Clipboard product contract, persistent local store, sensitivity, dedupe, source, sync state, or backend-agnostic API changes |
 | `lib/features/pinning/domain/**`, `lib/core/platform/windows_pin_window_host.dart`, `lib/features/pinning/presentation/pin_prototype_launcher.dart`, `windows/runner/pin_window_host.*` | Provider-neutral pin contracts and Windows detached-window host prototype | `shipglows_data/technical/commandglows_app/architecture.md`; `shipglows_data/workflow/specs/reusable-pin-core-and-independent-window-contract.md`; `shipglows_data/workflow/specs/windows-detached-pin-prototype.md` | `flutter analyze`; managed `s.cmd start -ProjectPath <app> -FlutterDevice windows`; manual detached-window interaction | Pin identity/lifecycle, native host behavior, debug-only prototype access, or main-window non-interference changes; real source adapters, persistence, and production presentation require separate work |
+| `lib/core/platform/desktop_control_bridge.dart`, `lib/features/settings/presentation/desktop_control_settings_section.dart`, `windows/runner/desktop_control_*`, `windows/runner/test/desktop_control_geometry_test.cpp` | Windows global desktop pointer grid and local opt-in | `commandglows_app/docs/PLATFORM_BEHAVIOR.md`; `shipglows_data/workflow/specs/windows-global-desktop-grid-control.md` | Doppler-backed `flutter analyze` and focused Flutter tests; C++17 geometry harness; managed Windows `flutter run`; live external-app pointer, click, drag and multi-monitor QA | Hotkey, physical key map, grid geometry, pointer action, hook cleanup, monitor/DPI behaviour, recovery, opt-in or supported-platform claim changes |
 | `lib/features/sync/**`, `lib/features/*/application/*store_provider.dart`, `lib/features/*/data/firebase_*_store.dart`, `lib/features/*/data/*memory*_store.dart`, `lib/features/*/data/persistent_*_store.dart` | Local-cloud data promotion and merge | `shipglows_data/technical/commandglows_app/flutter-local-cloud-sync.md` | `dart analyze lib/features/sync test/local_cloud_sync_controller_test.dart`; `flutter test test/local_cloud_sync_controller_test.dart`; `flutter analyze`; `flutter test` | Local-to-cloud promotion, local durability, Firebase adapter, account association, conflict, tombstone, secret exclusion, or sync status behavior changes |
 | `shipglows_data/workflow/specs/*sync*.md`, `shipglows_data/workflow/verification/*sync*.md` | Local-cloud sync doctrine and proof | `shipglows_data/technical/commandglows_app/local-cloud-sync-playbook.md` | `python3 /home/claude/shipglows/tools/shipglows_metadata_lint.py <changed-artifacts>` | Sync spec readiness, proof contract, reinstall/relogin QA, secrets policy, or conflict-resolution doctrine changes |
 | `lib/data/supabase/**` | Supabase provider adapters | `docs/technical/supabase-data.md` | `flutter test test/supabase_clipboard_store_test.dart`; Supabase smoke tests when DB is available | Provider payloads, table mapping, RLS-sensitive metadata, or adapter contract changes |

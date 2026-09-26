@@ -113,6 +113,32 @@ class ProjectDriftGuardTests(unittest.TestCase):
         self.assertEqual(1, len(findings))
         self.assertEqual(4, findings[0].line_no)
 
+    def test_standard_media_breakpoint_exception_does_not_hide_other_widths(self) -> None:
+        self.write(
+            "src/styles/global.css",
+            "@media (min-width: 640px) {\n"
+            "  .standard { display: block; }\n"
+            "}\n"
+            "@media (min-width: 641px) {\n"
+            "  .custom { display: block; }\n"
+            "}\n",
+        )
+        allowlist = [
+            {
+                "path": "src/styles/global.css",
+                "mode": "match",
+                "pattern": r"^\s*@media \(min-width: 640px\) \{$",
+                "reason": "Standard Tailwind sm breakpoint false positive.",
+                "owner": "Test owner",
+                "removalCondition": "Remove when media-query features are classified separately.",
+            }
+        ]
+
+        _, findings = scan(self.root, load_policy(self.policy(allowlist)))
+
+        self.assertEqual([4], [finding.line_no for finding in findings])
+        self.assertIn("641px", findings[0].evidence)
+
     def test_generated_outputs_are_excluded_only_by_exact_manifest_path(self) -> None:
         self.write("src/generated/exact.css", ".generated { width: 12px; }\n")
         self.write("src/generated/not-exact.css", ".consumer { width: 12px; }\n")

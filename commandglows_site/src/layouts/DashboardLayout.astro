@@ -2,6 +2,7 @@
 import MainLayout from '@/layouts/MainLayout.astro'
 import { getNavigation } from '@/utils/fr/navigation'
 import { getServerEnv } from '@/lib/serverEnv'
+import { isAccountRecoveryAvailable } from '@/lib/auth/accountRecoveryAvailability'
 import type { Language } from '@/types'
 
 interface Props {
@@ -15,6 +16,13 @@ const auth = Astro.locals.siteAuth()
 const navigation = await getNavigation(lang, auth.role, {
   showNewsletter: auth.provider === 'clerk' && getServerEnv().EMAIL_ENGINE_WEB_ENABLED === 'true',
 })
+const recoveryAvailable = isAccountRecoveryAvailable(Astro.url.origin, auth.unavailable)
+const recoveryContactUrl = lang === 'fr' ? '/fr/contact' : '/contact'
+const customerNavigation = recoveryAvailable ? navigation.customer : navigation.customer.map((item) =>
+  item.href === (lang === 'fr' ? '/fr/account/link-existing' : '/account/link-existing')
+    ? { ...item, name: lang === 'fr' ? 'Aide pour mes achats' : 'Help with purchases', href: recoveryContactUrl }
+    : item,
+)
 const navigationLabel =
   lang === 'fr' ? 'Navigation privée' : 'Private navigation'
 const customerLabel = lang === 'fr' ? 'Mon compte' : 'My account'
@@ -34,7 +42,7 @@ const isCurrentPage = (href: string) =>
       >
         <p class="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-dashboard-text-muted">{customerLabel}</p>
         <ul class="grid gap-1 sm:grid-cols-2 lg:grid-cols-1">
-          {navigation.customer.map((item) => (
+          {customerNavigation.map((item) => (
             <li>
               <a
                 href={item.href}
