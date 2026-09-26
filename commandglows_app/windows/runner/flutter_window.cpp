@@ -96,6 +96,8 @@ bool FlutterWindow::OnCreate() {
   RegisterWindowsOverlayChannel();
   pin_window_host_ = std::make_unique<WindowsPinWindowHost>(
       flutter_controller_->engine()->messenger());
+  desktop_control_host_ = std::make_unique<WindowsDesktopControlHost>(
+      GetHandle(), flutter_controller_->engine()->messenger());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -111,6 +113,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  desktop_control_host_.reset();
   pin_window_host_.reset();
   if (hotkey_registered_) {
     UnregisterHotKey(GetHandle(), kWindowsOverlayHotkeyId);
@@ -127,6 +130,10 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
+  if (desktop_control_host_ &&
+      desktop_control_host_->HandleWindowMessage(message, wparam, lparam)) {
+    return 0;
+  }
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {
     std::optional<LRESULT> result =

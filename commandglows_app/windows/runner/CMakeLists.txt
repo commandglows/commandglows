@@ -7,6 +7,7 @@ project(runner LANGUAGES CXX)
 #
 # Any new source files that you add to the application should be added here.
 add_executable(${BINARY_NAME} WIN32
+  "desktop_control_host.cpp"
   "flutter_window.cpp"
   "pin_window_host.cpp"
   "main.cpp"
@@ -16,6 +17,15 @@ add_executable(${BINARY_NAME} WIN32
   "Runner.rc"
   "runner.exe.manifest"
 )
+
+option(COMMANDGLOWS_BUILD_NATIVE_TESTS "Build native desktop control tests" OFF)
+if(COMMANDGLOWS_BUILD_NATIVE_TESTS)
+  add_executable(desktop_control_geometry_test
+    "test/desktop_control_geometry_test.cpp"
+  )
+  target_compile_features(desktop_control_geometry_test PRIVATE cxx_std_17)
+  target_compile_definitions(desktop_control_geometry_test PRIVATE NOMINMAX)
+endif()
 
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.

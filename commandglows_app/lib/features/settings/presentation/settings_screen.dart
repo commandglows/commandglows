@@ -35,6 +35,7 @@ import '../../snippets/application/snippet_store_provider.dart';
 import '../../auth/domain/suite_identity.dart';
 import '../domain/onboarding_permission_contract.dart';
 import '../domain/settings_store.dart';
+import 'desktop_control_settings_section.dart';
 import '../../voice/application/transcription_store_provider.dart';
 import '../../voice/application/language_pack_catalog_provider.dart';
 import '../../voice/domain/language_pack_catalog.dart';
@@ -105,6 +106,7 @@ enum _SettingsPageMode {
   voice,
   keyboard,
   overlay,
+  desktopControl,
   keys,
   maintenance,
 }
@@ -196,6 +198,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       'voice_packs' => _SettingsPageMode.voice,
       'keyboard' => _SettingsPageMode.keyboard,
       'overlay' => _SettingsPageMode.overlay,
+      'desktop_control' => _SettingsPageMode.desktopControl,
       'keys' => _SettingsPageMode.keys,
       'maintenance' => _SettingsPageMode.maintenance,
       _ => _SettingsPageMode.hub,
@@ -1838,6 +1841,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Icons.bubble_chart_outlined,
           overlaySection,
         ),
+        _SettingsPageMode.desktopControl => (
+          'Contrôle du bureau',
+          'Grille clavier globale pour le bureau Windows.',
+          Icons.grid_view_rounded,
+          const DesktopControlSettingsSection(),
+        ),
         _SettingsPageMode.keys => (
           'Clés IA locales',
           'Secrets stockés sur cet appareil.',
@@ -1919,6 +1928,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: 'Overlay',
                 subtitle: 'Bulle et permissions',
                 onTap: () => context.push('/settings?section=overlay'),
+              ),
+            if (PlatformCapabilities.isWindows)
+              _SettingsHubTile(
+                icon: Icons.grid_view_rounded,
+                title: 'Contrôle du bureau',
+                subtitle: 'Grille récursive au clavier',
+                onTap: () => context.push('/settings?section=desktop_control'),
               ),
             _SettingsHubTile(
               icon: Icons.key_outlined,

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/platform/android_keyboard_bridge.dart';
+import '../core/platform/desktop_control_bridge.dart';
 import '../core/platform/platform_capabilities.dart';
 import '../core/router/app_router.dart';
 import '../core/theme/app_theme.dart';
@@ -190,6 +193,7 @@ class _CommandGlowsState extends ConsumerState<CommandGlows> {
   @override
   void initState() {
     super.initState();
+    unawaited(_restoreDesktopControlOptIn());
     ref.listenManual(localCloudSyncAuthContextProvider, (_, _) {
       Future<void>.microtask(
         () => ref
@@ -220,6 +224,17 @@ class _CommandGlowsState extends ConsumerState<CommandGlows> {
           .read(keyboardSyncControllerStateProvider.notifier)
           .synchronizeIfNeeded(),
     );
+  }
+
+  Future<void> _restoreDesktopControlOptIn() async {
+    if (!PlatformCapabilities.isWindows) return;
+    try {
+      if (await DesktopControlPreferenceStore().isEnabled()) {
+        await DesktopControlBridge.setEnabled(true);
+      }
+    } catch (_) {
+      // The settings page surfaces native registration and host errors.
+    }
   }
 
   @override

@@ -9,8 +9,8 @@ vi.mock('convex/browser', () => ({
   }),
 }))
 
-const locals = (userId: string | null) => ({
-  siteAuth: () => ({ userId }),
+const locals = (userId: string | null, role: 'admin' | 'user' = 'admin') => ({
+  siteAuth: () => ({ userId, role }),
 })
 
 describe('licence administration API', () => {
@@ -29,6 +29,16 @@ describe('licence administration API', () => {
       locals: locals(null),
     } as never)
     expect(response.status).toBe(401)
+    expect(mockQuery).not.toHaveBeenCalled()
+  })
+
+  test('denies non-admin callers before Convex', async () => {
+    const { GET } = await import('@/pages/api/admin/licenses')
+    const response = await GET({
+      request: new Request('https://commandglows.com/api/admin/licenses?query=a@example.com'),
+      locals: locals('gu_member', 'user'),
+    } as never)
+    expect(response.status).toBe(403)
     expect(mockQuery).not.toHaveBeenCalled()
   })
 

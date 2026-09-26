@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 type EntitlementSummary = {
   productId: string
@@ -56,16 +56,31 @@ const statusLabel = (status: string) => {
   return labels[status] ?? status
 }
 
+const supportPlans = {
+  commandglows_app: ['focus', 'power', 'control', 'command', 'lifetime_deal'],
+  commandglows_formation: ['formation'],
+  communityglows: ['lifetime_deal', 'founder_ltd', 'ltd'],
+  gocharbon: ['pro', 'lifetime_deal'],
+  contentglowz: ['pro', 'lifetime_deal'],
+  shipglows: ['pro', 'lifetime_deal'],
+  replayglows: ['pro', 'lifetime_deal'],
+  temu_shopping_lists: ['pro', 'lifetime_deal'],
+} as const
+type SupportProduct = keyof typeof supportPlans
+
 export default function LicenseAdminConsole() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [selected, setSelected] = useState<LicenseAccount | null>(null)
   const [reason, setReason] = useState('')
+  const [productId, setProductId] = useState<SupportProduct>('communityglows')
+  const [plan, setPlan] = useState<string>('lifetime_deal')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [forbidden, setForbidden] = useState(false)
 
   async function loadDetail(globalUserId: string) {
+    setSelected(null)
     const response = await fetch(
       `/api/admin/licenses?globalUserId=${encodeURIComponent(globalUserId)}`,
       { headers: { Accept: 'application/json' } },
@@ -75,7 +90,16 @@ export default function LicenseAdminConsole() {
       return
     }
     if (!response.ok) throw new Error('detail_failed')
-    setSelected((await response.json()) as LicenseAccount)
+    const detail = (await response.json()) as LicenseAccount
+    setSelected(detail)
+    const existing = detail.entitlements.find((entry) => Object.prototype.hasOwnProperty.call(supportPlans, entry.productId))
+    if (existing && (supportPlans[existing.productId as SupportProduct] as readonly string[]).includes(existing.plan)) {
+      setProductId(existing.productId as SupportProduct)
+      setPlan(existing.plan)
+    } else {
+      setProductId('communityglows')
+      setPlan('lifetime_deal')
+    }
   }
 
   async function search(event: { preventDefault(): void }) {
@@ -88,6 +112,8 @@ export default function LicenseAdminConsole() {
 
     setLoading(true)
     setMessage(null)
+    setSelected(null)
+    setResults([])
     try {
       const response = await fetch(
         `/api/admin/licenses?query=${encodeURIComponent(normalized)}`,
@@ -120,17 +146,14 @@ export default function LicenseAdminConsole() {
     setLoading(true)
     setMessage(null)
     try {
-      const entitlement = selected.entitlements.find(
-        (entry) => entry.productId === 'communityglows',
-      )
       const response = await fetch('/api/admin/licenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action,
           globalUserId: selected.account.globalUserId,
-          productId: 'communityglows',
-          plan: entitlement?.plan ?? 'lifetime_deal',
+          productId,
+          plan,
           reason: reason.trim(),
         }),
       })
@@ -139,15 +162,26 @@ export default function LicenseAdminConsole() {
         return
       }
       if (!response.ok) throw new Error('action_failed')
+      let result: { status?: string } = {}
+      try { result = (await response.json()) as { status?: string } } catch { /* A successful HTTP response can still have an unreadable body. */ }
       setReason('')
-      setMessage(
-        action === 'grant'
-          ? 'Accès accordé et journalisé.'
-          : 'Accès révoqué et journalisé.',
-      )
-      await loadDetail(selected.account.globalUserId)
+      const outcome = result.status === 'already_active'
+        ? 'Ce droit était déjà actif. Aucun nouvel accès n’a été créé.'
+        : result.status === 'already_revoked'
+          ? 'Ce droit était déjà révoqué. Aucun accès n’a été retiré.'
+          : result.status === 'granted'
+            ? 'Accès accordé et journalisé.'
+            : result.status === 'revoked'
+              ? 'Accès révoqué et journalisé.'
+              : 'Réponse reçue, mais résultat inconnu. Vérifiez le détail et le journal avant une autre action.'
+      setMessage(outcome)
+      try {
+        await loadDetail(selected.account.globalUserId)
+      } catch {
+        setMessage(`${outcome} Le détail n’a pas pu être actualisé ; rechargez-le avant toute autre action.`)
+      }
     } catch {
-      setMessage('L’action n’a pas pu être appliquée. Aucun état local n’a été supposé.')
+      setMessage('Résultat inconnu. Actualisez le détail et le journal avant toute nouvelle tentative.')
     } finally {
       setLoading(false)
     }
@@ -217,7 +251,7 @@ export default function LicenseAdminConsole() {
               <button
                 key={account.globalUserId}
                 type="button"
-                onClick={() => void loadDetail(account.globalUserId)}
+                onClick={() => void loadDetail(account.globalUserId).catch(() => setMessage('Le détail est momentanément indisponible. Réessayez la recherche.'))}
                 className="border-dashboard-border bg-dashboard-bg-elevated hover:bg-dashboard-bg-hover focus-visible:outline-navbar-ring rounded-2xl border p-4 text-left shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 <span className="text-dashboard-text-primary block font-bold">
@@ -275,6 +309,24 @@ export default function LicenseAdminConsole() {
           </div>
 
           <div className="mt-6">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="support-product" className="text-dashboard-text-primary block text-sm font-bold">Produit concerné</label>
+                <select id="support-product" className="border-dashboard-border bg-dashboard-bg-subtle text-dashboard-text-primary mt-2 min-h-11 w-full rounded-xl border px-3" value={productId} onChange={(event) => {
+                  const nextProduct = event.target.value as SupportProduct
+                  setProductId(nextProduct)
+                  setPlan(supportPlans[nextProduct][0])
+                }}>
+                  {Object.keys(supportPlans).map((product) => <option key={product} value={product}>{product}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="support-plan" className="text-dashboard-text-primary block text-sm font-bold">Plan concerné</label>
+                <select id="support-plan" className="border-dashboard-border bg-dashboard-bg-subtle text-dashboard-text-primary mt-2 min-h-11 w-full rounded-xl border px-3" value={plan} onChange={(event) => setPlan(event.target.value)}>
+                  {supportPlans[productId].map((availablePlan) => <option key={availablePlan} value={availablePlan}>{availablePlan}</option>)}
+                </select>
+              </div>
+            </div>
             <label htmlFor="support-reason" className="text-dashboard-text-primary block text-sm font-bold">
               Motif support obligatoire
             </label>

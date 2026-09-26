@@ -8,7 +8,8 @@ type Incident = {
 }
 type Candidate = { handoffId: string; productId: string; providerOrderId: string | null; sourceRef: string; checkoutState: string }
 type Action = { _id: string; action: string; reason: string; operatorId: string; createdAt: number }
-type Detail = { incident: Incident; actions: Action[]; historyTruncated: boolean }
+type Detail = { incident: Incident; actions: Action[]; historyTruncated: boolean;
+  receipt?: { businessId?: string; providerAccountId?: string } | null }
 
 const summarizeAlerts = (
   alerts: Incident['alerts'],
@@ -64,14 +65,17 @@ export default function CommerceIncidentConsole() {
   const [forbidden, setForbidden] = useState(false)
   const [configured, setConfigured] = useState<boolean | null>(null)
   const [environment, setEnvironment] = useState('')
-  const [watchdogStale, setWatchdogStale] = useState(false)
+  const [watchdogStale, setWatchdogStale] = useState<boolean | null>(null)
   const loadSequence = useRef(0)
   const [reason, setReason] = useState('')
   const [evidence, setEvidence] = useState('')
   const [eventId, setEventId] = useState('')
   const [sessionId, setSessionId] = useState('')
   const [businessId, setBusinessId] = useState<'commandglows' | 'communityglows' | 'replayglows' | 'contentglows'>('commandglows')
+  const [merchantAvailability, setMerchantAvailability] = useState<Record<string, boolean> | null>(null)
   const reasonRef = useRef<HTMLTextAreaElement | null>(null)
+  const receiptMerchantReady = Boolean(detail?.receipt?.businessId && detail.receipt.providerAccountId &&
+    merchantAvailability?.[detail.receipt.businessId] === true)
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const response = await fetch(url, { cache: 'no-store', ...init })
@@ -85,8 +89,9 @@ export default function CommerceIncidentConsole() {
     const data = await request(`/api/admin/commerce?view=${view}${nextCursor ? `&cursor=${encodeURIComponent(nextCursor)}` : ''}`)
     if (sequence !== loadSequence.current) return
     setEnvironment(data.environment)
+    setMerchantAvailability(data.merchantAvailability ?? null)
     if (typeof data.alertChannelConfigured === 'boolean') setConfigured(data.alertChannelConfigured)
-    if (data.watchdog) setWatchdogStale(data.watchdog.stale)
+    setWatchdogStale(typeof data.watchdog?.stale === 'boolean' ? data.watchdog.stale : null)
     if (view === 'missing') setCandidates((previous) => nextCursor ? [...previous, ...data.page] : data.page)
     else setIncidents((previous) => nextCursor ? [...previous, ...data.page] : data.page)
     setCursor(data.continueCursor)
@@ -100,6 +105,8 @@ export default function CommerceIncidentConsole() {
   useEffect(() => {
     let active = true
     setDetail(null); setError(''); setBusy(true)
+    setIncidents([]); setCandidates([]); setCursor(null); setDone(true)
+    setEnvironment(''); setConfigured(null); setWatchdogStale(null); setMerchantAvailability(null)
     load().catch((failure) => { if (active) setError(failure.message) }).finally(() => { if (active) setBusy(false) })
     return () => { active = false; loadSequence.current++ }
   }, [load])
@@ -158,7 +165,7 @@ export default function CommerceIncidentConsole() {
         </div>
         <div className={quietPanel}>
           <p className="text-dashboard-text-muted text-xs font-bold uppercase tracking-wide">Surveillance</p>
-          <p className="text-dashboard-text-primary mt-1 font-semibold">{watchdogStale ? 'Contrôle manuel requis' : 'Récente'}</p>
+          <p className="text-dashboard-text-primary mt-1 font-semibold">{watchdogStale === null ? 'Vérification' : watchdogStale ? 'Contrôle manuel requis' : 'Récente'}</p>
         </div>
       </div>
       {configured === false && <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="alert">Canal d’alerte non configuré. Assurez la permanence manuelle et configurez puis vérifiez la réception avant le lancement.</p>}
@@ -240,7 +247,8 @@ export default function CommerceIncidentConsole() {
             <div className="mt-3 flex flex-wrap gap-2">
               <button className={button} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review'} onClick={() => void act('dry_run')}>Vérifier la reprise</button>
               <button className={button} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review' || detail.incident.attempts >= 5} onClick={() => void act('retry')}>Reprendre le traitement</button>
-              <button className={dangerButton} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review' || detail.incident.attempts !== 5} onClick={() => void act('recover')}>Vérifier Stripe et effectuer l’ultime reprise</button>
+              <button className={dangerButton} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review' || detail.incident.attempts !== 5 || !receiptMerchantReady} onClick={() => void act('recover')}>Vérifier Stripe et effectuer l’ultime reprise</button>
+              {detail.incident.attempts === 5 && !receiptMerchantReady && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status">L’ultime reprise nécessite un reçu lié à un compte Stripe configuré. Vérifiez le marchand et les preuves avant de poursuivre.</p>}
             </div>
           </div>
           <div className={quietPanel}>
@@ -269,17 +277,18 @@ export default function CommerceIncidentConsole() {
       <label htmlFor="commerce-business" className="text-dashboard-text-primary mt-3 block text-sm">Compte business pour la recherche Stripe</label>
       <select id="commerce-business" className={`${input} mt-2`} value={businessId}
         onChange={(event) => setBusinessId(event.target.value as typeof businessId)}>
-        <option value="commandglows">CommandGlows</option>
-        <option value="communityglows">CommunityGlows</option>
-        <option value="replayglows">ReplayGlows</option>
-        <option value="contentglows">ContentGlows</option>
+        <option value="commandglows">CommandGlows{merchantAvailability?.commandglows === false ? ' — non configuré' : ''}</option>
+        <option value="communityglows">CommunityGlows{merchantAvailability?.communityglows === false ? ' — non configuré' : ''}</option>
+        <option value="replayglows">ReplayGlows{merchantAvailability?.replayglows === false ? ' — non configuré' : ''}</option>
+        <option value="contentglows">ContentGlows{merchantAvailability?.contentglows === false ? ' — non configuré' : ''}</option>
       </select>
+      {merchantAvailability?.[businessId] === false && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status">Ce compte Stripe n’est pas configuré pour les outils de reprise dans cet environnement.</p>}
       <label htmlFor="commerce-event" className="text-dashboard-text-primary mt-3 block text-sm">Identifiant d’événement Stripe</label>
       <input id="commerce-event" className={`${input} mt-2`} value={eventId} maxLength={255} onChange={(event) => setEventId(event.target.value)} placeholder="evt_…" />
-      <button className={`${button} mt-3`} disabled={busy || !eventId.startsWith('evt_')} onClick={() => void act('reconcile')}>Vérifier et récupérer l’événement</button>
+      <button className={`${button} mt-3`} disabled={busy || merchantAvailability?.[businessId] !== true || !eventId.startsWith('evt_')} onClick={() => void act('reconcile')}>Vérifier et récupérer l’événement</button>
       <label htmlFor="commerce-session" className="text-dashboard-text-primary mt-5 block text-sm">Session Stripe terminée dont le rattachement a échoué</label>
       <input id="commerce-session" className={`${input} mt-2`} value={sessionId} maxLength={255} onChange={(event) => setSessionId(event.target.value)} placeholder="cs_…" />
-      <button className={`${button} mt-3`} disabled={busy || !sessionId.startsWith('cs_')} onClick={() => void act('repair_checkout')}>Vérifier et réparer le rattachement</button>
+      <button className={`${button} mt-3`} disabled={busy || merchantAvailability?.[businessId] !== true || !sessionId.startsWith('cs_')} onClick={() => void act('repair_checkout')}>Vérifier et réparer le rattachement</button>
     </div>
   </section>
 }

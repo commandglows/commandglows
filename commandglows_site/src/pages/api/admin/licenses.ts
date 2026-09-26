@@ -27,6 +27,12 @@ function getAuthority(locals: App.Locals) {
       response: json({ status: 'unauthorized', error: 'auth_required' }, 401),
     }
   }
+  if (auth.role !== 'admin') {
+    return {
+      ok: false as const,
+      response: json({ status: 'forbidden', error: 'admin_required' }, 403),
+    }
+  }
 
   const env = getServerEnv()
   if (

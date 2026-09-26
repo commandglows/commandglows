@@ -43,9 +43,12 @@ export const GET: APIRoute = async ({ request, locals }) => {
     if (incidentId) return json(await access.convex.query('commerceOperations:getIncident' as never,
       { ...access.auth, incidentId } as never))
     const missing = url.searchParams.get('view') === 'missing'
-    return json(await access.convex.query(`commerceOperations:${missing ? 'listMissingWebhooks' : 'listIncidents'}` as never,
+    const page = await access.convex.query(`commerceOperations:${missing ? 'listMissingWebhooks' : 'listIncidents'}` as never,
       { ...access.auth, ...(!missing ? { active: url.searchParams.get('view') !== 'resolved' } : {}),
-        paginationOpts: { numItems: 20, cursor: url.searchParams.get('cursor') || null } } as never))
+        paginationOpts: { numItems: 20, cursor: url.searchParams.get('cursor') || null } } as never) as Record<string, unknown>
+    const merchantAvailability = Object.fromEntries(STRIPE_BUSINESSES.map((business) =>
+      [business, Boolean(stripeMerchant(business, access.env))]))
+    return json({ ...page, merchantAvailability })
   } catch (error) { return errorResponse(error) }
 }
 

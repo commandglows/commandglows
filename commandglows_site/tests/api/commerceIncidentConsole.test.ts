@@ -30,9 +30,20 @@ test('shows an accessible empty queue and a failed fetch can be retried', async 
   vi.mocked(fetch).mockRejectedValueOnce(new Error('Queue unavailable'))
   await act(async () => root.render(createElement(CommerceIncidentConsole)))
   expect(container.querySelector('[role="alert"]')?.textContent).toContain('Queue unavailable')
+  expect(container.textContent).toContain('Vérification')
   await click('Actualiser')
   expect(container.textContent).toContain('Aucun dossier dans cette page.')
   expect(container.querySelector('[role="alert"]')).toBeNull()
+})
+
+test('clears the previous queue when another view fails to load', async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(response({ page: [fixture], environment: 'sandbox', isDone: true, continueCursor: '' }))
+    .mockRejectedValueOnce(new Error('Resolved queue unavailable'))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  expect(container.textContent).toContain('evt_fixture')
+  await click('Résolus')
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain('Resolved queue unavailable')
+  expect(container.textContent).not.toContain('evt_fixture')
 })
 
 test('denies the operator controls after a forbidden response', async () => {
@@ -45,9 +56,10 @@ test('denies the operator controls after a forbidden response', async () => {
 test('exhausted incidents expose alert failure and guard retry while requiring a reason', async () => {
   vi.mocked(fetch).mockImplementation(async (url, options) => {
     if (options?.method === 'POST') return response({ status: 'escalated' })
-    if (String(url).includes('incidentId=')) return response({ incident: fixture, actions: [], historyTruncated: false })
+    if (String(url).includes('incidentId=')) return response({ incident: fixture, actions: [], historyTruncated: false,
+      receipt: { businessId: 'commandglows', providerAccountId: 'acct_fixture' } })
     return response({ page: [fixture], environment: 'sandbox', isDone: true, continueCursor: '', alertChannelConfigured: false,
-      watchdog: { stale: true } })
+      watchdog: { stale: true }, merchantAvailability: { commandglows: true } })
   })
   await act(async () => root.render(createElement(CommerceIncidentConsole)))
   expect(container.textContent).toContain('Canal d’alerte non configuré')
@@ -63,6 +75,18 @@ test('exhausted incidents expose alert failure and guard retry while requiring a
   await click('Prendre en charge')
   const post = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === 'POST')
   expect(JSON.parse(String(post?.[1]?.body))).toMatchObject({ action: 'claim', incidentId: 'case_1', expectedVersion: 5, expectedAttempts: 5, reason: 'Verified operator follow-up' })
+})
+
+test('disables Stripe recovery when its merchant is not configured', async () => {
+  vi.mocked(fetch).mockImplementation(async (url) => String(url).includes('incidentId=')
+    ? response({ incident: fixture, actions: [], historyTruncated: false,
+      receipt: { businessId: 'replayglows', providerAccountId: 'acct_fixture' } })
+    : response({ page: [fixture], environment: 'production', isDone: true, continueCursor: '',
+      merchantAvailability: { commandglows: true, replayglows: false } }))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Ouvrir le dossier')
+  expect(byLabel('Vérifier Stripe et effectuer l’ultime reprise').disabled).toBe(true)
+  expect(container.textContent).toContain('L’ultime reprise nécessite un reçu lié à un compte Stripe configuré')
 })
 
 test('groups older notification failures and repeated missing-channel states', async () => {
