@@ -39,13 +39,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         data: (session) => session.isSignedIn && !session.isLocalFallback,
         orElse: () => false,
       );
+      final hasLocalWindowsAccess =
+          defaultTargetPlatform == TargetPlatform.windows &&
+          ref.read(localAuthModeProvider) &&
+          authState.maybeWhen(
+            data: (session) => session.isLocalFallback,
+            orElse: () => false,
+          );
       final hasEntitlement = suiteIdentityNotifier.value.maybeWhen(
         data: (identity) =>
             identity.statusFor(ProductId.commandglowsApp) ==
             SuiteAccountStatus.accessActive,
         orElse: () => false,
       );
-      if (!authPath && (!hasRemoteSession || !hasEntitlement)) {
+      if (!authPath &&
+          !hasLocalWindowsAccess &&
+          (!hasRemoteSession || !hasEntitlement)) {
         return '/';
       }
       return null;

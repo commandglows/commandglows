@@ -432,6 +432,26 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                             ),
                           ),
                           AppGaps.x2,
+                          if (defaultTargetPlatform == TargetPlatform.windows &&
+                              !widget.remoteOnly) ...[
+                            OutlinedButton.icon(
+                              key: const Key('use-local-mode'),
+                              onPressed: _busy
+                                  ? null
+                                  : () => ref
+                                        .read(localAuthModeProvider.notifier)
+                                        .enable(),
+                              icon: const Icon(Icons.computer_outlined),
+                              label: const Text(
+                                'Utiliser en local sans compte',
+                              ),
+                            ),
+                            AppGaps.x2,
+                            const Text(
+                              'Tes données restent sur cet appareil. Connecte un compte depuis les paramètres pour activer la synchronisation disponible.',
+                            ),
+                            AppGaps.x2,
+                          ],
                           if (_googleAvailable && kIsWeb)
                             GoogleWebSignInButton(
                               disabled: _busy,

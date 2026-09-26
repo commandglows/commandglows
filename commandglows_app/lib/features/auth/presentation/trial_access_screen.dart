@@ -26,6 +26,7 @@ class TrialAccessScreen extends StatelessWidget {
     this.checkoutOpened = false,
     this.onVerifyAccess,
     this.onChangeAccount,
+    this.onUseLocal,
   });
 
   final ProductEntitlement? entitlement;
@@ -48,6 +49,7 @@ class TrialAccessScreen extends StatelessWidget {
   final bool checkoutOpened;
   final VoidCallback? onVerifyAccess;
   final Future<void> Function()? onChangeAccount;
+  final VoidCallback? onUseLocal;
 
   bool get _canRestart => entitlement?.canRestartTrial ?? false;
   bool get _canStartTrial => (entitlement?.trialAttempt ?? 0) == 0;
@@ -271,6 +273,16 @@ class TrialAccessScreen extends StatelessWidget {
                               TextButton(
                                 onPressed: onChangeAccount,
                                 child: const Text('Changer de compte'),
+                              ),
+                            ],
+                            if (onUseLocal != null) ...[
+                              AppGaps.x2,
+                              OutlinedButton.icon(
+                                onPressed: onUseLocal,
+                                icon: const Icon(Icons.computer_outlined),
+                                label: const Text(
+                                  'Utiliser en local sans compte',
+                                ),
                               ),
                             ],
                           ],

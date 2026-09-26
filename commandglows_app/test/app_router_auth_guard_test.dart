@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -52,13 +53,20 @@ const _inactiveIdentity = SuiteIdentitySnapshot(
   globalUserId: 'gu_1',
 );
 
+class _EnabledLocalMode extends LocalAuthModeController {
+  @override
+  bool build() => true;
+}
+
 Widget _routerWidget(
   AuthSessionSnapshot session,
   void Function(GoRouter) bind, {
   SuiteIdentitySnapshot identity = _activeIdentity,
+  bool localMode = false,
 }) {
   return ProviderScope(
     overrides: [
+      if (localMode) localAuthModeProvider.overrideWith(_EnabledLocalMode.new),
       authSessionProvider.overrideWith((ref) => Stream.value(session)),
       suiteIdentityProvider.overrideWith((ref) => Stream.value(identity)),
     ],
@@ -174,6 +182,28 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
     }
+  });
+
+  testWidgets('Windows local mode opens product routes after opt-in', (
+    tester,
+  ) async {
+    _useRouterViewport(tester);
+    debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+    late GoRouter router;
+    await tester.pumpWidget(
+      _routerWidget(
+        const AuthSessionSnapshot.localFallback(),
+        (value) => router = value,
+        identity: _inactiveIdentity,
+        localMode: true,
+      ),
+    );
+    await _pumpRouter(tester);
+    router.go('/home');
+    await _pumpRouter(tester);
+
+    expect(router.routeInformationProvider.value.uri.path, '/home');
+    debugDefaultTargetPlatformOverride = null;
   });
 
   testWidgets('signed-in session can open product routes', (tester) async {

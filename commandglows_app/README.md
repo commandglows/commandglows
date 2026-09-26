@@ -142,8 +142,13 @@ Auth has three supported runtime paths:
 - Firebase Google session for cloud-backed product usage.
 - Explicit local mode when Firebase is absent or the user chooses local-only use.
 
-Local mode is not a cloud-auth bypass. It keeps the app usable locally, while
-remote sync stays unavailable until a Firebase session exists.
+On Windows, the sign-in screen offers **Utiliser en local sans compte**. This
+opens the product without a cloud account or suite entitlement. Clipboard,
+settings, snippets, dictionary, transcriptions, and custom actions are saved on
+this device. The user can connect an account from Settings > Compte & cloud.
+Cloud sync activates only after authentication and an active suite entitlement;
+the sync panel reports each supported category separately. Voice transcriptions
+and custom actions remain local only in the current sync implementation.
 
 Google Sign-In on Android requires the Firebase Android app package name,
 enabled Google provider, `FIREBASE_WEB_CLIENT_ID` passed as the Google Sign-In

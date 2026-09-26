@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter/foundation.dart';
 
+import '../../../core/storage/local_json_persistence.dart';
 import '../../../core/bootstrap/firebase_bootstrap.dart';
 import '../../auth/application/auth_session_provider.dart';
 import '../../auth/application/suite_identity_provider.dart';
@@ -10,7 +12,11 @@ import '../data/firebase_dictionary_store.dart';
 import '../domain/dictionary_store.dart';
 
 final localDictionaryStoreProvider = Provider<InMemoryDictionaryStore>(
-  (ref) => InMemoryDictionaryStore(),
+  (ref) => InMemoryDictionaryStore(
+    persistence: defaultTargetPlatform == TargetPlatform.windows
+        ? const LocalJsonPersistence('local_dictionary_v1')
+        : null,
+  ),
 );
 
 final dictionaryStoreProvider = Provider<DictionaryStore>((ref) {

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter/foundation.dart';
 
+import '../../../core/storage/local_json_persistence.dart';
 import '../../../core/bootstrap/firebase_bootstrap.dart';
 import '../../auth/application/auth_session_provider.dart';
 import '../../auth/application/suite_identity_provider.dart';
@@ -10,7 +12,11 @@ import '../data/in_memory_snippet_store.dart';
 import '../domain/snippet_store.dart';
 
 final localSnippetStoreProvider = Provider<InMemorySnippetStore>(
-  (ref) => InMemorySnippetStore(),
+  (ref) => InMemorySnippetStore(
+    persistence: defaultTargetPlatform == TargetPlatform.windows
+        ? const LocalJsonPersistence('local_snippets_v1')
+        : null,
+  ),
 );
 
 final snippetStoreProvider = Provider<SnippetStore>((ref) {

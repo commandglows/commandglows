@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter/foundation.dart';
 
+import '../../../core/storage/local_json_persistence.dart';
 import '../../../core/bootstrap/firebase_bootstrap.dart';
 import '../../auth/application/auth_session_provider.dart';
 import '../../auth/application/suite_identity_provider.dart';
@@ -12,7 +14,11 @@ import 'transcription_store.dart';
 final localTranscriptionStoreProvider = Provider<InMemoryTranscriptionStore>((
   ref,
 ) {
-  return InMemoryTranscriptionStore();
+  return InMemoryTranscriptionStore(
+    persistence: defaultTargetPlatform == TargetPlatform.windows
+        ? const LocalJsonPersistence('local_transcriptions_v1')
+        : null,
+  );
 });
 
 final transcriptionStoreProvider = Provider<TranscriptionStore>((ref) {

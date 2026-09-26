@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:url_launcher/url_launcher.dart';
@@ -248,6 +249,8 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     ref.invalidate(suiteIdentityProvider);
   }
 
+  void _useLocal() => ref.read(localAuthModeProvider.notifier).enable();
+
   Future<void> _changeAccount() async {
     await ref.read(authSessionStoreProvider).signOut();
     ref.invalidate(suiteIdentityProvider);
@@ -320,7 +323,15 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           return const SignInScreen();
         }
         if (session.isLocalFallback) {
-          return const SignInScreen(remoteOnly: true);
+          if (defaultTargetPlatform == TargetPlatform.windows &&
+              ref.watch(localAuthModeProvider)) {
+            return const AppShellScreen();
+          }
+          return SignInScreen(
+            remoteOnly: ref.watch(remoteAuthConfiguredProvider),
+            onAuthenticated: () =>
+                ref.read(localAuthModeProvider.notifier).disable(),
+          );
         }
         final identityAsync = ref.watch(suiteIdentityProvider);
         return identityAsync.when(
@@ -329,6 +340,9 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
             onRetry: _retryAccess,
             onChangeAccount: _changeAccount,
             detail: AuthFailure.redact(error),
+            onUseLocal: defaultTargetPlatform == TargetPlatform.windows
+                ? _useLocal
+                : null,
           ),
           data: (identity) {
             final accessStatus = identity.statusFor(ProductId.commandglowsApp);
@@ -342,6 +356,9 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                 onRetry: _retryAccess,
                 onChangeAccount: _changeAccount,
                 detail: identity.supportSummary,
+                onUseLocal: defaultTargetPlatform == TargetPlatform.windows
+                    ? _useLocal
+                    : null,
               );
             }
             final commandGlowsEntitlement = identity.entitlementFor(
@@ -374,11 +391,14 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
               checkoutOpened: _checkoutOpened,
               onVerifyAccess: _retryAccess,
               onChangeAccount: _changeAccount,
+              onUseLocal: defaultTargetPlatform == TargetPlatform.windows
+                  ? _useLocal
+                  : null,
             );
           },
         );
       },
-      loading: () => const Scaffold(
+      loading: () => Scaffold(
         body: Center(
           child: Padding(
             padding: AppInsets.screen,
@@ -387,7 +407,19 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
               child: AppSectionCard(
                 title: 'Session',
                 subtitle: 'Vérification de la session en cours.',
-                child: Center(child: CircularProgressIndicator()),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Center(child: CircularProgressIndicator()),
+                    if (defaultTargetPlatform == TargetPlatform.windows) ...[
+                      AppGaps.x2,
+                      OutlinedButton(
+                        onPressed: _useLocal,
+                        child: const Text('Utiliser en local sans compte'),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -402,11 +434,23 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
               padding: AppInsets.screen,
               child: SizedBox(
                 width: AppLayoutMetrics.authGateErrorCardWidth,
-                child: AppBannerCard(
-                  icon: Icons.error_outline,
-                  title: 'Session indisponible',
-                  message: 'Session indisponible pour le moment. $detail',
-                  accentColor: Theme.of(context).colorScheme.error,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppBannerCard(
+                      icon: Icons.error_outline,
+                      title: 'Session indisponible',
+                      message: 'Session indisponible pour le moment. $detail',
+                      accentColor: Theme.of(context).colorScheme.error,
+                    ),
+                    if (defaultTargetPlatform == TargetPlatform.windows) ...[
+                      AppGaps.x2,
+                      OutlinedButton(
+                        onPressed: _useLocal,
+                        child: const Text('Utiliser en local sans compte'),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
@@ -444,11 +488,13 @@ class _AccessUnavailableScreen extends StatelessWidget {
     required this.onRetry,
     required this.onChangeAccount,
     required this.detail,
+    this.onUseLocal,
   });
 
   final VoidCallback onRetry;
   final Future<void> Function() onChangeAccount;
   final String detail;
+  final VoidCallback? onUseLocal;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -475,6 +521,14 @@ class _AccessUnavailableScreen extends StatelessWidget {
                   onPressed: onChangeAccount,
                   child: const Text('Changer de compte'),
                 ),
+                if (onUseLocal != null) ...[
+                  AppGaps.x2,
+                  OutlinedButton.icon(
+                    onPressed: onUseLocal,
+                    icon: const Icon(Icons.computer_outlined),
+                    label: const Text('Utiliser en local sans compte'),
+                  ),
+                ],
                 AppGaps.x2,
                 ExpansionTile(
                   title: const Text('Détails techniques'),

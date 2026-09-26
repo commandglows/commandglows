@@ -1,16 +1,63 @@
+import '../../../core/storage/local_json_persistence.dart';
 import '../domain/custom_action_button_store.dart';
 import '../domain/custom_action_buttons.dart';
 
 class InMemoryCustomActionButtonStore implements CustomActionButtonStore {
-  InMemoryCustomActionButtonStore({DateTime Function()? clock})
-    : _clock = clock ?? DateTime.now;
+  InMemoryCustomActionButtonStore({
+    DateTime Function()? clock,
+    LocalJsonPersistence? persistence,
+  }) : _clock = clock ?? DateTime.now,
+       _persistence = persistence;
 
   final DateTime Function() _clock;
+  final LocalJsonPersistence? _persistence;
   final List<CustomActionButtonRecord> _items = <CustomActionButtonRecord>[];
   var _nextId = 1;
+  Future<void>? _loading;
+
+  Future<void> _load() => _loading ??= _hydrate();
+
+  Future<void> _hydrate() async {
+    final rows = await _persistence?.read() ?? [];
+    for (final row in rows) {
+      _items.add(
+        CustomActionButtonRecord(
+          id: row['id'] as String,
+          title: row['title'] as String,
+          icon: CustomActionButtonIcon.values.byName(row['icon'] as String),
+          action: CustomActionButtonAction.fromMap(
+            Map<Object?, Object?>.from(row['action'] as Map),
+          ),
+          createdAt: DateTime.parse(row['createdAt'] as String),
+          rowIndex: row['rowIndex'] as int,
+          orderIndex: row['orderIndex'] as int,
+        ),
+      );
+    }
+    _nextId = _items.length + 1;
+    while (_items.any((item) => item.id == 'button-$_nextId')) {
+      _nextId++;
+    }
+  }
+
+  Future<void> _save() async {
+    await _persistence?.write([
+      for (final item in _items)
+        {
+          'id': item.id,
+          'title': item.title,
+          'icon': item.icon.name,
+          'action': item.action.toMap(),
+          'createdAt': item.createdAt.toIso8601String(),
+          'rowIndex': item.rowIndex,
+          'orderIndex': item.orderIndex,
+        },
+    ]);
+  }
 
   @override
   Future<List<CustomActionButtonRecord>> list() async {
+    await _load();
     final items = List<CustomActionButtonRecord>.from(_items);
     items.sort(_compareButtons);
     return items;
@@ -24,6 +71,7 @@ class InMemoryCustomActionButtonStore implements CustomActionButtonStore {
     int rowIndex = 0,
     int? orderIndex,
   }) async {
+    await _load();
     final normalized = _normalize(title: title, action: action);
     _items.add(
       CustomActionButtonRecord(
@@ -36,6 +84,7 @@ class InMemoryCustomActionButtonStore implements CustomActionButtonStore {
         orderIndex: orderIndex ?? _items.length,
       ),
     );
+    await _save();
   }
 
   @override
@@ -47,6 +96,7 @@ class InMemoryCustomActionButtonStore implements CustomActionButtonStore {
     required int rowIndex,
     required int orderIndex,
   }) async {
+    await _load();
     final index = _indexOf(id);
     final existing = _items[index];
     final normalized = _normalize(title: title, action: action);
@@ -59,11 +109,14 @@ class InMemoryCustomActionButtonStore implements CustomActionButtonStore {
       rowIndex: rowIndex,
       orderIndex: orderIndex,
     );
+    await _save();
   }
 
   @override
   Future<void> softDelete(String id) async {
+    await _load();
     _items.removeAt(_indexOf(id));
+    await _save();
   }
 
   int _indexOf(String id) {

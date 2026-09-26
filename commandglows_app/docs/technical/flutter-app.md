@@ -139,8 +139,11 @@ Keyboard sync panel
 - Remote auth owns user identity; Flutter client code must not send trusted `user_id` fields.
 - Firebase Auth + Firestore Security Rules are the first target adapter for the Android MVP.
 - Product routes are protected by `app_router.dart`; signed-out direct links
-  redirect to auth, while explicit local mode and signed-in sessions open
-  through `AppShellScreen`.
+  redirect to auth. On Windows, an explicit local-mode opt-in opens product
+  routes without a cloud session; authenticated access still checks entitlement.
+- Windows local stores persist clipboard, settings, snippets, dictionary,
+  transcriptions, and custom actions on the device. Cloud promotion is
+  category-specific; transcriptions and custom actions are still local only.
 - Firebase/Google SDK exceptions cross into presentation as typed
   `AuthFailure` values with redacted support details.
 - Android-only controls render only when `PlatformCapabilities.isAndroid` is true.
@@ -175,7 +178,8 @@ Keyboard sync panel
 - Windows hotkey, always-on-top window, focus, clipboard or delivery unavailable:
   keep the shared overlay UI recoverable and preserve final text through visible
   clipboard/manual-copy fallback.
-- Remote backend not configured: keep local UI usable with the secure persistent clipboard store and display configuration state for cloud sync.
+- Remote backend not configured: keep the Windows local entry usable and show
+  that cloud sync is unavailable.
 - Auth provider unavailable or misconfigured: show a recoverable French auth
   message, keep support detail redacted/copyable only when useful, and do not
   publish a partial signed-in state.
