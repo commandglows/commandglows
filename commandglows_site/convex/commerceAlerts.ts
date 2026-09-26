@@ -136,10 +136,12 @@ export const sweep = internalMutation({
       const receipts = await ctx.db.query('commerceEventReceipts').withIndex('by_purchase', (q) =>
         q.eq('envelope.provider', 'stripe').eq('envelope.environment', currentEnvironment)
           .eq('envelope.productId', handoff.productId).eq('envelope.sourceRef', handoff.idempotencyKey)).collect()
-      if (receipts.some((row) => row.envelope.eventType === 'paid' || ['payment_failed', 'checkout_expired'].includes(row.status))) continue
+      if (receipts.some((row) => row.envelope.providerAccountId === handoff.providerAccountId &&
+        (row.envelope.eventType === 'paid' || ['payment_failed', 'checkout_expired'].includes(row.status)))) continue
       const incidentId = await ctx.db.insert('commerceIncidents', {
         environment: currentEnvironment, kind: 'checkout_verification', checkoutHandoffId: handoff._id,
-        providerEventId: `checkout:${handoff._id}`, productId: handoff.productId, sourceRef: handoff.idempotencyKey,
+        providerEventId: `checkout:${handoff._id}`, providerAccountId: handoff.providerAccountId,
+        productId: handoff.productId, sourceRef: handoff.idempotencyKey,
         status: 'checkout_unverified', reason: 'missing_definitive_checkout_event', attempts: 0,
         queueState: 'open', active: true, dueAt: now + 4 * 60 * 60_000, version: 1, createdAt: now, updatedAt: now,
       })

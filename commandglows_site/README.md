@@ -107,7 +107,7 @@ commandglows_site/
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill the values required by your environment.
+Configure runtime values in Doppler (`commandglows/dev` or `commandglows/prd`) and run commands with `doppler run`. `.env.example` is a reference for variable names only; do not copy secrets into a local `.env` file.
 
 ### App and public config
 
@@ -175,16 +175,28 @@ Account deletion preparation removes plaintext CommunityGlows identity fields an
 - `CLERK_SECRET_KEY`
 - `CLERK_WEBHOOK_SECRET`
 
-### Stripe Managed Payments (suite-wide)
+### Stripe Managed Payments (business-owned accounts)
+
+The shared entitlement ledger does not imply a shared Stripe account. The CommandGlows, CommunityGlows, ReplayGlows, and ContentGlows account IDs were verified in their named Stripe dashboards and stored in Doppler `commandglows` (`dev` and `prd`); Stripe configuration is not kept in local env examples. ReplayGlows `dev` uses test mode in its named account; Stripe currently requires business verification before that account can enter production mode. A prior hosted Windows Mastery test used the Stripe account displayed as `Diane Defores`; that test does not establish ownership of the CommandGlows account. The checkout routes CommunityGlows through its own account configuration and webhook at `/api/commerce/webhooks/communityglows`. CommunityGlows and all CommandGlows offers are configured with test Prices in `dev`. CommandGlows live credentials, webhook, founder Prices, formation Price, and `FOUNDER` promotion are configured in `prd`. CommunityGlows production reuses its existing €149 inclusive lifetime Price, original live API key, and existing Stripe webhook, now pointed at its dedicated route. The original API key and webhook signing secret are held by the central commerce service in Doppler `commandglows/prd` and Vercel Production; CommunityGlows does not need a duplicate Stripe key in its own Doppler project. ContentGlows has no live secret key, product, or webhook and has not started Managed Payments setup; ReplayGlows still requires business verification for production mode.
+
+ReplayGlows and ContentGlows have separate merchant slots and signed webhook routes (`/api/commerce/webhooks/replayglows` and `/api/commerce/webhooks/contentglows`). Their account IDs and keys must belong to their respective businesses. No offer is allowlisted for either product yet, so these routes cannot activate direct sales or grant an unknown offer. ReplayGlows still has an independent Polar subscription runtime; ContentGlows has no active Stripe checkout in its app. Migration of those product paths requires approved offer/plan mappings and account-owned Stripe Price IDs. The central entitlement product ID for ContentGlows is currently `contentglowz`.
+
+The ReplayGlows and ContentGlows backends now expose business-specific Stripe webhook adapters. If Stripe sends to a product endpoint, configure that product's signing secret in both its backend and this central commerce service; the product forwards the original signed body to its central route. Register one endpoint per business and do not translate or re-sign events. Both services verify the business account before the central writer handles entitlements. These adapters do not add sellable offers or migrate Polar subscriptions.
 
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_COMMANDGLOWS_ACCOUNT_ID` (verified Stripe `acct_…` of the CommandGlows business)
+- `STRIPE_COMMUNITYGLOWS_ACCOUNT_ID` (verified Stripe `acct_…` of the CommunityGlows business)
+- `STRIPE_COMMUNITYGLOWS_SECRET_KEY`
+- `STRIPE_COMMUNITYGLOWS_WEBHOOK_SECRET`
+- `STRIPE_REPLAYGLOWS_ACCOUNT_ID`, `STRIPE_REPLAYGLOWS_SECRET_KEY`, `STRIPE_REPLAYGLOWS_WEBHOOK_SECRET`
+- `STRIPE_CONTENTGLOWS_ACCOUNT_ID`, `STRIPE_CONTENTGLOWS_SECRET_KEY`, `STRIPE_CONTENTGLOWS_WEBHOOK_SECRET`
 - `STRIPE_API_VERSION` (optional; omit to use the Stripe SDK default)
 - `STRIPE_COMMANDGLOWS_APP_FOCUS_PRICE_ID`
 - `STRIPE_COMMANDGLOWS_APP_POWER_PRICE_ID`
 - `STRIPE_COMMANDGLOWS_APP_CONTROL_PRICE_ID`
 - `STRIPE_COMMANDGLOWS_APP_COMMAND_PRICE_ID`
-- `STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID`
+- `STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID` (Price from the CommunityGlows account only)
 - `STRIPE_COMMANDGLOWS_FORMATION_PRICE_ID`
 - `STRIPE_COMMANDGLOWS_FOUNDER_DISCOUNT_CODE` (optional; default: `FOUNDER`)
 - `STRIPE_COMMANDGLOWS_FOUNDER_PROMOTION_CODE_ID` (optional Stripe promotion-code ID)
@@ -252,6 +264,6 @@ pnpm build
 ## Contributing
 
 1. Install dependencies with `pnpm install`.
-2. Create `.env` from `.env.example`.
+2. Select the appropriate Doppler project and configuration for local runs.
 3. Keep docs and localized routes aligned when changing offer or conversion pages.
 4. Keep claims in product and marketing docs aligned with observable implementation.

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_components.dart';
 import '../../../core/widgets/app_profile_menu_button.dart';
+import '../../pinning/presentation/pin_prototype_launcher.dart';
 import '../application/home_feed_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -158,6 +159,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onPressed: dataAsync.isLoading ? null : _refresh,
               ),
             ),
+            if (PinPrototypeLauncher.isAvailable) ...[
+              AppGaps.x2,
+              const PinPrototypeLauncher(),
+            ],
             AppGaps.x2,
             if (hasStatusBanner)
               AppBannerCard(

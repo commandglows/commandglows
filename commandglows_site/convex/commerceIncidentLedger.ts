@@ -17,6 +17,7 @@ export async function enqueueCommerceAlert(ctx: MutationCtx, incidentId: Id<'com
 /** Called in the same transaction as the receipt. Never requires a resolved buyer. */
 export async function syncCommerceIncident(ctx: MutationCtx, input: {
   receiptId: Id<'commerceEventReceipts'>; environment: string; providerEventId: string;
+  providerAccountId?: string;
   productId: string; sourceRef?: string; status: string; reason?: string; attempts: number;
 }) {
   if (input.sourceRef) {
@@ -26,7 +27,7 @@ export async function syncCommerceIncident(ctx: MutationCtx, input: {
     if (receipt?.envelope.eventType === 'paid' || ['payment_failed', 'checkout_expired'].includes(input.status)) {
       const checkoutCases = await ctx.db.query('commerceIncidents').withIndex('by_checkout_reference',
         (q) => q.eq('environment', input.environment).eq('sourceRef', input.sourceRef).eq('kind', 'checkout_verification')).collect()
-      for (const checkout of checkoutCases.filter((row) => row.active)) {
+      for (const checkout of checkoutCases.filter((row) => row.active && row.providerAccountId === receipt?.envelope.providerAccountId)) {
         const version = checkout.version + 1
         await ctx.db.patch(checkout._id, { active: false, queueState: 'resolved', status: 'verification_replaced', version,
           resolution: 'linked_to_verified_receipt', evidenceReference: `receipt:${input.receiptId}`, updatedAt: Date.now() })
@@ -36,8 +37,9 @@ export async function syncCommerceIncident(ctx: MutationCtx, input: {
       }
     }
   }
-  const existing = await ctx.db.query('commerceIncidents').withIndex('by_provider_event',
-    (q) => q.eq('environment', input.environment).eq('providerEventId', input.providerEventId)).unique()
+  const existing = await ctx.db.query('commerceIncidents').withIndex('by_scoped_provider_event',
+    (q) => q.eq('environment', input.environment).eq('providerAccountId', input.providerAccountId)
+      .eq('providerEventId', input.providerEventId)).unique()
   if (existing?.providerPayloadHash && !existing.receiptId) {
     const receipt = await ctx.db.get(input.receiptId)
     if (receipt?.envelope.providerPayloadHash !== existing.providerPayloadHash) throw new Error('commerce_event_binding_conflict')
@@ -68,10 +70,12 @@ export async function syncCommerceIncident(ctx: MutationCtx, input: {
 
 /** A verified ingress failure is diagnostic evidence, not an immutable normalized receipt. */
 export async function syncCommerceIngressFailure(ctx: MutationCtx, input: {
-  environment: string; providerEventId: string; providerPayloadHash: string; providerEventType: string; reason: string;
+  environment: string; providerEventId: string; providerAccountId: string;
+  providerPayloadHash: string; providerEventType: string; reason: string;
 }) {
-  const existing = await ctx.db.query('commerceIncidents').withIndex('by_provider_event',
-    (q) => q.eq('environment', input.environment).eq('providerEventId', input.providerEventId)).unique()
+  const existing = await ctx.db.query('commerceIncidents').withIndex('by_scoped_provider_event',
+    (q) => q.eq('environment', input.environment).eq('providerAccountId', input.providerAccountId)
+      .eq('providerEventId', input.providerEventId)).unique()
   const now = Date.now()
   if (existing) {
     if (existing.providerPayloadHash && existing.providerPayloadHash !== input.providerPayloadHash) throw new Error('commerce_event_binding_conflict')

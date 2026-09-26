@@ -14,6 +14,7 @@ type Backend = ReturnType<typeof backend>
 function event(overrides: Partial<CommerceEventEnvelope> = {}): CommerceEventEnvelope & { bridgeSecret: string } {
   return {
     provider: 'stripe', environment: 'sandbox', productId: 'communityglows',
+    businessId: 'communityglows', providerAccountId: 'acct_communityglows123',
     offerId: 'communityglows/lifetime_deal', plan: 'lifetime_deal', eventType: 'paid', status: 'applied',
     sourceRef: 'suite-checkout:synthetic-a', providerOrderId: 'cs_a', providerPaymentIntentId: 'pi_a',
     providerEventId: 'evt_a', idempotencyKey: 'stripe:paid:evt_a', globalUserId: 'gu_a',
@@ -31,6 +32,7 @@ async function seed(t: Backend, input = event(), options: { missingUser?: boolea
     return ctx.db.insert('commerceCheckoutHandoffs', {
       jtiHash: input.sourceRef!, idempotencyKey: input.sourceRef!, globalUserId: input.globalUserId!,
       productId: input.productId, offerId: input.offerId, environment: input.environment,
+      businessId: input.businessId, providerAccountId: input.providerAccountId,
       status: options.claimed ? 'claimed' : 'completed', providerOrderId: input.providerOrderId,
       providerPaymentIntentId: options.unboundPayment ? undefined : input.providerPaymentIntentId,
       expiresAt: now - 1000, createdAt: now, updatedAt: now,
@@ -88,6 +90,8 @@ describe.each([
     [{ providerOrderId: 'cs_other' }, 'checkout_not_completed_or_mismatched'],
     [{ providerPaymentIntentId: 'pi_other' }, 'purchase_payment_reference_mismatch'],
     [{ providerPaymentIntentId: undefined }, 'missing_payment_reference'],
+    [{ providerAccountId: 'acct_other123' }, 'purchase_context_mismatch'],
+    [{ businessId: 'commandglows' }, 'merchant_binding_missing_or_mismatched'],
     [{ offerId: 'communityglows/unknown' }, 'unsupported_offer'],
     [{ environment: 'production' }, 'environment_mismatch'],
     [{ environment: 'typo' }, 'environment_mismatch'],
@@ -128,12 +132,14 @@ describe('immutable receipt recovery and historical isolation', () => {
     await seed(t, staged, { claimed: true })
     await expect(t.mutation(api.bridge.completeCommerceCheckoutHandoff, {
       jtiHash: staged.sourceRef!, globalUserId: staged.globalUserId!, productId: staged.productId,
-      offerId: staged.offerId, environment: staged.environment, providerOrderId: 'cs_a',
+      offerId: staged.offerId, businessId: staged.businessId!, providerAccountId: staged.providerAccountId!,
+      environment: staged.environment, providerOrderId: 'cs_a',
       checkoutUrl: 'https://checkout.stripe.test/a', bridgeSecret: secret,
     })).rejects.toThrow('checkout_session_already_bound')
     await t.mutation(api.bridge.completeCommerceCheckoutHandoff, {
       jtiHash: staged.sourceRef!, globalUserId: staged.globalUserId!, productId: staged.productId,
-      offerId: staged.offerId, environment: staged.environment, providerOrderId: 'cs_stage',
+      offerId: staged.offerId, businessId: staged.businessId!, providerAccountId: staged.providerAccountId!,
+      environment: staged.environment, providerOrderId: 'cs_stage',
       checkoutUrl: 'https://checkout.stripe.test/stage', bridgeSecret: secret,
     })
     expect(await t.mutation(api.bridge.processCommerceEvent, staged)).toMatchObject({ snapshot: { hasAccess: true } })
@@ -154,13 +160,15 @@ describe('immutable receipt recovery and historical isolation', () => {
     const t = backend()
     await seed(t, event(), { unboundPayment: true })
     const stripe = new Stripe('sk_test_synthetic')
+    vi.spyOn(stripe.accounts, 'retrieve').mockResolvedValue({ id: 'acct_communityglows123' } as Stripe.Account)
     const metadata = { offer_id: event().offerId, product_id: event().productId, plan: event().plan,
+      business_id: event().businessId!, provider_account_id: event().providerAccountId!,
       global_user_id: 'gu_a', source_ref: event().sourceRef! }
     const deliver = async (eventType: string, object: unknown) => {
       const rawBody = JSON.stringify({ id: `evt_${eventType}`, type: eventType, object: 'event', livemode: false, data: { object } })
       const parsed = await parseStripeManagedPaymentsWebhook({ rawBody, webhookSecret: 'whsec_synthetic',
         signature: stripe.webhooks.generateTestHeaderString({ payload: rawBody, secret: 'whsec_synthetic' }) },
-      undefined, undefined, stripe)
+      undefined, undefined, stripe, { business: 'communityglows', accountId: 'acct_communityglows123' })
       if (!parsed.ok) throw new Error(parsed.reason)
       expect(parsed.normalizedEvent.providerPaymentIntentId).toBe('pi_a')
       return t.mutation(api.bridge.processCommerceEvent, { ...parsed.normalizedEvent, bridgeSecret: secret })

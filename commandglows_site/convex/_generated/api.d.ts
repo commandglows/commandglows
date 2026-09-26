@@ -12,6 +12,7 @@ import type * as apiKeys from "../apiKeys.js";
 import type * as appSumoFulfillment from "../appSumoFulfillment.js";
 import type * as bridge from "../bridge.js";
 import type * as commerceAlerts from "../commerceAlerts.js";
+import type * as commerceBusiness from "../commerceBusiness.js";
 import type * as commerceEmail from "../commerceEmail.js";
 import type * as commerceEventContract from "../commerceEventContract.js";
 import type * as commerceIncidentLedger from "../commerceIncidentLedger.js";
@@ -72,6 +73,7 @@ declare const fullApi: ApiFromModules<{
   appSumoFulfillment: typeof appSumoFulfillment;
   bridge: typeof bridge;
   commerceAlerts: typeof commerceAlerts;
+  commerceBusiness: typeof commerceBusiness;
   commerceEmail: typeof commerceEmail;
   commerceEventContract: typeof commerceEventContract;
   commerceIncidentLedger: typeof commerceIncidentLedger;

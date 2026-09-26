@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.6.0"
+artifact_version: "1.6.2"
 project: "CommandGlows"
 created: "2026-06-18"
-updated: "2026-09-06"
+updated: "2026-09-25"
 status: draft
 source_skill: "sg-docs"
 scope: "payment-activation-entitlements"
@@ -22,10 +22,10 @@ linked_systems:
   - "shipglows_data/technical/platforms/stripe-managed-payments.md"
 depends_on:
   - artifact: "shipglows_data/technical/platforms/stripe-managed-payments.md"
-    artifact_version: "1.1.0"
-    required_status: "draft"
+    artifact_version: "1.3.2"
+    required_status: "active"
   - artifact: "C:/Users/Diane/ShipGlows/shipglows/shipglows_data/workflow/specs/unified-suite-commercial-entitlement-and-stripe.md"
-    artifact_version: "1.3.1"
+    artifact_version: "1.3.3"
     required_status: "ready"
 supersedes: []
 evidence:
@@ -40,6 +40,7 @@ evidence:
   - "Operator decision later on 2026-08-11 supersedes the product exceptions: all suite products use 30-day cycles, two maximum restarts, no permanent freemium, and Stripe Managed Payments only."
   - "Local entitlement completion on 2026-08-11: one product-scoped 30-day/three-cycle policy is reachable for all eight registered products; free writers/backfills and granting fallbacks were removed."
   - "Local commerce batch B on 2026-08-11: all active offers are Stripe-only; CommunityGlows and Formation use environment-backed Price-ID placeholders; active Lemon Squeezy/Polar runtime paths were removed; every checkout requires a signed product/environment handoff; Convex makes non-Stripe events pending-review and non-granting."
+  - "Operator clarification on 2026-09-25: business-owned Stripe accounts and provider adapters feed the shared entitlement writer; CommunityGlows merchant routing remains to migrate."
 next_review: "2026-09-11"
 next_step: "Complete hosted Stripe/Convex lifecycle proof, retention/telemetry, stronger integrity, and real-device anti-abuse proof before a production access claim."
 ---
@@ -137,6 +138,14 @@ implementation. Both `bridge:processCommerceEvent` and the retained
 `bridge:processCommunityGlowsCommerceEvent` now call `commerceProcessor.ts`.
 The compatibility entrypoint accepts CommunityGlows only. There is one writer,
 not a second product-specific entitlement authority.
+
+This shared writer does not own a shared Stripe merchant account. The local
+checkout and webhook now select a business-owned credential pair and verify
+the Stripe account ID. CommunityGlows has a distinct webhook and recovery
+selection; direct sales still require verified account configuration and hosted
+proof before activation. Verified business and account provenance follows new
+handoffs, events, receipts, and grants. Unbound historical records stay intact
+and cannot silently acquire a merchant binding.
 
 A new grant requires a server-owned `commerceCheckoutHandoffs` record matching
 source reference, product, offer, identity and environment, plus the exact

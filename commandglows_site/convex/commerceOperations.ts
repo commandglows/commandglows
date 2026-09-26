@@ -35,14 +35,15 @@ async function incidentFor(ctx: QueryCtx | MutationCtx, id: Id<'commerceIncident
 export const authorize = query({ args: authorityArgs, handler: requireAdmin })
 
 export const recordCommerceIngressFailure = mutation({
-  args: { bridgeSecret: v.string(), environment: v.string(), providerEventId: v.string(),
+  args: { bridgeSecret: v.string(), environment: v.string(), providerEventId: v.string(), providerAccountId: v.string(),
     providerPayloadHash: v.string(), providerEventType: v.string(), reason: v.string() },
   handler: async (ctx, args) => {
     if (!process.env.SUITE_BRIDGE_CONVEX_SECRET || args.bridgeSecret !== process.env.SUITE_BRIDGE_CONVEX_SECRET) throw new Error('admin_forbidden')
     const environment = commerceEnvironment(args.environment)
     const runtime = commerceEnvironment(process.env.SUITE_BRIDGE_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV || '')
     if (!environment || environment !== runtime || !/^evt_[A-Za-z0-9_]{1,250}$/.test(args.providerEventId) ||
-      !/^[a-f0-9]{64}$/.test(args.providerPayloadHash) || args.providerEventType.length > 200 || args.reason.length > 200) throw new Error('ingress_evidence_invalid')
+      !/^acct_[A-Za-z0-9]+$/.test(args.providerAccountId) || !/^[a-f0-9]{64}$/.test(args.providerPayloadHash) ||
+      args.providerEventType.length > 200 || args.reason.length > 200) throw new Error('ingress_evidence_invalid')
     const { bridgeSecret: _secret, ...input } = args
     await syncCommerceIngressFailure(ctx, { ...input, environment })
     return { status: 'recorded' }
@@ -97,7 +98,8 @@ export const getIncident = query({
     const actions = await ctx.db.query('commerceIncidentActions').withIndex('by_incident', (q) => q.eq('incidentId', incident._id)).order('desc').take(50)
     const receipt = incident.receiptId ? await ctx.db.get(incident.receiptId) : null
     return { incident, actions, historyTruncated: actions.length === 50,
-      receipt: receipt ? { providerEventId: receipt.envelope.providerEventId, status: receipt.status,
+      receipt: receipt ? { providerEventId: receipt.envelope.providerEventId,
+        businessId: receipt.envelope.businessId, providerAccountId: receipt.envelope.providerAccountId, status: receipt.status,
         reason: receipt.reason, attempts: receipt.attempts, productId: receipt.envelope.productId,
         sourceRef: receipt.envelope.sourceRef, offerId: receipt.envelope.offerId,
         providerOrderId: receipt.envelope.providerOrderId, createdAt: receipt.createdAt } : null }
@@ -204,7 +206,8 @@ export const listMissingWebhooks = query({
 /** Only the server route may supply a Checkout Session retrieved from Stripe. No user-editable binding. */
 export const repairCheckout = mutation({
   args: { ...authorityArgs, sourceRef: v.string(), environment: v.string(), globalUserId: v.string(),
-    productId: v.string(), offerId: v.string(), providerOrderId: v.string(), checkoutUrl: v.optional(v.string()), reason: v.string() },
+    productId: v.string(), offerId: v.string(), businessId: v.string(), providerAccountId: v.string(),
+    providerOrderId: v.string(), checkoutUrl: v.optional(v.string()), reason: v.string() },
   handler: async (ctx, args) => {
     const authority = await requireAdmin(ctx, args)
     note(args.reason)
@@ -214,6 +217,7 @@ export const repairCheckout = mutation({
     if (scoped.length !== 1) throw new Error('checkout_not_found_or_ambiguous')
     const handoff = scoped[0]
     if (handoff.globalUserId !== args.globalUserId || handoff.productId !== args.productId || handoff.offerId !== args.offerId ||
+      handoff.businessId !== args.businessId || handoff.providerAccountId !== args.providerAccountId ||
       (handoff.providerOrderId && handoff.providerOrderId !== args.providerOrderId)) throw new Error('evidence_mismatch')
     if (handoff.status === 'completed') return { status: 'already_completed' }
     if (handoff.status !== 'claimed') throw new Error('checkout_state_invalid')

@@ -11,6 +11,11 @@ vi.mock('convex/browser', () => ({
 const ORIGINAL_FETCH = globalThis.fetch
 const ORIGINAL_ENV = { ...process.env }
 const SECRET = 'checkout-identity-secret'
+const accountResponse = (options: RequestInit | undefined) => {
+  const authorization = String((options?.headers as string[][] | undefined)?.find(([name]) => name === 'Authorization')?.[1] ?? '')
+  const id = authorization.includes('sk_test_community') ? 'acct_communityglows123' : 'acct_commandglows123'
+  return new Response(JSON.stringify({ id, object: 'account' }), { status: 200, headers: { 'content-type': 'application/json' } })
+}
 
 function runtimeEnvironment() {
   return process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'production'
@@ -36,6 +41,10 @@ beforeEach(() => {
   process.env.SUITE_COMMERCE_CHECKOUT_SECRET = SECRET
   process.env.SUITE_BRIDGE_CONVEX_SECRET = 'bridge-secret'
   process.env.PUBLIC_CONVEX_URL = 'https://convex.example.com'
+  process.env.STRIPE_COMMANDGLOWS_ACCOUNT_ID = 'acct_commandglows123'
+  process.env.STRIPE_COMMUNITYGLOWS_ACCOUNT_ID = 'acct_communityglows123'
+  process.env.STRIPE_COMMUNITYGLOWS_SECRET_KEY = 'sk_test_community'
+  process.env.STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID = 'price_community'
 })
 
 afterEach(() => {
@@ -49,8 +58,9 @@ describe('Stripe-only commerce checkout route', () => {
     process.env.STRIPE_SECRET_KEY = 'sk_test_route'
     process.env.STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID = 'price_community'
     mockMutation.mockResolvedValueOnce({ status: 'claimed', idempotencyKey: 'suite-checkout:failure' })
-    globalThis.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: { message: 'synthetic refusal' } }),
-      { status: 400, headers: { 'content-type': 'application/json' } }))
+    globalThis.fetch = vi.fn().mockImplementation(async (url, options) => String(url).includes('/v1/account')
+      ? accountResponse(options) : new Response(JSON.stringify({ error: { message: 'synthetic refusal' } }),
+        { status: 400, headers: { 'content-type': 'application/json' } }))
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     const response = await POST({ request: request({ offerId: 'communityglows/lifetime_deal', identityToken: token('communityglows') }) })
     expect(response.status).toBe(502)
@@ -66,14 +76,15 @@ describe('Stripe-only commerce checkout route', () => {
     const claim = { status: 'claimed', idempotencyKey: 'suite-checkout:finalization' }
     mockMutation.mockResolvedValueOnce(claim).mockRejectedValueOnce(new Error('synthetic database outage'))
       .mockResolvedValueOnce(claim).mockResolvedValueOnce({ status: 'completed' })
-    const fetch = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ id: 'cs_retry', url: 'https://checkout.stripe.test/retry' }),
-      { status: 200, headers: { 'content-type': 'application/json' } }))
+    const fetch = vi.fn().mockImplementation(async (url, options) => String(url).includes('/v1/account')
+      ? accountResponse(options) : new Response(JSON.stringify({ id: 'cs_retry', url: 'https://checkout.stripe.test/retry' }),
+        { status: 200, headers: { 'content-type': 'application/json' } }))
     globalThis.fetch = fetch
     const body = { offerId: 'communityglows/lifetime_deal', identityToken: token('communityglows') }
     expect((await POST({ request: request(body) })).status).toBe(502)
     expect((await POST({ request: request(body) })).status).toBe(200)
-    expect(fetch.mock.calls).toHaveLength(2)
-    for (const call of fetch.mock.calls) expect(call[1]?.headers).toContainEqual(['Idempotency-Key', claim.idempotencyKey])
+    expect(fetch.mock.calls.filter(([url]) => String(url).includes('/v1/checkout/sessions'))).toHaveLength(2)
+    for (const call of fetch.mock.calls.filter(([url]) => String(url).includes('/v1/checkout/sessions'))) expect(call[1]?.headers).toContainEqual(['Idempotency-Key', claim.idempotencyKey])
     expect(mockMutation.mock.calls[3][1]).toMatchObject({ providerOrderId: 'cs_retry' })
   })
 
@@ -122,10 +133,11 @@ describe('Stripe-only commerce checkout route', () => {
     mockMutation
       .mockResolvedValueOnce({ status: 'claimed', idempotencyKey: `suite-checkout:${productId}` })
       .mockResolvedValueOnce({ status: 'completed' })
-    const fetchSpy = vi.fn().mockResolvedValue(new Response(
-      JSON.stringify({ id: `cs_${productId}`, url: `https://checkout.stripe.test/${productId}` }),
-      { status: 200, headers: { 'content-type': 'application/json' } }
-    ))
+    const fetchSpy = vi.fn().mockImplementation(async (url, options) => String(url).includes('/v1/account')
+      ? accountResponse(options) : new Response(
+        JSON.stringify({ id: `cs_${productId}`, url: `https://checkout.stripe.test/${productId}` }),
+        { status: 200, headers: { 'content-type': 'application/json' } }
+      ))
     globalThis.fetch = fetchSpy as unknown as typeof fetch
     const identityToken = token(productId)
     const response = await POST({ request: request({
@@ -137,13 +149,15 @@ describe('Stripe-only commerce checkout route', () => {
     expect(await response.json()).toMatchObject({
       checkoutUrl: `https://checkout.stripe.test/${productId}`,
     })
-    const stripeOptions = fetchSpy.mock.calls[0]?.[1]
+    const stripeOptions = fetchSpy.mock.calls.find(([url]) => String(url).includes('/v1/checkout/sessions'))?.[1]
     const body = String(stripeOptions?.body)
     expect(body).toContain('managed_payments[enabled]=true')
     expect(body).toContain(`line_items[0][price]=${priceId}`)
     expect(body).toContain(`metadata[product_id]=${productId}`)
     const form = new URLSearchParams(body)
     expect(form.get('metadata[source_ref]')).toBe(`suite-checkout:${productId}`)
+    expect(form.get('metadata[business_id]')).toBe(productId === 'communityglows' ? 'communityglows' : 'commandglows')
+    expect(form.get('metadata[provider_account_id]')).toBe(productId === 'communityglows' ? 'acct_communityglows123' : 'acct_commandglows123')
     expect(form.get('payment_intent_data[metadata][source_ref]')).toBe(`suite-checkout:${productId}`)
     expect(body).not.toContain(identityToken)
     expect(stripeOptions?.headers).toContainEqual([

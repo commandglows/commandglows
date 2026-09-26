@@ -4,6 +4,8 @@ import type { Infer } from 'convex/values'
 // The verified adapter envelope is retained without credentials or arbitrary metadata.
 export const commerceEventFields = {
   provider: v.string(),
+  businessId: v.optional(v.string()),
+  providerAccountId: v.optional(v.string()),
   offerId: v.string(),
   productId: v.string(),
   plan: v.string(),

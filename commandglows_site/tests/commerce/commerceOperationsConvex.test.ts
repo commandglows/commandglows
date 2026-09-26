@@ -11,6 +11,7 @@ const auth = { clerkId: 'admin_test', bridgeSecret: 'operations-synthetic-secret
 const paginationOpts = { cursor: null, numItems: 20 }
 const event = (overrides: Partial<CommerceEventEnvelope> = {}): CommerceEventEnvelope => ({
   provider: 'stripe', environment: 'sandbox', productId: 'communityglows', offerId: 'communityglows/lifetime_deal',
+  businessId: 'communityglows', providerAccountId: 'acct_communityglows123',
   plan: 'lifetime_deal', eventType: 'paid', status: 'applied', sourceRef: 'suite-checkout:ops',
   providerEventId: 'evt_ops', providerOrderId: 'cs_ops', providerPaymentIntentId: 'pi_ops',
   idempotencyKey: 'stripe:paid:evt_ops', globalUserId: 'gu_ops', providerPayloadHash: 'a'.repeat(64), ...overrides,
@@ -124,12 +125,13 @@ describe('commerce operations', () => {
   ])('retains an actionable %s/%s case even outside pending_review', async (status, reason) => {
     const t = backend(); await admin(t); const incident = await open(t)
     await t.run((ctx) => syncCommerceIncident(ctx, { receiptId: incident.receiptId!, environment: 'sandbox',
-      providerEventId: 'evt_ops', productId: 'communityglows', status, reason, attempts: 2 }))
+      providerEventId: 'evt_ops', providerAccountId: 'acct_communityglows123', productId: 'communityglows', status, reason, attempts: 2 }))
     expect((await list(t)).page[0]).toMatchObject({ active: true, status, reason })
   })
   test('ingress error creates no poisoned receipt; verified receipt later joins the case', async () => {
     const t = backend(); await admin(t)
     const failure = { bridgeSecret: auth.bridgeSecret, environment: 'sandbox', providerEventId: 'evt_ops',
+      providerAccountId: 'acct_communityglows123',
       providerPayloadHash: 'a'.repeat(64), providerEventType: 'checkout.session.completed', reason: 'stripe_dependency_unavailable' }
     await t.mutation(anyApi.commerceOperations.recordCommerceIngressFailure, failure)
     await t.mutation(anyApi.commerceOperations.recordCommerceIngressFailure, failure)
@@ -147,6 +149,7 @@ describe('commerce operations', () => {
   test('ingress descriptors reject foreign environment, hash drift and absent authority', async () => {
     const t = backend(); await admin(t)
     const input = { bridgeSecret: auth.bridgeSecret, environment: 'sandbox', providerEventId: 'evt_ops',
+      providerAccountId: 'acct_communityglows123',
       providerPayloadHash: 'a'.repeat(64), providerEventType: 'refund.updated', reason: 'stripe_dependency_unavailable' }
     await expect(t.mutation(anyApi.commerceOperations.recordCommerceIngressFailure, { ...input, bridgeSecret: '' })).rejects.toThrow('admin_forbidden')
     await expect(t.mutation(anyApi.commerceOperations.recordCommerceIngressFailure, { ...input, environment: 'production' })).rejects.toThrow('ingress_evidence_invalid')
@@ -167,9 +170,11 @@ describe('commerce operations', () => {
     const t = backend(); await admin(t)
     const id = await t.run((ctx) => ctx.db.insert('commerceCheckoutHandoffs', { jtiHash: 'ops', idempotencyKey: 'suite-checkout:ops',
       globalUserId: 'gu_ops', productId: 'communityglows', offerId: 'communityglows/lifetime_deal', environment: 'test',
+      businessId: 'communityglows', providerAccountId: 'acct_communityglows123',
       status: 'claimed', expiresAt: 1, createdAt: 1, updatedAt: 1 }))
     const input = { ...auth, sourceRef: 'suite-checkout:ops', environment: 'sandbox', globalUserId: 'gu_ops',
-      productId: 'communityglows', offerId: 'communityglows/lifetime_deal', providerOrderId: 'cs_ops', reason: 'Verified completed Stripe session' }
+      productId: 'communityglows', offerId: 'communityglows/lifetime_deal', businessId: 'communityglows',
+      providerAccountId: 'acct_communityglows123', providerOrderId: 'cs_ops', reason: 'Verified completed Stripe session' }
     await expect(t.mutation(anyApi.commerceOperations.repairCheckout, { ...input, globalUserId: 'gu_attacker' })).rejects.toThrow('evidence_mismatch')
     await t.mutation(anyApi.commerceOperations.repairCheckout, input)
     expect(await t.run((ctx) => ctx.db.get(id))).toMatchObject({ status: 'completed', providerOrderId: 'cs_ops' })
@@ -183,6 +188,7 @@ describe('durable operator alert delivery', () => {
     const t = backend(); await admin(t)
     await t.run((ctx) => ctx.db.insert('commerceCheckoutHandoffs', { jtiHash: 'ops', idempotencyKey: 'suite-checkout:ops',
       globalUserId: 'gu_ops', productId: 'communityglows', offerId: 'communityglows/lifetime_deal', environment: 'test',
+      businessId: 'communityglows', providerAccountId: 'acct_communityglows123',
       status: 'completed', providerOrderId: 'cs_ops', expiresAt: 1, createdAt: 1, updatedAt: 1 }))
     await t.mutation(anyApi.commerceAlerts.sweep, {})
     await t.mutation(anyApi.commerceAlerts.sweep, {})
@@ -202,7 +208,8 @@ describe('durable operator alert delivery', () => {
     await t.run(async (ctx) => {
       for (let n = 0; n < 54; n++) await ctx.db.insert('commerceCheckoutHandoffs', { jtiHash: `scan_${n}`,
         idempotencyKey: `suite-checkout:scan_${n}`, globalUserId: 'gu_ops', productId: 'communityglows',
-        offerId: 'communityglows/lifetime_deal', environment: 'sandbox', status: 'completed', providerOrderId: `cs_${n}`,
+        offerId: 'communityglows/lifetime_deal', environment: 'sandbox', businessId: 'communityglows',
+        providerAccountId: 'acct_communityglows123', status: 'completed', providerOrderId: `cs_${n}`,
         expiresAt: n + 1, createdAt: 1, updatedAt: 1 })
       await ctx.db.insert('commerceEventReceipts', { eventKey: 'terminal', envelope: event({ eventType: 'checkout_failed',
         sourceRef: 'suite-checkout:scan_0', providerEventId: 'evt_terminal', idempotencyKey: 'terminal' }),
@@ -237,6 +244,7 @@ describe('durable operator alert delivery', () => {
       await ctx.db.insert('globalUsers', { globalUserId: 'gu_ops', createdAt: 1, updatedAt: 1 })
       await ctx.db.insert('commerceCheckoutHandoffs', { jtiHash: 'ops', idempotencyKey: 'suite-checkout:ops',
         globalUserId: 'gu_ops', productId: 'communityglows', offerId: 'communityglows/lifetime_deal', environment: 'sandbox',
+        businessId: 'communityglows', providerAccountId: 'acct_communityglows123',
         status: 'completed', providerOrderId: 'cs_ops', providerPaymentIntentId: 'pi_ops', expiresAt: 1, createdAt: 1, updatedAt: 1 })
     })
     await t.mutation(anyApi.bridge.processCommerceEvent, { ...event(), bridgeSecret: auth.bridgeSecret })

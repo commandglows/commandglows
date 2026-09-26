@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.1.1"
 project: "CommandGlows"
 created: "2026-04-26"
-updated: "2026-09-17"
+updated: "2026-09-25"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -22,6 +22,7 @@ evidence:
   - "commandglows_app/.firebaserc"
   - "commandglows_app/.shipglows.flutter.json"
   - "commandglows_app/scripts/flutter_config.py"
+  - "shipglows_data/workflow/specs/reusable-pin-core-and-independent-window-contract.md"
 linked_systems:
   - "Flutter"
   - "Backend-agnostic stores"
@@ -206,6 +207,31 @@ browser-safe clipboard/recording flows, and documented degraded states.
 
 Flutter integrates each host through narrow bridge interfaces; feature logic
 stays in Dart.
+
+### Reusable pin contract
+
+`lib/features/pinning/domain/` owns provider-neutral references to source
+resources, distinct pin records, and the pin repository interface. Pin records
+contain stable source identity and pin metadata only; they do not copy source
+payloads or grant access to a resource. The selected repository owns pin IDs and
+account/local scope.
+
+`PinWindowHost` is the platform boundary for independent per-pin windows. Its
+operations and events are keyed by pin ID, use logical desktop positions, and
+expose no primary-window lifecycle controls. Closing a pin window does not
+remove its repository record. A platform that cannot create an independent
+window must report unsupported rather than fall back to the main window.
+
+The Windows runner now has a narrow `WindowsPinWindowHost` implementation for
+the debug prototype: one fixed fake snippet is shown in an unowned native
+top-level window. It requests topmost placement above ordinary windows, uses
+native system chrome, does not activate on display or mouse interaction, and
+reports move/close events by pin ID. Debug-only launchers are present on sign-in
+and home so the interaction can be tried without
+authentication or real clipboard data. This proves only the native window
+boundary; it does not add source adapters, persistence, editing, or multiple pins.
+The existing Windows overlay still operates on the primary Flutter window and
+is unchanged.
 
 ## Cross-cutting invariants
 

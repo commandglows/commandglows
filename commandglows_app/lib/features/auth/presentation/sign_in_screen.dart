@@ -10,6 +10,7 @@ import '../../../core/bootstrap/sentry_bootstrap.dart';
 import '../../../core/diagnostics/app_diagnostics.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_components.dart';
+import '../../pinning/presentation/pin_prototype_launcher.dart';
 import '../application/auth_session_provider.dart';
 import '../domain/auth_session_store.dart';
 import '../domain/auth_failure.dart';
@@ -448,6 +449,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                               padding: AppInsets.progress,
                               child: Center(child: CircularProgressIndicator()),
                             ),
+                          if (PinPrototypeLauncher.isAvailable) ...[
+                            AppGaps.x2,
+                            const PinPrototypeLauncher(),
+                          ],
                         ],
                       ),
                     ),

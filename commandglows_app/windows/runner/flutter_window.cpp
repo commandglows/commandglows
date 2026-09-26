@@ -94,6 +94,8 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   RegisterWindowsOverlayChannel();
+  pin_window_host_ = std::make_unique<WindowsPinWindowHost>(
+      flutter_controller_->engine()->messenger());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -109,6 +111,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  pin_window_host_.reset();
   if (hotkey_registered_) {
     UnregisterHotKey(GetHandle(), kWindowsOverlayHotkeyId);
     hotkey_registered_ = false;

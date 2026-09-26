@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "win32_window.h"
+#include "pin_window_host.h"
 
 // A window that does nothing but host a Flutter view.
 class FlutterWindow : public Win32Window {
@@ -59,6 +60,7 @@ class FlutterWindow : public Win32Window {
 
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       windows_overlay_channel_;
+  std::unique_ptr<WindowsPinWindowHost> pin_window_host_;
   std::vector<flutter::EncodableValue> windows_overlay_events_;
   HWND last_foreground_window_ = nullptr;
   bool windows_overlay_enabled_ = false;
