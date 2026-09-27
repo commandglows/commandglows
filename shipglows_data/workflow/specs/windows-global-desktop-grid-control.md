@@ -1,10 +1,10 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: "CommandGlows"
 created: "2026-09-26"
-updated: "2026-09-26"
+updated: "2026-09-27"
 status: active
 source_skill: sg-development
 scope: "windows-global-desktop-grid-control"
@@ -26,7 +26,7 @@ evidence:
   - "Diane 2026-09-17: CommandGlows hosts keyboard control of the entire desktop with a full-screen grid; recursive grid is the priority."
   - "Diane 2026-09-17: hints and a coordinate grid remain candidates, with at most one key to select a coordinate cell."
   - "Diane 2026-09-26: prepare a spec, delegate verification and implementation, and complete the work without micromanagement."
-next_step: "Verify authenticated interactive Windows pointer control in another application."
+next_step: "Verify physical-key selection, pointer actions and multi-monitor behavior in external apps."
 ---
 
 # Windows global desktop grid control
@@ -54,7 +54,7 @@ Add a dedicated Windows desktop-control host owned by the Windows runner. It own
 
 Use the process's existing PerMonitorV2 manifest; obtain monitor bounds at activation and react to `WM_DISPLAYCHANGE`/DPI changes by cancelling cleanly or recomputing without stale coordinates. Use `SendInput` for click, drag and wheel; check inserted event counts. Do not elevate CommandGlows to bypass UIPI. All native resources, hotkeys, windows, hooks and held buttons must be released on disable and process exit.
 
-Native overlay drawing uses a small named palette of high-contrast semantic colours and sizes in one owner, with translucent region fill and clearly readable key labels. Reuse the project's settings theme for Flutter controls. Respect high contrast and avoid motion as a functional requirement.
+Native overlay drawing uses a small named palette of high-contrast semantic colours and sizes in one owner, with a transparent region interior and clearly readable key labels. Reuse the project's settings theme for Flutter controls. Respect high contrast and avoid motion as a functional requirement.
 
 ## Execution batches
 
@@ -82,7 +82,8 @@ Channel `commandglows_app/desktop_control` methods: `getStatus` returns `{suppor
 
 - 2026-09-26: sg-development — research and repository inspection; ready implementation contract recorded. Implementation and live proof pending.
 - 2026-09-26: GPT-6 Luna native and Flutter batches — Windows host, persisted local opt-in, settings and focused tests implemented. C++17 geometry/keymap harness, seven Flutter tests and Flutter analyzer passed through Doppler; managed Windows runner recompiled and launched. Independent static review found and prompted hook teardown, button-release, drag-motion and fine-grid readability fixes. Live external-app proof awaits an authenticated CommandGlows Dev session.
+- 2026-09-27: Live Windows UI review found the settings page had no entry in the visible profile menu. Added its Windows menu route, verified the page and local opt-in in the managed app, then invoked and dismissed the grid globally over a blank Bloc-notes tab. Dense hatching obscured the target, so the region interior was made transparent and the native runner recompiled. Physical-key selection, click/drag/scroll and final visual review after the redraw remain open.
 
 ## Current Chantier Flow
 
-- Native and Flutter batches integrated; static/build checks pass. Authenticated Windows interaction proof and any resulting correction remain open. Hints stay a separate research candidate.
+- Native and Flutter batches integrated; static/build checks and external-app activation/dismissal pass. Selection and pointer-action proof remains open. Hints stay a separate research candidate.

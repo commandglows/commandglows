@@ -147,13 +147,43 @@ class _DesktopControlSettingsSectionState
               'Après activation, Ctrl+Alt+G affiche la grille sur l’écran du pointeur. Désactivé au premier lancement.',
             ),
           ),
-          const ListTile(
-            leading: Icon(Icons.keyboard_outlined),
-            title: Text('Commandes de la grille'),
-            subtitle: Text(
-              'Choisissez une case avec une touche. Retour arrière remonte d’un niveau, Espace réinitialise et Échap ferme la grille.',
+          if (supported) ...[
+            AppGaps.x2,
+            const AppBannerCard(
+              key: Key('desktop-control-quick-start'),
+              icon: Icons.keyboard_outlined,
+              title: 'Premiers pas',
+              message:
+                  '1. Activez le contrôle du bureau, puis placez le pointeur sur l’écran à piloter.\n'
+                  '2. Dans n’importe quelle application, appuyez sur Ctrl+Alt+G pour afficher la grille.\n'
+                  '3. Appuyez sur la lettre affichée dans la case visée, répétez pour affiner, puis sur F1 pour cliquer. Échap ferme la grille.',
             ),
-          ),
+            ExpansionTile(
+              key: const Key('desktop-control-more-keys'),
+              leading: const Icon(Icons.tune_outlined),
+              title: const Text('Autres commandes'),
+              children: [
+                ListTile(
+                  title: const Text('Se repérer'),
+                  subtitle: const Text(
+                    'Retour arrière remonte d’un niveau · Espace repart de l’écran entier · Tab affiche la grille de coordonnées 5 × 5.',
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Agir sur la cible'),
+                  subtitle: const Text(
+                    'F2 : clic droit · F3 : clic central · F4 : commencer un glisser · F5 : relâcher · F6/F7 : faire défiler.',
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Changer d’écran'),
+                  subtitle: const Text(
+                    'Page précédente / Page suivante passe d’un écran connecté à l’autre.',
+                  ),
+                ),
+              ],
+            ),
+          ],
           ListTile(
             leading: Icon(
               active

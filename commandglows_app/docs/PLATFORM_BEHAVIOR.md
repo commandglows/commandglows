@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.1.1"
 project: "CommandGlows"
 created: "2026-04-27"
-updated: "2026-09-26"
+updated: "2026-09-27"
 status: "reviewed"
 source_skill: "sf-spec"
 scope: "platform_behavior"
@@ -126,6 +126,8 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
 - A separate Windows native host provides an opt-in keyboard pointer grid over
   the monitor containing the cursor. It is independent of the text overlay and
   uses `Ctrl+Alt+G` so the existing `Ctrl+Alt+Space` workflow remains available.
+- On Windows, open **Mon espace → Contrôle du bureau** to enable it. The page is
+  available in local mode without an account.
 - The default recursive grid has 3×3 cells. Tab shows a coarse 5×5 coordinate
   grid; one physical key selects a cell, after which recursive refinement is
   available. Backspace returns one selection, Space resets, Escape closes, and
@@ -141,9 +143,9 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
   locked session can reject input; failure feedback does not assert a cause
   Windows cannot identify. Hints based on UI Automation remain a separate
   candidate until their latency and coverage are measured.
-- The feature has compiled and run in the managed Windows debug session. Live
-  selection, click and drag in another app are still pending authenticated
-  interactive verification; compilation does not establish that proof.
+- The feature has compiled and run in the managed Windows debug session. The
+  global shortcut opened and dismissed the grid over Bloc-notes; selection,
+  click, drag and scroll in another app still need physical-key verification.
 
 ## macOS Desktop Overlay
 

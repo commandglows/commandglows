@@ -41,7 +41,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: DesktopControlSettingsSection(preferenceStore: preferences),
+          body: SingleChildScrollView(
+            child: DesktopControlSettingsSection(preferenceStore: preferences),
+          ),
         ),
       ),
     );
@@ -88,6 +90,19 @@ void main() {
         find.textContaining('grille récursive au clavier'),
         findsOneWidget,
       );
+      expect(find.text('Premiers pas'), findsOneWidget);
+      expect(
+        find.textContaining('Dans n’importe quelle application'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('F1 pour cliquer'), findsOneWidget);
+      expect(find.text('Autres commandes'), findsOneWidget);
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-more-keys')),
+      );
+      await tester.tap(find.byKey(const Key('desktop-control-more-keys')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('F2 : clic droit'), findsOneWidget);
     }),
   );
 

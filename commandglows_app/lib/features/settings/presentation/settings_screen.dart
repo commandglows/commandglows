@@ -1933,7 +1933,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _SettingsHubTile(
                 icon: Icons.grid_view_rounded,
                 title: 'Contrôle du bureau',
-                subtitle: 'Grille récursive au clavier',
+                subtitle: 'Grille du bureau · Ctrl+Alt+G',
                 onTap: () => context.push('/settings?section=desktop_control'),
               ),
             _SettingsHubTile(

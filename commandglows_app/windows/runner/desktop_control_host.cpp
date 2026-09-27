@@ -437,9 +437,8 @@ class WindowsDesktopControlHost::Impl {
     const int cell_count = dimension * dimension;
     HPEN grid_pen = CreatePen(PS_SOLID, 2, kGridColor);
     HGDIOBJ old_pen = SelectObject(dc, grid_pen);
-    const COLORREF previous_background = SetBkColor(dc, kTransparentColor);
-    HBRUSH region_brush = CreateHatchBrush(HS_BDIAGONAL, kRegionColor);
-    HGDIOBJ old_brush = SelectObject(dc, region_brush);
+    // Keep the target application readable through the click-through overlay.
+    HGDIOBJ old_brush = SelectObject(dc, GetStockObject(NULL_BRUSH));
     Rectangle(dc, local.left, local.top, local.right, local.bottom);
     for (int i = 1; i < dimension; ++i) {
       const LONG x = local.left + (local.right - local.left) * i / dimension;
@@ -450,8 +449,6 @@ class WindowsDesktopControlHost::Impl {
       LineTo(dc, local.right, y);
     }
     SelectObject(dc, old_brush);
-    DeleteObject(region_brush);
-    SetBkColor(dc, previous_background);
 
     POINT center{};
     if (GetCursorPos(&center)) {
