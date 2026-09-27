@@ -83,6 +83,7 @@ export default function CommerceIncidentConsole() {
   const [businessId, setBusinessId] = useState<'commandglows' | 'communityglows' | 'replayglows' | 'contentglows'>('commandglows')
   const [merchantAvailability, setMerchantAvailability] = useState<Record<string, boolean> | null>(null)
   const reasonRef = useRef<HTMLTextAreaElement | null>(null)
+  const detailRef = useRef<HTMLElement | null>(null)
   const receiptMerchantReady = Boolean(detail?.receipt?.businessId && detail.receipt.providerAccountId &&
     merchantAvailability?.[detail.receipt.businessId] === true)
 
@@ -129,7 +130,10 @@ export default function CommerceIncidentConsole() {
 
   async function select(incident: Incident) {
     setBusy(true); setError(''); setReason(''); setEvidence(''); setMessage('')
-    try { setDetail(await request(`/api/admin/commerce?incidentId=${encodeURIComponent(incident._id)}`)) }
+    try {
+      setDetail(await request(`/api/admin/commerce?incidentId=${encodeURIComponent(incident._id)}`))
+      window.requestAnimationFrame(() => detailRef.current?.scrollIntoView?.({ block: 'start' }))
+    }
     catch (failure) { setError((failure as Error).message) } finally { setBusy(false) }
   }
   async function act(action: string) {
@@ -186,50 +190,9 @@ export default function CommerceIncidentConsole() {
     </div>
     {error && <p className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-950" role="alert">{error}</p>}
     {message && <p className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm font-semibold text-emerald-950" role="status">{message}</p>}
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.85fr)]">
-    {view !== 'missing' ? <div className="grid content-start gap-3">
-      {!busy && !error && incidents.length === 0 && <p className={panel}>Aucun dossier dans cette page.</p>}
-      {incidents.map((incident) => <article className={`${panel} ${incidentAccent(incidentTone(incident))}`} key={incident._id}>
-        <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-dashboard-text-primary font-bold">{incident.productId}</h3>
-            <span className={`rounded-full border px-2 py-1 text-xs font-bold ${badge(incidentTone(incident))}`}>{label(incident.queueState)}</span>
-            {incident.overdue && <span className={`rounded-full border px-2 py-1 text-xs font-bold ${badge('danger')}`}>Échéance dépassée</span>}
-          </div>
-          <p className={`${meta} mt-2 break-all`}>{incident._id} · {incident.providerEventId}</p>
-          <p className={`${meta} mt-2`}>{label(incident.status)} · {incident.reason ?? 'Motif à vérifier'} · {incident.attempts} tentative(s)</p>
-          <p className={`${meta} mt-2`}>Responsable : {incident.ownerId ?? 'Permanence commerce - à affecter'} · Échéance : {date(incident.dueAt)}</p>
-          {(() => {
-            const summary = summarizeAlerts(incident.alerts)
-            return <>
-              {summary.recent.map((alert) => {
-                const transportState = alert.emailState && alert.emailState !== 'queued' ? alert.emailState : alert.status
-                return <p key={alert.id} className={`mt-2 inline-flex max-w-full rounded-lg border px-2 py-1 text-xs font-semibold ${badge(alertTone(transportState, alert.error))}`}>
-                  <span className="truncate">Notification : {label(transportState)} · {alert.attempts} essai(s){alert.error ? ` · ${alert.error}` : ''}</span>
-                </p>
-              })}
-              {!!summary.skippedFailures && (
-                <p className={`${meta} mt-2`}>États antérieurs masqués : {summary.skippedFailures} notification(s) en erreur</p>
-              )}
-              {!!summary.configOnlyDuplicates && (
-                <p className={`${meta} mt-2`}>Répétitions d’état canal non configuré regroupées : {summary.configOnlyDuplicates}</p>
-              )}
-            </>
-          })()}
-        </div><button className={button} disabled={busy} onClick={() => void select(incident)}>Ouvrir le dossier</button></div>
-      </article>)}
-    </div> : <div className="grid content-start gap-3"><p className={panel}>Ces sessions anciennes n’ont pas de reçu de paiement. Un abandon est possible : vérifiez Stripe avant toute conclusion. Parcourez toutes les pages, y compris les pages vides.</p>
-      {!busy && !error && candidates.length === 0 && <p className={panel}>Aucune session à vérifier dans cette page.</p>}
-      {candidates.map((candidate) => <article className={panel} key={candidate.handoffId}>
-        <h3 className="text-dashboard-text-primary font-bold">{candidate.productId} · Paiement non vérifié</h3>
-        <p className="text-dashboard-text-muted mt-2 break-all text-sm">{candidate.sourceRef} · {candidate.providerOrderId ?? 'Session non rattachée'} · {candidate.checkoutState}</p>
-      </article>)}
-    </div>}
-    <aside className="grid content-start gap-5">
-      {!done && <button className={button} disabled={busy} onClick={() => {
-        setBusy(true); void load(cursor).catch((failure) => setError(failure.message)).finally(() => setBusy(false))
-      }}>Afficher la page suivante</button>}
-      {detail ? <div className={panel}>
+    <div className="grid gap-5">
+    {detail && <aside ref={detailRef} className="grid content-start gap-5 scroll-mt-6">
+      <div className={panel}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-dashboard-text-muted text-xs font-bold uppercase tracking-wide">Dossier sélectionné</p>
@@ -274,11 +237,60 @@ export default function CommerceIncidentConsole() {
         <h4 className="text-dashboard-text-primary mt-5 font-bold">Historique des opérations</h4>
         <ol className="mt-3 grid gap-2">{detail.actions.map((action) => <li key={action._id} className="text-dashboard-text-muted break-words text-sm">{date(action.createdAt)} · {action.operatorId} · {action.action} · {action.reason}</li>)}</ol>
         {detail.historyTruncated && <p className="text-dashboard-text-muted mt-2 text-sm">Les 50 dernières actions sont affichées. L’historique complet est conservé dans le journal opérateur.</p>}
-      </div> : <div className={panel}>
-        <p className="text-dashboard-text-primary font-bold">Aucun dossier sélectionné</p>
-        <p className={`${meta} mt-2`}>Ouvrez un dossier pour afficher le motif obligatoire, les actions opérateur et l’historique.</p>
-      </div>}
-    </aside>
+      </div>
+    </aside>}
+    {view !== 'missing' ? <div className="grid content-start gap-3">
+      {!busy && !error && incidents.length === 0 && <p className={panel}>Aucun dossier dans cette page.</p>}
+      {incidents.map((incident) => <article className={`${panel} ${incidentAccent(incidentTone(incident))}`} key={incident._id}>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-dashboard-text-primary font-bold">{incident.productId === 'unknown' ? 'Produit à identifier' : incident.productId}</h3>
+            <span className={`rounded-full border px-2 py-1 text-xs font-bold ${badge(incidentTone(incident))}`}>{label(incident.queueState)}</span>
+            {incident.overdue && <span className={`rounded-full border px-2 py-1 text-xs font-bold ${badge('danger')}`}>Échéance dépassée</span>}
+          </div>
+          <p className={`${meta} mt-2 break-all`}>{incident.providerEventId}</p>
+          </div>
+          <button className={button} disabled={busy} onClick={() => void select(incident)}>Ouvrir le dossier</button>
+        </div>
+        <div className="border-dashboard-border mt-4 grid gap-2 border-t pt-4 sm:grid-cols-2">
+          <p className={meta}><span className="text-dashboard-text-primary font-semibold">{label(incident.status)}</span> · {incident.reason ?? 'Motif à vérifier'} · {incident.attempts} tentative(s)</p>
+          <p className={meta}>Échéance : <span className="text-dashboard-text-primary font-semibold">{date(incident.dueAt)}</span> · {incident.ownerId ?? 'À affecter'}</p>
+        </div>
+          {(() => {
+            const summary = summarizeAlerts(incident.alerts)
+            const failedCount = incident.alerts.filter((alert) => alert.status === 'failed' || alert.error).length
+            return incident.alerts.length > 0 && <details className="border-dashboard-border mt-3 border-t pt-3">
+              <summary className="text-dashboard-text-muted focus-visible:outline-navbar-ring cursor-pointer text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
+                Notifications : {failedCount > 0 ? `${failedCount} en échec` : `${incident.alerts.length} à vérifier`} · Voir les états
+              </summary>
+              <div className="mt-3 grid gap-2">{summary.recent.map((alert) => {
+                const transportState = alert.emailState && alert.emailState !== 'queued' ? alert.emailState : alert.status
+                return <p key={alert.id} className={`max-w-full break-words rounded-lg border px-2 py-1 text-xs font-semibold ${badge(alertTone(transportState, alert.error))}`}>
+                  Notification : {label(transportState)} · {alert.attempts} essai(s){alert.error ? ` · ${alert.error}` : ''}
+                </p>
+              })}
+              {!!summary.skippedFailures && (
+                <p className={`${meta} mt-2`}>États antérieurs masqués : {summary.skippedFailures} notification(s) en erreur</p>
+              )}
+              {!!summary.configOnlyDuplicates && (
+                <p className={`${meta} mt-2`}>Répétitions d’état canal non configuré regroupées : {summary.configOnlyDuplicates}</p>
+              )}
+              </div>
+            </details>
+          })()}
+        <details className="text-dashboard-text-muted mt-3 text-xs"><summary className="focus-visible:outline-navbar-ring cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2">Référence interne</summary><p className="mt-2 break-all">{incident._id}</p></details>
+      </article>)}
+    </div> : <div className="grid content-start gap-3"><p className={panel}>Ces sessions anciennes n’ont pas de reçu de paiement. Un abandon est possible : vérifiez Stripe avant toute conclusion. Parcourez toutes les pages, y compris les pages vides.</p>
+      {!busy && !error && candidates.length === 0 && <p className={panel}>Aucune session à vérifier dans cette page.</p>}
+      {candidates.map((candidate) => <article className={panel} key={candidate.handoffId}>
+        <h3 className="text-dashboard-text-primary font-bold">{candidate.productId} · Paiement non vérifié</h3>
+        <p className="text-dashboard-text-muted mt-2 break-all text-sm">{candidate.sourceRef} · {candidate.providerOrderId ?? 'Session non rattachée'} · {candidate.checkoutState}</p>
+      </article>)}
+    </div>}
+    {!done && <button className={button} disabled={busy} onClick={() => {
+        setBusy(true); void load(cursor).catch((failure) => setError(failure.message)).finally(() => setBusy(false))
+      }}>Afficher la page suivante</button>}
     </div>
     <div className={panel}>
       <h3 className="text-dashboard-text-primary font-bold">Outils Stripe contrôlés</h3>
