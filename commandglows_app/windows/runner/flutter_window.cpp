@@ -232,6 +232,16 @@ void FlutterWindow::RegisterShortcutCheatsheetChannel() {
           result->Success(ShortcutCheatsheetStatus());
           return;
         }
+        if (method == "closeApp") {
+          const HWND window = GetHandle();
+          if (!IsWindow(window) || !PostMessageW(window, WM_CLOSE, 0, 0)) {
+            result->Error("WINDOW_UNAVAILABLE",
+                          "The CommandGlows window could not be closed.");
+            return;
+          }
+          result->Success();
+          return;
+        }
         result->NotImplemented();
       });
 }

@@ -108,6 +108,10 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
   typed Flutter status/events/delivery results and a native runner host for
   `Ctrl+Alt+Space`, topmost show/hide, clipboard copy, and `Ctrl+V` paste
   delivery back to the last foreground window.
+- When the CommandGlows window has keyboard focus, pressing Escape twice within
+  800 ms requests normal app closure through the Windows `WM_CLOSE` message.
+  The first Escape continues through the focused screen as usual; this shortcut
+  is app-local and is not registered globally.
 
 - Windows must not promise an IME. The expected equivalent is desktop quick
   actions: hotkey -> overlay -> correction/dictation/snippet/clipboard action ->
