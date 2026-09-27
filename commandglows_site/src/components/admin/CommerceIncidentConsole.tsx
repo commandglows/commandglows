@@ -31,6 +31,38 @@ const primaryButton = 'border-navbar-ring bg-dashboard-text-primary text-dashboa
 const dangerButton = 'border-red-300 bg-red-50 text-red-900 hover:bg-red-100 focus-visible:outline-red-500 min-h-11 rounded-lg border px-4 py-2 text-sm font-semibold disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2'
 const input = 'border-dashboard-border bg-dashboard-bg text-dashboard-text-primary focus-visible:outline-navbar-ring min-h-11 w-full rounded-lg border p-3 focus-visible:outline-2 focus-visible:outline-offset-2'
 const meta = 'text-dashboard-text-muted text-sm'
+
+function CopyInternalReference({ value }: { value: string }) {
+  const [state, setState] = useState<'idle' | 'copying' | 'copied' | 'error'>('idle')
+
+  useEffect(() => {
+    if (state !== 'copied') return
+    const timeout = window.setTimeout(() => setState('idle'), 2500)
+    return () => window.clearTimeout(timeout)
+  }, [state])
+
+  const copy = async () => {
+    setState('copying')
+    try {
+      await navigator.clipboard.writeText(value)
+      setState('copied')
+    } catch {
+      setState('error')
+    }
+  }
+
+  return <div className="mt-2">
+    <button type="button" className={`${button} max-w-full text-left`} disabled={state === 'copying'}
+      aria-label={`Copier la référence interne ${value}`} onClick={() => void copy()}>
+      <span className="break-all font-mono">{value}</span>
+      <span aria-hidden="true" className="ml-2">{state === 'copied' ? 'Copié' : 'Copier'}</span>
+    </button>
+    <p role="status" className="mt-1">
+      {state === 'copied' ? 'Référence copiée.' : state === 'error' ? 'Copie impossible. Sélectionnez la référence pour la copier manuellement.' : ''}
+    </p>
+  </div>
+}
+
 const date = (value: number) => new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).format(value)
 const label = (value: string) => ({ open: 'À traiter', escalated: 'Escaladé', resolved: 'Résolu', pending: 'À envoyer',
   queued: 'À envoyer', sending: 'Envoi en cours', submitted: 'Transport accepté', unknown: 'Statut transport à vérifier',
@@ -279,7 +311,7 @@ export default function CommerceIncidentConsole() {
               </div>
             </details>
           })()}
-        <details className="text-dashboard-text-muted mt-3 text-xs"><summary className="focus-visible:outline-navbar-ring cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2">Référence interne</summary><p className="mt-2 break-all">{incident._id}</p></details>
+        <details className="text-dashboard-text-muted mt-3 text-xs"><summary className="focus-visible:outline-navbar-ring cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2">Référence interne</summary><CopyInternalReference value={incident._id} /></details>
       </article>)}
     </div> : <div className="grid content-start gap-3"><p className={panel}>Ces sessions anciennes n’ont pas de reçu de paiement. Un abandon est possible : vérifiez Stripe avant toute conclusion. Parcourez toutes les pages, y compris les pages vides.</p>
       {!busy && !error && candidates.length === 0 && <p className={panel}>Aucune session à vérifier dans cette page.</p>}

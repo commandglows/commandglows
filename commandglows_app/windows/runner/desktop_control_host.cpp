@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -26,6 +27,7 @@ namespace {
 constexpr char kChannelName[] = "commandglows_app/desktop_control";
 constexpr wchar_t kOverlayClassName[] = L"COMMANDGLOWS_DESKTOP_CONTROL";
 constexpr int kActivationHotkeyId = 0x4347;
+constexpr int kCandidateHotkeyId = 0x4349;
 constexpr UINT_PTR kHookTeardownTimerId = 0x4348;
 constexpr UINT kHookKeyMessage = WM_APP + 0x4C1;
 constexpr UINT kHookCleanupMessage = WM_APP + 0x4C2;
@@ -43,9 +45,38 @@ using commandglows::desktop_control::IntersectNonEmpty;
 using commandglows::desktop_control::kCoordinateKeys;
 using commandglows::desktop_control::kGridKeys;
 using commandglows::desktop_control::KeyCaptureDecision;
+using commandglows::desktop_control::KeyBinding;
 using commandglows::desktop_control::KeyLegend;
 using commandglows::desktop_control::PhysicalKey;
 using commandglows::desktop_control::ReleaseKeyUp;
+
+struct ActivationBinding {
+  UINT virtual_key = 'G';
+  UINT modifiers = MOD_CONTROL | MOD_ALT;
+};
+
+using BindingMap = std::unordered_map<std::string, std::vector<KeyBinding>>;
+
+BindingMap DefaultBindings() {
+  return {
+      {"leftClick", {{0x39, false}, {0x3B, false}}},
+      {"rightClick", {{0x3C, false}}}, {"middleClick", {{0x3D, false}}},
+      {"dragStart", {{0x3E, false}}}, {"dragRelease", {{0x3F, false}}},
+      {"wheelUp", {{0x40, false}}}, {"wheelDown", {{0x41, false}}},
+      {"back", {{0x0E, false}}}, {"reset", {{0x43, false}}},
+      {"coordinateView", {{0x0F, false}}}, {"toggleScope", {{0x42, false}}},
+      {"previousMonitor", {{0x49, true}}}, {"nextMonitor", {{0x51, true}}},
+      {"nudgeLeft", {{0x4B, true}}}, {"nudgeRight", {{0x4D, true}}},
+      {"nudgeUp", {{0x48, true}}}, {"nudgeDown", {{0x50, true}}},
+      {"close", {{0x01, false}}},
+  };
+}
+
+const std::array<const char*, 18> kActionIds{{
+    "leftClick", "rightClick", "middleClick", "dragStart", "dragRelease",
+    "wheelUp", "wheelDown", "back", "reset", "coordinateView",
+    "toggleScope", "previousMonitor", "nextMonitor", "nudgeLeft",
+    "nudgeRight", "nudgeUp", "nudgeDown", "close"}};
 
 enum class InputAction {
   none,
@@ -75,16 +106,14 @@ const char* ScopeName(GridScope scope) {
   return scope == GridScope::window ? "window" : "monitor";
 }
 
-bool IsModifierDown() {
-  constexpr std::array<int, 8> modifiers{{VK_CONTROL, VK_LCONTROL, VK_RCONTROL,
-                                          VK_MENU, VK_LMENU, VK_RMENU,
-                                          VK_LWIN, VK_RWIN}};
-  for (int key : modifiers) {
-    if ((GetAsyncKeyState(key) & 0x8000) != 0) {
-      return true;
-    }
-  }
-  return (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+UINT CurrentModifierMask() {
+  UINT modifiers = 0;
+  if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0) modifiers |= MOD_CONTROL;
+  if ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0) modifiers |= MOD_ALT;
+  if ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0) modifiers |= MOD_SHIFT;
+  if ((GetAsyncKeyState(VK_LWIN) & 0x8000) != 0 ||
+      (GetAsyncKeyState(VK_RWIN) & 0x8000) != 0) modifiers |= MOD_WIN;
+  return modifiers;
 }
 
 bool IsExtended(const KBDLLHOOKSTRUCT& key) {
@@ -105,6 +134,20 @@ class WindowsDesktopControlHost::Impl {
     channel_.SetMethodCallHandler([this](const auto& call, auto result) {
       const std::string& method = call.method_name();
       if (method == "getStatus") {
+        result->Success(Status());
+      } else if (method == "getBindings") {
+        result->Success(BindingsValue());
+      } else if (method == "setBindings") {
+        std::string validation_error;
+        if (!SetBindings(call.arguments(), &validation_error)) {
+          if (error_code_ != "HOTKEY_UNAVAILABLE" && error_code_ != "BINDINGS_ACTIVE")
+            error_code_ = "INVALID_BINDINGS";
+          validation_error_ = validation_error;
+          result->Success(Status());
+          return;
+        }
+        error_code_.clear();
+        validation_error_.clear();
         result->Success(Status());
       } else if (method == "setEnabled") {
         bool enabled = false;
@@ -162,7 +205,7 @@ class WindowsDesktopControlHost::Impl {
   }
 
   bool HandleWindowMessage(UINT message, WPARAM wparam, LPARAM lparam) {
-    if (message == WM_HOTKEY && wparam == kActivationHotkeyId) {
+    if (message == WM_HOTKEY && wparam == static_cast<WPARAM>(hotkey_id_)) {
       if (active_) {
         Cancel();
       } else if (enabled_) {
@@ -229,11 +272,12 @@ class WindowsDesktopControlHost::Impl {
       return CallNextHookEx(nullptr, code, wparam, lparam);
     }
 
+    const UINT modifiers = CurrentModifierMask();
     const bool assigned = host->active_ &&
-                          host->IsAssignedKey(key->vkCode, scan_code, extended);
+                          host->IsAssignedKey(key->vkCode, scan_code, extended,
+                                              modifiers);
     const auto decision = CaptureKeyDown(host->swallowed_keys_, identity,
-                                         host->active_, assigned,
-                                         IsModifierDown());
+                                         host->active_, assigned);
     if (decision == KeyCaptureDecision::repeat) {
       return 1;
     }
@@ -242,7 +286,11 @@ class WindowsDesktopControlHost::Impl {
     }
     const LPARAM payload = static_cast<LPARAM>((scan_code & 0xFF) |
                                                 (extended ? 0x100 : 0) |
-                                                ((key->vkCode & 0xFF) << 16));
+                                                ((key->vkCode & 0xFF) << 16) |
+                                                ((modifiers & MOD_SHIFT) ? 0x200 : 0) |
+                                                ((modifiers & MOD_CONTROL) ? 0x400 : 0) |
+                                                ((modifiers & MOD_ALT) ? 0x800 : 0) |
+                                                ((modifiers & MOD_WIN) ? 0x1000 : 0));
     if (!PostMessageW(host->owner_, kHookKeyMessage, key->vkCode, payload)) {
       ReleaseKeyUp(host->swallowed_keys_, identity);
       return CallNextHookEx(nullptr, code, wparam, lparam);
@@ -317,7 +365,231 @@ class WindowsDesktopControlHost::Impl {
     status[Value("preferredScope")] = Value(ScopeName(preferred_scope_));
     status[Value("activeScope")] = Value(ScopeName(active_scope_));
     status[Value("errorCode")] = Value(error_code_);
+    status[Value("validationError")] = Value(validation_error_);
+    status[Value("bindings")] = BindingsValue();
     return Value(std::move(status));
+  }
+
+  Value BindingsValue() const {
+    const HKL labels_layout = active_ ? keyboard_layout_ : ForegroundKeyboardLayout();
+    flutter::EncodableMap activation;
+    activation[Value("virtualKey")] = Value(static_cast<int32_t>(activation_.virtual_key));
+    activation[Value("modifiers")] = Value(static_cast<int32_t>(activation_.modifiers));
+    flutter::EncodableMap actions;
+    for (const char* id : kActionIds) {
+      flutter::EncodableList list;
+      const auto found = bindings_.find(id);
+      if (found != bindings_.end()) {
+        for (const auto& key : found->second) {
+          flutter::EncodableMap item;
+          item[Value("scanCode")] = Value(static_cast<int32_t>(key.scan_code));
+          item[Value("extended")] = Value(key.extended);
+          item[Value("modifiers")] = Value(static_cast<int32_t>(key.modifiers));
+          item[Value("label")] = Value(Utf8(KeyLabel(key, labels_layout)));
+          list.emplace_back(std::move(item));
+        }
+      }
+      actions[Value(id)] = Value(std::move(list));
+    }
+    flutter::EncodableMap result;
+    result[Value("version")] = Value(int32_t{2});
+    result[Value("activation")] = Value(std::move(activation));
+    result[Value("actions")] = Value(std::move(actions));
+    return Value(std::move(result));
+  }
+
+  bool SetBindings(const Value* raw, std::string* reason) {
+    error_code_.clear();
+    const auto* root = raw == nullptr ? nullptr : std::get_if<flutter::EncodableMap>(raw);
+    if (root == nullptr) { *reason = "La configuration des touches est invalide."; return false; }
+    const auto get = [](const flutter::EncodableMap& map, const char* key) -> const Value* {
+      const auto found = map.find(Value(key));
+      return found == map.end() ? nullptr : &found->second;
+    };
+    const Value* version_value = get(*root, "version");
+    const auto* version = version_value == nullptr ? nullptr : std::get_if<int32_t>(version_value);
+    if (version == nullptr || *version != 2) { *reason = "Cette version de configuration des touches n’est pas prise en charge."; return false; }
+    const Value* activation_value = get(*root, "activation");
+    const auto* activation_map = activation_value == nullptr ? nullptr : std::get_if<flutter::EncodableMap>(activation_value);
+    const Value* actions_value = get(*root, "actions");
+    const auto* actions_map = actions_value == nullptr ? nullptr : std::get_if<flutter::EncodableMap>(actions_value);
+    if (activation_map == nullptr || actions_map == nullptr) { *reason = "Le raccourci d’activation et les actions sont obligatoires."; return false; }
+    const Value* vk_value = get(*activation_map, "virtualKey");
+    const Value* mods_value = get(*activation_map, "modifiers");
+    const auto* vk = vk_value == nullptr ? nullptr : std::get_if<int32_t>(vk_value);
+    const auto* mods = mods_value == nullptr ? nullptr : std::get_if<int32_t>(mods_value);
+    constexpr UINT kAllowedModifiers = MOD_ALT | MOD_CONTROL | MOD_SHIFT | MOD_WIN;
+    if (vk == nullptr || mods == nullptr || *vk <= 0 || *vk > 0xFF ||
+        (*mods & ~static_cast<int32_t>(kAllowedModifiers)) != 0 ||
+        *mods == 0 || IsModifierVirtualKey(static_cast<UINT>(*vk))) {
+      *reason = "Choisissez une touche d’activation et des modificateurs valides.";
+      return false;
+    }
+    if (static_cast<UINT>(*vk) == VK_SPACE &&
+        static_cast<UINT>(*mods) == (MOD_CONTROL | MOD_ALT)) {
+      *reason = "Ctrl+Alt+Espace est réservé à l’incrustation de texte.";
+      return false;
+    }
+    if ((*mods & MOD_WIN) != 0 &&
+        (static_cast<UINT>(*vk) == 'L' || static_cast<UINT>(*vk) == 'D')) {
+      *reason = "Ce raccourci Windows est réservé au système.";
+      return false;
+    }
+    BindingMap candidate;
+    std::unordered_map<uint64_t, std::string> owners;
+    for (const char* id : kActionIds) {
+      const Value* list_value = get(*actions_map, id);
+      const auto* list = list_value == nullptr ? nullptr : std::get_if<flutter::EncodableList>(list_value);
+      if (list == nullptr) { *reason = std::string("Configuration absente pour l’action ") + id + "."; return false; }
+      auto& keys = candidate[id];
+      for (const Value& item_value : *list) {
+        const auto* item = std::get_if<flutter::EncodableMap>(&item_value);
+        if (item == nullptr) { *reason = "Chaque touche doit avoir une configuration valide."; return false; }
+        const Value* scan_value = get(*item, "scanCode");
+        const Value* ext_value = get(*item, "extended");
+        const Value* key_mods_value = get(*item, "modifiers");
+        const auto* scan = scan_value == nullptr ? nullptr : std::get_if<int32_t>(scan_value);
+        const auto* ext = ext_value == nullptr ? nullptr : std::get_if<bool>(ext_value);
+        const auto* key_mods = key_mods_value == nullptr ? nullptr : std::get_if<int32_t>(key_mods_value);
+        if (scan == nullptr || ext == nullptr || *scan <= 0 || *scan > 0x7F) {
+          *reason = "Cette touche physique n’est pas accessible."; return false;
+        }
+        const int32_t action_modifiers = key_mods == nullptr ? 0 : *key_mods;
+        if ((action_modifiers & ~static_cast<int32_t>(kAllowedModifiers)) != 0) {
+          *reason = "Les modificateurs de cette touche sont invalides."; return false;
+        }
+        if ((action_modifiers & MOD_WIN) != 0) {
+          *reason = "Les raccourcis avec la touche Windows sont réservés au système."; return false;
+        }
+        KeyBinding key{static_cast<UINT>(*scan), *ext, static_cast<UINT>(action_modifiers)};
+        const UINT mapped = MapVirtualKeyExW(key.scan_code | (key.extended ? 0xE000 : 0),
+                                             MAPVK_VSC_TO_VK_EX, GetKeyboardLayout(0));
+        if (mapped == 0 || IsModifierVirtualKey(mapped) ||
+            commandglows::desktop_control::IsModifierKey(key)) {
+          *reason = "Une touche de modification seule ou inconnue ne peut pas être affectée."; return false;
+        }
+        if (key.modifiers == static_cast<UINT>(*mods) &&
+            mapped == static_cast<UINT>(*vk)) {
+          *reason = "Une action ne peut pas reprendre le raccourci d’activation global.";
+          return false;
+        }
+        if (mapped == VK_SPACE &&
+            key.modifiers == (MOD_CONTROL | MOD_ALT)) {
+          *reason = "Ctrl+Alt+Espace est réservé à l’incrustation de texte.";
+          return false;
+        }
+        if (commandglows::desktop_control::IsCellKey(key)) {
+          *reason = "Une touche de sélection de case ne peut pas piloter une action."; return false;
+        }
+        if (key.scan_code == 0x01 && !key.extended &&
+            (std::string(id) != "close" || key.modifiers != 0)) {
+          *reason = "Échap reste réservé à la fermeture d’urgence."; return false;
+        }
+        const uint64_t identity = key.scan_code | (key.extended ? 0x100 : 0) |
+                                  (static_cast<uint64_t>(key.modifiers) << 16);
+        const auto owner = owners.find(identity);
+        if (owner != owners.end()) {
+          *reason = "Une même touche ne peut déclencher qu’une seule action."; return false;
+        }
+        owners.emplace(identity, id);
+        keys.push_back(key);
+      }
+    }
+    const UINT next_vk = static_cast<UINT>(*vk);
+    if (active_) {
+      bool unchanged = activation_.virtual_key == next_vk &&
+                       activation_.modifiers == static_cast<UINT>(*mods);
+      for (const char* id : kActionIds) {
+        const auto old_it = bindings_.find(id);
+        const auto new_it = candidate.find(id);
+        if (old_it == bindings_.end() || new_it == candidate.end() ||
+            old_it->second.size() != new_it->second.size()) { unchanged = false; break; }
+        for (size_t i = 0; i < old_it->second.size(); ++i) {
+          if (!commandglows::desktop_control::SameKey(old_it->second[i], new_it->second[i])) {
+            unchanged = false; break;
+          }
+        }
+      }
+      if (unchanged) return true;
+      *reason = "Fermez la grille avant de modifier les touches.";
+      error_code_ = "BINDINGS_ACTIVE";
+      return false;
+    }
+    const UINT next_modifiers = static_cast<UINT>(*mods) | MOD_NOREPEAT;
+    const bool same_activation = activation_.virtual_key == next_vk &&
+                                 activation_.modifiers == static_cast<UINT>(*mods);
+    const int candidate_id = hotkey_id_ == kActivationHotkeyId
+                                 ? kCandidateHotkeyId : kActivationHotkeyId;
+    if (enabled_ && !same_activation &&
+        !RegisterHotKey(owner_, candidate_id, next_modifiers, next_vk)) {
+      *reason = "Ce raccourci d’activation est déjà utilisé.";
+      error_code_ = "HOTKEY_UNAVAILABLE";
+      return false;
+    }
+    if (enabled_ && !same_activation) {
+      if (hotkey_registered_) UnregisterHotKey(owner_, hotkey_id_);
+      activation_ = ActivationBinding{next_vk, static_cast<UINT>(*mods)};
+      hotkey_id_ = candidate_id;
+      hotkey_registered_ = true;
+    } else {
+      activation_ = ActivationBinding{next_vk, static_cast<UINT>(*mods)};
+    }
+    bindings_ = std::move(candidate);
+    return true;
+  }
+
+  static bool IsModifierVirtualKey(UINT vk) {
+    return vk == VK_SHIFT || vk == VK_CONTROL || vk == VK_MENU ||
+           vk == VK_LSHIFT || vk == VK_RSHIFT || vk == VK_LCONTROL ||
+           vk == VK_RCONTROL || vk == VK_LMENU || vk == VK_RMENU ||
+           vk == VK_LWIN || vk == VK_RWIN;
+  }
+
+  HKL ForegroundKeyboardLayout() const {
+    const HWND foreground = GetForegroundWindow();
+    DWORD thread = foreground == nullptr ? 0 : GetWindowThreadProcessId(foreground, nullptr);
+    HKL layout = thread == 0 ? nullptr : GetKeyboardLayout(thread);
+    return layout == nullptr ? GetKeyboardLayout(0) : layout;
+  }
+
+  static std::wstring KeyLabel(const KeyBinding& key, HKL layout) {
+    const UINT scan = key.scan_code | (key.extended ? 0xE000 : 0);
+    const UINT vk = MapVirtualKeyExW(scan, MAPVK_VSC_TO_VK_EX, layout);
+    if (vk == VK_SPACE) return L"Espace";
+    BYTE state[256]{};
+    if ((key.modifiers & MOD_SHIFT) != 0) state[VK_SHIFT] = 0x80;
+    if ((key.modifiers & MOD_CONTROL) != 0) state[VK_CONTROL] = 0x80;
+    if ((key.modifiers & MOD_ALT) != 0) state[VK_MENU] = 0x80;
+    WCHAR chars[8]{};
+    const int count = vk == 0 ? 0 : ToUnicodeEx(
+        vk, key.scan_code, state, chars, static_cast<int>(std::size(chars)),
+        0, layout);
+    if (count > 0 && chars[0] >= 0x20) {
+      std::wstring result(chars, chars + count);
+      for (wchar_t& ch : result) {
+        if (ch >= L'a' && ch <= L'z') ch -= L'a' - L'A';
+      }
+      return result;
+    }
+    wchar_t name[64]{};
+    const LONG parameter = static_cast<LONG>(key.scan_code << 16) |
+                           (key.extended ? (1L << 24) : 0);
+    const int length = GetKeyNameTextW(parameter, name,
+                                       static_cast<int>(std::size(name)));
+    return length > 0 ? std::wstring(name, name + length) : L"?";
+  }
+
+  static std::string Utf8(const std::wstring& value) {
+    if (value.empty()) return {};
+    const int size = WideCharToMultiByte(CP_UTF8, 0, value.data(),
+                                         static_cast<int>(value.size()),
+                                         nullptr, 0, nullptr, nullptr);
+    if (size <= 0) return {};
+    std::string result(static_cast<size_t>(size), '\0');
+    WideCharToMultiByte(CP_UTF8, 0, value.data(),
+                        static_cast<int>(value.size()), result.data(), size,
+                        nullptr, nullptr);
+    return result;
   }
 
   void SetEnabled(bool enabled) {
@@ -325,8 +597,8 @@ class WindowsDesktopControlHost::Impl {
     if (enabled) {
       if (!hotkey_registered_) {
         hotkey_registered_ = RegisterHotKey(
-            owner_, kActivationHotkeyId,
-            MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 'G') != FALSE;
+            owner_, hotkey_id_, activation_.modifiers | MOD_NOREPEAT,
+            activation_.virtual_key) != FALSE;
       }
       if (!hotkey_registered_) {
         enabled_ = false;
@@ -338,7 +610,7 @@ class WindowsDesktopControlHost::Impl {
     }
     Cancel();
     if (hotkey_registered_) {
-      UnregisterHotKey(owner_, kActivationHotkeyId);
+      UnregisterHotKey(owner_, hotkey_id_);
       hotkey_registered_ = false;
     }
     enabled_ = false;
@@ -644,16 +916,13 @@ class WindowsDesktopControlHost::Impl {
     DeleteObject(grid_pen);
 
     SetTextColor(dc, RGB(255, 255, 255));
-    RECT hint{12, 12, std::min<LONG>(client.right - 12, 920), 44};
+    RECT hint{12, 12, std::max<LONG>(13, client.right - 12), 78};
     HBRUSH hint_bg = CreateSolidBrush(RGB(22, 27, 34));
     FillRect(dc, &hint, hint_bg);
     DeleteObject(hint_bg);
-    const wchar_t* text = coordinate_view_
-                                ? L"Tab: grille recursive   F8: fenetre/ecran   Espace: reset   Retour: precedent   Echap: fermer   PagePrec/PageSuiv: ecran"
-                                : L"F1 clic gauche   F2 droit   F3 milieu   F4 glisser   F5 relacher   F6/F7 molette   Tab: coordonnees"
-                                  L"   F8: fenetre/ecran   Espace: reset   Retour: precedent   Echap: fermer   PagePrec/PageSuiv: ecran";
-    DrawTextW(dc, text, -1, &hint, DT_LEFT | DT_VCENTER | DT_SINGLELINE |
-                                      DT_END_ELLIPSIS | DT_NOPREFIX);
+    const std::wstring text = DynamicGuide(coordinate_view_);
+    DrawTextW(dc, text.c_str(), static_cast<int>(text.size()), &hint,
+              DT_LEFT | DT_TOP | DT_WORDBREAK | DT_NOPREFIX);
     if (error_code_ == "INPUT_UNAVAILABLE") {
       RECT error{16, std::max<LONG>(16, client.bottom - 64),
                  std::min<LONG>(client.right - 16, 580),
@@ -669,21 +938,65 @@ class WindowsDesktopControlHost::Impl {
     EndPaint(hwnd, &paint);
   }
 
-  bool IsAssignedKey(UINT virtual_key, UINT scan_code, bool extended) const {
-      if (virtual_key == VK_ESCAPE || virtual_key == VK_BACK ||
-        virtual_key == VK_SPACE || virtual_key == VK_TAB ||
-        virtual_key == VK_F1 || virtual_key == VK_F2 ||
-        virtual_key == VK_F3 || virtual_key == VK_F4 ||
-        virtual_key == VK_F5 || virtual_key == VK_F6 ||
-        virtual_key == VK_F7 || virtual_key == VK_F8 ||
-        virtual_key == VK_LEFT || virtual_key == VK_RIGHT ||
-        virtual_key == VK_UP || virtual_key == VK_DOWN ||
-        virtual_key == VK_PRIOR || virtual_key == VK_NEXT) {
-      return true;
+  std::wstring BindingLabel(const char* id) const {
+    const auto found = bindings_.find(id);
+    if (found == bindings_.end() || found->second.empty()) return L"-";
+    std::wstring result;
+    for (const auto& key : found->second) {
+      if (!result.empty()) result += L"/";
+      result += KeyLabel(key, active_ ? keyboard_layout_ : ForegroundKeyboardLayout());
     }
-    if (extended) {
-      return false;
+    return result;
+  }
+
+  std::wstring DynamicGuide(bool coordinate) const {
+    std::wstring activation = L"";
+    if ((activation_.modifiers & MOD_CONTROL) != 0) activation += L"Ctrl+";
+    if ((activation_.modifiers & MOD_ALT) != 0) activation += L"Alt+";
+    if ((activation_.modifiers & MOD_SHIFT) != 0) activation += L"Shift+";
+    if ((activation_.modifiers & MOD_WIN) != 0) activation += L"Win+";
+    wchar_t activation_name[64]{};
+    const UINT activation_scan = MapVirtualKeyExW(
+        activation_.virtual_key, MAPVK_VK_TO_VSC_EX, keyboard_layout_);
+    const LONG activation_key_param = static_cast<LONG>(activation_scan << 16) |
+                                      ((activation_scan & 0xFF00) == 0xE000
+                                           ? (1L << 24) : 0);
+    const int activation_name_length = GetKeyNameTextW(
+        activation_key_param, activation_name,
+        static_cast<int>(std::size(activation_name)));
+    if (activation_name_length > 0) {
+      activation.append(activation_name, activation_name + activation_name_length);
+    } else {
+      activation += L"?";
     }
+    const std::wstring click = BindingLabel("leftClick");
+    const std::wstring more =
+        L"clic " + click + L"  clic droit " + BindingLabel("rightClick") +
+        L"  milieu " + BindingLabel("middleClick") +
+        L"  glisser " + BindingLabel("dragStart") + L"/" + BindingLabel("dragRelease") +
+        L"  molette " + BindingLabel("wheelUp") + L"/" + BindingLabel("wheelDown") +
+        L"  retour " + BindingLabel("back") + L"  reset " + BindingLabel("reset") +
+        L"  coordonnees " + BindingLabel("coordinateView") +
+        L"  fenetre/ecran " + BindingLabel("toggleScope") +
+        L"  ecran precedent/suivant " + BindingLabel("previousMonitor") + L"/" +
+        BindingLabel("nextMonitor") + L"  deplacer "+ BindingLabel("nudgeLeft") + L"/" +
+        BindingLabel("nudgeRight") + L"/" + BindingLabel("nudgeUp") + L"/" +
+        BindingLabel("nudgeDown") + L"  fermer " + BindingLabel("close") +
+        L" (Echap toujours actif)";
+    return std::wstring(coordinate ? L"COORDONNEES 5x5 | "
+                                    : L"GRILLE RECURSIVE | ") +
+           L"Activer/fermer " + activation + L" | " + more;
+  }
+
+  bool IsAssignedKey(UINT, UINT scan_code, bool extended, UINT modifiers) const {
+    if (scan_code == 0x01 && !extended) return true;  // Emergency close.
+    const KeyBinding pressed{scan_code, extended, modifiers};
+    for (const auto& [_, keys] : bindings_) {
+      for (const auto& key : keys) {
+        if (commandglows::desktop_control::SameKey(pressed, key)) return true;
+      }
+    }
+    if (extended || modifiers != 0) return false;
     if (coordinate_view_) {
       for (const auto& key : kCoordinateKeys) {
         if (key.scan_code == scan_code && key.extended == extended) {
@@ -700,28 +1013,29 @@ class WindowsDesktopControlHost::Impl {
     return false;
   }
 
-  InputAction ActionFor(UINT virtual_key) const {
-    switch (virtual_key) {
-      case VK_ESCAPE: return InputAction::escape;
-      case VK_BACK: return InputAction::back;
-      case VK_SPACE: return InputAction::reset;
-      case VK_TAB: return InputAction::coordinate_view;
-      case VK_F1: return InputAction::left_click;
-      case VK_F2: return InputAction::right_click;
-      case VK_F3: return InputAction::middle_click;
-      case VK_F4: return InputAction::drag_start;
-      case VK_F5: return InputAction::drag_release;
-      case VK_F6: return InputAction::wheel_up;
-      case VK_F7: return InputAction::wheel_down;
-      case VK_F8: return InputAction::toggle_scope;
-      case VK_PRIOR: return InputAction::previous_monitor;
-      case VK_NEXT: return InputAction::next_monitor;
-      case VK_LEFT: return InputAction::nudge_left;
-      case VK_RIGHT: return InputAction::nudge_right;
-      case VK_UP: return InputAction::nudge_up;
-      case VK_DOWN: return InputAction::nudge_down;
-      default: return InputAction::none;
+  InputAction ActionFor(UINT scan_code, bool extended, UINT modifiers) const {
+    if (scan_code == 0x01 && !extended) return InputAction::escape;
+    const KeyBinding pressed{scan_code, extended, modifiers};
+    const std::pair<const char*, InputAction> actions[] = {
+        {"leftClick", InputAction::left_click}, {"rightClick", InputAction::right_click},
+        {"middleClick", InputAction::middle_click}, {"dragStart", InputAction::drag_start},
+        {"dragRelease", InputAction::drag_release}, {"wheelUp", InputAction::wheel_up},
+        {"wheelDown", InputAction::wheel_down}, {"back", InputAction::back},
+        {"reset", InputAction::reset}, {"coordinateView", InputAction::coordinate_view},
+        {"toggleScope", InputAction::toggle_scope},
+        {"previousMonitor", InputAction::previous_monitor},
+        {"nextMonitor", InputAction::next_monitor}, {"nudgeLeft", InputAction::nudge_left},
+        {"nudgeRight", InputAction::nudge_right}, {"nudgeUp", InputAction::nudge_up},
+        {"nudgeDown", InputAction::nudge_down}, {"close", InputAction::escape}};
+    for (const auto& [id, action] : actions) {
+      const auto found = bindings_.find(id);
+      if (found != bindings_.end()) {
+        for (const auto& key : found->second) {
+          if (commandglows::desktop_control::SameKey(pressed, key)) return action;
+        }
+      }
     }
+    return InputAction::none;
   }
 
   void ProcessKey(UINT virtual_key, UINT packed_scan) {
@@ -730,7 +1044,12 @@ class WindowsDesktopControlHost::Impl {
     }
     const UINT scan_code = packed_scan & 0xFF;
     const bool extended = (packed_scan & 0x100) != 0;
-    const InputAction action = ActionFor(virtual_key);
+    UINT modifiers = 0;
+    if ((packed_scan & 0x200) != 0) modifiers |= MOD_SHIFT;
+    if ((packed_scan & 0x400) != 0) modifiers |= MOD_CONTROL;
+    if ((packed_scan & 0x800) != 0) modifiers |= MOD_ALT;
+    if ((packed_scan & 0x1000) != 0) modifiers |= MOD_WIN;
+    const InputAction action = ActionFor(scan_code, extended, modifiers);
     if (action == InputAction::escape) {
       Cancel();
       return;
@@ -1031,6 +1350,9 @@ class WindowsDesktopControlHost::Impl {
   bool enabled_ = false;
   bool active_ = false;
   bool hotkey_registered_ = false;
+  int hotkey_id_ = kActivationHotkeyId;
+  ActivationBinding activation_{};
+  BindingMap bindings_ = DefaultBindings();
   DWORD held_button_up_ = 0;
   bool coordinate_view_ = false;
   GridScope preferred_scope_ = GridScope::monitor;
@@ -1038,6 +1360,7 @@ class WindowsDesktopControlHost::Impl {
   GridScope active_scope_ = GridScope::monitor;
   std::optional<RECT> window_bounds_;
   std::string error_code_;
+  std::string validation_error_;
   HHOOK keyboard_hook_ = nullptr;
   HWND overlay_ = nullptr;
   HKL keyboard_layout_ = nullptr;

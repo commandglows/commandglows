@@ -12,6 +12,7 @@ import '../../features/keyboard/presentation/keyboard_navigation_diagnostics_scr
 import '../../features/keyboard/presentation/keyboard_theme_studio_screen.dart';
 import '../../features/shell/presentation/app_shell_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/shortcut_learning/presentation/shortcut_sheet_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authStateNotifier = ValueNotifier(ref.read(authSessionProvider));
@@ -106,6 +107,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/snippets',
         name: 'snippets',
         builder: (context, state) => const AppShellScreen(initialIndex: 3),
+      ),
+      GoRoute(
+        path: '/shortcuts',
+        name: 'shortcuts',
+        builder: (context, state) => const ShortcutSheetScreen(),
       ),
       GoRoute(
         path: '/actions',

@@ -30,6 +30,18 @@ class FlutterWindow : public Win32Window {
 
  private:
   static constexpr int kWindowsOverlayHotkeyId = 0x5746;
+  static constexpr int kShortcutCheatsheetHotkeyId = 0x434B;
+  static constexpr UINT kShortcutTrayMessage = WM_APP + 0x4D1;
+  static constexpr UINT kShortcutTrayIconId = 0x434B;
+
+  void RegisterShortcutCheatsheetChannel();
+  flutter::EncodableValue ShortcutCheatsheetStatus() const;
+  void PushShortcutCheatsheetEvent(const std::string& trigger);
+  bool ShowShortcutCheatsheet(const std::string& trigger);
+  void ShowMainWindow();
+  bool AddShortcutTrayIcon();
+  void RemoveShortcutTrayIcon();
+  void ShowShortcutTrayMenu();
 
   void RegisterWindowsOverlayChannel();
   flutter::EncodableValue WindowsOverlayStatus() const;
@@ -61,9 +73,16 @@ class FlutterWindow : public Win32Window {
 
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       windows_overlay_channel_;
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
+      shortcut_cheatsheet_channel_;
   std::unique_ptr<WindowsPinWindowHost> pin_window_host_;
   std::unique_ptr<WindowsDesktopControlHost> desktop_control_host_;
   std::vector<flutter::EncodableValue> windows_overlay_events_;
+  std::vector<flutter::EncodableValue> shortcut_cheatsheet_events_;
+  HWND shortcut_owner_ = nullptr;
+  UINT taskbar_created_message_ = 0;
+  bool shortcut_hotkey_registered_ = false;
+  bool shortcut_tray_icon_added_ = false;
   HWND last_foreground_window_ = nullptr;
   bool windows_overlay_enabled_ = false;
   bool windows_overlay_visible_ = false;

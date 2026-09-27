@@ -1,27 +1,40 @@
+// Windows scan codes are required by the native physical-key binding contract.
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/platform/desktop_control_bridge.dart';
+import '../../../core/platform/desktop_control_bindings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_components.dart';
+import '../../shortcut_learning/application/shortcut_repository_provider.dart';
+import '../../shortcut_learning/data/local_shortcut_repository.dart';
+import '../../shortcut_learning/domain/shortcut_entry.dart';
 
-class DesktopControlSettingsSection extends StatefulWidget {
+class DesktopControlSettingsSection extends ConsumerStatefulWidget {
   const DesktopControlSettingsSection({super.key, this.preferenceStore});
 
   final DesktopControlPreference? preferenceStore;
 
   @override
-  State<DesktopControlSettingsSection> createState() =>
+  ConsumerState<DesktopControlSettingsSection> createState() =>
       _DesktopControlSettingsSectionState();
 }
 
 class _DesktopControlSettingsSectionState
-    extends State<DesktopControlSettingsSection> {
+    extends ConsumerState<DesktopControlSettingsSection> {
   DesktopControlStatus? _status;
   DesktopControlScope _scope = DesktopControlScope.monitor;
   bool _busy = true;
   String? _message;
+  DesktopControlBindings _bindings = DesktopControlBindings.defaults();
+  String? _captureTarget;
+  String? _captureFeedback;
+  final FocusNode _captureFocus = FocusNode();
 
   DesktopControlPreference get _preferences =>
       widget.preferenceStore ?? DesktopControlPreferenceStore();
@@ -32,11 +45,41 @@ class _DesktopControlSettingsSectionState
     unawaited(_load());
   }
 
+  @override
+  void dispose() {
+    _captureFocus.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
     try {
       final optedIn = await _preferences.isEnabled();
       final preferredScope = await _preferences.getPreferredScope();
+      var savedBindings = await _preferences.getBindings();
+      if (savedBindings.migratedFromLegacy) {
+        await _preferences.setBindings(savedBindings);
+      }
+      String? bindingRecoveryMessage = savedBindings.recoveredInvalidData
+          ? 'Les touches enregistrées étaient invalides. Les raccourcis par défaut ont été restaurés.'
+          : null;
       var status = await DesktopControlBridge.getStatus();
+      if (status.supported) {
+        status = await DesktopControlBridge.setBindings(savedBindings);
+        if (status.errorCode == 'INVALID_BINDINGS') {
+          bindingRecoveryMessage =
+              'Les touches enregistrées sont refusées : ${status.validationError} Les raccourcis par défaut ont été restaurés.';
+          savedBindings = DesktopControlBindings.defaults();
+          status = await DesktopControlBridge.setBindings(savedBindings);
+          await _preferences.setBindings(savedBindings);
+        } else if (status.validationError?.isNotEmpty ?? false) {
+          bindingRecoveryMessage = status.validationError;
+        } else if (savedBindings.recoveredInvalidData) {
+          savedBindings = DesktopControlBindings.defaults();
+          await _preferences.setBindings(savedBindings);
+        } else if (status.bindings != null) {
+          savedBindings = DesktopControlBindings.fromWire(status.bindings);
+        }
+      }
       if (status.supported && status.preferredScope != preferredScope) {
         status = await DesktopControlBridge.setPreferredScope(preferredScope);
       }
@@ -49,7 +92,8 @@ class _DesktopControlSettingsSectionState
       setState(() {
         _status = status;
         _scope = preferredScope;
-        _message = _statusMessage(status);
+        _bindings = savedBindings;
+        _message = bindingRecoveryMessage ?? _statusMessage(status);
       });
     } on DesktopControlException catch (error) {
       if (!mounted) return;
@@ -154,6 +198,491 @@ class _DesktopControlSettingsSectionState
   static const _unexpectedErrorMessage =
       'Une erreur inattendue a empêché cette action. Relancez CommandGlows puis réessayez.';
 
+  void _capture(String target) {
+    setState(() {
+      _captureTarget = target;
+      _captureFeedback =
+          'Appuyez sur une touche ou un raccourci. Échap annule. Les touches de case restent réservées sans modificateur.';
+      _message = null;
+    });
+    _captureFocus.requestFocus();
+  }
+
+  void _onCaptureKey(RawKeyEvent event) {
+    if (_captureTarget == null || event is! RawKeyDownEvent) {
+      return;
+    }
+    if (event.data is! RawKeyEventDataWindows) return;
+    final data = event.data as RawKeyEventDataWindows;
+    final target = _captureTarget!;
+    if (const {
+      0x10, 0x11, 0x12, // Generic Shift, Control, Alt
+      0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, // Left/right modifiers
+      0x5B, 0x5C, // Windows keys
+    }.contains(data.keyCode)) {
+      return;
+    }
+    if (data.keyCode == 0x1B) {
+      setState(() {
+        _captureTarget = null;
+        _message = 'La capture a été annulée.';
+      });
+      return;
+    }
+    var candidate = _bindings;
+    if (target == 'activation') {
+      final modifiers =
+          (event.isControlPressed ? 2 : 0) |
+          (event.isAltPressed ? 1 : 0) |
+          (event.isShiftPressed ? 4 : 0) |
+          (event.isMetaPressed ? 8 : 0);
+      candidate = _bindings.copyWith(
+        activationVirtualKey: data.keyCode,
+        activationModifiers: modifiers,
+      );
+    } else {
+      final parts = target.split(':');
+      final id = parts[0];
+      final slot = int.parse(parts[1]);
+      final values = [
+        ...(_bindings.actions[id] ?? const <DesktopPhysicalKey>[]),
+      ];
+      final extended = const {
+        0x21, // Page up
+        0x22, // Page down
+        0x23, // End
+        0x24, // Home
+        0x25, // Left
+        0x26, // Up
+        0x27, // Right
+        0x28, // Down
+        0x2D, // Insert
+        0x2E, // Delete
+        0x5B, // Left Windows
+        0x5C, // Right Windows
+        0x6F, // Numpad divide
+        0xA3, // Right control
+        0xA5, // Right alt
+      }.contains(data.keyCode);
+      final modifiers =
+          (event.isControlPressed ? 2 : 0) |
+          (event.isAltPressed ? 1 : 0) |
+          (event.isShiftPressed ? 4 : 0) |
+          (event.isMetaPressed ? 8 : 0);
+      final keyLabel = event.logicalKey.keyLabel.trim();
+      final fallbackLabel = _virtualKeyLabel(data.keyCode);
+      final shiftedDigit =
+          modifiers & 4 != 0 && data.scanCode >= 0x02 && data.scanCode <= 0x0B
+          ? String.fromCharCode(0x31 + ((data.scanCode - 0x02) % 10))
+          : null;
+      final resolvedLabel =
+          shiftedDigit ??
+          (keyLabel.isNotEmpty && !keyLabel.startsWith('Touche')
+              ? keyLabel
+              : fallbackLabel.startsWith('VK 0x')
+              ? null
+              : fallbackLabel);
+      final binding = DesktopPhysicalKey(
+        data.scanCode,
+        extended,
+        resolvedLabel,
+        modifiers,
+      );
+      if (slot < values.length) {
+        values[slot] = binding;
+      } else {
+        values.add(binding);
+      }
+      candidate = _bindings.copyWith(
+        actions: {..._bindings.actions, id: values},
+      );
+    }
+    final conflict = candidate.localConflict;
+    if (conflict != null) {
+      setState(() {
+        _captureFeedback = conflict;
+      });
+      return;
+    }
+    unawaited(_saveBindings(candidate));
+  }
+
+  Future<void> _saveBindings(DesktopControlBindings candidate) async {
+    final previous = _bindings;
+    setState(() {
+      _busy = true;
+      _message = null;
+    });
+    try {
+      final status = await DesktopControlBridge.setBindings(candidate);
+      final nativeError = status.validationError;
+      if (nativeError != null && nativeError.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _captureFeedback = nativeError;
+          });
+        }
+        return;
+      }
+      final nativeBindings = status.bindings == null
+          ? candidate
+          : DesktopControlBindings.fromWire(status.bindings);
+      final effectiveBindings = DesktopControlBindings(
+        activationVirtualKey: nativeBindings.activationVirtualKey,
+        activationModifiers: nativeBindings.activationModifiers,
+        actions: {
+          for (final id in DesktopControlBindings.actionIds)
+            id: [
+              for (
+                var i = 0;
+                i < (nativeBindings.actions[id]?.length ?? 0);
+                i++
+              )
+                nativeBindings.actions[id]![i].label == null &&
+                        i < (candidate.actions[id]?.length ?? 0)
+                    ? DesktopPhysicalKey(
+                        nativeBindings.actions[id]![i].scanCode,
+                        nativeBindings.actions[id]![i].extended,
+                        candidate.actions[id]![i].label,
+                        nativeBindings.actions[id]![i].modifiers,
+                      )
+                    : nativeBindings.actions[id]![i],
+            ],
+        },
+      );
+      try {
+        await _preferences.setBindings(effectiveBindings);
+      } catch (_) {
+        await DesktopControlBridge.setBindings(previous);
+        rethrow;
+      }
+      if (mounted) {
+        setState(() {
+          _bindings = effectiveBindings;
+          _status = status;
+          _captureTarget = null;
+          _captureFeedback = null;
+          _message = null;
+        });
+      }
+      try {
+        await _reconcileSheet(effectiveBindings);
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            _message =
+                'Touches enregistrées, mais la fiche de raccourcis n’a pas pu être synchronisée.';
+          });
+        }
+      }
+    } on DesktopControlException catch (error) {
+      if (mounted) {
+        setState(() {
+          _captureFeedback = error.recoveryMessage;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _captureFeedback =
+              'Les touches n’ont pas pu être enregistrées localement. La configuration précédente a été conservée.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _resetAction(String id) async {
+    final defaults = DesktopControlBindings.defaults();
+    await _saveBindings(
+      _bindings.copyWith(
+        actions: {
+          ..._bindings.actions,
+          id: defaults.actions[id] ?? const <DesktopPhysicalKey>[],
+        },
+      ),
+    );
+  }
+
+  Future<void> _reconcileSheet(DesktopControlBindings bindings) {
+    const appName = 'CommandGlows · Grille du bureau';
+    return ref
+        .read(shortcutRepositoryProvider)
+        .reconcileSources(
+          prefix: 'desktop-grid:',
+          current: {
+            'desktop-grid:activation': ShortcutSourceDraft(
+              appName: appName,
+              description: 'Afficher ou fermer la grille du bureau',
+              chord: ShortcutChord.fromDisplayLabel(
+                _activationLabelFor(bindings),
+              ),
+              selfAssessmentOnly: true,
+            ),
+            for (final id in DesktopControlBindings.actionIds)
+              for (var i = 0; i < (bindings.actions[id]?.length ?? 0); i++)
+                'desktop-grid:$id:$i': ShortcutSourceDraft(
+                  appName: appName,
+                  description:
+                      'Grille ouverte : ${DesktopControlBindings.actionLabels[id]!}',
+                  chord: ShortcutChord.fromDisplayLabel(
+                    bindings.actions[id]![i].displayLabel,
+                  ),
+                ),
+          },
+        );
+  }
+
+  String get _activationLabel => _activationLabelFor(_bindings);
+
+  String _activationLabelFor(DesktopControlBindings bindings) {
+    final mods = bindings.activationModifiers;
+    final parts = <String>[
+      if (mods & 2 != 0) 'Ctrl+',
+      if (mods & 1 != 0) 'Alt+',
+      if (mods & 4 != 0) 'Maj+',
+      if (mods & 8 != 0) 'Win+',
+      _virtualKeyLabel(bindings.activationVirtualKey),
+    ];
+    return parts.join();
+  }
+
+  String _virtualKeyLabel(int keyCode) {
+    if (keyCode >= 0x41 && keyCode <= 0x5A) {
+      return String.fromCharCode(keyCode);
+    }
+    if (keyCode >= 0x30 && keyCode <= 0x39) {
+      return String.fromCharCode(keyCode);
+    }
+    if (keyCode >= 0x70 && keyCode <= 0x87) return 'F${keyCode - 0x6F}';
+    return switch (keyCode) {
+      0x20 => 'Espace',
+      0x09 => 'Tab',
+      0x08 => 'Retour arrière',
+      0x21 => 'Page précédente',
+      0x22 => 'Page suivante',
+      _ => 'VK 0x${keyCode.toRadixString(16)}',
+    };
+  }
+
+  String _keysFor(String id) => (_bindings.actions[id] ?? const [])
+      .map((key) => key.displayLabel)
+      .join(' / ');
+
+  Future<void> _addToSheet({
+    required String sourceId,
+    required String description,
+    required String label,
+    bool globalHotkey = false,
+  }) async {
+    setState(() => _busy = true);
+    try {
+      await ref
+          .read(shortcutRepositoryProvider)
+          .upsertSource(
+            sourceId: sourceId,
+            appName: 'CommandGlows · Grille du bureau',
+            description: description,
+            chord: ShortcutChord.fromDisplayLabel(label),
+            selfAssessmentOnly: globalHotkey,
+          );
+      if (mounted) {
+        setState(() => _message = 'Raccourci ajouté à « Mes raccourcis ».');
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _message = 'Impossible d’ajouter ce raccourci à la fiche.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Widget _sheetButton({
+    required String sourceId,
+    required String description,
+    required String label,
+    bool globalHotkey = false,
+  }) => IconButton(
+    key: Key('desktop-control-add-to-sheet-$sourceId'),
+    tooltip: 'Ajouter à ma fiche',
+    onPressed: _busy
+        ? null
+        : () => _addToSheet(
+            sourceId: sourceId,
+            description: description,
+            label: label,
+            globalHotkey: globalHotkey,
+          ),
+    icon: const Icon(Icons.library_add_outlined),
+  );
+
+  Widget _keyButton(String target, String label) => OutlinedButton(
+    key: Key('desktop-control-capture-${target.replaceAll(':', '-')}'),
+    onPressed: _busy ? null : () => _capture(target),
+    child: Text(_captureTarget == target ? 'Appuyez…' : label),
+  );
+
+  Widget _bindingActionTile(String id) => ListTile(
+    title: Text(DesktopControlBindings.actionLabels[id]!),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 6,
+          children: [
+            for (var i = 0; i < (_bindings.actions[id]?.length ?? 0); i++)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _keyButton('$id:$i', _bindings.actions[id]![i].displayLabel),
+                  _sheetButton(
+                    sourceId: 'desktop-grid:$id:$i',
+                    description:
+                        'Grille ouverte : ${DesktopControlBindings.actionLabels[id]!}',
+                    label: _bindings.actions[id]![i].displayLabel,
+                  ),
+                  if (id == 'leftClick' && _bindings.actions[id]!.length > 1)
+                    IconButton(
+                      tooltip:
+                          'Retirer ${_bindings.actions[id]![i].displayLabel}',
+                      onPressed: _busy
+                          ? null
+                          : () {
+                              final keys = [..._bindings.actions[id]!]
+                                ..removeAt(i);
+                              unawaited(
+                                _saveBindings(
+                                  _bindings.copyWith(
+                                    actions: {..._bindings.actions, id: keys},
+                                  ),
+                                ),
+                              );
+                            },
+                      icon: const Icon(Icons.remove_circle_outline),
+                    ),
+                ],
+              ),
+            if (id == 'leftClick')
+              TextButton.icon(
+                onPressed: _busy || (_bindings.actions[id]?.length ?? 0) >= 2
+                    ? null
+                    : () =>
+                          _capture('$id:${_bindings.actions[id]?.length ?? 0}'),
+                icon: const Icon(Icons.add),
+                label: const Text('Ajouter une touche'),
+              ),
+          ],
+        ),
+        if (_captureTarget?.startsWith('$id:') ?? false)
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.x1),
+            child: Text(
+              _captureFeedback ?? 'Saisie en cours…',
+              key: Key('desktop-control-capture-feedback-$id'),
+              style: TextStyle(
+                color: _captureFeedback == null
+                    ? null
+                    : Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ),
+      ],
+    ),
+    trailing: IconButton(
+      tooltip: 'Réinitialiser cette action',
+      onPressed: _busy ? null : () => _resetAction(id),
+      icon: const Icon(Icons.restart_alt),
+    ),
+  );
+
+  Widget _bindingsEditor() => RawKeyboardListener(
+    focusNode: _captureFocus,
+    onKey: _onCaptureKey,
+    child: ExpansionTile(
+      key: const Key('desktop-control-bindings-editor'),
+      leading: const Icon(Icons.keyboard_alt_outlined),
+      title: const Text('Touches et raccourcis'),
+      subtitle: const Text('Raccourcis locaux à cet appareil'),
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.x2,
+            vertical: AppSpacing.x1,
+          ),
+          child: Text(
+            'Une touche seule ou une combinaison Ctrl, Alt ou Maj est acceptée. Les touches de la grille restent réservées sans modificateur. Les raccourcis avec Win sont réservés au système. Échap annule la saisie et ferme toujours la grille.',
+          ),
+        ),
+        const ListTile(title: Text('Activation'), dense: true),
+        ListTile(
+          title: const Text('Activation'),
+          subtitle: const Text('Affiche ou ferme la grille'),
+          trailing: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _keyButton('activation', _activationLabel),
+                  _sheetButton(
+                    sourceId: 'desktop-grid:activation',
+                    description: 'Afficher ou fermer la grille du bureau',
+                    label: _activationLabel,
+                    globalHotkey: true,
+                  ),
+                ],
+              ),
+              if (_captureTarget == 'activation')
+                Text(
+                  _captureFeedback ?? 'Saisie en cours…',
+                  key: const Key('desktop-control-capture-feedback-activation'),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+            ],
+          ),
+        ),
+        for (final group in const <String, List<String>>{
+          'Actions du pointeur': [
+            'leftClick',
+            'rightClick',
+            'middleClick',
+            'dragStart',
+            'dragRelease',
+            'wheelUp',
+            'wheelDown',
+            'nudgeLeft',
+            'nudgeRight',
+            'nudgeUp',
+            'nudgeDown',
+          ],
+          'Navigation': [
+            'back',
+            'reset',
+            'coordinateView',
+            'previousMonitor',
+            'nextMonitor',
+          ],
+          'Portée': ['toggleScope', 'close'],
+        }.entries) ...[
+          ListTile(title: Text(group.key), dense: true),
+          for (final id in group.value) _bindingActionTile(id),
+        ],
+        TextButton.icon(
+          key: const Key('desktop-control-bindings-reset-all'),
+          onPressed: _busy
+              ? null
+              : () => _saveBindings(DesktopControlBindings.defaults()),
+          icon: const Icon(Icons.restore),
+          label: const Text('Tout rétablir par défaut'),
+        ),
+      ],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final status = _status;
@@ -174,8 +703,8 @@ class _DesktopControlSettingsSectionState
             value: enabled,
             onChanged: _busy || !supported ? null : _setEnabled,
             title: const Text('Activer le contrôle du bureau'),
-            subtitle: const Text(
-              'Après activation, Ctrl+Alt+G affiche la grille selon la portée choisie. Désactivé au premier lancement.',
+            subtitle: Text(
+              'Après activation, $_activationLabel affiche la grille selon la portée choisie. Désactivé au premier lancement.',
             ),
           ),
           if (supported) ...[
@@ -214,9 +743,10 @@ class _DesktopControlSettingsSectionState
               title: 'Premiers pas',
               message:
                   '1. Activez le contrôle du bureau et choisissez la portée de la grille.\n'
-                  '2. Dans n’importe quelle application, appuyez sur Ctrl+Alt+G pour afficher la grille.\n'
-                  '3. Appuyez sur la lettre affichée dans la case visée, répétez pour affiner, puis sur F1 pour cliquer. F8 passe de la fenêtre à l’écran ; Échap ferme la grille.',
+                  '2. Dans n’importe quelle application, appuyez sur $_activationLabel pour afficher la grille.\n'
+                  '3. Appuyez sur la lettre affichée dans la case visée, répétez pour affiner, puis sur ${_keysFor('leftClick')} pour cliquer.',
             ),
+            _bindingsEditor(),
             ExpansionTile(
               key: const Key('desktop-control-more-keys'),
               leading: const Icon(Icons.tune_outlined),
@@ -224,20 +754,20 @@ class _DesktopControlSettingsSectionState
               children: [
                 ListTile(
                   title: const Text('Se repérer'),
-                  subtitle: const Text(
-                    'Retour arrière remonte d’un niveau · Espace repart de la portée choisie · Tab affiche la grille de coordonnées 5 × 5 · F8 bascule fenêtre/écran.',
+                  subtitle: Text(
+                    '${_keysFor('back')} remonte d’un niveau · ${_keysFor('reset')} repart de la portée choisie · ${_keysFor('coordinateView')} affiche la grille de coordonnées · ${_keysFor('toggleScope')} bascule fenêtre/écran.',
                   ),
                 ),
                 ListTile(
                   title: const Text('Agir sur la cible'),
-                  subtitle: const Text(
-                    'F2 : clic droit · F3 : clic central · F4 : commencer un glisser · F5 : relâcher · F6/F7 : faire défiler.',
+                  subtitle: Text(
+                    '${_keysFor('rightClick')} : clic droit · ${_keysFor('middleClick')} : clic central · ${_keysFor('dragStart')} : commencer un glisser · ${_keysFor('dragRelease')} : relâcher · ${_keysFor('wheelUp')}/${_keysFor('wheelDown')} : faire défiler · ${_keysFor('close')} : fermer.',
                   ),
                 ),
                 ListTile(
                   title: const Text('Changer d’écran'),
-                  subtitle: const Text(
-                    'Page précédente / Page suivante passe d’un écran connecté à l’autre.',
+                  subtitle: Text(
+                    '${_keysFor('previousMonitor')} / ${_keysFor('nextMonitor')} passe d’un écran connecté à l’autre.',
                   ),
                 ),
               ],
@@ -254,10 +784,10 @@ class _DesktopControlSettingsSectionState
               !supported
                   ? 'État non disponible.'
                   : status?.hotkeyRegistered == true
-                  ? 'Ctrl+Alt+G est enregistré.'
+                  ? '$_activationLabel est enregistré.'
                   : enabled
-                  ? 'Ctrl+Alt+G n’est pas enregistré.'
-                  : 'Ctrl+Alt+G sera enregistré à l’activation.',
+                  ? '$_activationLabel n’est pas enregistré.'
+                  : '$_activationLabel sera enregistré à l’activation.',
             ),
           ),
           if (_message != null)

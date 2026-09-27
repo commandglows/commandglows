@@ -7,13 +7,21 @@
 
 #include <flutter/method_result_functions.h>
 #include <flutter/standard_method_codec.h>
+#include <shellapi.h>
+
+#pragma comment(lib, "Shell32.lib")
 
 #include "flutter/generated_plugin_registrant.h"
+#include "resource.h"
 
 namespace {
 
 constexpr const char kWindowsOverlayChannelName[] =
     "commandglows_app/windows_overlay";
+constexpr const char kShortcutCheatsheetChannelName[] =
+    "commandglows_app/shortcut_cheatsheet";
+constexpr UINT kShowCheatsheetMenuId = 0x4D11;
+constexpr UINT kShowAppMenuId = 0x4D12;
 
 int64_t CurrentEpochMillis() {
   const auto now = std::chrono::system_clock::now();
@@ -94,10 +102,17 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   RegisterWindowsOverlayChannel();
+  RegisterShortcutCheatsheetChannel();
   pin_window_host_ = std::make_unique<WindowsPinWindowHost>(
       flutter_controller_->engine()->messenger());
   desktop_control_host_ = std::make_unique<WindowsDesktopControlHost>(
       GetHandle(), flutter_controller_->engine()->messenger());
+  shortcut_owner_ = GetHandle();
+  shortcut_hotkey_registered_ =
+      RegisterHotKey(shortcut_owner_, kShortcutCheatsheetHotkeyId,
+                     MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 'K') != FALSE;
+  taskbar_created_message_ = RegisterWindowMessageW(L"TaskbarCreated");
+  AddShortcutTrayIcon();
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -113,6 +128,13 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  RemoveShortcutTrayIcon();
+  if (shortcut_hotkey_registered_) {
+    UnregisterHotKey(shortcut_owner_, kShortcutCheatsheetHotkeyId);
+    shortcut_hotkey_registered_ = false;
+  }
+  shortcut_owner_ = nullptr;
+  shortcut_cheatsheet_channel_.reset();
   desktop_control_host_.reset();
   pin_window_host_.reset();
   if (hotkey_registered_) {
@@ -134,6 +156,20 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
       desktop_control_host_->HandleWindowMessage(message, wparam, lparam)) {
     return 0;
   }
+  if (taskbar_created_message_ != 0 && message == taskbar_created_message_) {
+    shortcut_tray_icon_added_ = false;
+    AddShortcutTrayIcon();
+    return 0;
+  }
+  if (message == kShortcutTrayMessage &&
+      wparam == static_cast<WPARAM>(kShortcutTrayIconId)) {
+    if (lparam == WM_RBUTTONUP || lparam == WM_CONTEXTMENU) {
+      ShowShortcutTrayMenu();
+    } else if (lparam == WM_LBUTTONDBLCLK) {
+      ShowShortcutCheatsheet("tray");
+    }
+    return 0;
+  }
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {
     std::optional<LRESULT> result =
@@ -146,6 +182,10 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
 
   switch (message) {
     case WM_HOTKEY:
+      if (wparam == kShortcutCheatsheetHotkeyId) {
+        ShowShortcutCheatsheet("hotkey");
+        return 0;
+      }
       if (wparam == kWindowsOverlayHotkeyId) {
         PushWindowsOverlayEvent("hotkey");
         ShowWindowsOverlay();
@@ -158,6 +198,147 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
   }
 
   return Win32Window::MessageHandler(hwnd, message, wparam, lparam);
+}
+
+void FlutterWindow::RegisterShortcutCheatsheetChannel() {
+  shortcut_cheatsheet_channel_ =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          flutter_controller_->engine()->messenger(),
+          kShortcutCheatsheetChannelName,
+          &flutter::StandardMethodCodec::GetInstance());
+  shortcut_cheatsheet_channel_->SetMethodCallHandler(
+      [this](const auto& call, auto result) {
+        const std::string& method = call.method_name();
+        if (method == "getStatus") {
+          result->Success(ShortcutCheatsheetStatus());
+          return;
+        }
+        if (method == "drainEvents") {
+          flutter::EncodableList events;
+          events.reserve(shortcut_cheatsheet_events_.size());
+          for (const auto& event : shortcut_cheatsheet_events_) {
+            events.push_back(event);
+          }
+          shortcut_cheatsheet_events_.clear();
+          result->Success(flutter::EncodableValue(events));
+          return;
+        }
+        if (method == "showCheatsheet") {
+          if (!ShowShortcutCheatsheet("manual")) {
+            result->Error("WINDOW_UNAVAILABLE",
+                          "The CommandGlows window is unavailable.");
+            return;
+          }
+          result->Success(ShortcutCheatsheetStatus());
+          return;
+        }
+        result->NotImplemented();
+      });
+}
+
+flutter::EncodableValue FlutterWindow::ShortcutCheatsheetStatus() const {
+  flutter::EncodableMap status;
+  status[flutter::EncodableValue("supported")] = flutter::EncodableValue(true);
+  status[flutter::EncodableValue("hotkeyRegistered")] =
+      flutter::EncodableValue(shortcut_hotkey_registered_);
+  status[flutter::EncodableValue("hotkeyLabel")] =
+      flutter::EncodableValue("Ctrl+Alt+K");
+  status[flutter::EncodableValue("trayAvailable")] =
+      flutter::EncodableValue(shortcut_tray_icon_added_);
+  status[flutter::EncodableValue("eventQueueSize")] =
+      flutter::EncodableValue(
+          static_cast<int>(shortcut_cheatsheet_events_.size()));
+  if (!shortcut_hotkey_registered_) {
+    status[flutter::EncodableValue("errorCode")] =
+        flutter::EncodableValue("HOTKEY_UNAVAILABLE");
+  }
+  return flutter::EncodableValue(status);
+}
+
+void FlutterWindow::PushShortcutCheatsheetEvent(const std::string& trigger) {
+  flutter::EncodableMap event;
+  event[flutter::EncodableValue("trigger")] = flutter::EncodableValue(trigger);
+  event[flutter::EncodableValue("capturedAtEpochMillis")] =
+      flutter::EncodableValue(CurrentEpochMillis());
+  if (shortcut_cheatsheet_events_.size() >= 32) {
+    shortcut_cheatsheet_events_.erase(shortcut_cheatsheet_events_.begin());
+  }
+  shortcut_cheatsheet_events_.push_back(flutter::EncodableValue(event));
+}
+
+bool FlutterWindow::ShowShortcutCheatsheet(const std::string& trigger) {
+  if (!IsWindow(GetHandle())) {
+    return false;
+  }
+  ShowMainWindow();
+  PushShortcutCheatsheetEvent(trigger);
+  return true;
+}
+
+void FlutterWindow::ShowMainWindow() {
+  const HWND window = GetHandle();
+  if (!IsWindow(window)) {
+    return;
+  }
+  ShowWindow(window, SW_RESTORE);
+  BringWindowToTop(window);
+  SetForegroundWindow(window);
+}
+
+bool FlutterWindow::AddShortcutTrayIcon() {
+  const HWND window = GetHandle();
+  if (!IsWindow(window)) {
+    return false;
+  }
+  NOTIFYICONDATAW icon{};
+  icon.cbSize = sizeof(icon);
+  icon.hWnd = window;
+  icon.uID = kShortcutTrayIconId;
+  icon.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+  icon.uCallbackMessage = kShortcutTrayMessage;
+  icon.hIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_APP_ICON));
+  wcscpy_s(icon.szTip, L"CommandGlows");
+  shortcut_tray_icon_added_ = Shell_NotifyIconW(NIM_ADD, &icon) != FALSE;
+  return shortcut_tray_icon_added_;
+}
+
+void FlutterWindow::RemoveShortcutTrayIcon() {
+  if (!shortcut_tray_icon_added_) {
+    return;
+  }
+  NOTIFYICONDATAW icon{};
+  icon.cbSize = sizeof(icon);
+  icon.hWnd = shortcut_owner_;
+  icon.uID = kShortcutTrayIconId;
+  Shell_NotifyIconW(NIM_DELETE, &icon);
+  shortcut_tray_icon_added_ = false;
+}
+
+void FlutterWindow::ShowShortcutTrayMenu() {
+  const HWND window = GetHandle();
+  if (!IsWindow(window)) {
+    return;
+  }
+  HMENU menu = CreatePopupMenu();
+  if (menu == nullptr) {
+    return;
+  }
+  AppendMenuW(menu, MF_STRING, kShowCheatsheetMenuId,
+              L"Afficher la fiche des raccourcis");
+  AppendMenuW(menu, MF_STRING, kShowAppMenuId, L"Afficher CommandGlows");
+  POINT cursor{};
+  GetCursorPos(&cursor);
+  SetForegroundWindow(window);
+  const UINT command = TrackPopupMenu(
+      menu, TPM_RETURNCMD | TPM_NONOTIFY | TPM_RIGHTBUTTON,
+      cursor.x, cursor.y, 0, window, nullptr);
+  DestroyMenu(menu);
+  PostMessageW(window, WM_NULL, 0, 0);
+  if (command == kShowCheatsheetMenuId) {
+    ShowShortcutCheatsheet("tray");
+  } else if (command == kShowAppMenuId) {
+    ShowMainWindow();
+  }
 }
 
 void FlutterWindow::RegisterWindowsOverlayChannel() {

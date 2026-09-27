@@ -2,10 +2,31 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:commandglows_app/core/platform/desktop_control_bridge.dart';
+import 'package:commandglows_app/core/platform/desktop_control_bindings.dart';
+import 'package:commandglows_app/core/storage/local_json_persistence.dart';
 import 'package:commandglows_app/features/settings/presentation/desktop_control_settings_section.dart';
+import 'package:commandglows_app/features/shortcut_learning/application/shortcut_repository_provider.dart';
+import 'package:commandglows_app/features/shortcut_learning/data/local_shortcut_repository.dart';
 
 const _channel = MethodChannel('commandglows_app/desktop_control');
+
+class _MemoryShortcutPersistence extends LocalJsonPersistence {
+  _MemoryShortcutPersistence() : super('grid_test_shortcuts');
+  List<Map<String, dynamic>> rows = [];
+  bool failWrites = false;
+
+  @override
+  Future<List<Map<String, dynamic>>> read() async =>
+      rows.map((row) => Map<String, dynamic>.from(row)).toList();
+
+  @override
+  Future<void> write(List<Map<String, Object?>> items) async {
+    if (failWrites) throw StateError('Fiche inaccessible');
+    rows = items.map((item) => Map<String, dynamic>.from(item)).toList();
+  }
+}
 
 class _MemoryPreference implements DesktopControlPreference {
   _MemoryPreference({
@@ -15,6 +36,8 @@ class _MemoryPreference implements DesktopControlPreference {
 
   bool enabled;
   DesktopControlScope scope;
+  DesktopControlBindings bindings = DesktopControlBindings.defaults();
+  int bindingWrites = 0;
 
   @override
   Future<bool> isEnabled() async => enabled;
@@ -28,6 +51,15 @@ class _MemoryPreference implements DesktopControlPreference {
   @override
   Future<void> setPreferredScope(DesktopControlScope scope) async =>
       this.scope = scope;
+
+  @override
+  Future<DesktopControlBindings> getBindings() async => bindings;
+
+  @override
+  Future<void> setBindings(DesktopControlBindings bindings) async => {
+    bindingWrites++,
+    this.bindings = bindings,
+  };
 }
 
 void main() {
@@ -43,6 +75,7 @@ void main() {
     WidgetTester tester, {
     required _MemoryPreference preferences,
     required Map<Object?, Object?> Function(MethodCall call) statusForCall,
+    LocalShortcutRepository? shortcutRepository,
   }) async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
@@ -50,10 +83,22 @@ void main() {
           (call) async => statusForCall(call),
         );
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: DesktopControlSettingsSection(preferenceStore: preferences),
+      ProviderScope(
+        overrides: [
+          shortcutRepositoryProvider.overrideWithValue(
+            shortcutRepository ??
+                LocalShortcutRepository(
+                  persistence: _MemoryShortcutPersistence(),
+                ),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: DesktopControlSettingsSection(
+                preferenceStore: preferences,
+              ),
+            ),
           ),
         ),
       ),
@@ -106,7 +151,7 @@ void main() {
         find.textContaining('Dans n’importe quelle application'),
         findsOneWidget,
       );
-      expect(find.textContaining('F1 pour cliquer'), findsOneWidget);
+      expect(find.textContaining('Espace / F1 pour cliquer'), findsOneWidget);
       expect(find.text('Autres commandes'), findsOneWidget);
       await tester.ensureVisible(
         find.byKey(const Key('desktop-control-more-keys')),
@@ -114,6 +159,197 @@ void main() {
       await tester.tap(find.byKey(const Key('desktop-control-more-keys')));
       await tester.pumpAndSettle();
       expect(find.textContaining('F2 : clic droit'), findsOneWidget);
+      expect(find.textContaining('F9 repart'), findsOneWidget);
+    }),
+  );
+
+  testWidgets(
+    'persists a migrated v1 binding map as v2 on load',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference();
+      final legacy = DesktopControlBindings.defaults()
+          .copyWith(
+            activationVirtualKey: 0x48,
+            actions: {
+              ...DesktopControlBindings.defaults().actions,
+              'rightClick': [const DesktopPhysicalKey(0x02, false, '&')],
+            },
+          )
+          .toWire();
+      legacy['version'] = 1;
+      preferences.bindings = DesktopControlBindings.fromWire(legacy);
+      await mount(
+        tester,
+        preferences: preferences,
+        statusForCall: (call) => {
+          'supported': true,
+          'enabled': false,
+          'active': false,
+          'hotkeyRegistered': false,
+          if (call.method == 'setBindings') 'bindings': call.arguments,
+        },
+      );
+      expect(preferences.bindingWrites, 1);
+      expect(preferences.bindings.toWire()['version'], 2);
+      expect(preferences.bindings.activationVirtualKey, 0x48);
+      expect(preferences.bindings.actions['rightClick']!.single.scanCode, 0x02);
+    }),
+  );
+
+  testWidgets(
+    'captures and persists a global chord, then rolls back a native key conflict',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference();
+      final nativeCalls = <MethodCall>[];
+      var rejectNext = false;
+      await mount(
+        tester,
+        preferences: preferences,
+        statusForCall: (call) {
+          nativeCalls.add(call);
+          if (call.method == 'setBindings' && rejectNext) {
+            rejectNext = false;
+            return {
+              'supported': true,
+              'enabled': false,
+              'active': false,
+              'hotkeyRegistered': false,
+              'errorCode': 'INVALID_BINDINGS',
+              'validationError': 'Cette touche est réservée.',
+            };
+          }
+          return {
+            'supported': true,
+            'enabled': false,
+            'active': false,
+            'hotkeyRegistered': false,
+            if (call.method == 'setBindings') 'bindings': call.arguments,
+          };
+        },
+      );
+
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-capture-activation')),
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-capture-activation')),
+      );
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyG);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyG);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.altLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+      expect(preferences.bindings.activationVirtualKey, 0x47);
+      expect(preferences.bindings.activationModifiers, 3);
+      expect(nativeCalls.last.method, 'setBindings');
+
+      rejectNext = true;
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-capture-rightClick-0')),
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-capture-rightClick-0')),
+      );
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.f2);
+      await tester.pumpAndSettle();
+      expect(
+        preferences.bindings.actions['rightClick']!.single.displayLabel,
+        'F2',
+      );
+      expect(find.text('Cette touche est réservée.'), findsOneWidget);
+      expect(nativeCalls.last.method, 'setBindings');
+    }),
+  );
+
+  testWidgets(
+    'captures AZERTY Shift+1 as Maj+1 and saves the physical chord',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference();
+      await mount(
+        tester,
+        preferences: preferences,
+        statusForCall: (call) => {
+          'supported': true,
+          'enabled': false,
+          'active': false,
+          'hotkeyRegistered': false,
+          if (call.method == 'setBindings') 'bindings': call.arguments,
+        },
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-capture-rightClick-0')),
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-capture-rightClick-0')),
+      );
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.digit1);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.digit1);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pumpAndSettle();
+
+      final saved = preferences.bindings.actions['rightClick']!.single;
+      expect(saved.scanCode, 0x02);
+      expect(saved.modifiers, 4);
+      expect(saved.displayLabel, 'Maj+1');
+      expect(find.text('Maj+1'), findsOneWidget);
+    }),
+  );
+
+  testWidgets(
+    'shows reserved grid-key rejection beside the edited action',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference();
+      await mount(
+        tester,
+        preferences: preferences,
+        statusForCall: (call) => {
+          'supported': true,
+          'enabled': false,
+          'active': false,
+          'hotkeyRegistered': false,
+          if (call.method == 'setBindings') ...{
+            'errorCode': 'INVALID_BINDINGS',
+            'validationError':
+                'Une touche de sélection de case ne peut pas piloter une action.',
+          },
+        },
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-capture-rightClick-0')),
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-capture-rightClick-0')),
+      );
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyQ);
+      await tester.pumpAndSettle();
+
+      expect(
+        preferences.bindings.actions['rightClick']!.single.displayLabel,
+        'F2',
+      );
+      expect(
+        find.byKey(const Key('desktop-control-capture-feedback-rightClick')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('sélection de case'), findsOneWidget);
     }),
   );
 
@@ -140,7 +376,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(preferences.enabled, isTrue);
-      expect(methods, ['getStatus', 'setEnabled']);
+      expect(methods, ['getStatus', 'setBindings', 'setEnabled']);
       expect(find.text('Ctrl+Alt+G est enregistré.'), findsOneWidget);
       expect(find.byKey(const Key('desktop-control-activate')), findsOneWidget);
     }),
@@ -166,7 +402,7 @@ void main() {
         },
       );
 
-      expect(methods, ['getStatus', 'setEnabled']);
+      expect(methods, ['getStatus', 'setBindings', 'setEnabled']);
       expect(find.textContaining('déjà utilisé'), findsOneWidget);
       expect(
         tester
@@ -236,6 +472,7 @@ void main() {
 
       expect(calls.map((call) => call.method), [
         'getStatus',
+        'setBindings',
         'setPreferredScope',
       ]);
       expect(
@@ -245,6 +482,139 @@ void main() {
             )
             .value,
         DesktopControlScope.window,
+      );
+    }),
+  );
+
+  testWidgets(
+    'keeps saved keys when native reports a temporary shortcut conflict',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference();
+      final custom = preferences.bindings.copyWith(
+        activationVirtualKey: 0x48, // H
+      );
+      preferences.bindings = custom;
+      await mount(
+        tester,
+        preferences: preferences,
+        statusForCall: (call) => {
+          'supported': true,
+          'enabled': false,
+          'active': false,
+          'hotkeyRegistered': false,
+          if (call.method == 'setBindings') ...{
+            'errorCode': 'HOTKEY_UNAVAILABLE',
+            'validationError': 'Ce raccourci est déjà utilisé.',
+          },
+        },
+      );
+
+      expect(preferences.bindings.activationVirtualKey, 0x48);
+      expect(find.textContaining('déjà utilisé'), findsOneWidget);
+    }),
+  );
+
+  testWidgets(
+    'adds the saved grid hotkey and updates it after rebinding',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference();
+      final repository = LocalShortcutRepository(
+        persistence: _MemoryShortcutPersistence(),
+      );
+      await mount(
+        tester,
+        preferences: preferences,
+        shortcutRepository: repository,
+        statusForCall: (call) => {
+          'supported': true,
+          'enabled': false,
+          'active': false,
+          'hotkeyRegistered': false,
+          if (call.method == 'setBindings') 'bindings': call.arguments,
+        },
+      );
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
+      await tester.pumpAndSettle();
+      final add = find.byKey(
+        const Key('desktop-control-add-to-sheet-desktop-grid:activation'),
+      );
+      await tester.ensureVisible(add);
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      expect((await repository.list()).single.chord.label, 'Ctrl + Alt + G');
+      expect((await repository.list()).single.requiresSelfAssessment, isTrue);
+
+      await tester.tap(
+        find.byKey(const Key('desktop-control-capture-activation')),
+      );
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyH);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyH);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.altLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+      expect((await repository.list()).single.chord.label, 'Ctrl + Alt + H');
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      final rows = await repository.list();
+      expect(rows, hasLength(1));
+      expect(rows.single.chord.label, 'Ctrl + Alt + H');
+    }),
+  );
+
+  testWidgets(
+    'keeps saved grid binding when sheet synchronization fails',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference();
+      final persistence = _MemoryShortcutPersistence();
+      final repository = LocalShortcutRepository(persistence: persistence);
+      await mount(
+        tester,
+        preferences: preferences,
+        shortcutRepository: repository,
+        statusForCall: (call) => {
+          'supported': true,
+          'enabled': false,
+          'active': false,
+          'hotkeyRegistered': false,
+          if (call.method == 'setBindings') 'bindings': call.arguments,
+        },
+      );
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
+      await tester.tap(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
+      await tester.pumpAndSettle();
+      final add = find.byKey(
+        const Key('desktop-control-add-to-sheet-desktop-grid:activation'),
+      );
+      await tester.ensureVisible(add);
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      persistence.failWrites = true;
+      await tester.tap(
+        find.byKey(const Key('desktop-control-capture-activation')),
+      );
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyH);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyH);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.altLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+      expect(preferences.bindings.activationVirtualKey, 0x48);
+      expect((await repository.list()).single.chord.label, 'Ctrl + Alt + G');
+      expect(
+        find.textContaining('fiche de raccourcis n’a pas pu être synchronisée'),
+        findsOneWidget,
       );
     }),
   );

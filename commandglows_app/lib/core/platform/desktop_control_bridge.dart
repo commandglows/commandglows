@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'platform_capabilities.dart';
+import 'desktop_control_bindings.dart';
 
 enum DesktopControlScope {
   monitor('monitor', 'Écran entier'),
@@ -26,6 +27,8 @@ class DesktopControlStatus {
     this.preferredScope = DesktopControlScope.monitor,
     this.activeScope = DesktopControlScope.monitor,
     this.errorCode,
+    this.bindings,
+    this.validationError,
   });
 
   final bool supported;
@@ -35,6 +38,8 @@ class DesktopControlStatus {
   final DesktopControlScope preferredScope;
   final DesktopControlScope activeScope;
   final String? errorCode;
+  final Map<Object?, Object?>? bindings;
+  final String? validationError;
 
   factory DesktopControlStatus.unsupported() => const DesktopControlStatus(
     supported: false,
@@ -55,6 +60,10 @@ class DesktopControlStatus {
       errorCode: rawErrorCode == null || rawErrorCode.isEmpty
           ? null
           : rawErrorCode,
+      bindings: map['bindings'] is Map
+          ? Map<Object?, Object?>.from(map['bindings'] as Map)
+          : null,
+      validationError: (map['validationError'] as String?)?.trim(),
     );
   }
 }
@@ -94,6 +103,10 @@ class DesktopControlBridge {
 
   static Future<DesktopControlStatus> cancel() => _invoke('cancel');
 
+  static Future<DesktopControlStatus> setBindings(
+    DesktopControlBindings bindings,
+  ) => _invoke('setBindings', bindings.toWire());
+
   static Future<DesktopControlStatus> _invoke(
     String method, [
     Object? arguments,
@@ -121,8 +134,12 @@ class DesktopControlBridge {
   }
 
   static String recoveryMessageFor(String code) => switch (code) {
+    'INVALID_BINDINGS' =>
+      'Une ou plusieurs touches sont en conflit avec les commandes de la grille ou un raccourci réservé. Choisissez une autre touche.',
+    'BINDINGS_ACTIVE' =>
+      'Fermez la grille avant de modifier les raccourcis, puis réessayez.',
     'HOTKEY_UNAVAILABLE' =>
-      'Le raccourci Ctrl+Alt+G est déjà utilisé. Fermez l’application qui le réserve, puis réessayez.',
+      'Ce raccourci d’activation est déjà utilisé. Choisissez une autre combinaison ou libérez-la, puis réessayez.',
     'HOOK_UNAVAILABLE' =>
       'Windows n’a pas pu écouter les touches. Désactivez puis réactivez le contrôle du bureau.',
     'OVERLAY_UNAVAILABLE' =>
@@ -144,6 +161,8 @@ abstract interface class DesktopControlPreference {
   Future<void> setEnabled(bool enabled);
   Future<DesktopControlScope> getPreferredScope();
   Future<void> setPreferredScope(DesktopControlScope scope);
+  Future<DesktopControlBindings> getBindings();
+  Future<void> setBindings(DesktopControlBindings bindings);
 }
 
 class DesktopControlPreferenceStore implements DesktopControlPreference {
@@ -152,6 +171,7 @@ class DesktopControlPreferenceStore implements DesktopControlPreference {
 
   static const _enabledKey = 'desktop_control_enabled';
   static const _scopeKey = 'desktop_control_preferred_scope';
+  static const _bindingsKey = 'desktop_control_bindings_v1';
   final FlutterSecureStorage _storage;
 
   @override
@@ -169,4 +189,12 @@ class DesktopControlPreferenceStore implements DesktopControlPreference {
   @override
   Future<void> setPreferredScope(DesktopControlScope scope) =>
       _storage.write(key: _scopeKey, value: scope.wireName);
+
+  @override
+  Future<DesktopControlBindings> getBindings() async =>
+      DesktopControlBindings.decode(await _storage.read(key: _bindingsKey));
+
+  @override
+  Future<void> setBindings(DesktopControlBindings bindings) =>
+      _storage.write(key: _bindingsKey, value: bindings.encode());
 }

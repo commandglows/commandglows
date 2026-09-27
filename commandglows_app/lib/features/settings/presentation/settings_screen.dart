@@ -1936,6 +1936,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: 'Grille du bureau · Ctrl+Alt+G',
                 onTap: () => context.push('/settings?section=desktop_control'),
               ),
+            if (PlatformCapabilities.isWindows)
+              _SettingsHubTile(
+                icon: Icons.keyboard_command_key_outlined,
+                title: 'Mes raccourcis',
+                subtitle: 'Cheatsheet et entraînement · Ctrl+Alt+K',
+                onTap: () => context.push('/shortcuts'),
+              ),
             _SettingsHubTile(
               icon: Icons.key_outlined,
               title: 'Clés IA locales',

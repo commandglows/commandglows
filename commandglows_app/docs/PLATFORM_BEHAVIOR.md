@@ -130,32 +130,48 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
   available in local mode without an account.
 - The default recursive grid has 3×3 cells. Tab shows a coarse 5×5 coordinate
   grid; one physical key selects a cell, after which recursive refinement is
-  available. Backspace returns one selection, Space resets, Escape closes, and
-  PageUp/PageDown moves to another monitor. F1–F7 cover clicks, drag and wheel;
+  available. Backspace returns one selection, F9 resets, Escape closes, and
+  PageUp/PageDown moves to another monitor. Space or F1 clicks left; F2–F7
+  cover right/middle clicks, drag and wheel;
   arrow keys nudge the cursor. The native overlay displays the key map and
   action guide.
 - Windows settings let the person choose **Écran entier** (initial default) or
   **Fenêtre active** as the starting scope. The window option captures the
   visible foreground window when the shortcut is pressed and clips the grid to
   its part on the selected monitor. F8 switches between that captured window
-  and the whole monitor; Space resets within the current scope. If Windows has
+  and the whole monitor; F9 resets within the current scope. If Windows has
   no usable foreground window, the grid falls back to the monitor. Moving or
   resizing a window requires closing and reopening the grid to recapture it.
   The scope preference is local and is restored at app startup.
-- Physical key positions remain stable under AZERTY/QWERTY. Labels use the
-  foreground keyboard layout captured at activation. Close and reopen the grid
-  after changing input language. The local opt-in persists, defaults off, and
-  does not sync to an account.
+  - Physical key positions remain stable under AZERTY/QWERTY. Labels use the
+    foreground keyboard layout captured at activation. Close and reopen the grid
+    after changing input language. The local opt-in persists, defaults off, and
+    does not sync to an account.
+  - **Touches et raccourcis** in the Windows desktop-control settings lets the
+    person change the global activation shortcut and the in-session pointer,
+    navigation, scope and close keys. The default left click is Space with F1 as
+    an optional alias. In-session commands accept an unmodified physical key or
+    a Ctrl/Alt/Shift combination. On AZERTY, the top-row `1` is captured with
+    Shift and uses the same combination in the grid. Win combinations are
+    reserved. A refused key shows its reason beside the edited action and
+    leaves the existing assignment intact. These device-local bindings are
+    versioned (v1 settings migrate to v2) and restored
+    before the global shortcut is enabled at startup. Keys reserved for grid-cell
+    selection cannot be assigned without modifiers, Ctrl+Alt+Space remains reserved
+    for the text overlay, and Escape always closes an active grid. Windows must
+    accept a new global shortcut before releasing the old one; rejected changes
+    leave the previous configuration working. Grid layout options remain a
+    separate follow-up.
 - The overlay and input hook are Windows-only. Ordinary applications can be
   targeted without their cooperation. An elevated target, secure desktop or
   locked session can reject input; failure feedback does not assert a cause
   Windows cannot identify. Hints based on UI Automation remain a separate
   candidate until their latency and coverage are measured.
-- The feature has compiled and run in the managed Windows debug session. The
-  global shortcut opened and dismissed a grid clipped to an external Bloc-notes
-  window, and the local window-scope preference survived an app restart.
-  Physical-key scope switching, selection, click, drag and scroll still need
-  manual verification.
+  - The feature has compiled and run in a managed Windows debug session. The
+    global shortcut opened and dismissed a grid clipped to an external Bloc-notes
+    window, and the local window-scope preference survived an app restart.
+    Diane confirmed physical browser interaction before the configurable-key
+    editor. New key assignments still need physical verification after launch.
 
 ## macOS Desktop Overlay
 

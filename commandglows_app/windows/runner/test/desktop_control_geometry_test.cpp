@@ -12,6 +12,9 @@ using commandglows::desktop_control::DivideCell;
 using commandglows::desktop_control::IntersectNonEmpty;
 using commandglows::desktop_control::CaptureKeyDown;
 using commandglows::desktop_control::KeyCaptureDecision;
+using commandglows::desktop_control::KeyBinding;
+using commandglows::desktop_control::IsCellKey;
+using commandglows::desktop_control::IsModifierKey;
 using commandglows::desktop_control::KeyLegend;
 using commandglows::desktop_control::kCoordinateKeys;
 using commandglows::desktop_control::kGridKeys;
@@ -97,17 +100,35 @@ void VerifyCaptureKeyPairingOnDismiss() {
   constexpr uint32_t click_key = 0x3B;  // F1 scan code.
 
   for (uint32_t identity : {escape_key, click_key}) {
-    assert(CaptureKeyDown(held, identity, true, true, false) ==
+    assert(CaptureKeyDown(held, identity, true, true) ==
            KeyCaptureDecision::captured);
-    assert(CaptureKeyDown(held, identity, true, true, false) ==
+    assert(CaptureKeyDown(held, identity, true, true) ==
            KeyCaptureDecision::repeat);
     // Cancel deactivates the grid before the corresponding keyup arrives.
-    assert(CaptureKeyDown(held, identity + 1, false, false, false) ==
+    assert(CaptureKeyDown(held, identity + 1, false, false) ==
            KeyCaptureDecision::forward);
     assert(ReleaseKeyUp(held, identity));
     assert(!ReleaseKeyUp(held, identity));
   }
   assert(held.empty());
+}
+
+void VerifyConfigurableBindingPrimitives() {
+  assert(IsCellKey(KeyBinding{0x10, false}));       // First 3x3 and 5x5 cell.
+  assert(IsCellKey(KeyBinding{0x27, false}));       // Last 5x5 cell.
+  assert(!IsCellKey(KeyBinding{0x39, false}));      // Space remains configurable.
+  assert(!IsCellKey(KeyBinding{0x3B, false}));      // F1 alias can be removed.
+  assert(IsCellKey(KeyBinding{0x10, false}));
+  assert(!IsCellKey(KeyBinding{0x10, false, MOD_SHIFT}));
+  assert(IsModifierKey(KeyBinding{0x1D, false}));   // Left Ctrl.
+  assert(IsModifierKey(KeyBinding{0x38, true}));    // Right Alt.
+  assert(!IsModifierKey(KeyBinding{0x39, false}));
+  assert(commandglows::desktop_control::SameKey(KeyBinding{0x48, true},
+                                                KeyBinding{0x48, true}));
+  assert(!commandglows::desktop_control::SameKey(KeyBinding{0x48, true},
+                                                  KeyBinding{0x48, false}));
+  assert(!commandglows::desktop_control::SameKey(KeyBinding{0x02, false},
+                                                  KeyBinding{0x02, false, MOD_SHIFT}));
 }
 
 }  // namespace
@@ -121,5 +142,6 @@ int main() {
   VerifyPhysicalKeyMaps();
   VerifyKeyboardLayoutLabels();
   VerifyCaptureKeyPairingOnDismiss();
+  VerifyConfigurableBindingPrimitives();
   return 0;
 }
