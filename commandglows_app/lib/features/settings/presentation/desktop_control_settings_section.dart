@@ -19,6 +19,7 @@ class DesktopControlSettingsSection extends StatefulWidget {
 class _DesktopControlSettingsSectionState
     extends State<DesktopControlSettingsSection> {
   DesktopControlStatus? _status;
+  DesktopControlScope _scope = DesktopControlScope.monitor;
   bool _busy = true;
   String? _message;
 
@@ -34,7 +35,11 @@ class _DesktopControlSettingsSectionState
   Future<void> _load() async {
     try {
       final optedIn = await _preferences.isEnabled();
+      final preferredScope = await _preferences.getPreferredScope();
       var status = await DesktopControlBridge.getStatus();
+      if (status.supported && status.preferredScope != preferredScope) {
+        status = await DesktopControlBridge.setPreferredScope(preferredScope);
+      }
       if (optedIn &&
           status.supported &&
           (!status.enabled || !status.hotkeyRegistered)) {
@@ -43,6 +48,7 @@ class _DesktopControlSettingsSectionState
       if (!mounted) return;
       setState(() {
         _status = status;
+        _scope = preferredScope;
         _message = _statusMessage(status);
       });
     } on DesktopControlException catch (error) {
@@ -68,6 +74,31 @@ class _DesktopControlSettingsSectionState
       final status = await DesktopControlBridge.setEnabled(enabled);
       if (!mounted) return;
       setState(() {
+        _status = status;
+        _message = _statusMessage(status);
+      });
+    } on DesktopControlException catch (error) {
+      if (!mounted) return;
+      setState(() => _message = error.recoveryMessage);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _message = _unexpectedErrorMessage);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _setPreferredScope(DesktopControlScope scope) async {
+    setState(() {
+      _busy = true;
+      _message = null;
+    });
+    try {
+      await _preferences.setPreferredScope(scope);
+      final status = await DesktopControlBridge.setPreferredScope(scope);
+      if (!mounted) return;
+      setState(() {
+        _scope = scope;
         _status = status;
         _message = _statusMessage(status);
       });
@@ -144,19 +175,47 @@ class _DesktopControlSettingsSectionState
             onChanged: _busy || !supported ? null : _setEnabled,
             title: const Text('Activer le contrôle du bureau'),
             subtitle: const Text(
-              'Après activation, Ctrl+Alt+G affiche la grille sur l’écran du pointeur. Désactivé au premier lancement.',
+              'Après activation, Ctrl+Alt+G affiche la grille selon la portée choisie. Désactivé au premier lancement.',
             ),
           ),
           if (supported) ...[
             AppGaps.x2,
-            const AppBannerCard(
-              key: Key('desktop-control-quick-start'),
+            InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Portée de la grille',
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<DesktopControlScope>(
+                  key: const Key('desktop-control-scope'),
+                  value: _scope,
+                  isExpanded: true,
+                  items: DesktopControlScope.values
+                      .map(
+                        (scope) => DropdownMenuItem(
+                          value: scope,
+                          child: Text(scope.label),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _busy
+                      ? null
+                      : (scope) {
+                          if (scope != null) {
+                            unawaited(_setPreferredScope(scope));
+                          }
+                        },
+                ),
+              ),
+            ),
+            AppGaps.x2,
+            AppBannerCard(
+              key: const Key('desktop-control-quick-start'),
               icon: Icons.keyboard_outlined,
               title: 'Premiers pas',
               message:
-                  '1. Activez le contrôle du bureau, puis placez le pointeur sur l’écran à piloter.\n'
+                  '1. Activez le contrôle du bureau et choisissez la portée de la grille.\n'
                   '2. Dans n’importe quelle application, appuyez sur Ctrl+Alt+G pour afficher la grille.\n'
-                  '3. Appuyez sur la lettre affichée dans la case visée, répétez pour affiner, puis sur F1 pour cliquer. Échap ferme la grille.',
+                  '3. Appuyez sur la lettre affichée dans la case visée, répétez pour affiner, puis sur F1 pour cliquer. F8 passe de la fenêtre à l’écran ; Échap ferme la grille.',
             ),
             ExpansionTile(
               key: const Key('desktop-control-more-keys'),
@@ -166,7 +225,7 @@ class _DesktopControlSettingsSectionState
                 ListTile(
                   title: const Text('Se repérer'),
                   subtitle: const Text(
-                    'Retour arrière remonte d’un niveau · Espace repart de l’écran entier · Tab affiche la grille de coordonnées 5 × 5.',
+                    'Retour arrière remonte d’un niveau · Espace repart de la portée choisie · Tab affiche la grille de coordonnées 5 × 5 · F8 bascule fenêtre/écran.',
                   ),
                 ),
                 ListTile(

@@ -184,7 +184,7 @@ export default function CommerceIncidentConsole() {
       {configured === false && <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="alert">Canal d’alerte non configuré. Assurez la permanence manuelle et configurez puis vérifiez la réception avant le lancement.</p>}
       {watchdogStale && <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="alert">Surveillance automatique non vérifiée depuis plus de 15 minutes. Consultez les tâches planifiées Convex et assurez le contrôle manuel des sessions Stripe.</p>}
       <nav className="mt-4 flex flex-wrap gap-2" aria-label="Files commerce">
-        {(['active', 'resolved', 'missing'] as const).map((entry) => <button key={entry} className={`${button} ${view === entry ? 'bg-dashboard-text-primary text-dashboard-bg' : ''}`} aria-pressed={view === entry} disabled={busy} onClick={() => setView(entry)}>
+        {(['active', 'resolved', 'missing'] as const).map((entry) => <button key={entry} className={view === entry ? primaryButton : button} aria-pressed={view === entry} disabled={busy} onClick={() => setView(entry)}>
           {{ active: 'À traiter', resolved: 'Résolus', missing: 'Événements absents à vérifier' }[entry]}</button>)}
       </nav>
     </div>

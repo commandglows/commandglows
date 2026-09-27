@@ -59,7 +59,7 @@
   let systemThemeListenerBound = false
 
   // Fonction pour appliquer le thème
-  function applyTheme(theme: Theme) {
+  function applyTheme(theme: Theme, persist = false) {
     const root = document.documentElement
 
     // Supprimer toutes les classes de thème
@@ -85,7 +85,9 @@
     })
 
     // Sauvegarder le thème
-    localStorage.setItem('hs_theme', theme)
+    if (persist) {
+      try { localStorage.setItem('hs_theme', theme) } catch { /* Keep the current document usable. */ }
+    }
 
     // Mettre à jour les boutons
     document.querySelectorAll(THEME_SELECTOR).forEach((button) => {
@@ -101,12 +103,15 @@
   }
 
   function initThemePicker() {
-    const savedTheme = localStorage.getItem('hs_theme') as Theme | null
+    let savedTheme: string | null = null
+    try { savedTheme = localStorage.getItem('hs_theme') } catch { /* Use system preference. */ }
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
       .matches
       ? 'dark'
       : 'light'
-    const theme = savedTheme || systemTheme
+    const renderedTheme = document.documentElement.dataset.theme
+    const theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme
+      : renderedTheme === 'dark' || renderedTheme === 'light' ? renderedTheme : systemTheme
 
     applyTheme(theme)
 
@@ -117,7 +122,7 @@
         const newTheme = button.getAttribute(
           'data-hs-theme-click-value'
         ) as Theme
-        applyTheme(newTheme)
+        applyTheme(newTheme, true)
       })
       ;(button as HTMLElement).dataset.themeBound = 'true'
     })
@@ -126,7 +131,9 @@
       window
         .matchMedia('(prefers-color-scheme: dark)')
         .addEventListener('change', (e) => {
-          if (!localStorage.getItem('hs_theme')) {
+          let preference: string | null = null
+          try { preference = localStorage.getItem('hs_theme') } catch { /* Use system preference. */ }
+          if (preference !== 'dark' && preference !== 'light') {
             applyTheme(e.matches ? 'dark' : 'light')
           }
         })

@@ -1,4 +1,4 @@
-/* Generated from CommandGlows tokens 1.3.0 (ba534285a3103a37a1e5d6e6fbbb4f2b3d4e95c198de0c03f7f0b34a5dca7edc); do not edit. */
+/* Generated from CommandGlows tokens 1.3.0 (01c5488ea88f025cb518d04d7945e4ec7aa00da2bfcc2d6b41870fffa50c5f48); do not edit. */
 :root {
   --cg-primitive-color-neutral-black: #000000;
   --cg-primitive-color-neutral-white: #ffffff;
@@ -9,6 +9,26 @@
   --cg-semantic-color-brand-logo-violet: #7c3cff;
   --cg-semantic-color-brand-logo-yellow: #ffe500;
   --cg-semantic-color-brand-website: #ff00c8;
+  --cg-semantic-color-workspace-accent-dark: #ff82df;
+  --cg-semantic-color-workspace-accent-light: #a80080;
+  --cg-semantic-color-workspace-border-dark: #30333d;
+  --cg-semantic-color-workspace-border-light: #e3e5eb;
+  --cg-semantic-color-workspace-canvas-dark: #101115;
+  --cg-semantic-color-workspace-canvas-light: #f6f7f9;
+  --cg-semantic-color-workspace-muted-dark: #a3a7b4;
+  --cg-semantic-color-workspace-muted-light: #616575;
+  --cg-semantic-color-workspace-surface-dark: #191b21;
+  --cg-semantic-color-workspace-surface-light: #ffffff;
+  --cg-semantic-color-workspace-text-dark: #f1f2f5;
+  --cg-semantic-color-workspace-text-light: #20232c;
+  --cg-semantic-layout-workspace-header: 72px;
+  --cg-semantic-layout-workspace-maximum: 1440px;
+  --cg-semantic-layout-workspace-sidebar: 232px;
+  --cg-semantic-motion-workspace-ease: cubic-bezier(0.2, 0, 0, 1);
+  --cg-semantic-motion-workspace-feedback: 160ms;
+  --cg-semantic-motion-workspace-route: 180ms;
+  --cg-semantic-radius-workspace-control: 10px;
+  --cg-semantic-radius-workspace-panel: 16px;
   --cg-semantic-space-unit: 4px;
   --cg-semantic-typography-body-family: Manrope, sans-serif;
   --cg-semantic-typography-site-body-family: var(--cg-semantic-typography-body-family);

@@ -229,7 +229,11 @@ class _CommandGlowsState extends ConsumerState<CommandGlows> {
   Future<void> _restoreDesktopControlOptIn() async {
     if (!PlatformCapabilities.isWindows) return;
     try {
-      if (await DesktopControlPreferenceStore().isEnabled()) {
+      final preferences = DesktopControlPreferenceStore();
+      await DesktopControlBridge.setPreferredScope(
+        await preferences.getPreferredScope(),
+      );
+      if (await preferences.isEnabled()) {
         await DesktopControlBridge.setEnabled(true);
       }
     } catch (_) {

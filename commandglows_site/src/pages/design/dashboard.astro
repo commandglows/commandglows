@@ -1,0 +1,28 @@
+---
+// Local visual fixture only: no real identity, session, entitlement or API call.
+import DashboardLayout from '@/layouts/DashboardLayout.astro'
+import AccountOverview from '@/components/dashboard/AccountOverview.astro'
+import AccountSettings from '@/components/dashboard/AccountSettings.astro'
+import type { SiteAuth } from '@/lib/auth/siteAuth'
+if (!import.meta.env.DEV) return new Response(null, { status: 404 })
+const settings = Astro.url.searchParams.get('view') === 'settings'
+const english = Astro.url.searchParams.get('lang') === 'en'
+const lang = english ? 'en' : 'fr'
+const currentPath = english
+  ? (settings ? '/dashboard/settings' : '/dashboard')
+  : (settings ? '/fr/dashboard/parametres' : '/fr/dashboard/')
+const auth: SiteAuth = { userId: null, provider: 'clerk', role: 'user', name: 'Camille Martin', email: 'camille@example.test', formationAccess: true }
+Astro.locals.siteAuth = () => auth
+---
+<DashboardLayout title="Design · Dashboard" currentPath={currentPath} lang={lang}>
+  <details class="mb-6">
+    <summary class="text-dashboard-text-muted text-sm cursor-pointer">Aperçu local · données fictives</summary>
+    <nav aria-label="Aperçu de développement" class="mt-3 flex flex-wrap items-center gap-3">
+    <a class="workspace-button" href={`/design/dashboard?lang=${lang}`}>Vue d’ensemble</a>
+    <a class="workspace-button" href={`/design/dashboard?view=settings&lang=${lang}`}>Paramètres</a>
+    <a class="workspace-button" href={`/design/dashboard?view=${settings ? 'settings' : 'overview'}&lang=${english ? 'fr' : 'en'}`}>{english ? 'FR' : 'EN'}</a>
+    </nav>
+  </details>
+  {settings ? <AccountSettings auth={auth} lang={lang} /> : <AccountOverview auth={auth} lang={lang} />}
+</DashboardLayout>
+

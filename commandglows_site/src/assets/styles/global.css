@@ -24,6 +24,15 @@
   --color-green: var(--cg-semantic-color-brand-logo-green);
   --color-cyan: var(--cg-semantic-color-brand-logo-cyan);
 
+  --color-dashboard-border: var(--workspace-border, hsl(var(--dashboard-border)));
+  --color-dashboard-bg: var(--workspace-canvas, hsl(var(--dashboard-bg)));
+  --color-dashboard-bg-elevated: var(--workspace-surface, hsl(var(--dashboard-bg-elevated)));
+  --color-dashboard-bg-subtle: var(--workspace-canvas, hsl(var(--dashboard-bg-subtle)));
+  --color-dashboard-bg-hover: var(--workspace-surface, hsl(var(--dashboard-bg-hover)));
+  --color-dashboard-text-primary: var(--workspace-text, hsl(var(--dashboard-text-primary)));
+  --color-dashboard-text-secondary: var(--workspace-muted, hsl(var(--dashboard-text-secondary)));
+  --color-dashboard-text-muted: var(--workspace-muted, hsl(var(--dashboard-text-muted)));
+
   --color-navbar-ring: hsl(var(--navbar-ring));
   --leading-hero-tight: var(--landing-hero-title-line-height);
   --tracking-eyebrow: var(--eyebrow-letter-spacing);
@@ -1132,7 +1141,7 @@
     pointer-events: none;
     opacity: 0.5;
   }
-  @media (min-width: 640px) {
+  @media (width >= theme(--breakpoint-sm)) {
     :root {
       --landing-hero-shell-padding-bottom: 4rem;
       --landing-hero-title-margin-bottom: 1.5rem;
@@ -1235,7 +1244,7 @@
     pointer-events: none;
     opacity: 0.5;
   }
-  @media (min-width: 640px) {
+  @media (width >= theme(--breakpoint-sm)) {
     .btn-secondary {
       padding: var(--btn-secondary-padding-y) var(--ui-button-padding-x-lg);
       font-size: var(--btn-secondary-font-size);

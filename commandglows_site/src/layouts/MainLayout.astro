@@ -10,7 +10,7 @@ import '../assets/styles/global.css'
 import { ClientRouter } from 'astro:transitions'
 
 // Setting expected props
-const { title = SITE.title, meta, structuredData, lang = 'en', noindex = false, alternateUrls, clientNavigation = true } = Astro.props
+const { title = SITE.title, meta, structuredData, lang = 'en', noindex = false, alternateUrls, clientNavigation = true, workspace = false } = Astro.props
 
 // Interface to type-check the properties
 interface Props {
@@ -25,6 +25,7 @@ interface Props {
 	lang?: string
 	noindex?: boolean
 	clientNavigation?: boolean
+	workspace?: boolean
 	alternateUrls?: Partial<Record<'en' | 'fr', string>>
 }
 ---
@@ -35,11 +36,12 @@ interface Props {
 		<title>{title}</title>
 		<script is:inline>
 			(() => {
-				const storedTheme = localStorage.getItem('hs_theme')
+				let storedTheme
+				try { storedTheme = localStorage.getItem('hs_theme') } catch { /* System theme remains available. */ }
 				const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
 					? 'dark'
 					: 'light'
-				const theme = storedTheme || systemTheme
+				const theme = storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : systemTheme
 				const root = document.documentElement
 
 				root.classList.remove('dark', 'light')
@@ -52,31 +54,36 @@ interface Props {
 		<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Manrope:wght@200..800&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
 		{clientNavigation && <ClientRouter />}
 	</head>
-	<body id="top" class="bg-content-bg dark:bg-content-bg">
+	<body id="top" class={workspace ? 'workspace-page' : 'bg-content-bg dark:bg-content-bg'}>
 		<a
 			href="#main-content"
 			class="skip-to-content sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:rounded-md focus-visible:bg-content-bg focus-visible:px-4 focus-visible:py-2 focus-visible:text-content-text-primary focus-visible:ring-2 focus-visible:ring-navbar-ring"
 		>
 			{lang === 'fr' ? 'Aller au contenu principal' : 'Skip to main content'}
 		</a>
-		<Navbar />
+		{workspace ? <slot name="navigation" /> : <Navbar />}
   <SiteSessionGuard lang={lang === 'fr' ? 'fr' : 'en'} />
 		<div class="site-page-shell site-main-shell">
 			<main id="main-content" tabindex="-1">
 				<slot />
 			</main>
+			{workspace && <p data-session-checking-status hidden role="status" class="session-checking">{lang === 'fr' ? 'Vérification de votre connexion…' : 'Checking your session…'}</p>}
 		</div>
-		<Footer />
+		{!workspace && <Footer />}
 		<CookieConsent />
 		{
 			import.meta.env.PROD && (
 				<script is:inline async src="https://cdn.onthe.io/io.js/YyAMWtaLLPUi" />
 			)
 		}
-		<script>
+		{!workspace && <script>
 		import '@/assets/scripts/preline'
 		import '@/assets/scripts/lenisSmoothScroll'
 		import '@/assets/scripts/modal'
+		</script>}
+		<script>
+			import { installThemeContinuity } from '@/assets/scripts/themeContinuity'
+			installThemeContinuity()
 		</script>
 </body>
 </html>

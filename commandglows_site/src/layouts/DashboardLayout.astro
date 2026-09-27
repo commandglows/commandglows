@@ -4,6 +4,8 @@ import { getNavigation } from '@/utils/fr/navigation'
 import { getServerEnv } from '@/lib/serverEnv'
 import { isAccountRecoveryAvailable } from '@/lib/auth/accountRecoveryAvailability'
 import type { Language } from '@/types'
+import ThemePicker from '@/components/ui/ThemePicker.astro'
+import '@/assets/styles/dashboard.css'
 
 interface Props {
   title: string
@@ -31,28 +33,36 @@ const normalizePath = (path: string) => path.replace(/\/$/, '') || '/'
 const isCurrentPage = (href: string) =>
   normalizePath(currentPath) === normalizePath(href) ||
   (currentPath === '/dashboard/parametres' && href === '/fr/dashboard/parametres')
+const alternatePath = /parametres|settings/.test(currentPath)
+  ? lang === 'fr' ? '/dashboard/settings' : '/fr/dashboard/parametres'
+  : lang === 'fr' ? '/dashboard/' : '/fr/dashboard/'
 ---
 
-<MainLayout title={title} lang={lang} noindex={true} structuredData={null}>
-  <div class="min-h-screen py-8 sm:py-12">
-    <div class="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-4 lg:gap-8 lg:px-8">
+<MainLayout title={title} lang={lang} noindex={true} structuredData={null} workspace>
+  <header slot="navigation" class="workspace-topbar" transition:name="workspace-topbar" transition:animate="none">
+    <a class="workspace-wordmark" href={lang === 'fr' ? '/fr' : '/'}>Command<span>Glows</span></a>
+    <span class="workspace-context">{customerLabel}</span>
+    <div class="workspace-tools">
+      <a class="workspace-site-link" href={lang === 'fr' ? '/fr' : '/'}>{lang === 'fr' ? 'Voir le site' : 'Visit website'} <span aria-hidden="true">↗</span></a>
+      {!currentPath.includes('licences') && !currentPath.includes('newsletters') && <a class="workspace-language" href={alternatePath} lang={lang === 'fr' ? 'en' : 'fr'} aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en français'}>{lang === 'fr' ? 'EN' : 'FR'}</a>}
+      <ThemePicker />
+    </div>
+  </header>
+  <div class="workspace-shell" data-dashboard-shell>
+    <div class="workspace-grid">
       <nav
         aria-label={navigationLabel}
-        class="h-fit rounded-2xl border border-dashboard-border bg-dashboard-bg-elevated p-3 shadow-sm lg:col-span-1"
+        class="workspace-nav"
+        transition:name="workspace-navigation" transition:animate="none"
       >
-        <p class="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-dashboard-text-muted">{customerLabel}</p>
-        <ul class="grid gap-1 sm:grid-cols-2 lg:grid-cols-1">
+        <p class="workspace-nav-label">{customerLabel}</p>
+        <ul class="workspace-nav-list">
           {customerNavigation.map((item) => (
             <li>
               <a
                 href={item.href}
                 aria-current={isCurrentPage(item.href) ? 'page' : undefined}
-                class:list={[
-                  'focus-visible:outline-navbar-ring flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
-                  isCurrentPage(item.href)
-                    ? 'bg-dashboard-bg-subtle text-dashboard-text-primary'
-                    : 'text-dashboard-text-muted hover:bg-dashboard-bg-hover hover:text-dashboard-text-primary',
-                ]}
+                class="workspace-nav-link"
               >
                 <Fragment set:html={item.icon} />
                 <span>{item.name}</span>
@@ -61,9 +71,9 @@ const isCurrentPage = (href: string) =>
           ))}
         </ul>
         {navigation.administration.length > 0 && (
-          <div class="mt-5 border-t border-dashboard-border pt-4">
-            <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-dashboard-text-muted">{adminLabel}</p>
-            <ul class="grid gap-1">
+          <div class="workspace-admin-nav">
+            <p class="workspace-nav-label">{adminLabel}</p>
+            <ul class="workspace-nav-list">
               {navigation.administration.map((item) => {
                 const isActive = currentPath === item.href
                 return (
@@ -71,12 +81,7 @@ const isCurrentPage = (href: string) =>
                     <a
                       href={item.href}
                       aria-current={isActive ? 'page' : undefined}
-                      class:list={[
-                        'focus-visible:outline-navbar-ring flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
-                        isActive
-                          ? 'bg-dashboard-bg-subtle text-dashboard-text-primary'
-                          : 'text-dashboard-text-muted hover:bg-dashboard-bg-hover hover:text-dashboard-text-primary',
-                      ]}
+                      class="workspace-nav-link"
                     >
                       <Fragment set:html={item.icon} />
                       <span>{item.name}</span>
@@ -89,7 +94,7 @@ const isCurrentPage = (href: string) =>
         )}
       </nav>
 
-      <div class="min-w-0 lg:col-span-3">
+      <div class="workspace-content" transition:name="workspace-content" transition:animate="none">
         <slot />
       </div>
     </div>

@@ -9,6 +9,7 @@
 #include "../desktop_control_keymap.h"
 
 using commandglows::desktop_control::DivideCell;
+using commandglows::desktop_control::IntersectNonEmpty;
 using commandglows::desktop_control::CaptureKeyDown;
 using commandglows::desktop_control::KeyCaptureDecision;
 using commandglows::desktop_control::KeyLegend;
@@ -45,6 +46,18 @@ void VerifyRepeatedSubdivision() {
   assert(cell.bottom - cell.top <= 5);
   assert(!DivideCell(RECT{0, 0, 2, 2}, 3, 3, 0).has_value());
   assert(!DivideCell(RECT{0, 0, 100, 100}, 3, 3, 9).has_value());
+}
+
+void VerifyWindowScopeClipping() {
+  const RECT monitor{-3440, 0, 0, 1440};
+  const RECT window{-2200, 120, 500, 1200};
+  const auto clipped = IntersectNonEmpty(monitor, window);
+  assert(clipped.has_value());
+  assert(clipped->left == -2200 && clipped->right == 0);
+  assert(clipped->top == 120 && clipped->bottom == 1200);
+  VerifyPartition(*clipped, 3);
+  assert(!IntersectNonEmpty(monitor, RECT{10, 0, 100, 100}));
+  assert(!IntersectNonEmpty(monitor, RECT{-2, 0, 1, 100}));
 }
 
 void VerifyPhysicalKeyMaps() {
@@ -104,6 +117,7 @@ int main() {
   VerifyPartition(negative_origin, 3);
   VerifyPartition(negative_origin, 5);
   VerifyRepeatedSubdivision();
+  VerifyWindowScopeClipping();
   VerifyPhysicalKeyMaps();
   VerifyKeyboardLayoutLabels();
   VerifyCaptureKeyPairingOnDismiss();

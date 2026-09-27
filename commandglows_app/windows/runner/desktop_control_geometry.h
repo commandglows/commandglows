@@ -1,6 +1,7 @@
 #ifndef RUNNER_DESKTOP_CONTROL_GEOMETRY_H_
 #define RUNNER_DESKTOP_CONTROL_GEOMETRY_H_
 
+#include <algorithm>
 #include <cstdint>
 #include <optional>
 
@@ -39,6 +40,19 @@ inline std::optional<RECT> DivideCell(const RECT& parent, int columns,
 inline POINT CenterOf(const RECT& rect) {
   return POINT{rect.left + (rect.right - rect.left) / 2,
                rect.top + (rect.bottom - rect.top) / 2};
+}
+
+inline std::optional<RECT> IntersectNonEmpty(const RECT& first,
+                                           const RECT& second) {
+  RECT overlap{std::max(first.left, second.left),
+               std::max(first.top, second.top),
+               std::min(first.right, second.right),
+               std::min(first.bottom, second.bottom)};
+  if (overlap.right - overlap.left < 3 ||
+      overlap.bottom - overlap.top < 3) {
+    return std::nullopt;
+  }
+  return overlap;
 }
 
 }  // namespace commandglows::desktop_control

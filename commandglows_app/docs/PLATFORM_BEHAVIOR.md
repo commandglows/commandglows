@@ -134,6 +134,14 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
   PageUp/PageDown moves to another monitor. F1–F7 cover clicks, drag and wheel;
   arrow keys nudge the cursor. The native overlay displays the key map and
   action guide.
+- Windows settings let the person choose **Écran entier** (initial default) or
+  **Fenêtre active** as the starting scope. The window option captures the
+  visible foreground window when the shortcut is pressed and clips the grid to
+  its part on the selected monitor. F8 switches between that captured window
+  and the whole monitor; Space resets within the current scope. If Windows has
+  no usable foreground window, the grid falls back to the monitor. Moving or
+  resizing a window requires closing and reopening the grid to recapture it.
+  The scope preference is local and is restored at app startup.
 - Physical key positions remain stable under AZERTY/QWERTY. Labels use the
   foreground keyboard layout captured at activation. Close and reopen the grid
   after changing input language. The local opt-in persists, defaults off, and
@@ -144,8 +152,10 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
   Windows cannot identify. Hints based on UI Automation remain a separate
   candidate until their latency and coverage are measured.
 - The feature has compiled and run in the managed Windows debug session. The
-  global shortcut opened and dismissed the grid over Bloc-notes; selection,
-  click, drag and scroll in another app still need physical-key verification.
+  global shortcut opened and dismissed a grid clipped to an external Bloc-notes
+  window, and the local window-scope preference survived an app restart.
+  Physical-key scope switching, selection, click, drag and scroll still need
+  manual verification.
 
 ## macOS Desktop Overlay
 

@@ -58,9 +58,29 @@ test('cross-tab change blocks stale response and focus cannot restore it', async
 test('disposed or superseded request cannot reveal stale content', async () => {
   const resolvers: ((value: unknown) => void)[] = []
   const guard = start(vi.fn().mockImplementation(() => new Promise(done => resolvers.push(done))))
-  window.dispatchEvent(new Event('focus'))
+  window.dispatchEvent(new PageTransitionEvent('pagehide'))
+  window.dispatchEvent(new PageTransitionEvent('pageshow'))
   resolvers[0]({ userId: 'alice' }); await flush(); expect(guard.surface.hidden).toBe(true)
   cleanup?.(); resolvers[1]({ userId: 'alice' }); await flush(); expect(guard.surface.hidden).toBe(true)
+})
+
+test('coalesces focus and visibility checks and preserves workspace geometry', async () => {
+  document.body.innerHTML = '<div><main>Private content</main><p data-session-checking-status hidden>Checking</p></div>'
+  const main = document.querySelector('main')!
+  const measuredHeight = 720
+  vi.spyOn(main, 'getBoundingClientRect').mockReturnValue({ height: measuredHeight } as DOMRect)
+  let resolve!: (value: unknown) => void
+  const guard = start(vi.fn().mockImplementation(() => new Promise(done => { resolve = done })))
+  window.dispatchEvent(new Event('focus'))
+  document.dispatchEvent(new Event('visibilitychange'))
+  expect(guard.fetchSession).toHaveBeenCalledOnce()
+  expect(main.hidden).toBe(true)
+  expect(main.parentElement!.style.minHeight).toBe('720px')
+  expect(document.querySelector<HTMLElement>('[data-session-checking-status]')!.hidden).toBe(false)
+  resolve({ userId: 'alice' }); await flush()
+  expect(main.hidden).toBe(false)
+  expect(main.parentElement!.style.minHeight).toBe('')
+  expect(document.querySelector<HTMLElement>('[data-session-checking-status]')!.hidden).toBe(true)
 })
 test('same-origin logout broadcasts no identity and cross-origin form does not', async () => {
   start(); await flush()

@@ -16,6 +16,7 @@
 #include <flutter/encodable_value.h>
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
+#include <dwmapi.h>
 
 #include "desktop_control_geometry.h"
 #include "desktop_control_keymap.h"
@@ -38,6 +39,7 @@ constexpr UINT kDefaultWheelDelta = WHEEL_DELTA;
 using commandglows::desktop_control::CenterOf;
 using commandglows::desktop_control::CaptureKeyDown;
 using commandglows::desktop_control::DivideCell;
+using commandglows::desktop_control::IntersectNonEmpty;
 using commandglows::desktop_control::kCoordinateKeys;
 using commandglows::desktop_control::kGridKeys;
 using commandglows::desktop_control::KeyCaptureDecision;
@@ -64,7 +66,14 @@ enum class InputAction {
   nudge_down,
   previous_monitor,
   next_monitor,
+  toggle_scope,
 };
+
+enum class GridScope { monitor, window };
+
+const char* ScopeName(GridScope scope) {
+  return scope == GridScope::window ? "window" : "monitor";
+}
 
 bool IsModifierDown() {
   constexpr std::array<int, 8> modifiers{{VK_CONTROL, VK_LCONTROL, VK_RCONTROL,
@@ -108,6 +117,26 @@ class WindowsDesktopControlHost::Impl {
           }
         }
         SetEnabled(enabled);
+        result->Success(Status());
+      } else if (method == "setPreferredScope") {
+        const auto* args = std::get_if<flutter::EncodableMap>(call.arguments());
+        if (args == nullptr) {
+          result->Error("INVALID_SCOPE", "Expected monitor or window");
+          return;
+        }
+        const auto it = args->find(Value("scope"));
+        if (it == args->end() ||
+            !std::holds_alternative<std::string>(it->second)) {
+          result->Error("INVALID_SCOPE", "Expected monitor or window");
+          return;
+        }
+        const auto& scope = std::get<std::string>(it->second);
+        if (scope != "monitor" && scope != "window") {
+          result->Error("INVALID_SCOPE", "Expected monitor or window");
+          return;
+        }
+        preferred_scope_ = scope == "window" ? GridScope::window
+                                                : GridScope::monitor;
         result->Success(Status());
       } else if (method == "activate") {
         Activate();
@@ -285,6 +314,8 @@ class WindowsDesktopControlHost::Impl {
     status[Value("enabled")] = Value(enabled_);
     status[Value("active")] = Value(active_);
     status[Value("hotkeyRegistered")] = Value(hotkey_registered_);
+    status[Value("preferredScope")] = Value(ScopeName(preferred_scope_));
+    status[Value("activeScope")] = Value(ScopeName(active_scope_));
     status[Value("errorCode")] = Value(error_code_);
     return Value(std::move(status));
   }
@@ -311,6 +342,50 @@ class WindowsDesktopControlHost::Impl {
       hotkey_registered_ = false;
     }
     enabled_ = false;
+  }
+
+  std::optional<RECT> ForegroundBounds(HWND foreground) const {
+    if (foreground == nullptr || foreground == GetShellWindow() ||
+        foreground == GetDesktopWindow() ||
+        !IsWindowVisible(foreground) || IsIconic(foreground)) {
+      return std::nullopt;
+    }
+    BOOL cloaked = FALSE;
+    if (SUCCEEDED(DwmGetWindowAttribute(foreground, DWMWA_CLOAKED,
+                                        &cloaked, sizeof(cloaked))) && cloaked) {
+      return std::nullopt;
+    }
+    RECT bounds{};
+    if (FAILED(DwmGetWindowAttribute(foreground,
+                                     DWMWA_EXTENDED_FRAME_BOUNDS,
+                                     &bounds, sizeof(bounds))) &&
+        !GetWindowRect(foreground, &bounds)) {
+      return std::nullopt;
+    }
+    if (bounds.right - bounds.left < 3 ||
+        bounds.bottom - bounds.top < 3) {
+      return std::nullopt;
+    }
+    return bounds;
+  }
+
+  RECT BaseRegionForMonitor(size_t index, GridScope requested) {
+    const RECT& monitor = monitors_[index].bounds;
+    if (requested == GridScope::window && window_bounds_) {
+      if (const auto clipped = IntersectNonEmpty(*window_bounds_, monitor)) {
+        active_scope_ = GridScope::window;
+        return *clipped;
+      }
+    }
+    active_scope_ = GridScope::monitor;
+    return monitor;
+  }
+
+  void ResetRegion(GridScope requested) {
+    region_ = BaseRegionForMonitor(monitor_index_, requested);
+    history_.clear();
+    history_states_.clear();
+    coordinate_view_ = false;
   }
 
   void Activate() {
@@ -348,15 +423,30 @@ class WindowsDesktopControlHost::Impl {
         break;
       }
     }
-    const DWORD target_thread = GetWindowThreadProcessId(GetForegroundWindow(), nullptr);
+    HWND foreground = GetForegroundWindow();
+    window_bounds_ = ForegroundBounds(foreground);
+    if (preferred_scope_ == GridScope::window && window_bounds_) {
+      int64_t largest_area = 0;
+      for (size_t i = 0; i < monitors_.size(); ++i) {
+        if (const auto clipped =
+                IntersectNonEmpty(*window_bounds_, monitors_[i].bounds)) {
+          const int64_t area =
+              static_cast<int64_t>(clipped->right - clipped->left) *
+              (clipped->bottom - clipped->top);
+          if (area > largest_area) {
+            largest_area = area;
+            monitor_index_ = i;
+          }
+        }
+      }
+    }
+    const DWORD target_thread = GetWindowThreadProcessId(foreground, nullptr);
     keyboard_layout_ = GetKeyboardLayout(target_thread);
     if (keyboard_layout_ == nullptr) {
       keyboard_layout_ = GetKeyboardLayout(0);
     }
-    region_ = monitors_[monitor_index_].bounds;
-    history_.clear();
-    history_states_.clear();
-    coordinate_view_ = false;
+    session_scope_ = preferred_scope_;
+    ResetRegion(session_scope_);
     swallowed_keys_.clear();
     active_ = true;
     active_hook_host_ = this;
@@ -527,12 +617,11 @@ class WindowsDesktopControlHost::Impl {
     RECT panel_title{panel.left + panel_padding, panel.top + 2,
                      panel.right - panel_padding, panel.top + 19};
     wchar_t title[128]{};
-    const Monitor& monitor = monitors_[monitor_index_];
     swprintf_s(title, std::size(title),
-               L"%s | %s %zu/%zu | CLAVIER FIGE",
+               L"%s | %s | MONITEUR %zu/%zu",
                coordinate_view_ ? L"COORDONNEES 5 x 5" : L"GRILLE 3 x 3",
-               monitor.device_name.c_str(), monitor_index_ + 1,
-               monitors_.size());
+               active_scope_ == GridScope::window ? L"FENETRE" : L"ECRAN",
+               monitor_index_ + 1, monitors_.size());
     DrawTextW(dc, title, -1, &panel_title,
               DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
     for (int i = 0; i < cell_count; ++i) {
@@ -560,9 +649,9 @@ class WindowsDesktopControlHost::Impl {
     FillRect(dc, &hint, hint_bg);
     DeleteObject(hint_bg);
     const wchar_t* text = coordinate_view_
-                                ? L"Tab: grille recursive   Espace: reset   Retour: precedent   Echap: fermer   PagePrec/PageSuiv: ecran"
+                                ? L"Tab: grille recursive   F8: fenetre/ecran   Espace: reset   Retour: precedent   Echap: fermer   PagePrec/PageSuiv: ecran"
                                 : L"F1 clic gauche   F2 droit   F3 milieu   F4 glisser   F5 relacher   F6/F7 molette   Tab: coordonnees"
-                                  L"   Espace: reset   Retour: precedent   Echap: fermer   PagePrec/PageSuiv: ecran";
+                                  L"   F8: fenetre/ecran   Espace: reset   Retour: precedent   Echap: fermer   PagePrec/PageSuiv: ecran";
     DrawTextW(dc, text, -1, &hint, DT_LEFT | DT_VCENTER | DT_SINGLELINE |
                                       DT_END_ELLIPSIS | DT_NOPREFIX);
     if (error_code_ == "INPUT_UNAVAILABLE") {
@@ -586,7 +675,7 @@ class WindowsDesktopControlHost::Impl {
         virtual_key == VK_F1 || virtual_key == VK_F2 ||
         virtual_key == VK_F3 || virtual_key == VK_F4 ||
         virtual_key == VK_F5 || virtual_key == VK_F6 ||
-        virtual_key == VK_F7 ||
+        virtual_key == VK_F7 || virtual_key == VK_F8 ||
         virtual_key == VK_LEFT || virtual_key == VK_RIGHT ||
         virtual_key == VK_UP || virtual_key == VK_DOWN ||
         virtual_key == VK_PRIOR || virtual_key == VK_NEXT) {
@@ -624,6 +713,7 @@ class WindowsDesktopControlHost::Impl {
       case VK_F5: return InputAction::drag_release;
       case VK_F6: return InputAction::wheel_up;
       case VK_F7: return InputAction::wheel_down;
+      case VK_F8: return InputAction::toggle_scope;
       case VK_PRIOR: return InputAction::previous_monitor;
       case VK_NEXT: return InputAction::next_monitor;
       case VK_LEFT: return InputAction::nudge_left;
@@ -659,8 +749,16 @@ class WindowsDesktopControlHost::Impl {
     if (action == InputAction::reset) {
       history_.clear();
       history_states_.clear();
-      region_ = monitors_[monitor_index_].bounds;
+      region_ = BaseRegionForMonitor(monitor_index_, session_scope_);
       coordinate_view_ = false;
+      SetCursorInRegion();
+      Redraw();
+      return;
+    }
+    if (action == InputAction::toggle_scope) {
+      session_scope_ = session_scope_ == GridScope::window
+                           ? GridScope::monitor : GridScope::window;
+      ResetRegion(session_scope_);
       SetCursorInRegion();
       Redraw();
       return;
@@ -713,10 +811,11 @@ class WindowsDesktopControlHost::Impl {
                     : action == InputAction::nudge_right ? step : 0;
         cursor.y += action == InputAction::nudge_up ? -step
                     : action == InputAction::nudge_down ? step : 0;
-        cursor.x = std::clamp<LONG>(cursor.x, monitors_[monitor_index_].bounds.left,
-                                    monitors_[monitor_index_].bounds.right - 1);
-        cursor.y = std::clamp<LONG>(cursor.y, monitors_[monitor_index_].bounds.top,
-                                    monitors_[monitor_index_].bounds.bottom - 1);
+        const RECT bounds = BaseRegionForMonitor(monitor_index_, active_scope_);
+        cursor.x = std::clamp<LONG>(cursor.x, bounds.left,
+                                    bounds.right - 1);
+        cursor.y = std::clamp<LONG>(cursor.y, bounds.top,
+                                    bounds.bottom - 1);
         if (!MoveCursorTo(cursor)) {
           error_code_ = "INPUT_UNAVAILABLE";
         } else {
@@ -855,10 +954,7 @@ class WindowsDesktopControlHost::Impl {
       monitor_index_ = monitor_index_ == 0 ? monitors_.size() - 1
                                           : monitor_index_ - 1;
     }
-    region_ = monitors_[monitor_index_].bounds;
-    history_.clear();
-    history_states_.clear();
-    coordinate_view_ = false;
+    ResetRegion(session_scope_);
     if (overlay_ != nullptr && IsWindow(overlay_)) {
       DestroyWindow(overlay_);
     }
@@ -937,6 +1033,10 @@ class WindowsDesktopControlHost::Impl {
   bool hotkey_registered_ = false;
   DWORD held_button_up_ = 0;
   bool coordinate_view_ = false;
+  GridScope preferred_scope_ = GridScope::monitor;
+  GridScope session_scope_ = GridScope::monitor;
+  GridScope active_scope_ = GridScope::monitor;
+  std::optional<RECT> window_bounds_;
   std::string error_code_;
   HHOOK keyboard_hook_ = nullptr;
   HWND overlay_ = nullptr;

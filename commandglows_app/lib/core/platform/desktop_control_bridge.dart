@@ -3,6 +3,19 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'platform_capabilities.dart';
 
+enum DesktopControlScope {
+  monitor('monitor', 'Écran entier'),
+  window('window', 'Fenêtre active');
+
+  const DesktopControlScope(this.wireName, this.label);
+
+  final String wireName;
+  final String label;
+
+  static DesktopControlScope fromWire(Object? value) =>
+      value == window.wireName ? window : monitor;
+}
+
 /// Snapshot returned by the native Windows desktop-control host.
 class DesktopControlStatus {
   const DesktopControlStatus({
@@ -10,6 +23,8 @@ class DesktopControlStatus {
     required this.enabled,
     required this.active,
     required this.hotkeyRegistered,
+    this.preferredScope = DesktopControlScope.monitor,
+    this.activeScope = DesktopControlScope.monitor,
     this.errorCode,
   });
 
@@ -17,6 +32,8 @@ class DesktopControlStatus {
   final bool enabled;
   final bool active;
   final bool hotkeyRegistered;
+  final DesktopControlScope preferredScope;
+  final DesktopControlScope activeScope;
   final String? errorCode;
 
   factory DesktopControlStatus.unsupported() => const DesktopControlStatus(
@@ -33,6 +50,8 @@ class DesktopControlStatus {
       enabled: map['enabled'] as bool? ?? false,
       active: map['active'] as bool? ?? false,
       hotkeyRegistered: map['hotkeyRegistered'] as bool? ?? false,
+      preferredScope: DesktopControlScope.fromWire(map['preferredScope']),
+      activeScope: DesktopControlScope.fromWire(map['activeScope']),
       errorCode: rawErrorCode == null || rawErrorCode.isEmpty
           ? null
           : rawErrorCode,
@@ -66,6 +85,10 @@ class DesktopControlBridge {
 
   static Future<DesktopControlStatus> setEnabled(bool enabled) =>
       _invoke('setEnabled', {'enabled': enabled});
+
+  static Future<DesktopControlStatus> setPreferredScope(
+    DesktopControlScope scope,
+  ) => _invoke('setPreferredScope', {'scope': scope.wireName});
 
   static Future<DesktopControlStatus> activate() => _invoke('activate');
 
@@ -108,6 +131,8 @@ class DesktopControlBridge {
       'Windows n’a pas pu envoyer cette action. Les applications élevées, l’écran verrouillé et les fenêtres de sécurité restent hors du périmètre pris en charge.',
     'UNSUPPORTED_PLATFORM' =>
       'Le contrôle du bureau est disponible uniquement dans CommandGlows pour Windows.',
+    'INVALID_SCOPE' =>
+      'Cette portée de grille n’est pas reconnue. Choisissez une fenêtre ou un écran.',
     _ =>
       'Le contrôle du bureau n’a pas pu démarrer. Fermez puis relancez CommandGlows et réessayez.',
   };
@@ -117,6 +142,8 @@ class DesktopControlBridge {
 abstract interface class DesktopControlPreference {
   Future<bool> isEnabled();
   Future<void> setEnabled(bool enabled);
+  Future<DesktopControlScope> getPreferredScope();
+  Future<void> setPreferredScope(DesktopControlScope scope);
 }
 
 class DesktopControlPreferenceStore implements DesktopControlPreference {
@@ -124,6 +151,7 @@ class DesktopControlPreferenceStore implements DesktopControlPreference {
     : _storage = storage ?? const FlutterSecureStorage();
 
   static const _enabledKey = 'desktop_control_enabled';
+  static const _scopeKey = 'desktop_control_preferred_scope';
   final FlutterSecureStorage _storage;
 
   @override
@@ -133,4 +161,12 @@ class DesktopControlPreferenceStore implements DesktopControlPreference {
   @override
   Future<void> setEnabled(bool enabled) =>
       _storage.write(key: _enabledKey, value: enabled ? 'true' : 'false');
+
+  @override
+  Future<DesktopControlScope> getPreferredScope() async =>
+      DesktopControlScope.fromWire(await _storage.read(key: _scopeKey));
+
+  @override
+  Future<void> setPreferredScope(DesktopControlScope scope) =>
+      _storage.write(key: _scopeKey, value: scope.wireName);
 }

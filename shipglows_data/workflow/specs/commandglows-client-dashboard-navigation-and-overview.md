@@ -252,3 +252,22 @@ None for this bounded tranche. Order history and device management require separ
 - 103-sg-verify: pending authenticated customer/admin, mobile, keyboard, and theme proof
 - 104-sg-end: not started
 - 005-sg-ship: not requested
+
+## Visual refinement contract — 2026-09-27
+
+Ready: the operator explicitly requests visual design, tokens, animations, reload continuity and interaction performance. Preserve the existing brand, destinations, server-derived identity, permissions and commerce behavior. Scope: the shared dashboard shell and existing overview/settings surfaces; administrative content inherits the shell without rewriting its business controls.
+
+Use a compact workspace header, a persistent desktop navigation rail, a compact mobile navigation row, neutral layered surfaces and restrained brand-magenta accents. Canonical workspace roles live in tokens.json and generated adapters. Controls share focus, hover and press treatments; content remains available without motion. Native scrolling owns dashboard input. A short opacity transition owns route continuity; reduced motion disables it. Clean up scroll animation resources on swaps. Preserve the selected theme before each swap. Session verification must preserve geometry without displaying unverified personal content.
+
+Proof: responsive light/dark browser comparison, keyboard/focus, route and reload checks, lifecycle tests, Astro check, token generation and drift guards. No deployment or authentication/entitlement mutation. Existing staged commerce work belongs to another agent.
+
+| Date UTC | Skill | Model | Action | Result | Next step |
+|---|---|---|---|---|---|
+| 2026-09-27 | 006-sg-design | GPT-6 | Implement canonical workspace tokens, responsive shell, overview/settings surfaces, theme continuity, native dashboard scrolling and bounded route motion. | Implemented and locally verified; authenticated client/admin proof pending. | Review with an authenticated session; no deployment. |
+
+### Visual refinement evidence
+
+- Browser: real components rendered through a DEV-only fixture at `/design/dashboard` with explicitly fictitious identity data; the fixture returns 404 outside development. Light/dark desktop and 390px mobile renders inspected. No horizontal overflow; mobile navigation remains three readable targets. English settings and French overview/settings checked. Keyboard focus has a visible 2px accent outline. Theme persists across route changes and reloads; reduced motion disables transitions; dashboard scrolling is native.
+- Verification: Doppler production build completed; Astro check returned 0 errors and 0 warnings (one existing hint); all 727 site tests passed, including lifecycle, session geometry and theme continuity checks. All 22 token-generator/drift tests passed. Six generated adapters are current; project/shared changed-file drift scans reported 0 findings; `git diff --check` passed.
+- Performance scope: no new dependency; marketing scroll scripts omitted on direct dashboard loads; Lenis RAF/instances disposed on route swaps. These are implementation and lifecycle proofs, not measured production Core Web Vitals.
+- Remaining proof boundary: the available real browser session is signed out. Authenticated customer/admin rendering, actual account actions and production behavior are unverified. Administrative business controls were not redesigned; they inherit the shared shell and semantic colors. No commit, push or deployment.

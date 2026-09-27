@@ -9,16 +9,28 @@ export function installSiteSessionGuard(options: {
   const { window: win, document: doc, expectedUserId } = options
   const surface = doc.querySelector<HTMLElement>('main')
   const recovery = doc.querySelector<HTMLElement>('[data-session-recovery]')
+  const checking = doc.querySelector<HTMLElement>('[data-session-checking-status]')
+  const container = surface?.parentElement
+  const originalMinHeight = container?.style.minHeight ?? ''
   let generation = 0, disposed = false, blocked = false, controller: AbortController | undefined
-  const hide = () => { if (expectedUserId && surface) surface.hidden = true }
+  let pending = false
+  const hide = () => {
+    if (!expectedUserId || !surface) return
+    // Runtime geometry preserves scroll position while private content is hidden.
+    if (checking && container && !surface.hidden) container.style.minHeight = `${surface.getBoundingClientRect().height}px`
+    surface.hidden = true
+    if (checking) checking.hidden = false
+  }
   const invalidate = () => { generation++; controller?.abort(); hide() }
   const recover = () => {
     blocked = true; invalidate()
+    if (checking) checking.hidden = true
     if (expectedUserId && recovery) recovery.hidden = false
   }
   const check = async () => {
-    if (!expectedUserId || disposed || blocked || doc.visibilityState === 'hidden') return
+    if (!expectedUserId || disposed || blocked || pending || doc.visibilityState === 'hidden') return
     invalidate()
+    pending = true
     const current = generation
     controller = new AbortController()
     try {
@@ -30,9 +42,12 @@ export function installSiteSessionGuard(options: {
       if (typeof id !== 'string' || !id) { recover(); return }
       if (id !== expectedUserId) { blocked = true; options.reload(); return }
       if (surface) surface.hidden = false
+      if (checking) checking.hidden = true
+      if (container) container.style.minHeight = originalMinHeight
     } catch { if (!disposed && current === generation) recover() }
+    finally { if (current === generation) pending = false }
   }
-  const hidden = () => { invalidate() }
+  const hidden = () => { pending = false; invalidate() }
   const visible = () => { if (doc.visibilityState === 'hidden') hidden(); else void check() }
   const storage = (event: StorageEvent) => {
     if (event.key === SESSION_CHANGE_EVENT_KEY) recover()

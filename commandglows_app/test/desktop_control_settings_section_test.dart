@@ -8,15 +8,26 @@ import 'package:commandglows_app/features/settings/presentation/desktop_control_
 const _channel = MethodChannel('commandglows_app/desktop_control');
 
 class _MemoryPreference implements DesktopControlPreference {
-  _MemoryPreference({this.enabled = false});
+  _MemoryPreference({
+    this.enabled = false,
+    this.scope = DesktopControlScope.monitor,
+  });
 
   bool enabled;
+  DesktopControlScope scope;
 
   @override
   Future<bool> isEnabled() async => enabled;
 
   @override
   Future<void> setEnabled(bool enabled) async => this.enabled = enabled;
+
+  @override
+  Future<DesktopControlScope> getPreferredScope() async => scope;
+
+  @override
+  Future<void> setPreferredScope(DesktopControlScope scope) async =>
+      this.scope = scope;
 }
 
 void main() {
@@ -164,6 +175,76 @@ void main() {
             )
             .value,
         isFalse,
+      );
+    }),
+  );
+
+  testWidgets(
+    'saves the window scope and sends it to Windows',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference();
+      final calls = <MethodCall>[];
+      await mount(
+        tester,
+        preferences: preferences,
+        statusForCall: (call) {
+          calls.add(call);
+          return {
+            'supported': true,
+            'enabled': false,
+            'active': false,
+            'hotkeyRegistered': false,
+            'preferredScope': call.method == 'setPreferredScope'
+                ? 'window'
+                : 'monitor',
+          };
+        },
+      );
+
+      await tester.tap(find.byKey(const Key('desktop-control-scope')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Fenêtre active').last);
+      await tester.pumpAndSettle();
+
+      expect(preferences.scope, DesktopControlScope.window);
+      expect(calls.last.method, 'setPreferredScope');
+      expect(calls.last.arguments, {'scope': 'window'});
+    }),
+  );
+
+  testWidgets(
+    'restores a saved window scope when the settings page opens',
+    (tester) => onWindows(() async {
+      final preferences = _MemoryPreference(scope: DesktopControlScope.window);
+      final calls = <MethodCall>[];
+      await mount(
+        tester,
+        preferences: preferences,
+        statusForCall: (call) {
+          calls.add(call);
+          return {
+            'supported': true,
+            'enabled': false,
+            'active': false,
+            'hotkeyRegistered': false,
+            'preferredScope': call.method == 'setPreferredScope'
+                ? 'window'
+                : 'monitor',
+          };
+        },
+      );
+
+      expect(calls.map((call) => call.method), [
+        'getStatus',
+        'setPreferredScope',
+      ]);
+      expect(
+        tester
+            .widget<DropdownButton<DesktopControlScope>>(
+              find.byKey(const Key('desktop-control-scope')),
+            )
+            .value,
+        DesktopControlScope.window,
       );
     }),
   );

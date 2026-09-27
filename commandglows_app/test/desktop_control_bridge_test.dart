@@ -25,6 +25,8 @@ void main() {
             'enabled': true,
             'active': call.method == 'activate',
             'hotkeyRegistered': true,
+            'preferredScope': 'window',
+            'activeScope': 'monitor',
             'errorCode': '',
           };
         });
@@ -36,10 +38,16 @@ void main() {
     expect(status.enabled, isTrue);
     expect(status.hotkeyRegistered, isTrue);
     expect(status.errorCode, isNull);
+    expect(status.preferredScope, DesktopControlScope.window);
+    expect(status.activeScope, DesktopControlScope.monitor);
+    await DesktopControlBridge.setPreferredScope(DesktopControlScope.window);
+    expect(calls.last.method, 'setPreferredScope');
+    expect(calls.last.arguments, {'scope': 'window'});
     expect((await DesktopControlBridge.activate()).active, isTrue);
     expect((await DesktopControlBridge.cancel()).active, isFalse);
     expect(calls.map((call) => call.method), [
       'setEnabled',
+      'setPreferredScope',
       'activate',
       'cancel',
     ]);

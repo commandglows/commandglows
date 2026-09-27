@@ -1,4 +1,4 @@
-// Generated from CommandGlows tokens 1.3.0 (ba534285a3103a37a1e5d6e6fbbb4f2b3d4e95c198de0c03f7f0b34a5dca7edc); do not edit.
+// Generated from CommandGlows tokens 1.3.0 (01c5488ea88f025cb518d04d7945e4ec7aa00da2bfcc2d6b41870fffa50c5f48); do not edit.
 package com.commandglows.app.ime.generated
 
 internal object CommandGlowsTokens {
