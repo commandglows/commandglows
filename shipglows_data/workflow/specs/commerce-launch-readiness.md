@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: commandglows
 created: "2026-09-06"
-updated: "2026-09-09"
+updated: "2026-09-25"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-09T00:00:00Z"
+updated_at: "2026-09-25T17:43:00Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -21,7 +21,7 @@ linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
 evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access.", "Hosted buyer-path edge cases observed in conversation on 2026-09-09: card decline showed Stripe refusal with no access, abandoned checkout kept access locked, partial refund preserved access, and cumulative full refund removed access.", "Hosted dispute acceptance on 2026-09-09 proved open/pending dispute keeps access locked and lost dispute keeps access locked; a separate normal card checkout later restored access on a clean session. Buyer receipt, dispute-won restoration, alerts, recovery and production activation remain pending."]
-next_step: "Complete buyer receipt, dispute-won restoration if Stripe test evidence becomes available, alert and recovery acceptance before production activation; delayed payment remains not applicable while card-only Checkout is configured."
+next_step: "Prove the CommunityGlows test purchase, signed webhook, entitlement, refund and protected access on its own Stripe account before enabling direct production sales; continue buyer receipt, dispute-won, alert and recovery acceptance."
 ---
 
 # Title
@@ -82,7 +82,7 @@ Existing server-owned commerceCheckoutHandoffs and PaymentIntent binding; receip
 
 ## Invariants
 
-- Receipt identity is provider + environment + event ID; the same verified payload reuses its original envelope.
+- Receipt identity is provider + merchant account + environment + event ID; the same verified payload reuses its original envelope.
 - Only a paid Checkout Session matching the server handoff establishes the payment binding.
 - Refund/dispute facts operate on that payment and purchase only.
 - Failed/pending refunds do not count as successful refunds; distinct refund IDs count once.
@@ -443,3 +443,43 @@ After the disputed session, a fresh Checkout session with a normal successful te
 payment restored access to the private Windows Mastery lesson. That confirms the
 ordinary paid-access path still works independently of the unresolved won-dispute
 case.
+
+### Merchant-account release checkpoint — 2026-09-25
+
+The business-owned Stripe boundary was merged as PR #5 in commit `71d2b4e9`.
+Checkout, signed webhooks, receipt keys, customer matching, incidents and
+provider-evidence recovery now carry or verify business and merchant account
+provenance. The entitlement writer and email registry remain central. No
+historical customer or receipt migration, real paid purchase, or tax choice was
+performed in this release.
+
+Read-only Stripe API checks matched the configured account IDs to their actual
+test and live API keys for CommandGlows and CommunityGlows. Their configured
+Prices were active in the matching mode, and enabled business-specific webhook
+destinations carried the required checkout, refund and dispute event types.
+ReplayGlows and ContentGlows matched separate test accounts, but have no live
+secret keys or allowlisted direct-sale offers. Account and Price names alone
+were not treated as ownership proof.
+
+Doppler `commandglows/dev` verification passed 698 unit tests, Astro check with
+zero errors and one existing hint, metadata lint on five changed governance
+files, and the staged diff check. The final checkout-gate test passed after the
+last code edit. Vercel preview `dpl_BQGZgWtoLGXfx8he28xE7wnpyj5k` was Ready;
+its CommunityGlows webhook rejected an invalid signature with HTTP 400. The
+Convex production dry-run reported no index deletion, and its hosted function
+spec already exposed required business/account handoff arguments. The committed
+source was then deployed to `elegant-mule-677` with schema validation complete.
+Vercel production `dpl_5Ao4ynLWFDkSG85ZquyUb3ZsPidJ` is Ready and aliased to
+`www.commandglows.com` and `commandglows.com`.
+
+Production HTTP probes returned 200 for the CommunityGlows founder page with
+all three checkout buttons disabled, 503 for its checkout POST, and 400 for
+invalid signatures on both CommandGlows and CommunityGlows webhooks. These are
+runtime route and configuration checks, not a paid CommunityGlows lifecycle.
+`COMMUNITYGLOWS_DIRECT_SALES_ENABLED` remains absent, so direct production
+sales are closed. The earlier Formation test payment proves only its own
+CommandGlows test path; no CommunityGlows purchase or real CommandGlows
+purchase is claimed. Complete the CommunityGlows test payment, signed webhook,
+entitlement, refund and protected-access cycle before opening its production
+checkout. Buyer receipt, actual commerce alert reception/recovery, and the
+dispute-won restoration proof remain separate launch gaps.

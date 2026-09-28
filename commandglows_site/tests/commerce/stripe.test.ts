@@ -77,6 +77,25 @@ describe('Stripe Managed Payments adapter', () => {
     expect(create).not.toHaveBeenCalled()
   })
 
+  test('does not send the CommandGlows founder promotion to CommunityGlows', async () => {
+    const stripe = new Stripe('sk_test_communityglows')
+    vi.spyOn(stripe.accounts, 'retrieve').mockResolvedValue({ id: 'acct_communityglows123' } as Stripe.Account)
+    const create = vi.spyOn(stripe.checkout.sessions, 'create').mockResolvedValue({
+      id: 'cs_test_community', url: 'https://checkout.stripe.test/community',
+    } as Stripe.Checkout.Session)
+    const result = await createStripeManagedPaymentsCheckout({
+      successUrl: 'https://communityglows.com/success', cancelUrl: 'https://communityglows.com/cancel',
+      discountCode: 'FOUNDER',
+    }, 'communityglows/lifetime_deal', {
+      STRIPE_COMMUNITYGLOWS_SECRET_KEY: 'sk_test_communityglows',
+      STRIPE_COMMUNITYGLOWS_ACCOUNT_ID: 'acct_communityglows123',
+      STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID: 'price_community',
+      STRIPE_COMMANDGLOWS_FOUNDER_PROMOTION_CODE_ID: 'promo_commandglows',
+    }, stripe)
+    expect(result.ok).toBe(true)
+    expect(create).toHaveBeenCalledWith(expect.not.objectContaining({ discounts: expect.anything() }))
+  })
+
   test('refuses to map two businesses to the same Stripe account', async () => {
     const stripe = client()
     const create = vi.spyOn(stripe.checkout.sessions, 'create')

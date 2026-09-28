@@ -2,11 +2,11 @@ import { convexTest } from 'convex-test'
 import { api, internal } from '../../convex/_generated/api'
 import schema from '../../convex/schema'
 import type { CommerceEventEnvelope } from '../../convex/commerceEventContract'
+import { commerceBusinessForProduct } from '../../convex/commerceBusiness'
 
 const modules = import.meta.glob('../../convex/**/*.ts')
 const BRIDGE_SECRET = 'convex-trial-test-secret'
 const TRIAL_DURATION_MS = 30 * 24 * 60 * 60 * 1000
-const COMMANDGLOWS_ACCOUNT_ID = 'acct_commandglows123'
 
 type TrialEntitlement = {
   _id: string
@@ -31,10 +31,12 @@ async function deliverCommerce(
     metadata?: Record<string, string>
   }
 ) {
+  const businessId = event.businessId ?? commerceBusinessForProduct(event.productId)
+  if (!businessId) throw new Error('test_business_required')
   const commerceEvent = {
     ...event,
-    businessId: event.businessId ?? 'commandglows',
-    providerAccountId: event.providerAccountId ?? COMMANDGLOWS_ACCOUNT_ID,
+    businessId,
+    providerAccountId: event.providerAccountId ?? `acct_${businessId}123`,
     providerPaymentIntentId: `pi_${event.sourceRef}`,
   }
   if (event.globalUserId && event.sourceRef) {
@@ -47,7 +49,7 @@ async function deliverCommerce(
           globalUserId: event.globalUserId,
           productId: event.productId,
           offerId: event.offerId,
-          businessId: commerceEvent.businessId,
+          businessId,
           providerAccountId: commerceEvent.providerAccountId,
           environment: 'test',
           status: 'completed',

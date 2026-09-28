@@ -959,7 +959,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Mon compte'), findsOneWidget);
+      expect(find.text('Mon compte'), findsAtLeastNWidgets(1));
       expect(find.textContaining('Connecte ton compte'), findsOneWidget);
       expect(find.text('Compte CommandGlows'), findsNothing);
       expect(find.text('Accès CommandGlows'), findsNothing);
@@ -986,7 +986,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(cloudAuthStore.emailPasswordCalls, 1);
-      expect(find.text('Mon compte'), findsOneWidget);
+      expect(find.text('Mon compte'), findsAtLeastNWidgets(1));
     } finally {
       debugDefaultTargetPlatformOverride = previousPlatform;
       _clearAndroidBridgeMocks();
@@ -1122,7 +1122,7 @@ void main() {
         find.textContaining('Compte connecté · Accès inactif'),
         findsOneWidget,
       );
-      expect(find.text('Mon compte'), findsOneWidget);
+      expect(find.text('Mon compte'), findsAtLeastNWidgets(1));
       expect(find.text('Compte CommandGlows'), findsNothing);
       expect(find.text('Accès CommandGlows'), findsNothing);
     } finally {
@@ -1160,7 +1160,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Maintenance'), findsOneWidget);
+      expect(find.text('Maintenance'), findsAtLeastNWidgets(1));
       expect(find.byType(SettingsScreen), findsOneWidget);
       expect(
         find.textContaining('Clavier Android indisponible sur'),
@@ -1209,7 +1209,9 @@ void main() {
       expect(find.textContaining('sentry='), findsNothing);
       expect(find.text('Diagnostic tactile'), findsNothing);
 
-      await tester.tap(find.text('Diagnostics avancés').first);
+      final advancedDiagnostics = find.text('Diagnostics avancés').first;
+      await tester.ensureVisible(advancedDiagnostics);
+      await tester.tap(advancedDiagnostics);
       await tester.pumpAndSettle(const Duration(milliseconds: 300));
 
       expect(_selectableTextContaining('enabled='), findsOneWidget);

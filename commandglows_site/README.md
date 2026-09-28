@@ -183,6 +183,8 @@ ReplayGlows and ContentGlows have separate merchant slots and signed webhook rou
 
 The ReplayGlows and ContentGlows backends now expose business-specific Stripe webhook adapters. If Stripe sends to a product endpoint, configure that product's signing secret in both its backend and this central commerce service; the product forwards the original signed body to its central route. Register one endpoint per business and do not translate or re-sign events. Both services verify the business account before the central writer handles entitlements. These adapters do not add sellable offers or migrate Polar subscriptions.
 
+CommunityGlows production checkout stays closed unless `COMMUNITYGLOWS_DIRECT_SALES_ENABLED=true` is configured for the production deployment. A verified Formation test payment does not prove a CommunityGlows purchase; enable this switch only after a CommunityGlows test checkout, signed webhook, entitlement, refund and protected-access cycle is observed on its own account. The public founder page disables its checkout buttons while closed.
+
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_COMMANDGLOWS_ACCOUNT_ID` (verified Stripe `acct_…` of the CommandGlows business)

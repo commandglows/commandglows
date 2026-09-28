@@ -69,7 +69,7 @@ export async function createStripeManagedPaymentsCheckout(
 
   const publicCode = env.STRIPE_COMMANDGLOWS_FOUNDER_DISCOUNT_CODE ?? 'FOUNDER'
   const promotionCodeId =
-    request.discountCode === publicCode
+    merchant.business === 'commandglows' && request.discountCode === publicCode
       ? nonEmpty(env.STRIPE_COMMANDGLOWS_FOUNDER_PROMOTION_CODE_ID)
       : undefined
 

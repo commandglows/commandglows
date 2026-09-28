@@ -68,6 +68,10 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
 
   const env = getServerEnv()
   const merchant = stripeMerchantForOffer(data.offerId, env)
+  if (offer.productId === 'communityglows' && runtimeEnvironment(env) === 'production' &&
+    env.COMMUNITYGLOWS_DIRECT_SALES_ENABLED !== 'true') {
+    return { ok: false as const, status: 503, message: 'CommunityGlows checkout is not open yet' }
+  }
   const secret = env.SUITE_COMMERCE_CHECKOUT_SECRET
   if (!secret || !data.identityToken) {
     return { ok: false as const, status: 401, message: 'Checkout must be started from an authenticated suite product' }
