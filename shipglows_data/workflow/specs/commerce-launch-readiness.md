@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: commandglows
 created: "2026-09-06"
-updated: "2026-09-25"
+updated: "2026-09-29"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-25T17:43:00Z"
+updated_at: "2026-09-28T22:41:29Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -21,7 +21,7 @@ linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
 evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access.", "Hosted buyer-path edge cases observed in conversation on 2026-09-09: card decline showed Stripe refusal with no access, abandoned checkout kept access locked, partial refund preserved access, and cumulative full refund removed access.", "Hosted dispute acceptance on 2026-09-09 proved open/pending dispute keeps access locked and lost dispute keeps access locked; a separate normal card checkout later restored access on a clean session. Buyer receipt, dispute-won restoration, alerts, recovery and production activation remain pending."]
-next_step: "Prove the CommunityGlows test purchase, signed webhook, entitlement, refund and protected access on its own Stripe account before enabling direct production sales; continue buyer receipt, dispute-won, alert and recovery acceptance."
+next_step: "Correct Vercel Production EMAIL_COMMANDGLOWS_POSTMARK with the Postmark Server API Token for server 20723143, synchronize Doppler commandglows/prd, and verify the single authorized operator email; keep CommunityGlows direct sales closed until required hosted buyer/access proof is obtained from the first genuine customer transaction, and keep Formation checkout locked until its launch."
 ---
 
 # Title
@@ -33,6 +33,12 @@ Commerce launch readiness
 Implemented with local synthetic evidence and a hosted ordinary-customer purchase/access proof. Commercial opening remains blocked on the remaining hosted acceptance scenarios and production provider activation.
 
 The September 7 central email continuation adds an opt-in durable commerce alert channel on its isolated work branch. Queue/submission/provider delivery remain separate; unknown submissions cannot be re-alerted blindly, and a late hard bounce remains visible. See `central-email-completion-plan.md` and `central-email-operations.md`. This local implementation does not close the hosted notification, Stripe, protected-access, fallback or historical index acceptance gaps recorded here.
+
+September 28 launch scope: CommunityGlows is the first public sale, using its distinct production Stripe account and the active 149 EUR one-time price. CommandGlows remains the commerce and entitlement authority; its four app prices remain available for a later sale, while Formation is explicitly not for sale yet. Read-only Stripe API checks confirmed that both CommandGlows and CommunityGlows production account IDs match their live keys, charges and payouts are enabled, their configured prices are active/live, and their business-specific webhook endpoints subscribe to all required checkout, refund and dispute events. This proves provider configuration only; it does not prove a buyer checkout, entitlement, refund, protected access, or operator alert. CommunityGlows direct sales remain closed until the production flag is enabled, and the production commerce alert route to `alerte@commandglows.com` is not yet configured as of September 28.
+
+September 29 production check: the site and worker route are live, and the Postmark webhook is verified. The Postmark Server API token stored in Doppler `commandglows/prd` passes read-only verification for server `20723143`; Vercel Production's token variable was updated and redeployed. One subsequent authenticated dispatch returned HTTP 503 `service_unavailable`, with no new Postmark Activity event, so delivery is not proven. The one-message profile in Doppler and Convex production is expired, and its expiry participates in the acceptance message's persisted route fingerprint. The available operator-test credential cannot inspect queue attempts. Reconcile queue/attempt state first; if no attempt or provider receipt exists, cancel the stale entry and authorize a fresh one-recipient, one-attempt acceptance profile before testing delivery, webhook ingestion, and inbox receipt. The Postmark webhook credential remains separate from the Server API token.
+
+The September 28 Formation change makes both checkout entry points fail closed unless `COMMANDGLOWS_FORMATION_SALES_ENABLED=true`; public premium-lesson previews display “Bientôt” / “Coming soon” while existing paid entitlements continue to work. This change is included in the September 29 production deployment.
 
 September 7 follow-up: `d31760a` is now deployed to shared development; all four historical email index definitions were recovered from the original deployment receipt, restored additively and verified in the live schema. The index blocker below is therefore resolved at index-definition scope; historical document validators remain unknown. One explicitly authorized synthetic operator email traversed the central outbox/hosted worker; Postmark reports Delivered, quota 1/1, and the operator supplied a Gmail screenshot confirming visible inbox receipt. It created no commerce incident and does not close the actual commerce incident→email, provider-webhook, Stripe, fallback or protected-access acceptance gaps. The global commerce email channel remains disabled and the acceptance configuration was removed after proof.
 
@@ -148,8 +154,14 @@ Hosted test-mode acceptance and progressive commits were authorized on 2026-09-0
 | 2026-09-06 | 101-sg-ready | GPT-6 | Checked purchase isolation, provider evidence, failure exits and non-overlapping write batches against current code. | ready for local implementation | Implement both batches and run combined checks. |
 | 2026-09-06 | sg-development | GPT-6 | Implemented immutable financial facts, purchase rights reduction, operator cases, alert outbox, missing-webhook surveillance, evidence recovery and buyer copy. Independent review fixes cover legacy audit provenance and contradictory dispute outcomes. | 244 synthetic tests, Convex TypeScript and Astro checks passed; metadata lint passed. | Hosted test-mode acceptance requires separate authorization. |
 | 2026-09-07 | sg-development | GPT-6 | Resolved Windows Mastery to a 49 EUR tax-inclusive reference price with Stripe local-currency presentation, created and configured the Stripe test product, wired the Preview price ID, aligned buyer and legal copy, and exercised authenticated Checkout creation. | Astro check passes with zero errors. Stripe created a 49 EUR Managed Payments session with adaptive pricing, automatic tax and the eligible written-course tax code. Preview `dpl_6RJ2TzXKcftPJdmh27wn3ngTQu1i` is Ready. | Complete the prepared test payment after explicit transaction confirmation, then prove webhook receipt, entitlement grant, buyer email and refund/revocation. |
+| 2026-09-28 | sg-release | GPT-6 | Revalidated live Stripe account, price and webhook configuration for CommunityGlows and CommandGlows; added a fail-closed Formation sales flag and “coming soon” gate. | 24 focused commerce/course tests pass; Astro check has zero errors; Doppler dev production build succeeds and renders both locales without the premium-course checkout CTA. Production sales flag, human alert receipt, and buyer transaction/access proof remain open. Operator will not fund a live test charge; first genuine customer transaction can provide live buyer/access evidence under monitoring. | Configure and verify the named operator alert; keep direct sales closed until scope-appropriate hosted proof and coverage conditions are met, using the first real customer transaction instead of an operator-funded purchase. |
+| 2026-09-29 | sg-release | GPT-6 | Prepared the operator-requested commit/push of email and launch corrections; added dispatch-stage logging without exception payloads. Compared Vercel source-file hashes instead of relying on its Git metadata. | 71 focused tests pass, including diagnostic privacy, acceptance quota, retention, and Formation checkout guards. Astro reports zero errors/warnings; both documentation metadata checks and the bounded dev/prd secret scan pass. The previous deployment already contains the uncommitted adapter/course/acceptance/retention files. Production acceptance remains queued with zero attempts and no provider receipt; the 503 cause and mailbox delivery remain unverified. | Verify the committed deployment, identify the failing worker stage, then complete the already-authorized bounded email acceptance. |
 
 ## Current Chantier Flow
+
+### Email production diagnosis and Git checkpoint — 2026-09-29
+
+The operator explicitly requested commit and push. This checkpoint contains only email/commerce launch corrections and their focused tests/documentation; unrelated desktop notes, sign-in layout edits, temporary environment probes, and the separately staged dashboard bug record are outside the commit. The current production deployment was created from uploaded local source: its Postmark adapter, Formation guard, acceptance mutation, and retention module hashes match the local files. A missing push is not the demonstrated cause of the dispatch failure. The worker now records a sanitized stage and request ID so a generic 503 can be correlated without logging credentials or email content. Git delivery and deployment confirmation for this diagnostic version are pending; email reception and commercial opening remain unproven.
 
 ### Windows Mastery offer checkpoint — 2026-09-07
 
@@ -158,6 +170,14 @@ The operator confirmed the 49 EUR tax-inclusive reference-price direction. Strip
 Vercel Preview now has `STRIPE_COMMANDGLOWS_FORMATION_PRICE_ID`; no secret value was printed. The first authenticated attempt reached Stripe but returned HTTP 400 because the initial generic services tax code was not Managed Payments eligible. After applying the course tax code, Stripe returned HTTP 200 and created the hosted Checkout session. The direct Stripe page rendered the Windows Mastery offer, 49 EUR tax-inclusive total, email, card and billing fields. A Chrome extension blocks the automatic cross-origin redirect after the application POST with `ERR_BLOCKED_BY_CLIENT`; opening the unmodified Stripe Checkout URL in a clean task tab succeeds. This is browser-profile evidence, not a reproduced failure for ordinary customers.
 
 Buyer-facing French and English offer copy and sales terms now use the EUR reference price and disclose Stripe local-currency presentation. Astro check reports zero errors. Preview deployment `dpl_6RJ2TzXKcftPJdmh27wn3ngTQu1i` is Ready at `https://commandglows-1f8p8pplh-diane-ds-projects.vercel.app`. The test checkout is prepared with Stripe's standard test card and the authorized recipient address; final payment submission remains intentionally unperformed pending explicit transaction confirmation. Webhook receipt, entitlement grant, buyer email, refund and revocation therefore remain unproven.
+
+### CommunityGlows-first production checkpoint — 2026-09-28
+
+The operator confirmed CommunityGlows as the only product to open now, with CommandGlows retained as the shared production commerce/entitlement layer. AppSumo, ReplayGlows and ContentGlows are outside this launch. The live Stripe API confirms the CommunityGlows account is able to charge and pay out, its configured EUR 149 one-time price is active in live mode, and its dedicated webhook endpoint covers the required event set. CommandGlows production is likewise live and charge/payout-enabled; its four app tiers and EUR 49 Formation price are active, but Formation must remain off sale.
+
+The Vercel production environment does not yet contain `COMMUNITYGLOWS_DIRECT_SALES_ENABLED`, so its production Checkout is still deliberately closed. Convex production has `EMAIL_CONTROL_CONFIG`, but no `COMMERCE_ALERT_CHANNEL` or `COMMERCE_ALERT_EMAIL_CONFIG`; the requested operator recipient is `alerte@commandglows.com`. The operator approved reuse of the existing CommandGlows Postmark sender for this alert route. These are deployment/runtime configuration gaps, not source-code gaps. The authenticated buyer journey, webhook-to-Convex fulfillment, protected app access, refund revocation and actual alert delivery still need hosted proof. No operator-funded live purchase/refund test will be created; the first genuine customer transaction can supply live buyer/access evidence under monitoring.
+
+Formation checkout now has a default-closed `COMMANDGLOWS_FORMATION_SALES_ENABLED` guard both before identity handoff and at the authoritative commerce route. Premium lesson previews show availability as “Bientôt” / “Coming soon”; the built French and English pages expose no purchase CTA or private lesson body. Existing paid rights are not revoked. The patch is local and not deployed.
 
 During deployment, the worktree initially lacked the existing Vercel project link and the CLI created separate project `commandglows_site`, first deployment `dpl_J6yqsRJPP8Sr5eiNXyXpPb3EpFXo`, aliased at `https://commandglowssite.vercel.app`. The worktree was then relinked to existing project `commandglows` and the intended Preview was deployed there. The accidental project is retained for inventory-first cleanup; deletion is not implied by this checkpoint.
 
@@ -424,6 +444,26 @@ cumulative full refund removed private lesson access again.
 The hosted Checkout currently exposes card payment only. Delayed-payment flows
 therefore remain not applicable to the current buyer experience unless a banking
 method such as SEPA is intentionally activated and separately accepted.
+
+### Operator alert retention — 2026-09-28
+
+The operator approved automatic deletion of alert-email details and send history
+after 30 days. The daily Convex retention job may delete only a production email
+alert outbox row in a definitive `delivered` or `failed` state, its linked
+operator-only email message, and that message's indexed attempt/event history.
+The 30-day age is measured from the alert's terminal `updatedAt`. Pending,
+delivering, or transport-uncertain records stay available for reconciliation;
+webhook alerts, unrelated email, consent/suppression data, commerce incidents,
+and incident actions are outside the purge. Missing or invalid retention config
+must fail closed. Batch work is bounded and can resume asynchronously.
+
+Acceptance requires targeted tests for preservation and uncertainty, Convex
+type/schema validation, production retention set to 30 days, and a daily cron
+present in the deployed Convex functions. Alert-route acceptance separately
+requires one provider-confirmed production test to `alerte@commandglows.com`;
+that test uses the internal acceptance command with one expiring recipient and a
+one-attempt quota, and creates no synthetic incident or purchase. Provider
+acceptance must not be described as inbox receipt without mailbox proof.
 
 ### Hosted dispute checkpoint — 2026-09-09
 

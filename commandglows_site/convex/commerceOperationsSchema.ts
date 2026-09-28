@@ -29,7 +29,8 @@ export const commerceOperationsTables = {
     attempts: v.number(), nextAttemptAt: v.number(), leaseUntil: v.optional(v.number()),
     lastError: v.optional(v.string()), deliveredAt: v.optional(v.number()), createdAt: v.number(), updatedAt: v.number(),
   }).index('by_deduplication', ['deduplicationKey']).index('by_incident', ['incidentId'])
-    .index('by_due', ['environment', 'status', 'nextAttemptAt']).index('by_email_message', ['emailMessageId']),
+    .index('by_due', ['environment', 'status', 'nextAttemptAt']).index('by_email_message', ['emailMessageId'])
+    .index('by_terminal_email_retention', ['environment', 'transportChannel', 'status', 'updatedAt']),
   commerceOperationsCheckpoints: defineTable({
     environment: v.string(), cursor: v.optional(v.string()), scanBefore: v.number(), updatedAt: v.number(),
   }).index('by_environment', ['environment']),

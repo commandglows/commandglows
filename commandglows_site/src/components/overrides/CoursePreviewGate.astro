@@ -1,6 +1,7 @@
 ---
-import { extractCoursePreview, getCourseCheckoutPath, getPrivateCoursePath } from '@/utils/courseGating'
+import { extractCoursePreview, getCourseCheckoutPath, getPrivateCoursePath, isFormationSalesEnabled } from '@/utils/courseGating'
 import CheckoutButton from '@/components/commerce/CheckoutButton.astro'
+import { getServerEnv } from '@/lib/serverEnv'
 
 interface Props {
 	entry: {
@@ -21,6 +22,7 @@ const unlockUrl = getCourseCheckoutPath(entry.slug, lang)
 const privateUrl = getPrivateCoursePath(entry.slug)
 const headingPreview = headings.filter((heading) => heading.depth <= 2).slice(0, 6)
 const formationHubUrl = lang === 'fr' ? '/fr/formations/' : '/en/formations/'
+const formationSalesEnabled = isFormationSalesEnabled(getServerEnv())
 
 const labels =
 	lang === 'fr'
@@ -36,6 +38,8 @@ const labels =
 				unlockText:
 					'Apres achat, tu es redirigee vers la version privee de cette lecon dans le dashboard. Tu gardes une lecture propre, sans blocage artificiel du navigateur.',
 				unlockCta: 'Debloquer cette lecon',
+				comingSoonTitle: 'Formation bientôt disponible',
+				comingSoonText: 'La vente de cette formation n’est pas encore ouverte. Tu peux déjà consulter cet extrait et revenir ici plus tard.',
 				openPrivateCta: 'Ouvrir la version privee',
 				signinHint: 'Connecte-toi avec le compte acheteur pour retrouver ensuite la lecon privee.',
 				hubCta: 'Voir toutes les formations',
@@ -58,6 +62,8 @@ const labels =
 				unlockText:
 					'After checkout, you are redirected to the private version of this lesson inside the dashboard. The goal is access control, not browser lockouts.',
 				unlockCta: 'Unlock this lesson',
+				comingSoonTitle: 'Course coming soon',
+				comingSoonText: 'Sales for this course are not open yet. You can preview this lesson and come back later.',
 				openPrivateCta: 'Open private lesson',
 				signinHint: 'Sign in with the buyer account to open the private lesson after purchase.',
 				hubCta: 'Browse all courses',
@@ -109,21 +115,23 @@ const labels =
 	<div class="grid gap-6 lg:grid-cols-[1.4fr_minmax(0,1fr)]">
 		<div class="rounded-3xl border border-magenta/30 bg-gradient-to-br from-magenta/10 via-white to-yellow/10 p-6 shadow-sm dark:border-magenta/20 dark:from-magenta/12 dark:via-content-bg-inverse dark:to-yellow/10">
 			<h3 class="mb-3 text-xl font-bold text-content-text-primary dark:text-content-text-over-dark">
-				{labels.unlockTitle}
+				{!hasAccess && !formationSalesEnabled ? labels.comingSoonTitle : labels.unlockTitle}
 			</h3>
-			<p class="mb-6 max-w-2xl text-content-text-secondary dark:text-content-text-muted">{labels.unlockText}</p>
+			<p class="mb-6 max-w-2xl text-content-text-secondary dark:text-content-text-muted">{!hasAccess && !formationSalesEnabled ? labels.comingSoonText : labels.unlockText}</p>
 			<div class="flex flex-wrap gap-3">
 				{hasAccess ? <a
 					href={privateUrl}
 					class="inline-flex items-center justify-center rounded-xl bg-content-bg-primary px-6 py-3 font-bold text-white transition hover:bg-content-bg-hover dark:bg-content-text-inverse dark:text-content-bg-inverse dark:hover:bg-content-text-secondary"
 				>
 					{labels.openPrivateCta}
-				</a> : <CheckoutButton
+				</a> : formationSalesEnabled ? <CheckoutButton
 					action={unlockUrl}
 					class="inline-flex items-center justify-center rounded-xl bg-content-bg-primary px-6 py-3 font-bold text-white transition hover:bg-content-bg-hover dark:bg-content-text-inverse dark:text-content-bg-inverse dark:hover:bg-content-text-secondary"
 				>
 					{labels.unlockCta}
-				</CheckoutButton>}
+				</CheckoutButton> : <p class="inline-flex items-center rounded-xl border border-content-border bg-content-bg-elevated px-6 py-3 font-semibold text-content-text-secondary" role="status">
+					{lang === 'fr' ? 'Bientôt' : 'Coming soon'}
+				</p>}
 				<a
 					href={formationHubUrl}
 					class="inline-flex items-center justify-center rounded-xl border border-content-border bg-content-bg-elevated px-6 py-3 font-semibold text-content-text-primary transition hover:border-content-border-strong hover:bg-content-bg-hover dark:border-content-border-strong dark:bg-content-bg-strong dark:text-content-text-over-dark dark:hover:border-content-border-strong dark:hover:bg-content-bg-hover"

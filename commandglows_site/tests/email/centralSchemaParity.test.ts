@@ -50,7 +50,7 @@ test('recovered legacy indexes keep records unconstrained and restore exact fiel
   }
 })
 
-test('local schedules preserve every captured shared cron without additions', () => {
+test('local schedules preserve captured crons and only add bounded alert retention', () => {
   const captured = JSON.parse(
     readFileSync(
       new URL(
@@ -62,7 +62,7 @@ test('local schedules preserve every captured shared cron without additions', ()
   )
   const local = JSON.parse(crons.export())
   expect(Object.keys(local).sort()).toEqual(
-    captured.crons.map((c: any) => c.name).sort()
+    [...captured.crons.map((c: any) => c.name), 'commerce alert retention'].sort()
   )
   for (const previous of captured.crons) {
     const current = local[previous.name]
@@ -82,6 +82,10 @@ test('local schedules preserve every captured shared cron without additions', ()
       },
     })
   }
+  expect(local['commerce alert retention']).toMatchObject({
+    name: 'commerceAlertRetention:purgeExpired',
+  })
+  expect(local['commerce alert retention'].schedule).toBeDefined()
 })
 
 test('local schema retains every captured shared table, field and index', () => {

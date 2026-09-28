@@ -4,6 +4,7 @@ import schema from '../../convex/schema'
 import { deliveryRoute, type EmailConfig } from '../../convex/emailConfig'
 const modules = import.meta.glob('../../convex/**/*.ts')
 const credential = 't'.repeat(40)
+const productionDispatchCredential = 'd'.repeat(40)
 function fixture() {
   const config = {
     environment: 'sandbox',
@@ -103,4 +104,56 @@ test('acceptance requires exactly one authorized unexpired recipient and attempt
   business.allowedRecipients = []
   f.apply()
   await expect(f.enqueue()).rejects.toThrow('acceptance_profile_required')
+})
+
+test('production acceptance is operator-only and reserves exactly one provider attempt', async () => {
+  const config: EmailConfig = {
+    environment: 'production',
+    clients: [
+      { id: 'operator-test', credentialEnv: 'EMAIL_TEST', businessIds: ['commandglows'], operations: ['operator_test'] },
+      { id: 'worker', credentialEnv: 'EMAIL_TEST_DISPATCH', businessIds: ['commandglows'], operations: ['dispatch'] },
+    ],
+    businesses: [
+      {
+        id: 'commandglows', brand: 'CommandGlows', from: 'dev@commandglows.com',
+        legalFooter: 'Operational notification', publicBaseUrl: 'https://commandglows.com',
+        delivery: { provider: 'postmark', mode: 'live', channels: { transactional: 'outbound', broadcast: 'broadcast' }, options: { serverId: 20723143, serverTokenEnv: 'EMAIL_COMMANDGLOWS_POSTMARK' } },
+        audiences: [], activated: true, retentionDays: 30,
+        allowedRecipients: ['alerte@commandglows.com'],
+        liveTest: { id: 'prod-alert-acceptance-20260928', expiresAt: Date.now() + 60_000, maxAttempts: 1, recipients: ['alerte@commandglows.com'] },
+      },
+    ],
+  }
+  vi.stubEnv('SUITE_BRIDGE_ENVIRONMENT', 'production')
+  vi.stubEnv('EMAIL_ALLOW_PRODUCTION_SEND', 'true')
+  vi.stubEnv('EMAIL_TEST', credential)
+  vi.stubEnv('EMAIL_TEST_DISPATCH', productionDispatchCredential)
+  vi.stubEnv('EMAIL_CONTROL_CONFIG', JSON.stringify(config))
+  const t = convexTest(schema, modules)
+  const first = await t.mutation(anyApi.emailAcceptance.enqueue, { credential, businessId: 'commandglows' })
+  expect(await t.mutation(anyApi.emailAcceptance.enqueue, { credential, businessId: 'commandglows' })).toEqual(first)
+  const message = (await t.run((ctx) => ctx.db.query('emailMessages').collect()))[0]
+  expect(message).toMatchObject({ email: 'alerte@commandglows.com', kind: 'operator', operatorTestProfileId: 'prod-alert-acceptance-20260928' })
+  const dispatch = {
+    credential: productionDispatchCredential,
+    businessId: 'commandglows',
+    expectedRoute: deliveryRoute(config, config.businesses[0]),
+  }
+  const claimed = await t.mutation(anyApi.email.claim, dispatch)
+  expect(claimed).toHaveLength(1)
+  const job = claimed[0] as { messageId: any; attemptId: any; route: string }
+  const recheck = {
+    credential: productionDispatchCredential,
+    businessId: 'commandglows',
+    messageId: job.messageId,
+    attemptId: job.attemptId,
+    expectedRoute: job.route,
+  }
+  expect(await t.mutation(anyApi.email.recheckDispatch, recheck)).toEqual({ eligible: true })
+  expect(await t.mutation(anyApi.email.recheckDispatch, recheck)).toEqual({ eligible: false })
+  expect(await t.mutation(anyApi.email.claim, dispatch)).toHaveLength(0)
+  const quotas = await t.run((ctx) => ctx.db.query('emailTestQuotas').collect())
+  expect(quotas).toMatchObject([
+    { businessId: 'commandglows', profileId: 'prod-alert-acceptance-20260928', attempts: 1, maxAttempts: 1 },
+  ])
 })

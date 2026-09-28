@@ -1193,11 +1193,20 @@ export const recheckDispatch = mutation({
       ) &&
       message.route === route &&
       attempt.route === route &&
+      (!message.operatorTestProfileId ||
+        (message.kind === 'operator' &&
+          business.liveTest?.id === message.operatorTestProfileId &&
+          business.liveTest.expiresAt > Date.now() &&
+          business.liveTest.maxAttempts === 1 &&
+          business.liveTest.recipients.length === 1 &&
+          business.liveTest.recipients[0] === message.email &&
+          (config.environment !== 'production' ||
+            process.env.EMAIL_ALLOW_PRODUCTION_SEND === 'true'))) &&
       (!args.expectedRoute || args.expectedRoute === route) &&
       (!requiresLiveTest(config, business) || args.expectedRoute === route) &&
       (message.leaseUntil || 0) > Date.now()
     )
-    if (eligible && requiresLiveTest(config, business)) {
+    if (eligible && (requiresLiveTest(config, business) || message.operatorTestProfileId)) {
       const profile = business.liveTest!
       const quota = await ctx.db
         .query('emailTestQuotas')

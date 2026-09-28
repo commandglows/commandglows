@@ -45,6 +45,7 @@ beforeEach(() => {
   process.env.STRIPE_COMMUNITYGLOWS_ACCOUNT_ID = 'acct_communityglows123'
   process.env.STRIPE_COMMUNITYGLOWS_SECRET_KEY = 'sk_test_community'
   process.env.STRIPE_COMMUNITYGLOWS_LIFETIME_DEAL_PRICE_ID = 'price_community'
+  process.env.COMMANDGLOWS_FORMATION_SALES_ENABLED = 'true'
 })
 
 afterEach(() => {
@@ -60,6 +61,19 @@ describe('Stripe-only commerce checkout route', () => {
     const body = { offerId: 'communityglows/lifetime_deal', identityToken: token('communityglows') }
     expect((await POST({ request: request(body) })).status).toBe(503)
     expect((await POST({ request: request({ offerId: body.offerId }) })).status).toBe(503)
+    expect(fetch).not.toHaveBeenCalled()
+    expect(mockMutation).not.toHaveBeenCalled()
+  })
+
+  test('keeps Formation checkout closed at the authoritative commerce route', async () => {
+    const { POST } = await import('@/pages/api/commerce/checkout')
+    delete process.env.COMMANDGLOWS_FORMATION_SALES_ENABLED
+    const fetch = vi.fn(); globalThis.fetch = fetch
+    const response = await POST({ request: request({
+      offerId: 'commandglows_formation/full_course',
+      identityToken: token('commandglows_formation'),
+    }) })
+    expect(response.status).toBe(503)
     expect(fetch).not.toHaveBeenCalled()
     expect(mockMutation).not.toHaveBeenCalled()
   })

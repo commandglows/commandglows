@@ -1,6 +1,12 @@
-import { getCourseCheckoutPath, getSafeAuthRedirectPath } from '@/utils/courseGating'
+import { getCourseCheckoutPath, getSafeAuthRedirectPath, isFormationSalesEnabled } from '@/utils/courseGating'
 
 describe('courseGating auth redirects', () => {
+	test('keeps formation sales closed unless production config explicitly opens them', () => {
+		expect(isFormationSalesEnabled({})).toBe(false)
+		expect(isFormationSalesEnabled({ COMMANDGLOWS_FORMATION_SALES_ENABLED: 'false' })).toBe(false)
+		expect(isFormationSalesEnabled({ COMMANDGLOWS_FORMATION_SALES_ENABLED: 'true' })).toBe(true)
+	})
+
 	test('allows the account settings path after sign-in', () => {
 		for (const path of [
 			'/dashboard/parametres',

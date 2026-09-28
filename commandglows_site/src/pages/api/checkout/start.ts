@@ -7,6 +7,7 @@ import { getServerEnv } from '@/lib/serverEnv'
 import {
   getPrivateCoursePath,
   getPublicCoursePath,
+  isFormationSalesEnabled,
   isPremiumFormationSlug,
 } from '@/utils/courseGating'
 
@@ -72,6 +73,13 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
       headers: { 'Retry-After': '30' },
     })
   }
+  const env = getServerEnv()
+  if (offer.productId === 'commandglows_formation' && !isFormationSalesEnabled(env)) {
+    return new Response('Formation checkout is not open yet', {
+      status: 503,
+      headers: { 'Cache-Control': 'no-store' },
+    })
+  }
   if (offer.productId === 'commandglows_formation' && (!lesson || !isPremiumFormationSlug(lesson))) {
     return new Response('Invalid lesson', { status: 400 })
   }
@@ -92,7 +100,6 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     return redirect(`${signInPath}?next=${encodeURIComponent(returnPath)}`)
   }
 
-  const env = getServerEnv()
   const convexUrl = env.PUBLIC_CONVEX_URL
   const bridgeSecret = env.SUITE_BRIDGE_CONVEX_SECRET
   const checkoutSecret = env.SUITE_COMMERCE_CHECKOUT_SECRET

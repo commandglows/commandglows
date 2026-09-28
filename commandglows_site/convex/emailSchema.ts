@@ -249,6 +249,7 @@ export const emailTables = {
     audienceId: v.optional(v.string()),
     purpose: v.optional(v.string()),
     kind: v.string(),
+    operatorTestProfileId: v.optional(v.string()),
     campaignId: v.optional(v.id('emailCampaigns')),
     campaignVersionId: v.optional(v.id('emailCampaignVersions')),
     campaignRecipientId: v.optional(v.id('emailCampaignRecipients')),

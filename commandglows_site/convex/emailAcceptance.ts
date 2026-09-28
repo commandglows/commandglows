@@ -19,8 +19,14 @@ export const enqueue = internalMutation({
       'operator_test'
     )
     const profile = business.liveTest
+    const productionAcceptance =
+      config.environment === 'production' &&
+      process.env.EMAIL_ALLOW_PRODUCTION_SEND === 'true' &&
+      business.activated === true &&
+      business.delivery.provider === 'postmark' &&
+      business.delivery.mode === 'live'
     if (
-      !requiresLiveTest(config, business) ||
+      (!requiresLiveTest(config, business) && !productionAcceptance) ||
       !profile ||
       profile.maxAttempts !== 1 ||
       profile.recipients.length !== 1 ||
@@ -52,6 +58,7 @@ export const enqueue = internalMutation({
       kind: 'operator',
       route: fingerprint,
       state: 'queued',
+      operatorTestProfileId: profile.id,
       createdAt: now,
       nextAt: now,
       rendered: renderEmail({

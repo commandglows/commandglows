@@ -9,6 +9,7 @@ import {
 } from '@/lib/commerce/checkoutIdentity'
 import { getCommerceOffer, getOfferProviderConfig } from '@/lib/commerce/offers'
 import { stripeMerchantForOffer } from '@/lib/commerce/stripeMerchants'
+import { isFormationSalesEnabled } from '@/utils/courseGating'
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
@@ -67,6 +68,9 @@ export async function createCommerceCheckout(data: CheckoutRequestData) {
   }
 
   const env = getServerEnv()
+  if (offer.productId === 'commandglows_formation' && !isFormationSalesEnabled(env)) {
+    return { ok: false as const, status: 503, message: 'Formation checkout is not open yet' }
+  }
   const merchant = stripeMerchantForOffer(data.offerId, env)
   if (offer.productId === 'communityglows' && runtimeEnvironment(env) === 'production' &&
     env.COMMUNITYGLOWS_DIRECT_SALES_ENABLED !== 'true') {

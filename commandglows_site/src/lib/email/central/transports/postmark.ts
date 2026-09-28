@@ -158,8 +158,20 @@ export async function verifyPostmark(
       },
       signal: AbortSignal.timeout(10_000),
     })
-    if (!response.ok) throw new EmailHttpError('transport_unavailable', 503)
-    return response.json()
+    if (!response.ok) {
+      // Keep provider details out of the public response. The status class is
+      // enough to distinguish a rejected server token from provider downtime.
+      if (response.status === 401 || response.status === 403)
+        throw new EmailHttpError('provider_authentication_rejected', 503)
+      if (response.status === 429)
+        throw new EmailHttpError('provider_rate_limited', 503)
+      throw new EmailHttpError('transport_unavailable', 503)
+    }
+    try {
+      return await response.json()
+    } catch {
+      throw new EmailHttpError('invalid_provider_response', 503)
+    }
   }
   const server = await read('/server')
   if (server.ID !== options.serverId || server.DeliveryType !== providerMode)

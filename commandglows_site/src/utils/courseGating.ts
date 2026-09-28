@@ -4,6 +4,10 @@ import { SITE } from '@/constants'
 export const COURSE_ENTITLEMENT = 'commandglows_formation'
 const FORMATION_OFFER_ID = 'commandglows_formation/full_course'
 
+export function isFormationSalesEnabled(env: Record<string, string | undefined>) {
+	return env.COMMANDGLOWS_FORMATION_SALES_ENABLED === 'true'
+}
+
 export function isFormationSlug(slug: string) {
 	return (
 		slug === 'formations' ||

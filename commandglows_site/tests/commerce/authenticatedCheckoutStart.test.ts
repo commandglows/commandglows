@@ -22,6 +22,7 @@ describe('authenticated checkout start route', () => {
 
   beforeEach(() => {
     mockCheckout.mockReset()
+    process.env.COMMANDGLOWS_FORMATION_SALES_ENABLED = 'true'
     process.env.PUBLIC_CONVEX_URL = 'https://convex.example.com'
     process.env.SUITE_BRIDGE_CONVEX_SECRET = 'bridge-secret'
     process.env.SUITE_COMMERCE_CHECKOUT_SECRET = 'checkout-secret'
@@ -44,6 +45,18 @@ describe('authenticated checkout start route', () => {
     })
     expect(response.headers.get('location')).toContain('/fr/signin?next=')
     expect(response.headers.get('location')).not.toContain('identityToken')
+  })
+
+  test('keeps Formation checkout closed before identity handoff when sales are not enabled', async () => {
+    delete process.env.COMMANDGLOWS_FORMATION_SALES_ENABLED
+    const { POST } = await import('@/pages/api/checkout/start')
+    const response = await POST({
+      request: new Request('https://commandglows.test/api/checkout/start?offerId=commandglows_formation/full_course&lesson=fr/formations/module-2-windows/&lang=fr', { method: 'POST' }),
+      locals: { siteAuth: () => ({ userId: 'gu_formation' }) },
+    } as never)
+    expect(response.status).toBe(503)
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    expect(mockCheckout).not.toHaveBeenCalled()
   })
 
   test('keeps French buyers on the French offer journey after sign-in', async () => {

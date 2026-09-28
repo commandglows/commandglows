@@ -52,6 +52,31 @@ describe('email provider adapters', () => {
       'https://api.postmarkapp.com/message-streams',
     ])
   })
+  test.each([
+    [401, 'provider_authentication_rejected'],
+    [403, 'provider_authentication_rejected'],
+    [429, 'provider_rate_limited'],
+    [503, 'transport_unavailable'],
+  ])(
+    'Postmark verification classifies HTTP %s without exposing provider details',
+    async (status, code) => {
+      const sensitiveProviderText = 'do-not-return-provider-response-body'
+      const fetcher = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ Message: sensitiveProviderText }), {
+          status,
+        })
+      )
+      let caught: unknown
+      try {
+        await createPostmarkTransport(options, fetcher).verify()
+      } catch (error) {
+        caught = error
+      }
+      expect(caught).toMatchObject({ code, status: 503 })
+      expect(String(caught)).not.toContain(sensitiveProviderText)
+      expect(fetcher).toHaveBeenCalledTimes(1)
+    }
+  )
   test('rejects wrong server, live environment, archived stream and external unsubscribe handling', async () => {
     for (const [actualServer, actualStreams] of [
       [{ ...server, ID: 124 }, streams],

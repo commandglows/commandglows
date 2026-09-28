@@ -66,6 +66,7 @@ export async function handleDispatch(
   fetcher: typeof fetch = fetch,
   transportFactory: typeof createConfiguredTransport = createConfiguredTransport
 ) {
+  let stage = 'request_validation'
   try {
     const credential = bearer(request)
     const gateSecret = env.EMAIL_WORKER_GATE_SECRET
@@ -102,6 +103,7 @@ export async function handleDispatch(
     const baseUrl = new URL(business.publicBaseUrl)
     if (baseUrl.protocol !== 'https:' || baseUrl.username || baseUrl.password)
       throw new EmailHttpError('configuration_unavailable', 503)
+    stage = 'transport_configuration'
     const transport = transportFactory({
       config,
       business,
@@ -110,7 +112,9 @@ export async function handleDispatch(
       liveTestReserved: liveTest,
       fetcher,
     })
+    stage = 'transport_verification'
     await transport.verify()
+    stage = 'claim'
     const mutate = injected ?? convexMutation(env)
     const jobs = (await mutate('email:claim', {
       credential,
@@ -122,10 +126,12 @@ export async function handleDispatch(
       throw new EmailHttpError('invalid_job_receipt', 503)
     const results: { message_id: string; status: string }[] = []
     for (const job of jobs) {
+      stage = 'job_validation'
       if (job.route !== route)
         throw new EmailHttpError('delivery_route_changed', 503)
       let content = job
       try {
+        stage = 'render'
         if (job.content) {
           const action = new URL('/api/v1/email/preferences/resolve', baseUrl)
           action.searchParams.set(
@@ -144,6 +150,7 @@ export async function handleDispatch(
           }
         }
       } catch {
+        stage = 'settlement'
         await mutate('email:settle', {
           credential,
           businessId: business.id,
@@ -155,6 +162,7 @@ export async function handleDispatch(
         results.push({ message_id: job.messageId, status: 'permanent_failure' })
         continue
       }
+      stage = 'eligibility'
       const eligible = (await mutate('email:recheckDispatch', {
         credential,
         businessId: business.id,
@@ -166,8 +174,10 @@ export async function handleDispatch(
         results.push({ message_id: job.messageId, status: 'not_dispatched' })
         continue
       }
+      stage = 'provider_submission'
       const outcome = await transport.send(content)
       // If persistence fails after send, the lease becomes unknown; never resend here.
+      stage = 'settlement'
       const settlementIssuedAt = Date.now()
       const settlementProof =
         outcome.status === 'retryable_failure' ||
@@ -204,6 +214,17 @@ export async function handleDispatch(
     }
     return json(200, { results })
   } catch (error) {
-    return errorResponse(error)
+    const response = errorResponse(error)
+    const body = await response.clone().json()
+    // Only fixed stages and already-sanitized public error fields are logged.
+    // Never log the exception: it may contain credentials or provider payloads.
+    console.error(JSON.stringify({
+      event: 'email_dispatch_failed',
+      stage,
+      status: response.status,
+      error_code: body.error.code,
+      request_id: body.error.request_id,
+    }))
+    return response
   }
 }

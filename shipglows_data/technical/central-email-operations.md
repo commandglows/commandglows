@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.2.0"
 project: CommandGlows
 created: "2026-09-05"
-updated: "2026-09-24"
+updated: "2026-09-29"
 status: reviewed
 source_skill: sg-development
 scope: central-email-pilot-operations
@@ -26,7 +26,7 @@ evidence:
   - commandglows_site/tests/email/centralApi.test.ts
   - commandglows_site/tests/email/centralLifecycle.test.ts
   - commandglows_site/tests/email/centralTransport.test.ts
-next_step: Resolve entity and markets, configure an approved isolated sandbox, then prove hosted delivery and withdrawal with an authorized recipient.
+next_step: Publish the sanitized dispatch-stage diagnostics, identify the production 503, and retire the expired acceptance entry before a fresh one-recipient, one-attempt acceptance under the existing operator authorization. Do not renew the expired profile in place; its complete value is part of the frozen route fingerprint. Verify provider delivery, webhook ingestion, and inbox receipt separately.
 next_review: "2026-10-05"
 ---
 
@@ -34,7 +34,17 @@ next_review: "2026-10-05"
 
 ## What exists
 
-Local additive implementation, not a deployed migration. Convex owns normalized addresses, consent history, audience membership, opaque-token records, suppression state, idempotency, outbox, attempts and delivery events. Astro exposes authenticated v1 controllers and a Postmark adapter. Newsletter signup uses the central registry with explicit consent and signed preferences; the former buyer newsletter hook cannot subscribe a purchaser without consent. Entitlements are unchanged. Commerce alerts now have an explicitly configured durable email channel; its acceptance boundaries are described below. New API contracts are in `central-email-api-contract.md`.
+The additive email architecture and commerce retention changes are deployed to production Convex `elegant-mule-677`; the latest CommandGlows Vercel production deployment is `dpl_9zjn5DNgqoVAk9mHuSr7Wx6uPn6z` and serves `www.commandglows.com`. Convex owns normalized addresses, consent history, audience membership, opaque-token records, suppression state, idempotency, outbox, attempts and delivery events. Astro exposes authenticated v1 controllers and a Postmark adapter. Newsletter signup uses the central registry with explicit consent and signed preferences; the former buyer newsletter hook cannot subscribe a purchaser without consent. Entitlements are unchanged. Commerce alerts use an explicitly configured durable email channel; its acceptance boundaries are described below. New API contracts are in `central-email-api-contract.md`.
+
+## Production verification — 2026-09-29
+
+The production site returned HTTP 200, and an unauthenticated POST to the worker returned the expected 401, confirming the deployed route starts. The Postmark Server API credential in Doppler `commandglows/prd` now passes read-only verification against Server `20723143` and its configured transactional/broadcast streams. Vercel Production's `EMAIL_COMMANDGLOWS_POSTMARK` was updated shortly before its latest Ready deployment. A single authenticated worker dispatch then returned HTTP 503 `service_unavailable`; Vercel recorded the 503, and Postmark Activity shows no new event from this test. No delivery or inbox receipt is proven.
+
+The one-message `liveTest` profile in Doppler `prd` and Convex production has expired, while retaining its one-recipient and `maxAttempts: 1` bounds. The acceptance message's persisted route fingerprint includes the complete `liveTest` profile, including `expiresAt`; editing only the expiry would change the route and invalidate that message. The available `EMAIL_OPERATOR_CREDENTIAL` is scoped only to `operator_test`, so it cannot read queue/attempt details through the operations API. A separate read-only production query confirmed the acceptance message is queued, has zero attempt rows, and has no provider receipt. No submission occurred. Retire this stale entry before preparing a fresh bounded profile under the operator's existing production-validation authorization. Never print or paste credentials into source control or chat.
+
+Source-file SHA-1 comparison against Vercel's deployment files confirmed that the local Postmark adapter, course sales guard, acceptance mutation, and alert retention module were already included in the current deployment, despite remaining uncommitted locally. Its Git metadata alone did not establish the uploaded source contents. A missing push therefore does not explain the 503. The new worker diagnostic logs only a fixed stage, sanitized public error code, HTTP status, and correlation request ID; exceptions, credentials, recipient addresses, and provider payloads are excluded. Production confirmation of this diagnostic version remains pending.
+
+The first prebuilt Windows artifact failed at runtime because its package symlink for `clsx` was not present on Vercel. The current deployment was rebuilt by Vercel from the monorepo source root; the worker now starts and returns coded errors. Keep root `.vercelignore` exclusions in sync with the monorepo so unrelated Flutter build artifacts are not uploaded.
 
 CommunityGlows is the first pilot. Its static Astro site uses a same-origin Vercel function under `site/api/newsletter/subscribe.js`; adding an Astro POST route to the static build would not provide a server. Its coordinated `site/NEWSLETTER.md` owns product configuration. The form remains disabled until its versioned notice and controller are configured explicitly. Hosting a static build alone does not prove the function exists.
 
@@ -66,6 +76,15 @@ For each authorized business, supply actual values in `businesses`:
 | `allowedRecipients` | Explicitly authorized, normalized pilot recipients; required even for the current production pilot |
 | `retentionDays` | Positive approved pilot retention bound; its presence is an activation gate, **not an automatic cleanup policy** |
 
+Commerce operator alert retention is a separate, explicit cleanup policy.
+`COMMERCE_ALERT_RETENTION_DAYS=30` enables the daily bounded Convex purge for
+old terminal email alerts only. It removes the alert outbox detail, linked
+operator email message, and indexed delivery attempts/events after 30 days from
+terminal status. It preserves unresolved/uncertain sends, webhook alerts,
+incidents, incident actions, unrelated mail, contacts, consent, and suppressions.
+Missing or invalid configuration fails closed. This application retention does
+not change Postmark's own retention window.
+
 Configure client records `{id,credentialEnv,businessIds,operations}` with separate secrets and least privilege:
 
 - Product proxy: `subscribe`, optionally `withdraw`, and only its own business.
@@ -85,6 +104,15 @@ Application `environment` remains sandbox/production. New profiles use `delivery
 Old flat profiles are converted only at the configuration boundary. The normalized business model exposes no `serverId`, `serverTokenEnv`, `providerMode` or provider-specific transport enumeration. Registering another provider requires its pure configuration descriptor and runtime adapter; the worker and consent domain remain unchanged. Provider-specific webhooks normalize events before entering the common registry. Equivalent Postmark profiles keep the same persisted route identity. Existing flat capture profiles also keep their identity while read in the old format; explicitly migrating capture to the new format changes that identity, so pending capture jobs must be recreated through the normal controls. Never rewrite stored routes to bypass this refusal. Normalized profiles are immutable during processing; reparse the source configuration after any change.
 
 Sandbox application + Live provider requires a private `liveTest` object `{id,expiresAt,maxAttempts,recipients}`. `expiresAt` is an absolute Unix timestamp in milliseconds; maxAttempts is a positive bounded integer. Both this profile and `allowedRecipients` must admit the recipient. Only an internally created `operator` message can use this profile; newsletter, confirmation and generic service calls cannot. Configuration changes do not grant authority to add a recipient, reset a profile ID or increase the authorized budget.
+
+Production acceptance uses the same bounded profile only through the internal
+`emailAcceptance.enqueue` command, with a dedicated `operator_test` credential,
+one normalized allowlisted recipient, `maxAttempts: 1`, and the explicit
+production-send gate enabled in both Convex and the production worker. The
+resulting operator message carries the profile ID and reserves its only attempt
+at the final dispatch recheck. The idempotency key prevents a second acceptance
+message for that profile. Ordinary production alert delivery does not consume
+this one-message test quota.
 
 Each actual dispatch reserves the finite total quota in a Convex mutation before provider submission. Concurrent workers cannot overspend. A repeated final recheck cannot reserve/send twice; a stable profile ID cannot replenish its quota by editing the configured maximum. Unknown attempts retain the consumed budget. Never delete or restore an older quota record to repeat a test. Route identity is persisted and compared at claim and final recheck; configuration drift fails closed. The serialized route contains private profile information and is excluded from operator responses. Previously uncertain routes must be reconciled before provider migration; this is not automatic historical-provider credential routing.
 
