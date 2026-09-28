@@ -43,7 +43,7 @@ void main() {
         'Espace',
         'F1',
       ]);
-      expect(restored.toWire()['version'], 2);
+      expect(restored.toWire()['version'], 3);
       expect(restored.toWire()['actions'], isNotNull);
     },
   );

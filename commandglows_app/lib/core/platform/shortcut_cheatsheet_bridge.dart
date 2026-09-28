@@ -41,14 +41,4 @@ class ShortcutCheatsheetBridge {
       return false;
     }
   }
-
-  static Future<bool> closeApp() async {
-    if (!PlatformCapabilities.isWindows) return false;
-    try {
-      await _channel.invokeMethod<Object?>('closeApp');
-      return true;
-    } on MissingPluginException {
-      return false;
-    }
-  }
 }

@@ -13,7 +13,9 @@ la fiche en fait un rappel personnel indépendant. La fiche propose également l
 explicite des raccourcis globaux `Ctrl+Alt+K` et `Ctrl+Alt+Espace` ; ce dernier
 n'ouvre l'incrustation de texte que si celle-ci est activée.
 
-Sur Windows, ouvrir la fiche avec `Ctrl+Alt+K`, le menu de l'icône en zone de
+Ouvrir la fiche depuis **Accueil → Mes raccourcis**, puis choisir **S'entraîner**
+pour les cartes. L'accueil donne aussi accès au **Contrôle du bureau** sur Windows.
+Sur Windows, la fiche s'ouvre également avec `Ctrl+Alt+K`, le menu de l'icône en zone de
 notification ou **Réglages → Mes raccourcis**. Le raccourci global et l'icône
 fonctionnent tant que CommandGlows est lancé. Si Windows refuse le raccourci ou
 l'icône, la page indique l'indisponibilité du point d'accès concerné.

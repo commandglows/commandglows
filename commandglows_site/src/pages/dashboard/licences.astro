@@ -15,19 +15,37 @@ if (auth.role !== 'admin') {
 }
 ---
 
-<DashboardLayout title="Licences - Dashboard" currentPath="/dashboard/licences" lang="fr">
-  <header class="mb-8">
+<DashboardLayout title="Achats et accès clients - Dashboard" currentPath="/dashboard/licences" lang="fr">
+  <header class="workspace-page-heading">
     <p class="brand-text-magenta text-sm font-bold uppercase tracking-wide">Administration</p>
-    <h1 class="text-dashboard-text-primary mt-2 text-3xl font-bold">Licences et entitlements</h1>
+    <h1 class="text-dashboard-text-primary mt-2 text-3xl font-bold">Achats et accès clients</h1>
     <p class="text-dashboard-text-muted mt-3 max-w-3xl">
-      Recherchez un compte canonique, vérifiez ses droits et appliquez une action
-      support auditée. Stripe reste la source des paiements ; Convex reste
-      l’autorité des accès.
+      Retrouvez un client pour gérer ses accès, ou prenez en charge un achat qui demande une vérification.
     </p>
   </header>
+  <nav aria-label="Choisir une tâche" class="mb-8 grid gap-3 sm:grid-cols-2">
+    <a href="#client-access" class="workspace-card block hover:border-navbar-ring focus-visible:outline-navbar-ring">
+      <span class="brand-text-magenta text-xs font-semibold">ACCÈS CLIENTS</span>
+      <span class="text-dashboard-text-primary mt-2 block text-lg font-bold">Un client a besoin d’aide →</span>
+      <span class="text-dashboard-text-muted mt-2 block text-sm">Rechercher son compte, consulter ses accès et intervenir avec un motif support.</span>
+    </a>
+    <a href="#purchase-incidents" class="workspace-card block hover:border-navbar-ring focus-visible:outline-navbar-ring">
+      <span class="brand-text-magenta text-xs font-semibold">INCIDENTS D’ACHAT</span>
+      <span class="text-dashboard-text-primary mt-2 block text-lg font-bold">Un achat demande une vérification →</span>
+      <span class="text-dashboard-text-muted mt-2 block text-sm">Examiner un dossier, vérifier le paiement et reprendre son traitement.</span>
+    </a>
+  </nav>
   <div class="grid gap-8">
-    <CommerceIncidentConsole client:load />
+    <div id="purchase-incidents" class="scroll-mt-6">
+      <CommerceIncidentConsole client:load />
+    </div>
     <noscript>Le suivi des incidents nécessite JavaScript. La permanence commerce doit consulter Stripe et le journal opérateur ; aucun dossier n’est considéré résolu par cette page.</noscript>
-    <LicenseAdminConsole client:load />
+    <section id="client-access" aria-labelledby="client-access-title" class="scroll-mt-6">
+      <header class="mb-5">
+        <h2 id="client-access-title" class="text-dashboard-text-primary text-xl font-bold">Accès clients</h2>
+        <p class="text-dashboard-text-muted mt-2 text-sm">Retrouvez un compte pour consulter ses accès. Accorder ou retirer un accès ne réalise aucune opération de paiement.</p>
+      </header>
+      <LicenseAdminConsole client:load />
+    </section>
   </div>
 </DashboardLayout>

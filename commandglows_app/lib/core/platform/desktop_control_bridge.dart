@@ -24,6 +24,7 @@ class DesktopControlStatus {
     required this.enabled,
     required this.active,
     required this.hotkeyRegistered,
+    this.closeAppHotkeyRegistered = false,
     this.preferredScope = DesktopControlScope.monitor,
     this.activeScope = DesktopControlScope.monitor,
     this.errorCode,
@@ -35,6 +36,7 @@ class DesktopControlStatus {
   final bool enabled;
   final bool active;
   final bool hotkeyRegistered;
+  final bool closeAppHotkeyRegistered;
   final DesktopControlScope preferredScope;
   final DesktopControlScope activeScope;
   final String? errorCode;
@@ -46,6 +48,7 @@ class DesktopControlStatus {
     enabled: false,
     active: false,
     hotkeyRegistered: false,
+    closeAppHotkeyRegistered: false,
   );
 
   factory DesktopControlStatus.fromMap(Map<Object?, Object?> map) {
@@ -55,6 +58,8 @@ class DesktopControlStatus {
       enabled: map['enabled'] as bool? ?? false,
       active: map['active'] as bool? ?? false,
       hotkeyRegistered: map['hotkeyRegistered'] as bool? ?? false,
+      closeAppHotkeyRegistered:
+          map['closeAppHotkeyRegistered'] as bool? ?? true,
       preferredScope: DesktopControlScope.fromWire(map['preferredScope']),
       activeScope: DesktopControlScope.fromWire(map['activeScope']),
       errorCode: rawErrorCode == null || rawErrorCode.isEmpty
@@ -107,6 +112,10 @@ class DesktopControlBridge {
     DesktopControlBindings bindings,
   ) => _invoke('setBindings', bindings.toWire());
 
+  static Future<DesktopControlStatus> setCloseAppHotkeyListening(
+    bool enabled,
+  ) => _invoke('setCloseAppHotkeyListening', {'enabled': enabled});
+
   static Future<DesktopControlStatus> _invoke(
     String method, [
     Object? arguments,
@@ -141,7 +150,7 @@ class DesktopControlBridge {
     'HOTKEY_UNAVAILABLE' =>
       'Ce raccourci d’activation est déjà utilisé. Choisissez une autre combinaison ou libérez-la, puis réessayez.',
     'HOOK_UNAVAILABLE' =>
-      'Windows n’a pas pu écouter les touches. Désactivez puis réactivez le contrôle du bureau.',
+      'Windows n’a pas pu écouter les raccourcis globaux. Relancez CommandGlows puis réessayez.',
     'OVERLAY_UNAVAILABLE' =>
       'La grille ne peut pas s’afficher sur cet écran. Vérifiez la session Windows et la configuration des écrans, puis réessayez.',
     'INPUT_UNAVAILABLE' =>

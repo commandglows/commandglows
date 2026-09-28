@@ -46,7 +46,7 @@ test('acts on the selected entitlement and reports an already-revoked result acc
   expect((container.querySelector('#support-product') as HTMLSelectElement).value).toBe('commandglows_formation')
   expect((container.querySelector('#support-plan') as HTMLSelectElement).value).toBe('formation')
   await fill('support-reason', 'Verified support request')
-  await act(async () => [...container.querySelectorAll('button')].find((button) => button.textContent === 'Révoquer l’accès')?.click())
+  await act(async () => [...container.querySelectorAll('button')].find((button) => button.textContent === 'Retirer l’accès')?.click())
   const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')
   expect(JSON.parse(String(post?.[1]?.body))).toMatchObject({ action: 'revoke', productId: 'commandglows_formation', plan: 'formation' })
   expect(container.textContent).toContain('Ce droit était déjà révoqué')

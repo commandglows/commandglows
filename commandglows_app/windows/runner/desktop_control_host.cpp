@@ -31,6 +31,7 @@ constexpr int kCandidateHotkeyId = 0x4349;
 constexpr UINT_PTR kHookTeardownTimerId = 0x4348;
 constexpr UINT kHookKeyMessage = WM_APP + 0x4C1;
 constexpr UINT kHookCleanupMessage = WM_APP + 0x4C2;
+constexpr ULONGLONG kCloseAppSequenceTimeoutMs = 800;
 constexpr COLORREF kTransparentColor = RGB(1, 2, 3);
 constexpr COLORREF kGridColor = RGB(255, 196, 32);
 constexpr COLORREF kGridTextColor = RGB(18, 22, 28);
@@ -149,6 +150,20 @@ class WindowsDesktopControlHost::Impl {
         error_code_.clear();
         validation_error_.clear();
         result->Success(Status());
+      } else if (method == "setCloseAppHotkeyListening") {
+        bool enabled = false;
+        if (const auto* args = std::get_if<flutter::EncodableMap>(call.arguments())) {
+          const auto it = args->find(Value("enabled"));
+          if (it != args->end()) {
+            if (const auto* value = std::get_if<bool>(&it->second)) {
+              enabled = *value;
+            }
+          }
+        }
+        close_app_hotkey_listening_ = enabled;
+        pending_close_app_target_ = nullptr;
+        pending_close_app_index_ = 0;
+        result->Success(Status());
       } else if (method == "setEnabled") {
         bool enabled = false;
         if (const auto* args = std::get_if<flutter::EncodableMap>(call.arguments())) {
@@ -191,12 +206,26 @@ class WindowsDesktopControlHost::Impl {
         result->NotImplemented();
       }
     });
+    if (close_hook_host_ == nullptr) {
+      close_hook_host_ = this;
+      close_keyboard_hook_ = SetWindowsHookExW(
+          WH_KEYBOARD_LL, CloseAppKeyboardProc, GetModuleHandleW(nullptr), 0);
+      if (close_keyboard_hook_ == nullptr) {
+        close_hook_host_ = nullptr;
+        error_code_ = "HOOK_UNAVAILABLE";
+      }
+    }
   }
 
   ~Impl() {
     Cancel();
     ReleaseHeldButtons();
     ForceHookTeardown();
+    if (close_keyboard_hook_ != nullptr) {
+      UnhookWindowsHookEx(close_keyboard_hook_);
+      close_keyboard_hook_ = nullptr;
+    }
+    if (close_hook_host_ == this) close_hook_host_ = nullptr;
     SetEnabled(false);
     channel_.SetMethodCallHandler(nullptr);
     if (overlay_class_registered_) {
@@ -298,6 +327,66 @@ class WindowsDesktopControlHost::Impl {
     return 1;
   }
 
+  static LRESULT CALLBACK CloseAppKeyboardProc(int code, WPARAM wparam,
+                                                LPARAM lparam) {
+    if (code < 0 || close_hook_host_ == nullptr) {
+      return CallNextHookEx(nullptr, code, wparam, lparam);
+    }
+    auto* host = close_hook_host_;
+    const auto* key = reinterpret_cast<const KBDLLHOOKSTRUCT*>(lparam);
+    const UINT scan_code = key->scanCode & 0xFF;
+    const bool extended = IsExtended(*key);
+    const uint32_t identity = scan_code | (extended ? 0x100 : 0);
+    if ((key->flags & LLKHF_INJECTED) != 0) {
+      return CallNextHookEx(host->close_keyboard_hook_, code, wparam, lparam);
+    }
+    if (wparam == WM_KEYUP || wparam == WM_SYSKEYUP) {
+      host->close_pressed_keys_.erase(identity);
+      return CallNextHookEx(host->close_keyboard_hook_, code, wparam, lparam);
+    }
+    if (wparam != WM_KEYDOWN && wparam != WM_SYSKEYDOWN) {
+      return CallNextHookEx(host->close_keyboard_hook_, code, wparam, lparam);
+    }
+    if (!host->close_pressed_keys_.insert(identity).second) {
+      return CallNextHookEx(host->close_keyboard_hook_, code, wparam, lparam);
+    }
+    if (!host->close_app_hotkey_listening_ ||
+        host->close_app_sequence_.size() != 2) {
+      host->pending_close_app_target_ = nullptr;
+      host->pending_close_app_index_ = 0;
+      return CallNextHookEx(host->close_keyboard_hook_, code, wparam, lparam);
+    }
+
+    const KeyBinding pressed{scan_code, extended, CurrentModifierMask()};
+    HWND foreground = GetForegroundWindow();
+    HWND target = foreground == nullptr ? nullptr
+                                        : GetAncestor(foreground, GA_ROOT);
+    const ULONGLONG now = GetTickCount64();
+    const bool second_matches =
+        host->pending_close_app_index_ == 1 &&
+        host->pending_close_app_target_ == target &&
+        now - host->pending_close_app_at_ <= kCloseAppSequenceTimeoutMs &&
+        pressed.scan_code == host->close_app_sequence_[1].scan_code &&
+        pressed.extended == host->close_app_sequence_[1].extended &&
+        pressed.modifiers == host->close_app_sequence_[1].modifiers;
+    if (second_matches) {
+      host->pending_close_app_target_ = nullptr;
+      host->pending_close_app_index_ = 0;
+      if (IsWindow(target)) PostMessageW(target, WM_CLOSE, 0, 0);
+    } else if (target != nullptr &&
+               pressed.scan_code == host->close_app_sequence_[0].scan_code &&
+               pressed.extended == host->close_app_sequence_[0].extended &&
+               pressed.modifiers == host->close_app_sequence_[0].modifiers) {
+      host->pending_close_app_target_ = target;
+      host->pending_close_app_index_ = 1;
+      host->pending_close_app_at_ = now;
+    } else {
+      host->pending_close_app_target_ = nullptr;
+      host->pending_close_app_index_ = 0;
+    }
+    return CallNextHookEx(host->close_keyboard_hook_, code, wparam, lparam);
+  }
+
   static BOOL CALLBACK EnumerateMonitor(HMONITOR monitor, HDC, LPRECT,
                                         LPARAM context) {
     auto* monitors = reinterpret_cast<std::vector<Monitor>*>(context);
@@ -362,6 +451,10 @@ class WindowsDesktopControlHost::Impl {
     status[Value("enabled")] = Value(enabled_);
     status[Value("active")] = Value(active_);
     status[Value("hotkeyRegistered")] = Value(hotkey_registered_);
+    status[Value("closeAppHotkeyRegistered")] =
+        Value(close_keyboard_hook_ != nullptr);
+    status[Value("closeAppHotkeyListening")] =
+        Value(close_app_hotkey_listening_);
     status[Value("preferredScope")] = Value(ScopeName(preferred_scope_));
     status[Value("activeScope")] = Value(ScopeName(active_scope_));
     status[Value("errorCode")] = Value(error_code_);
@@ -391,9 +484,19 @@ class WindowsDesktopControlHost::Impl {
       }
       actions[Value(id)] = Value(std::move(list));
     }
+    flutter::EncodableList close_app_sequence;
+    for (const auto& key : close_app_sequence_) {
+      flutter::EncodableMap item;
+      item[Value("scanCode")] = Value(static_cast<int32_t>(key.scan_code));
+      item[Value("extended")] = Value(key.extended);
+      item[Value("modifiers")] = Value(static_cast<int32_t>(key.modifiers));
+      item[Value("label")] = Value(Utf8(KeyLabel(key, labels_layout)));
+      close_app_sequence.emplace_back(std::move(item));
+    }
     flutter::EncodableMap result;
-    result[Value("version")] = Value(int32_t{2});
+    result[Value("version")] = Value(int32_t{3});
     result[Value("activation")] = Value(std::move(activation));
+    result[Value("closeAppSequence")] = Value(std::move(close_app_sequence));
     result[Value("actions")] = Value(std::move(actions));
     return Value(std::move(result));
   }
@@ -408,12 +511,14 @@ class WindowsDesktopControlHost::Impl {
     };
     const Value* version_value = get(*root, "version");
     const auto* version = version_value == nullptr ? nullptr : std::get_if<int32_t>(version_value);
-    if (version == nullptr || *version != 2) { *reason = "Cette version de configuration des touches n’est pas prise en charge."; return false; }
+    if (version == nullptr || *version != 3) { *reason = "Cette version de configuration des touches n’est pas prise en charge."; return false; }
     const Value* activation_value = get(*root, "activation");
     const auto* activation_map = activation_value == nullptr ? nullptr : std::get_if<flutter::EncodableMap>(activation_value);
     const Value* actions_value = get(*root, "actions");
     const auto* actions_map = actions_value == nullptr ? nullptr : std::get_if<flutter::EncodableMap>(actions_value);
-    if (activation_map == nullptr || actions_map == nullptr) { *reason = "Le raccourci d’activation et les actions sont obligatoires."; return false; }
+    const Value* close_sequence_value = get(*root, "closeAppSequence");
+    const auto* close_sequence = close_sequence_value == nullptr ? nullptr : std::get_if<flutter::EncodableList>(close_sequence_value);
+    if (activation_map == nullptr || actions_map == nullptr || close_sequence == nullptr || close_sequence->size() != 2) { *reason = "Le raccourci d’activation, la séquence de fermeture et les actions sont obligatoires."; return false; }
     const Value* vk_value = get(*activation_map, "virtualKey");
     const Value* mods_value = get(*activation_map, "modifiers");
     const auto* vk = vk_value == nullptr ? nullptr : std::get_if<int32_t>(vk_value);
@@ -434,6 +539,40 @@ class WindowsDesktopControlHost::Impl {
         (static_cast<UINT>(*vk) == 'L' || static_cast<UINT>(*vk) == 'D')) {
       *reason = "Ce raccourci Windows est réservé au système.";
       return false;
+    }
+    std::vector<KeyBinding> candidate_close_sequence;
+    candidate_close_sequence.reserve(2);
+    for (const Value& item_value : *close_sequence) {
+      const auto* item = std::get_if<flutter::EncodableMap>(&item_value);
+      if (item == nullptr) { *reason = "La séquence de fermeture est invalide."; return false; }
+      const Value* scan_value = get(*item, "scanCode");
+      const Value* ext_value = get(*item, "extended");
+      const Value* key_mods_value = get(*item, "modifiers");
+      const auto* scan = scan_value == nullptr ? nullptr : std::get_if<int32_t>(scan_value);
+      const auto* ext = ext_value == nullptr ? nullptr : std::get_if<bool>(ext_value);
+      const auto* key_mods = key_mods_value == nullptr ? nullptr : std::get_if<int32_t>(key_mods_value);
+      const int32_t sequence_modifiers = key_mods == nullptr ? 0 : *key_mods;
+      if (scan == nullptr || ext == nullptr || *scan <= 0 || *scan > 0x7F ||
+          (sequence_modifiers & ~static_cast<int32_t>(kAllowedModifiers)) != 0 ||
+          (sequence_modifiers & MOD_WIN) != 0) {
+        *reason = "Une des touches de fermeture n’est pas accessible."; return false;
+      }
+      KeyBinding key{static_cast<UINT>(*scan), *ext,
+                     static_cast<UINT>(sequence_modifiers)};
+      const UINT mapped = MapVirtualKeyExW(key.scan_code | (key.extended ? 0xE000 : 0),
+                                           MAPVK_VSC_TO_VK_EX, GetKeyboardLayout(0));
+      if (mapped == 0 || IsModifierVirtualKey(mapped) ||
+          commandglows::desktop_control::IsModifierKey(key)) {
+        *reason = "Une touche de modification seule ou inconnue ne peut pas fermer une application."; return false;
+      }
+      if (key.modifiers == static_cast<UINT>(*mods) &&
+          mapped == static_cast<UINT>(*vk)) {
+        *reason = "La séquence de fermeture ne peut pas réutiliser le raccourci d’activation de la grille."; return false;
+      }
+      if (mapped == VK_SPACE && key.modifiers == (MOD_CONTROL | MOD_ALT)) {
+        *reason = "Ctrl+Alt+Espace est réservé à l’incrustation de texte."; return false;
+      }
+      candidate_close_sequence.push_back(key);
     }
     BindingMap candidate;
     std::unordered_map<uint64_t, std::string> owners;
@@ -510,7 +649,12 @@ class WindowsDesktopControlHost::Impl {
           }
         }
       }
-      if (unchanged) return true;
+      if (unchanged) {
+        close_app_sequence_ = std::move(candidate_close_sequence);
+        pending_close_app_target_ = nullptr;
+        pending_close_app_index_ = 0;
+        return true;
+      }
       *reason = "Fermez la grille avant de modifier les touches.";
       error_code_ = "BINDINGS_ACTIVE";
       return false;
@@ -535,6 +679,9 @@ class WindowsDesktopControlHost::Impl {
       activation_ = ActivationBinding{next_vk, static_cast<UINT>(*mods)};
     }
     bindings_ = std::move(candidate);
+    close_app_sequence_ = std::move(candidate_close_sequence);
+    pending_close_app_target_ = nullptr;
+    pending_close_app_index_ = 0;
     return true;
   }
 
@@ -556,6 +703,7 @@ class WindowsDesktopControlHost::Impl {
     const UINT scan = key.scan_code | (key.extended ? 0xE000 : 0);
     const UINT vk = MapVirtualKeyExW(scan, MAPVK_VSC_TO_VK_EX, layout);
     if (vk == VK_SPACE) return L"Espace";
+    if (vk == VK_ESCAPE) return L"Échap";
     BYTE state[256]{};
     if ((key.modifiers & MOD_SHIFT) != 0) state[VK_SHIFT] = 0x80;
     if ((key.modifiers & MOD_CONTROL) != 0) state[VK_CONTROL] = 0x80;
@@ -1350,9 +1498,16 @@ class WindowsDesktopControlHost::Impl {
   bool enabled_ = false;
   bool active_ = false;
   bool hotkey_registered_ = false;
+  bool close_app_hotkey_listening_ = true;
   int hotkey_id_ = kActivationHotkeyId;
   ActivationBinding activation_{};
   BindingMap bindings_ = DefaultBindings();
+  std::vector<KeyBinding> close_app_sequence_{{0x01, false, 0},
+                                               {0x01, false, 0}};
+  std::unordered_set<uint32_t> close_pressed_keys_;
+  HWND pending_close_app_target_ = nullptr;
+  size_t pending_close_app_index_ = 0;
+  ULONGLONG pending_close_app_at_ = 0;
   DWORD held_button_up_ = 0;
   bool coordinate_view_ = false;
   GridScope preferred_scope_ = GridScope::monitor;
@@ -1362,6 +1517,7 @@ class WindowsDesktopControlHost::Impl {
   std::string error_code_;
   std::string validation_error_;
   HHOOK keyboard_hook_ = nullptr;
+  HHOOK close_keyboard_hook_ = nullptr;
   HWND overlay_ = nullptr;
   HKL keyboard_layout_ = nullptr;
   size_t monitor_index_ = 0;
@@ -1372,6 +1528,7 @@ class WindowsDesktopControlHost::Impl {
   std::unordered_set<uint32_t> swallowed_keys_;
   bool teardown_pending_ = false;
   static inline Impl* active_hook_host_ = nullptr;
+  static inline Impl* close_hook_host_ = nullptr;
 };
 
 WindowsDesktopControlHost::WindowsDesktopControlHost(

@@ -1604,21 +1604,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _settingsList({required List<Widget> sections}) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final useTwoColumns =
-            constraints.maxWidth >=
-            AppLayoutMetrics.settingsTwoColumnBreakpoint;
-        final content = useTwoColumns
-            ? _settingsTwoColumnList(constraints, sections)
-            : _settingsSingleColumnList(sections);
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: AppGradients.shell(Theme.of(context).brightness),
+    final title = switch (_pageMode()) {
+      _SettingsPageMode.hub => 'Paramètres',
+      _SettingsPageMode.account => 'Mon compte',
+      _SettingsPageMode.voice => 'Voix',
+      _SettingsPageMode.keyboard => 'Clavier',
+      _SettingsPageMode.overlay => 'Overlay Android',
+      _SettingsPageMode.desktopControl => 'Contrôle du bureau',
+      _SettingsPageMode.keys => 'Clés IA locales',
+      _SettingsPageMode.maintenance => 'Maintenance',
+    };
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: BackButton(
+          key: const Key('settings-back'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
+        title: Text(title),
+        actions: [
+          TextButton.icon(
+            key: const Key('settings-home'),
+            onPressed: () => context.go('/home'),
+            icon: const Icon(Icons.home_outlined),
+            label: const Text('Accueil'),
           ),
-          child: content,
-        );
-      },
+        ],
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final useTwoColumns =
+              constraints.maxWidth >=
+              AppLayoutMetrics.settingsTwoColumnBreakpoint;
+          final content = useTwoColumns
+              ? _settingsTwoColumnList(constraints, sections)
+              : _settingsSingleColumnList(sections);
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: AppGradients.shell(Theme.of(context).brightness),
+            ),
+            child: content,
+          );
+        },
+      ),
     );
   }
 
@@ -1874,11 +1908,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: title,
               subtitle: subtitle,
               leadingIcon: icon,
-              syncAction: OutlinedButton.icon(
-                onPressed: context.canPop() ? () => context.pop() : null,
-                icon: const Icon(Icons.arrow_back_outlined),
-                label: const Text('Retour'),
-              ),
             ),
           section,
           ?bottomOnboardingTile,

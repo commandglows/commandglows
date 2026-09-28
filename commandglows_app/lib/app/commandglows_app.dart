@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/platform/android_keyboard_bridge.dart';
@@ -198,7 +197,6 @@ class CommandGlows extends ConsumerStatefulWidget {
 
 class _CommandGlowsState extends ConsumerState<CommandGlows> {
   Timer? _shortcutCheatsheetPoller;
-  Timer? _doubleEscapeTimer;
   bool _shortcutCheatsheetPolling = false;
 
   @override
@@ -247,26 +245,7 @@ class _CommandGlowsState extends ConsumerState<CommandGlows> {
   @override
   void dispose() {
     _shortcutCheatsheetPoller?.cancel();
-    _doubleEscapeTimer?.cancel();
     super.dispose();
-  }
-
-  KeyEventResult _handleAppKeyEvent(FocusNode node, KeyEvent event) {
-    if (!PlatformCapabilities.isWindows ||
-        event is! KeyDownEvent ||
-        event.logicalKey != LogicalKeyboardKey.escape) {
-      return KeyEventResult.ignored;
-    }
-    if (_doubleEscapeTimer?.isActive == true) {
-      _doubleEscapeTimer?.cancel();
-      _doubleEscapeTimer = null;
-      unawaited(ShortcutCheatsheetBridge.closeApp());
-      return KeyEventResult.handled;
-    }
-    _doubleEscapeTimer = Timer(const Duration(milliseconds: 800), () {
-      _doubleEscapeTimer = null;
-    });
-    return KeyEventResult.ignored;
   }
 
   Future<void> _drainShortcutCheatsheetEvents() async {
@@ -349,17 +328,13 @@ class _CommandGlowsState extends ConsumerState<CommandGlows> {
           : AppMotion.base,
       routerConfig: router,
       builder: (context, child) {
-        final appChild = Focus(
-          onKeyEvent: _handleAppKeyEvent,
-          child: child ?? const SizedBox.shrink(),
-        );
         if (!kIsWeb) {
-          return appChild;
+          return child ?? const SizedBox.shrink();
         }
         final mediaQuery = MediaQuery.of(context);
         return MediaQuery(
           data: mediaQuery.copyWith(textScaler: const TextScaler.linear(1.5)),
-          child: appChild,
+          child: child ?? const SizedBox.shrink(),
         );
       },
     );

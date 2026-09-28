@@ -210,10 +210,10 @@ export default function LicenseAdminConsole() {
         className="border-dashboard-border bg-dashboard-bg-elevated rounded-2xl border p-5 shadow-sm"
       >
         <label htmlFor="license-search" className="text-dashboard-text-primary block text-sm font-bold">
-          Rechercher une licence
+          Rechercher un client
         </label>
         <p className="text-dashboard-text-muted mt-1 text-sm">
-          Email exact, identifiant global ou référence fournisseur reconnue.
+          Commencez par son adresse email exacte. Vous pouvez aussi utiliser son identifiant de compte ou une référence fournisseur reconnue.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input
@@ -228,7 +228,7 @@ export default function LicenseAdminConsole() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-brand-magenta text-button-text-primary focus-visible:outline-navbar-ring min-h-11 rounded-xl px-5 font-semibold disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="workspace-button workspace-button-primary disabled:opacity-60"
           >
             {loading ? 'Recherche…' : 'Rechercher'}
           </button>
@@ -270,7 +270,7 @@ export default function LicenseAdminConsole() {
         <section className="border-dashboard-border bg-dashboard-bg-elevated rounded-2xl border p-5 shadow-sm" aria-labelledby="license-detail-title">
           <div className="flex flex-col justify-between gap-3 sm:flex-row">
             <div>
-              <p className="text-dashboard-text-muted text-sm">Compte canonique</p>
+              <p className="text-dashboard-text-muted text-sm">Compte client</p>
               <h2 id="license-detail-title" className="text-dashboard-text-primary text-xl font-bold">
                 {selected.account.email || selected.account.globalUserId}
               </h2>
@@ -338,11 +338,11 @@ export default function LicenseAdminConsole() {
               maxLength={500}
             />
             <div className="mt-3 flex flex-wrap gap-3">
-              <button type="button" disabled={loading} onClick={() => void applyAction('grant')} className="bg-brand-magenta text-button-text-primary focus-visible:outline-navbar-ring min-h-11 rounded-xl px-4 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
+              <button type="button" disabled={loading} onClick={() => void applyAction('grant')} className="workspace-button workspace-button-primary disabled:opacity-60">
                 Accorder l’accès
               </button>
-              <button type="button" disabled={loading} onClick={() => void applyAction('revoke')} className="border-dashboard-border text-dashboard-text-primary hover:bg-dashboard-bg-hover focus-visible:outline-navbar-ring min-h-11 rounded-xl border px-4 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
-                Révoquer l’accès
+              <button type="button" disabled={loading} onClick={() => void applyAction('revoke')} className="workspace-button disabled:opacity-60">
+                Retirer l’accès
               </button>
             </div>
           </div>

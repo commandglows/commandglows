@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/commandglows_app.dart';
-import '../platform/platform_capabilities.dart';
 import '../theme/app_theme.dart';
 
 enum AppProfileMenuAction {
@@ -12,7 +11,6 @@ enum AppProfileMenuAction {
   voice,
   keyboard,
   overlay,
-  desktopControl,
   localKeys,
   maintenance,
   themeSystem,
@@ -68,16 +66,6 @@ class AppProfileMenuButton extends ConsumerWidget {
             subtitle: Text('Bulle et permissions'),
           ),
         ),
-        if (PlatformCapabilities.isWindows)
-          const PopupMenuItem<AppProfileMenuAction>(
-            value: AppProfileMenuAction.desktopControl,
-            child: ListTile(
-              dense: true,
-              leading: Icon(Icons.grid_view_rounded),
-              title: Text('Contrôle du bureau'),
-              subtitle: Text('Grille du bureau · Ctrl+Alt+G'),
-            ),
-          ),
         const PopupMenuItem<AppProfileMenuAction>(
           value: AppProfileMenuAction.localKeys,
           child: ListTile(
@@ -146,8 +134,6 @@ class AppProfileMenuButton extends ConsumerWidget {
         context.push('/settings?section=keyboard');
       case AppProfileMenuAction.overlay:
         context.push('/settings?section=overlay');
-      case AppProfileMenuAction.desktopControl:
-        context.push('/settings?section=desktop_control');
       case AppProfileMenuAction.localKeys:
         context.push('/settings?section=keys');
       case AppProfileMenuAction.maintenance:

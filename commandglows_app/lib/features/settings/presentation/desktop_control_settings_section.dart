@@ -32,9 +32,15 @@ class _DesktopControlSettingsSectionState
   bool _busy = true;
   String? _message;
   DesktopControlBindings _bindings = DesktopControlBindings.defaults();
+  final List<DesktopPhysicalKey> _pendingCloseSequence = [];
   String? _captureTarget;
   String? _captureFeedback;
   final FocusNode _captureFocus = FocusNode();
+  final ExpansibleController _bindingsEditorController = ExpansibleController();
+  final Map<String, GlobalKey> _actionAnchors = {
+    for (final id in DesktopControlBindings.actionLabels.keys) id: GlobalKey(),
+  };
+  static const _editorExpansionDuration = Duration(milliseconds: 200);
 
   DesktopControlPreference get _preferences =>
       widget.preferenceStore ?? DesktopControlPreferenceStore();
@@ -47,7 +53,11 @@ class _DesktopControlSettingsSectionState
 
   @override
   void dispose() {
+    if (_captureTarget == 'closeAppSequence') {
+      unawaited(DesktopControlBridge.setCloseAppHotkeyListening(true));
+    }
     _captureFocus.dispose();
+    _bindingsEditorController.dispose();
     super.dispose();
   }
 
@@ -192,6 +202,9 @@ class _DesktopControlSettingsSectionState
     if (status.enabled && !status.hotkeyRegistered) {
       return DesktopControlBridge.recoveryMessageFor('HOTKEY_UNAVAILABLE');
     }
+    if (!status.closeAppHotkeyRegistered) {
+      return DesktopControlBridge.recoveryMessageFor('HOOK_UNAVAILABLE');
+    }
     return null;
   }
 
@@ -201,14 +214,32 @@ class _DesktopControlSettingsSectionState
   void _capture(String target) {
     setState(() {
       _captureTarget = target;
-      _captureFeedback =
-          'Appuyez sur une touche ou un raccourci. Échap annule. Les touches de case restent réservées sans modificateur.';
+      _pendingCloseSequence.clear();
+      _captureFeedback = target == 'closeAppSequence'
+          ? 'Appuyez sur la première touche de la séquence.'
+          : 'Appuyez sur une touche ou un raccourci. Échap annule. Les touches de case restent réservées sans modificateur.';
       _message = null;
     });
+    if (target == 'closeAppSequence') {
+      unawaited(DesktopControlBridge.setCloseAppHotkeyListening(false));
+    }
     _captureFocus.requestFocus();
   }
 
+  void _cancelCapture() {
+    setState(() {
+      _captureTarget = null;
+      _pendingCloseSequence.clear();
+      _captureFeedback = null;
+      _message = 'La capture a été annulée.';
+    });
+    unawaited(DesktopControlBridge.setCloseAppHotkeyListening(true));
+  }
+
   void _onCaptureKey(RawKeyEvent event) {
+    if (_captureTarget == 'closeAppSequence' && event.repeat) {
+      return;
+    }
     if (_captureTarget == null || event is! RawKeyDownEvent) {
       return;
     }
@@ -222,20 +253,70 @@ class _DesktopControlSettingsSectionState
     }.contains(data.keyCode)) {
       return;
     }
-    if (data.keyCode == 0x1B) {
-      setState(() {
-        _captureTarget = null;
-        _message = 'La capture a été annulée.';
-      });
+    if (data.keyCode == 0x1B && target != 'closeAppSequence') {
+      _cancelCapture();
       return;
     }
+    final modifiers =
+        (event.isControlPressed ? 2 : 0) |
+        (event.isAltPressed ? 1 : 0) |
+        (event.isShiftPressed ? 4 : 0) |
+        (event.isMetaPressed ? 8 : 0);
+    final extended = const {
+      0x21, // Page up
+      0x22, // Page down
+      0x23, // End
+      0x24, // Home
+      0x25, // Left
+      0x26, // Up
+      0x27, // Right
+      0x28, // Down
+      0x2D, // Insert
+      0x2E, // Delete
+      0x5B, // Left Windows
+      0x5C, // Right Windows
+      0x6F, // Numpad divide
+      0xA3, // Right control
+      0xA5, // Right alt
+    }.contains(data.keyCode);
+    final keyLabel = event.logicalKey.keyLabel.trim();
+    final fallbackLabel = _virtualKeyLabel(data.keyCode);
+    final shiftedDigit =
+        modifiers & 4 != 0 && data.scanCode >= 0x02 && data.scanCode <= 0x0B
+        ? String.fromCharCode(0x31 + ((data.scanCode - 0x02) % 10))
+        : null;
+    final resolvedLabel =
+        shiftedDigit ??
+        (keyLabel.isNotEmpty && !keyLabel.startsWith('Touche')
+            ? keyLabel
+            : fallbackLabel.startsWith('VK 0x')
+            ? null
+            : fallbackLabel);
+    final binding = DesktopPhysicalKey(
+      data.scanCode,
+      extended,
+      resolvedLabel,
+      modifiers,
+    );
+    if (target == 'closeAppSequence') {
+      _pendingCloseSequence.add(binding);
+      if (_pendingCloseSequence.length == 1) {
+        setState(() {
+          _captureFeedback =
+              '1/2 : ${binding.displayLabel} — appuyez sur la deuxième touche.';
+        });
+        return;
+      }
+      unawaited(
+        _saveBindings(
+          _bindings.copyWith(closeAppSequence: List.of(_pendingCloseSequence)),
+        ),
+      );
+      return;
+    }
+
     var candidate = _bindings;
     if (target == 'activation') {
-      final modifiers =
-          (event.isControlPressed ? 2 : 0) |
-          (event.isAltPressed ? 1 : 0) |
-          (event.isShiftPressed ? 4 : 0) |
-          (event.isMetaPressed ? 8 : 0);
       candidate = _bindings.copyWith(
         activationVirtualKey: data.keyCode,
         activationModifiers: modifiers,
@@ -247,47 +328,6 @@ class _DesktopControlSettingsSectionState
       final values = [
         ...(_bindings.actions[id] ?? const <DesktopPhysicalKey>[]),
       ];
-      final extended = const {
-        0x21, // Page up
-        0x22, // Page down
-        0x23, // End
-        0x24, // Home
-        0x25, // Left
-        0x26, // Up
-        0x27, // Right
-        0x28, // Down
-        0x2D, // Insert
-        0x2E, // Delete
-        0x5B, // Left Windows
-        0x5C, // Right Windows
-        0x6F, // Numpad divide
-        0xA3, // Right control
-        0xA5, // Right alt
-      }.contains(data.keyCode);
-      final modifiers =
-          (event.isControlPressed ? 2 : 0) |
-          (event.isAltPressed ? 1 : 0) |
-          (event.isShiftPressed ? 4 : 0) |
-          (event.isMetaPressed ? 8 : 0);
-      final keyLabel = event.logicalKey.keyLabel.trim();
-      final fallbackLabel = _virtualKeyLabel(data.keyCode);
-      final shiftedDigit =
-          modifiers & 4 != 0 && data.scanCode >= 0x02 && data.scanCode <= 0x0B
-          ? String.fromCharCode(0x31 + ((data.scanCode - 0x02) % 10))
-          : null;
-      final resolvedLabel =
-          shiftedDigit ??
-          (keyLabel.isNotEmpty && !keyLabel.startsWith('Touche')
-              ? keyLabel
-              : fallbackLabel.startsWith('VK 0x')
-              ? null
-              : fallbackLabel);
-      final binding = DesktopPhysicalKey(
-        data.scanCode,
-        extended,
-        resolvedLabel,
-        modifiers,
-      );
       if (slot < values.length) {
         values[slot] = binding;
       } else {
@@ -330,6 +370,18 @@ class _DesktopControlSettingsSectionState
       final effectiveBindings = DesktopControlBindings(
         activationVirtualKey: nativeBindings.activationVirtualKey,
         activationModifiers: nativeBindings.activationModifiers,
+        closeAppSequence: [
+          for (var i = 0; i < nativeBindings.closeAppSequence.length; i++)
+            nativeBindings.closeAppSequence[i].label == null &&
+                    i < candidate.closeAppSequence.length
+                ? DesktopPhysicalKey(
+                    nativeBindings.closeAppSequence[i].scanCode,
+                    nativeBindings.closeAppSequence[i].extended,
+                    candidate.closeAppSequence[i].label,
+                    nativeBindings.closeAppSequence[i].modifiers,
+                  )
+                : nativeBindings.closeAppSequence[i],
+        ],
         actions: {
           for (final id in DesktopControlBindings.actionIds)
             id: [
@@ -362,9 +414,11 @@ class _DesktopControlSettingsSectionState
           _status = status;
           _captureTarget = null;
           _captureFeedback = null;
-          _message = null;
+          _pendingCloseSequence.clear();
+          _message = _statusMessage(status);
         });
       }
+      await DesktopControlBridge.setCloseAppHotkeyListening(true);
       try {
         await _reconcileSheet(effectiveBindings);
       } catch (_) {
@@ -436,6 +490,9 @@ class _DesktopControlSettingsSectionState
 
   String get _activationLabel => _activationLabelFor(_bindings);
 
+  String get _closeAppSequenceLabel =>
+      _bindings.closeAppSequence.map((key) => key.displayLabel).join(' → ');
+
   String _activationLabelFor(DesktopControlBindings bindings) {
     final mods = bindings.activationModifiers;
     final parts = <String>[
@@ -458,6 +515,7 @@ class _DesktopControlSettingsSectionState
     if (keyCode >= 0x70 && keyCode <= 0x87) return 'F${keyCode - 0x6F}';
     return switch (keyCode) {
       0x20 => 'Espace',
+      0x1B => 'Échap',
       0x09 => 'Tab',
       0x08 => 'Retour arrière',
       0x21 => 'Page précédente',
@@ -526,7 +584,85 @@ class _DesktopControlSettingsSectionState
     child: Text(_captureTarget == target ? 'Appuyez…' : label),
   );
 
+  Future<void> _openBindingEditor(String id, int slot) async {
+    _bindingsEditorController.expand();
+    // Wait until the expansion has laid out the destination before scrolling.
+    await Future<void>.delayed(_editorExpansionDuration);
+    if (!mounted) return;
+    if (_busy) return;
+    _capture('$id:$slot');
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    final destination = _actionAnchors[id]?.currentContext;
+    if (destination == null || !destination.mounted) return;
+    await Scrollable.ensureVisible(
+      destination,
+      alignment: 0.25,
+      duration: _editorExpansionDuration,
+    );
+  }
+
+  Widget _commandCard(String id) => Card(
+    key: Key('desktop-control-command-$id'),
+    margin: EdgeInsets.zero,
+    child: Padding(
+      padding: AppInsets.compactCard,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(DesktopControlBindings.actionLabels[id]!),
+          AppGaps.x1,
+          Wrap(
+            spacing: AppSpacing.x1,
+            runSpacing: AppSpacing.x1,
+            children: [
+              for (var i = 0; i < (_bindings.actions[id]?.length ?? 0); i++)
+                Tooltip(
+                  message: 'Modifier ce raccourci',
+                  child: OutlinedButton(
+                    key: Key('desktop-control-command-key-$id-$i'),
+                    onPressed: _busy
+                        ? null
+                        : () => unawaited(_openBindingEditor(id, i)),
+                    child: Text(_bindings.actions[id]![i].displayLabel),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _commandGroup(String title, List<String> actions) => Padding(
+    padding: AppInsets.compactCard,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleSmall),
+        AppGaps.x2,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= AppSpacing.x20 * 4 ? 2 : 1;
+            final width =
+                (constraints.maxWidth - AppSpacing.x2 * (columns - 1)) /
+                columns;
+            return Wrap(
+              spacing: AppSpacing.x2,
+              runSpacing: AppSpacing.x2,
+              children: [
+                for (final id in actions)
+                  SizedBox(width: width, child: _commandCard(id)),
+              ],
+            );
+          },
+        ),
+      ],
+    ),
+  );
+
   Widget _bindingActionTile(String id) => ListTile(
+    key: _actionAnchors[id],
     title: Text(DesktopControlBindings.actionLabels[id]!),
     subtitle: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -535,8 +671,8 @@ class _DesktopControlSettingsSectionState
           spacing: 6,
           children: [
             for (var i = 0; i < (_bindings.actions[id]?.length ?? 0); i++)
-              Row(
-                mainAxisSize: MainAxisSize.min,
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   _keyButton('$id:$i', _bindings.actions[id]![i].displayLabel),
                   _sheetButton(
@@ -604,6 +740,12 @@ class _DesktopControlSettingsSectionState
     onKey: _onCaptureKey,
     child: ExpansionTile(
       key: const Key('desktop-control-bindings-editor'),
+      controller: _bindingsEditorController,
+      maintainState: true,
+      expansionAnimationStyle: const AnimationStyle(
+        duration: _editorExpansionDuration,
+        reverseDuration: _editorExpansionDuration,
+      ),
       leading: const Icon(Icons.keyboard_alt_outlined),
       title: const Text('Touches et raccourcis'),
       subtitle: const Text('Raccourcis locaux à cet appareil'),
@@ -614,34 +756,91 @@ class _DesktopControlSettingsSectionState
             vertical: AppSpacing.x1,
           ),
           child: Text(
-            'Une touche seule ou une combinaison Ctrl, Alt ou Maj est acceptée. Les touches de la grille restent réservées sans modificateur. Les raccourcis avec Win sont réservés au système. Échap annule la saisie et ferme toujours la grille.',
+            'Une touche seule ou une combinaison Ctrl, Alt ou Maj est acceptée. Les touches de la grille restent réservées sans modificateur. Les raccourcis avec Win sont réservés au système. Échap annule la saisie des raccourcis de grille et ferme toujours la grille. Utilisez le bouton Annuler pour la séquence de fermeture d’application.',
           ),
         ),
         const ListTile(title: Text('Activation'), dense: true),
         ListTile(
+          dense: false,
+          visualDensity: VisualDensity.standard,
+          minVerticalPadding: 8,
           title: const Text('Activation'),
-          subtitle: const Text('Affiche ou ferme la grille'),
-          trailing: Column(
+          subtitle: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _keyButton('activation', _activationLabel),
-                  _sheetButton(
-                    sourceId: 'desktop-grid:activation',
-                    description: 'Afficher ou fermer la grille du bureau',
-                    label: _activationLabel,
-                    globalHotkey: true,
-                  ),
-                ],
-              ),
+              const Text('Affiche ou ferme la grille'),
               if (_captureTarget == 'activation')
                 Text(
                   _captureFeedback ?? 'Saisie en cours…',
                   key: const Key('desktop-control-capture-feedback-activation'),
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _keyButton('activation', _activationLabel),
+              _sheetButton(
+                sourceId: 'desktop-grid:activation',
+                description: 'Afficher ou fermer la grille du bureau',
+                label: _activationLabel,
+                globalHotkey: true,
+              ),
+            ],
+          ),
+        ),
+        ListTile(
+          dense: false,
+          visualDensity: VisualDensity.standard,
+          minVerticalPadding: 8,
+          title: const Text('Fermer l’application active'),
+          subtitle: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Envoie une demande de fermeture à la fenêtre au premier plan. Deux touches dans les 800 ms.',
+              ),
+              if (_captureTarget == 'closeAppSequence') ...[
+                Text(_captureFeedback ?? 'Capture en cours…'),
+                TextButton.icon(
+                  key: const Key('desktop-control-close-app-cancel-capture'),
+                  onPressed: _cancelCapture,
+                  icon: const Icon(Icons.close),
+                  label: const Text('Annuler la saisie'),
+                ),
+              ],
+            ],
+          ),
+          trailing: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              OutlinedButton(
+                key: const Key('desktop-control-close-app-sequence'),
+                onPressed: _busy ? null : () => _capture('closeAppSequence'),
+                child: Text(
+                  _captureTarget == 'closeAppSequence'
+                      ? 'Appuyez…'
+                      : _closeAppSequenceLabel,
+                ),
+              ),
+              IconButton(
+                key: const Key('desktop-control-close-app-reset'),
+                tooltip: 'Rétablir Échap, Échap',
+                onPressed: _busy || _captureTarget == 'closeAppSequence'
+                    ? null
+                    : () => unawaited(
+                        _saveBindings(
+                          _bindings.copyWith(
+                            closeAppSequence: DesktopControlBindings.defaults()
+                                .closeAppSequence,
+                          ),
+                        ),
+                      ),
+                icon: const Icon(Icons.restart_alt),
+              ),
             ],
           ),
         ),
@@ -751,25 +950,32 @@ class _DesktopControlSettingsSectionState
               key: const Key('desktop-control-more-keys'),
               leading: const Icon(Icons.tune_outlined),
               title: const Text('Autres commandes'),
+              subtitle: const Text('Cliquez sur une touche pour la modifier'),
               children: [
-                ListTile(
-                  title: const Text('Se repérer'),
-                  subtitle: Text(
-                    '${_keysFor('back')} remonte d’un niveau · ${_keysFor('reset')} repart de la portée choisie · ${_keysFor('coordinateView')} affiche la grille de coordonnées · ${_keysFor('toggleScope')} bascule fenêtre/écran.',
-                  ),
-                ),
-                ListTile(
-                  title: const Text('Agir sur la cible'),
-                  subtitle: Text(
-                    '${_keysFor('rightClick')} : clic droit · ${_keysFor('middleClick')} : clic central · ${_keysFor('dragStart')} : commencer un glisser · ${_keysFor('dragRelease')} : relâcher · ${_keysFor('wheelUp')}/${_keysFor('wheelDown')} : faire défiler · ${_keysFor('close')} : fermer.',
-                  ),
-                ),
-                ListTile(
-                  title: const Text('Changer d’écran'),
-                  subtitle: Text(
-                    '${_keysFor('previousMonitor')} / ${_keysFor('nextMonitor')} passe d’un écran connecté à l’autre.',
-                  ),
-                ),
+                _commandGroup('Se repérer', [
+                  'back',
+                  'reset',
+                  'coordinateView',
+                  'toggleScope',
+                  'close',
+                ]),
+                _commandGroup('Agir sur la cible', [
+                  'leftClick',
+                  'rightClick',
+                  'middleClick',
+                  'dragStart',
+                  'dragRelease',
+                  'wheelUp',
+                  'wheelDown',
+                  'nudgeLeft',
+                  'nudgeRight',
+                  'nudgeUp',
+                  'nudgeDown',
+                ]),
+                _commandGroup('Changer d’écran', [
+                  'previousMonitor',
+                  'nextMonitor',
+                ]),
               ],
             ),
           ],

@@ -158,8 +158,84 @@ void main() {
       );
       await tester.tap(find.byKey(const Key('desktop-control-more-keys')));
       await tester.pumpAndSettle();
-      expect(find.textContaining('F2 : clic droit'), findsOneWidget);
-      expect(find.textContaining('F9 repart'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('desktop-control-command-rightClick')),
+          matching: find.text('F2'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('desktop-control-command-reset')),
+          matching: find.text('F9'),
+        ),
+        findsOneWidget,
+      );
+    }),
+  );
+
+  testWidgets(
+    'command pill opens the matching editor and reflects the saved replacement',
+    (tester) => onWindows(() async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final preferences = _MemoryPreference();
+      preferences.bindings = preferences.bindings.copyWith(
+        actions: {
+          ...preferences.bindings.actions,
+          'rightClick': [const DesktopPhysicalKey(0x39, false, 'Espace', 2)],
+        },
+      );
+      await mount(
+        tester,
+        preferences: preferences,
+        statusForCall: (call) => {
+          'supported': true,
+          'enabled': false,
+          'active': false,
+          'hotkeyRegistered': false,
+          if (call.method == 'setBindings') 'bindings': call.arguments,
+        },
+      );
+      final overview = find.byKey(const Key('desktop-control-more-keys'));
+      await tester.ensureVisible(overview);
+      await tester.tap(overview);
+      await tester.pumpAndSettle();
+      final pill = find.byKey(
+        const Key('desktop-control-command-key-rightClick-0'),
+      );
+      expect(
+        find.descendant(of: pill, matching: find.text('Ctrl+Espace')),
+        findsOneWidget,
+      );
+      await tester.ensureVisible(pill);
+      await tester.tap(pill);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pump();
+      await tester.pumpAndSettle();
+      final editorKey = find.byKey(
+        const Key('desktop-control-capture-rightClick-0'),
+      );
+      expect(
+        find.descendant(of: editorKey, matching: find.text('Appuyez…')),
+        findsOneWidget,
+      );
+      expect(editorKey.hitTestable(), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+      await tester.pumpAndSettle();
+      expect(
+        preferences.bindings.actions['rightClick']!.single.displayLabel,
+        'F10',
+      );
+      expect(
+        find.descendant(of: pill, matching: find.text('F10')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
     }),
   );
 
@@ -190,7 +266,7 @@ void main() {
         },
       );
       expect(preferences.bindingWrites, 1);
-      expect(preferences.bindings.toWire()['version'], 2);
+      expect(preferences.bindings.toWire()['version'], 3);
       expect(preferences.bindings.activationVirtualKey, 0x48);
       expect(preferences.bindings.actions['rightClick']!.single.scanCode, 0x02);
     }),

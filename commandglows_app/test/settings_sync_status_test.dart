@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:commandglows_app/core/theme/app_theme.dart';
 import 'package:commandglows_app/features/settings/application/settings_store_provider.dart';
 import 'package:commandglows_app/features/settings/data/local_settings_store.dart';
+import 'package:commandglows_app/features/settings/domain/settings_store.dart';
 import 'package:commandglows_app/features/settings/presentation/settings_screen.dart';
 
 const _secureStorageChannel = MethodChannel(
@@ -68,6 +71,13 @@ void _installSecureStorageMocks() {
 void _clearSecureStorageMocks() {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(_secureStorageChannel, null);
+}
+
+class _PendingSettingsStore extends LocalSettingsStore {
+  final pending = Completer<UserSettingsSnapshot>();
+
+  @override
+  Future<UserSettingsSnapshot> load() => pending.future;
 }
 
 void main() {
@@ -161,18 +171,65 @@ void main() {
       );
     },
   );
+
+  testWidgets('direct account entry returns to home without a stack', (
+    tester,
+  ) async {
+    await _pumpSettings(
+      tester,
+      initialLocation: '/settings?section=account_cloud',
+    );
+    expect(find.byKey(const Key('settings-back')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('settings-back')));
+    await tester.pumpAndSettle();
+    expect(find.text('Home destination'), findsOneWidget);
+  });
+
+  testWidgets('pushed account returns to the previous page', (tester) async {
+    final router = await _pumpSettings(tester, initialLocation: '/home');
+    unawaited(router.push('/settings?section=account_cloud'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-back')));
+    await tester.pumpAndSettle();
+    expect(find.text('Home destination'), findsOneWidget);
+    expect(router.canPop(), isFalse);
+  });
+
+  testWidgets('account loading keeps home navigation available', (
+    tester,
+  ) async {
+    final store = _PendingSettingsStore();
+    final router = await _pumpSettings(
+      tester,
+      initialLocation: '/settings?section=account_cloud',
+      settle: false,
+      overrides: [settingsStoreProvider.overrideWithValue(store)],
+    );
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    await tester.tap(find.byKey(const Key('settings-home')));
+    await tester.pump();
+    expect(router.routeInformationProvider.value.uri.path, '/home');
+    store.pending.complete(const UserSettingsSnapshot.defaults());
+    await tester.pumpAndSettle();
+    expect(find.text('Home destination'), findsOneWidget);
+  });
 }
 
-Future<void> _pumpSettings(
+Future<GoRouter> _pumpSettings(
   WidgetTester tester, {
   List<Object> overrides = const [],
   String initialLocation = '/settings',
+  bool settle = true,
 }) async {
   await tester.binding.setSurfaceSize(const Size(1400, 2200));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final router = GoRouter(
     initialLocation: initialLocation,
     routes: [
+      GoRoute(
+        path: '/home',
+        builder: (_, _) => const Scaffold(body: Text('Home destination')),
+      ),
       GoRoute(
         path: '/settings',
         builder: (context, state) => SettingsScreen(
@@ -192,5 +249,10 @@ Future<void> _pumpSettings(
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
+  return router;
 }

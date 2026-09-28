@@ -59,7 +59,7 @@ test('does not show an empty candidates state after a failed load', async () => 
     ? Promise.reject(new Error('Candidates unavailable'))
     : response({ page: [], environment: 'sandbox', isDone: true, continueCursor: '' }))
   await act(async () => root.render(createElement(CommerceIncidentConsole)))
-  await click('Événements absents à vérifier')
+  await click('Paiements à confirmer')
   expect(container.querySelector('[role="alert"]')?.textContent).toContain('Candidates unavailable')
   expect(container.textContent).not.toContain('Aucune session à vérifier dans cette page.')
 })

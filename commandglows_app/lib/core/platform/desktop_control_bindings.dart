@@ -69,15 +69,17 @@ class DesktopControlBindings {
   DesktopControlBindings({
     required this.activationVirtualKey,
     required this.activationModifiers,
+    required List<DesktopPhysicalKey> closeAppSequence,
     required Map<String, List<DesktopPhysicalKey>> actions,
     this.recoveredInvalidData = false,
     this.migratedFromLegacy = false,
   }) : actions = {
          for (final entry in actions.entries)
            entry.key: List.unmodifiable(entry.value),
-       };
+       },
+       closeAppSequence = List.unmodifiable(closeAppSequence);
 
-  static const version = 2;
+  static const version = 3;
   static const actionIds = <String>[
     'leftClick',
     'rightClick',
@@ -121,6 +123,7 @@ class DesktopControlBindings {
 
   final int activationVirtualKey;
   final int activationModifiers;
+  final List<DesktopPhysicalKey> closeAppSequence;
   final Map<String, List<DesktopPhysicalKey>> actions;
   final bool recoveredInvalidData;
   final bool migratedFromLegacy;
@@ -128,6 +131,10 @@ class DesktopControlBindings {
   factory DesktopControlBindings.defaults() => DesktopControlBindings(
     activationVirtualKey: 0x47,
     activationModifiers: 0x0003,
+    closeAppSequence: const [
+      DesktopPhysicalKey(0x01, false, 'Échap'),
+      DesktopPhysicalKey(0x01, false, 'Échap'),
+    ],
     actions: {
       'leftClick': [
         const DesktopPhysicalKey(0x39),
@@ -156,10 +163,12 @@ class DesktopControlBindings {
   DesktopControlBindings copyWith({
     int? activationVirtualKey,
     int? activationModifiers,
+    List<DesktopPhysicalKey>? closeAppSequence,
     Map<String, List<DesktopPhysicalKey>>? actions,
   }) => DesktopControlBindings(
     activationVirtualKey: activationVirtualKey ?? this.activationVirtualKey,
     activationModifiers: activationModifiers ?? this.activationModifiers,
+    closeAppSequence: closeAppSequence ?? this.closeAppSequence,
     actions: actions ?? this.actions,
   );
 
@@ -169,6 +178,9 @@ class DesktopControlBindings {
       'virtualKey': activationVirtualKey,
       'modifiers': activationModifiers,
     },
+    'closeAppSequence': closeAppSequence
+        .map((key) => key.toWire(includeLabel: includeLabels))
+        .toList(),
     'actions': {
       for (final id in actionIds)
         id: (actions[id] ?? const [])
@@ -180,23 +192,34 @@ class DesktopControlBindings {
   factory DesktopControlBindings.fromWire(Map<Object?, Object?>? wire) {
     if (wire == null) return DesktopControlBindings.defaults();
     final wireVersion = wire['version'];
-    if (wireVersion != 1 && wireVersion != version) return recoveredDefaults();
+    if (wireVersion != 1 && wireVersion != 2 && wireVersion != version) {
+      return recoveredDefaults();
+    }
     try {
       final activation = Map<Object?, Object?>.from(wire['activation'] as Map);
       final rawActions = Map<Object?, Object?>.from(wire['actions'] as Map);
+      final rawCloseSequence = wireVersion == version
+          ? (wire['closeAppSequence'] as List?) ?? const []
+          : const [];
+      if (wireVersion == version && rawCloseSequence.length != 2) {
+        return recoveredDefaults();
+      }
       if (actionIds.any((id) => !rawActions.containsKey(id))) {
         return recoveredDefaults();
       }
       return DesktopControlBindings(
         activationVirtualKey: activation['virtualKey'] as int,
         activationModifiers: activation['modifiers'] as int,
+        closeAppSequence: wireVersion == version
+            ? rawCloseSequence.map(DesktopPhysicalKey.fromWire).toList()
+            : DesktopControlBindings.defaults().closeAppSequence,
         actions: {
           for (final id in actionIds)
             id: ((rawActions[id] as List?) ?? const [])
                 .map(DesktopPhysicalKey.fromWire)
                 .toList(),
         },
-        migratedFromLegacy: wireVersion == 1,
+        migratedFromLegacy: wireVersion != version,
       );
     } catch (_) {
       return recoveredDefaults();
@@ -208,6 +231,7 @@ class DesktopControlBindings {
   static DesktopControlBindings recoveredDefaults() => DesktopControlBindings(
     activationVirtualKey: 0x47,
     activationModifiers: 0x0003,
+    closeAppSequence: DesktopControlBindings.defaults().closeAppSequence,
     actions: DesktopControlBindings.defaults().actions,
     recoveredInvalidData: true,
   );

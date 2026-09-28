@@ -271,3 +271,13 @@ Proof: responsive light/dark browser comparison, keyboard/focus, route and reloa
 - Verification: Doppler production build completed; Astro check returned 0 errors and 0 warnings (one existing hint); all 727 site tests passed, including lifecycle, session geometry and theme continuity checks. All 22 token-generator/drift tests passed. Six generated adapters are current; project/shared changed-file drift scans reported 0 findings; `git diff --check` passed.
 - Performance scope: no new dependency; marketing scroll scripts omitted on direct dashboard loads; Lenis RAF/instances disposed on route swaps. These are implementation and lifecycle proofs, not measured production Core Web Vitals.
 - Remaining proof boundary: the available real browser session is signed out. Authenticated customer/admin rendering, actual account actions and production behavior are unverified. Administrative business controls were not redesigned; they inherit the shared shell and semantic colors. No commit, push or deployment.
+
+### Administrative page clarification — 2026-09-28
+
+Ready bounded refinement following the operator's difficulty understanding `/dashboard/licences`: clarify existing tasks and consequences using the existing workspace tokens. No new business behavior or authorization boundary. Add direct anchors for customer access and purchase incidents, explain queue counters and operational health, label unconfirmed payments plainly, and disclose Stripe repair tools progressively with native details. Preserve all existing actions, required reasons and receipt checks.
+
+| Date UTC | Skill | Model | Action | Result | Next step |
+|---|---|---|---|---|---|
+| 2026-09-28 | sg-design | GPT-6 | Clarify administrative tasks, indicators and action consequences; reuse workspace buttons and native disclosure. | Verified locally on the authenticated admin page: desktop and 390px mobile, direct account anchor, native Stripe disclosure and readable search control. Astro check 0 errors/0 warnings/1 existing hint; 13 existing focused tests pass; changed-file token drift 0 findings. | Operator review; no deployment. |
+
+The two existing tests that locate renamed controls were updated to the new visible wording. No business action was executed during browser verification. Mobile document width remained within its viewport; temporary viewport overrides were reset. The earlier signed-out limitation remains historical evidence for the previous run, not this administrative presentation check.

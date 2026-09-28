@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/platform/platform_capabilities.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_components.dart';
 import '../../../core/widgets/app_profile_menu_button.dart';
@@ -97,10 +99,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     return dataAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => ListView(
+        padding: AppInsets.screen,
+        children: const [
+          _HomeQuickAccess(),
+          AppGaps.x2,
+          Center(child: CircularProgressIndicator()),
+        ],
+      ),
       error: (error, stack) => ListView(
         padding: AppInsets.screen,
         children: [
+          const _HomeQuickAccess(),
+          AppGaps.x2,
           AppEmptyStateCard(
             title: 'Accueil indisponible',
             message: 'Impossible d’afficher le fil global pour le moment.',
@@ -120,6 +131,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return ListView(
           padding: AppInsets.screen,
           children: [
+            const _HomeQuickAccess(),
+            AppGaps.x2,
             AppPageHeroCard(
               title: 'Fil d’accueil',
               subtitle:
@@ -266,6 +279,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .toList(growable: false)
       ..sort((a, b) => a.compareTo(b));
   }
+}
+
+class _HomeQuickAccess extends StatelessWidget {
+  const _HomeQuickAccess();
+
+  @override
+  Widget build(BuildContext context) => AppSectionCard(
+    title: 'Accès directs',
+    padding: AppInsets.compactCard,
+    child: Column(
+      children: [
+        ListTile(
+          key: const Key('home-shortcuts-link'),
+          leading: const Icon(Icons.keyboard_command_key_outlined),
+          title: const Text('Mes raccourcis'),
+          subtitle: const Text('Fiche personnelle et cartes d’entraînement'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/shortcuts'),
+        ),
+        if (PlatformCapabilities.isWindows)
+          ListTile(
+            key: const Key('home-desktop-control-link'),
+            leading: const Icon(Icons.grid_view_rounded),
+            title: const Text('Contrôle du bureau'),
+            subtitle: const Text('Grille au clavier et touches personnalisées'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings?section=desktop_control'),
+          ),
+      ],
+    ),
+  );
 }
 
 class _FeedSourceFilters extends StatelessWidget {

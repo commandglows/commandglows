@@ -193,32 +193,41 @@ export default function CommerceIncidentConsole() {
     <div className={panel}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-3xl">
-          <p className="brand-text-magenta text-xs font-bold uppercase tracking-wide">Permanence commerce</p>
-          <h2 id="commerce-operations-title" className="text-dashboard-text-primary mt-1 text-xl font-bold">Incidents d’achat à traiter</h2>
-          <p className={`${meta} mt-2`}>{environment || 'Environnement en cours de vérification'} · Les dossiers sans compte identifié restent visibles et doivent être repris depuis Stripe avant clôture.</p>
+          <p className="brand-text-magenta text-xs font-bold uppercase tracking-wide">Suivi des achats</p>
+          <h2 id="commerce-operations-title" className="text-dashboard-text-primary mt-1 text-xl font-bold">Incidents d’achat</h2>
+          <p className={`${meta} mt-2`}>Ouvrez un dossier, vérifiez le paiement puis choisissez l’action adaptée.</p>
+          <p className={`${meta} mt-2`}>{environment === 'sandbox' ? 'Environnement de test · sandbox' : environment ? `Environnement : ${environment}` : 'Vérification de l’environnement…'}</p>
         </div>
         <button className={button} disabled={busy} onClick={() => void refresh()}>Actualiser</button>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <div className={quietPanel}>
-          <p className="text-dashboard-text-muted text-xs font-bold uppercase tracking-wide">File affichée</p>
+          <p className="text-dashboard-text-muted text-xs font-bold uppercase tracking-wide">Dossiers affichés</p>
           <p className="text-dashboard-text-primary mt-1 text-2xl font-bold">{view === 'missing' ? candidates.length : incidents.length}</p>
+          <p className={`${meta} mt-1`}>Dans la liste chargée ci-dessous.</p>
         </div>
         <div className={quietPanel}>
-          <p className="text-dashboard-text-muted text-xs font-bold uppercase tracking-wide">Canal notification</p>
+          <p className="text-dashboard-text-muted text-xs font-bold uppercase tracking-wide">Alertes de l’équipe</p>
           <p className="text-dashboard-text-primary mt-1 font-semibold">{configured === false ? 'À corriger' : configured === true ? 'Configuré' : 'Vérification'}</p>
+          <p className={`${meta} mt-1`}>Notification des incidents aux opérateurs.</p>
         </div>
         <div className={quietPanel}>
-          <p className="text-dashboard-text-muted text-xs font-bold uppercase tracking-wide">Surveillance</p>
-          <p className="text-dashboard-text-primary mt-1 font-semibold">{watchdogStale === null ? 'Vérification' : watchdogStale ? 'Contrôle manuel requis' : 'Récente'}</p>
+          <p className="text-dashboard-text-muted text-xs font-bold uppercase tracking-wide">Contrôle automatique</p>
+          <p className="text-dashboard-text-primary mt-1 font-semibold">{watchdogStale === null ? 'Vérification' : watchdogStale ? 'Contrôle manuel requis' : 'Vérification récente'}</p>
+          <p className={`${meta} mt-1`}>Dernière vérification des achats.</p>
         </div>
       </div>
       {configured === false && <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="alert">Canal d’alerte non configuré. Assurez la permanence manuelle et configurez puis vérifiez la réception avant le lancement.</p>}
       {watchdogStale && <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="alert">Surveillance automatique non vérifiée depuis plus de 15 minutes. Consultez les tâches planifiées Convex et assurez le contrôle manuel des sessions Stripe.</p>}
       <nav className="mt-4 flex flex-wrap gap-2" aria-label="Files commerce">
         {(['active', 'resolved', 'missing'] as const).map((entry) => <button key={entry} className={view === entry ? primaryButton : button} aria-pressed={view === entry} disabled={busy} onClick={() => setView(entry)}>
-          {{ active: 'À traiter', resolved: 'Résolus', missing: 'Événements absents à vérifier' }[entry]}</button>)}
+          {{ active: 'À traiter', resolved: 'Résolus', missing: 'Paiements à confirmer' }[entry]}</button>)}
       </nav>
+      <p className={`${meta} mt-3`}>{view === 'active'
+        ? 'Dossiers ouverts ou escaladés. Une vérification reste nécessaire, même si le paiement est confirmé.'
+        : view === 'resolved'
+          ? 'Dossiers clôturés par le support. La clôture seule ne modifie pas les accès du client.'
+          : 'Sessions sans reçu confirmé. Vérifiez dans Stripe si le client a payé ou abandonné son achat.'}</p>
     </div>
     {error && <p className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-950" role="alert">{error}</p>}
     {message && <p className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm font-semibold text-emerald-950" role="status">{message}</p>}
@@ -247,7 +256,8 @@ export default function CommerceIncidentConsole() {
             </div>
           </div>
           <div className={quietPanel}>
-            <p className="text-dashboard-text-primary text-sm font-bold">Traitement du reçu</p>
+            <p className="text-dashboard-text-primary text-sm font-bold">Reprendre le traitement de l’achat</p>
+            <p className={`${meta} mt-1`}>Vérifiez d’abord si la reprise est possible. Le traitement peut mettre à jour les accès à partir du reçu confirmé.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button className={button} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review'} onClick={() => void act('dry_run')}>Vérifier la reprise</button>
               <button className={button} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review' || detail.incident.attempts >= 5} onClick={() => void act('retry')}>Reprendre le traitement</button>
@@ -256,7 +266,7 @@ export default function CommerceIncidentConsole() {
             </div>
           </div>
           <div className={quietPanel}>
-            <p className="text-dashboard-text-primary text-sm font-bold">Sortie opérateur</p>
+            <p className="text-dashboard-text-primary text-sm font-bold">Terminer ou transmettre le dossier</p>
             <label className="text-dashboard-text-primary mt-3 block text-sm font-bold" htmlFor="commerce-evidence">Référence de résolution externe vérifiée</label>
             <input className={`${input} mt-2`} id="commerce-evidence" value={evidence} maxLength={500} onChange={(event) => setEvidence(event.target.value)} placeholder="Dossier support ou preuve fournisseur, sans secret" />
             <p className={`${meta} mt-2`}>Clôturez uniquement après traitement effectif de l’acheteur. Décrivez le résultat dans le motif ; la référence permet à un autre opérateur de le vérifier.</p>
@@ -324,9 +334,10 @@ export default function CommerceIncidentConsole() {
         setBusy(true); void load(cursor).catch((failure) => setError(failure.message)).finally(() => setBusy(false))
       }}>Afficher la page suivante</button>}
     </div>
-    <div className={panel}>
-      <h3 className="text-dashboard-text-primary font-bold">Outils Stripe contrôlés</h3>
-      <p className="text-dashboard-text-muted mt-2 text-sm">Copiez l’identifiant exact dans Stripe. Le serveur récupère et vérifie les preuves avant de traiter l’achat. Un événement déjà reçu conserve son résultat.</p>
+    <details className={panel}>
+      <summary className="text-dashboard-text-primary focus-visible:outline-navbar-ring min-h-11 cursor-pointer font-bold focus-visible:outline-2 focus-visible:outline-offset-2">Réparer un achat depuis Stripe · outils avancés</summary>
+      <p className="text-dashboard-text-muted mt-2 text-sm">À utiliser lorsqu’un événement manque ou qu’une session payée n’est pas rattachée au bon compte. Ouvrez d’abord le dossier et renseignez le motif de votre intervention.</p>
+      <p className="text-dashboard-text-muted mt-2 text-sm">Récupérez l’identifiant exact dans Stripe : événement evt_… ou session cs_…. La référence interne du dossier ne peut pas être utilisée ici.</p>
       <label htmlFor="commerce-business" className="text-dashboard-text-primary mt-3 block text-sm">Compte business pour la recherche Stripe</label>
       <select id="commerce-business" className={`${input} mt-2`} value={businessId}
         onChange={(event) => setBusinessId(event.target.value as typeof businessId)}>
@@ -342,6 +353,6 @@ export default function CommerceIncidentConsole() {
       <label htmlFor="commerce-session" className="text-dashboard-text-primary mt-5 block text-sm">Session Stripe terminée dont le rattachement a échoué</label>
       <input id="commerce-session" className={`${input} mt-2`} value={sessionId} maxLength={255} onChange={(event) => setSessionId(event.target.value)} placeholder="cs_…" />
       <button className={`${button} mt-3`} disabled={busy || merchantAvailability?.[businessId] !== true || !sessionId.startsWith('cs_')} onClick={() => void act('repair_checkout')}>Vérifier et réparer le rattachement</button>
-    </div>
+    </details>
   </section>
 }
