@@ -146,3 +146,154 @@ test('checkout uncertainty does not offer receipt retry or pretend its internal 
   expect(container.textContent).toContain('ne doit pas être saisie comme identifiant Stripe')
   expect(byLabel('Clôturer le dossier sans modifier les droits').disabled).toBe(true)
 })
+
+const queue = (page = [fixture]) => ({ page, environment: 'production', isDone: true,
+  continueCursor: '', merchantAvailability: { commandglows: true } })
+const incidentDetail = (incident = fixture) => ({ incident, actions: [], historyTruncated: false })
+
+test.each([
+  ['reconcile', 'commerce-event', 'evt_verified', 'Vérifier et récupérer l’événement'],
+  ['repair_checkout', 'commerce-session', 'cs_verified', 'Vérifier et réparer le rattachement'],
+])('Stripe %s works from missing payments with its own reason and provider reference', async (action, inputId, value, buttonLabel) => {
+  vi.mocked(fetch).mockImplementation(async (_url, options) => options?.method === 'POST'
+    ? response({ status: 'granted' }) : response(queue([])))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Paiements à confirmer')
+  await fill(inputId, value)
+  await click(buttonLabel)
+  expect(document.activeElement?.id).toBe('commerce-stripe-reason')
+  expect(vi.mocked(fetch).mock.calls.some(([, options]) => options?.method === 'POST')).toBe(false)
+  await fill('commerce-stripe-reason', 'Paiement et référence vérifiés dans Stripe')
+  await click(buttonLabel)
+  const post = vi.mocked(fetch).mock.calls.find(([, options]) => options?.method === 'POST')!
+  const payload = JSON.parse(String(post[1]?.body))
+  expect(payload).toMatchObject({ action, reason: 'Paiement et référence vérifiés dans Stripe', businessId: 'commandglows',
+    [action === 'reconcile' ? 'eventId' : 'sessionId']: value })
+  expect(payload).not.toHaveProperty('incidentId')
+  expect(container.textContent).toContain('Opération enregistrée')
+})
+
+test('a failed switch removes the former incident and its intervention context', async () => {
+  const other = { ...fixture, _id: 'case_2' }
+  vi.mocked(fetch).mockImplementation(async (url) => String(url).includes('incidentId=case_2')
+    ? Promise.reject(new Error('Detail unavailable')) : String(url).includes('incidentId=')
+      ? response(incidentDetail()) : response(queue([fixture, other])))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Ouvrir le dossier')
+  await fill('commerce-reason', 'Ancien motif')
+  await fill('commerce-stripe-reason', 'Ancien motif Stripe')
+  await fill('commerce-event', 'evt_previous')
+  await act(async () => { [...container.querySelectorAll('button')].filter((entry) => entry.textContent === 'Ouvrir le dossier')[1].click() })
+  expect(container.querySelector('aside')).toBeNull()
+  expect(container.textContent).toContain('Detail unavailable')
+  expect(byLabel('Prendre en charge')).toBeUndefined()
+  expect(container.querySelector<HTMLTextAreaElement>('#commerce-stripe-reason')?.value).toBe('')
+  expect(container.querySelector<HTMLInputElement>('#commerce-event')?.value).toBe('')
+})
+
+test.each(['network', 'conflict', 'unavailable'])('a %s mutation blocks all actions until the incident is successfully reread', async (failure) => {
+  let detailFails = false
+  vi.mocked(fetch).mockImplementation(async (url, options) => {
+    if (options?.method === 'POST') {
+      if (failure === 'network') throw new Error('Connection lost')
+      return response({}, failure === 'conflict' ? 409 : 503)
+    }
+    if (String(url).includes('incidentId=')) {
+      if (detailFails) throw new Error('Read unavailable')
+      return response(incidentDetail({ ...fixture, version: 6 }))
+    }
+    return response(queue())
+  })
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Ouvrir le dossier')
+  await fill('commerce-reason', 'Vérification du dossier')
+  await fill('commerce-event', 'evt_verified')
+  await click('Prendre en charge')
+  expect(byLabel('Prendre en charge').disabled).toBe(true)
+  expect(byLabel('Escalader').disabled).toBe(true)
+  expect(byLabel('Vérifier et récupérer l’événement').disabled).toBe(true)
+  expect(container.textContent).toContain('Actions suspendues')
+  detailFails = true
+  await click('Actualiser')
+  expect(byLabel('Prendre en charge').disabled).toBe(true)
+  detailFails = false
+  await click('Actualiser')
+  expect(byLabel('Prendre en charge').disabled).toBe(false)
+  expect(container.textContent).toContain('Version 6')
+})
+
+test.each(['queue', 'detail'])('confirmed mutation survives a failed %s refresh with controls locked', async (failedRead) => {
+  let mutated = false
+  let readsFail = true
+  vi.mocked(fetch).mockImplementation(async (url, options) => {
+    if (options?.method === 'POST') { mutated = true; return response({ status: 'escalated' }) }
+    const isDetail = String(url).includes('incidentId=')
+    if (mutated && readsFail && (failedRead === 'detail' ? isDetail : !isDetail)) throw new Error('Read unavailable')
+    return response(isDetail ? incidentDetail({ ...fixture, version: mutated ? 6 : 5 }) : queue())
+  })
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Ouvrir le dossier')
+  await fill('commerce-reason', 'Transmettre le dossier au support')
+  await click('Escalader')
+  expect(container.textContent).toContain('Opération enregistrée. Escaladé')
+  expect(container.textContent).toContain('Opération confirmée, mais actualisation indisponible')
+  expect(container.textContent).not.toContain('Résultat à vérifier.')
+  expect(byLabel('Escalader').disabled).toBe(true)
+  readsFail = false
+  await click('Actualiser')
+  expect(byLabel('Escalader').disabled).toBe(false)
+  await click('Escalader')
+  const posts = vi.mocked(fetch).mock.calls.filter(([, options]) => options?.method === 'POST')
+  expect(JSON.parse(String(posts[1][1]?.body)).expectedVersion).toBe(6)
+})
+
+test('changing queues cannot bypass the verification of an uncertain incident', async () => {
+  let readsFail = false
+  vi.mocked(fetch).mockImplementation(async (url, options) => {
+    if (options?.method === 'POST') throw new Error('Connection lost')
+    if (String(url).includes('incidentId=')) {
+      if (readsFail) throw new Error('Read unavailable')
+      return response(incidentDetail())
+    }
+    return response(queue())
+  })
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Ouvrir le dossier')
+  await fill('commerce-reason', 'Motif vérifié')
+  await click('Prendre en charge')
+  await click('Paiements à confirmer')
+  await fill('commerce-event', 'evt_verified')
+  expect(byLabel('Vérifier et récupérer l’événement').disabled).toBe(true)
+  readsFail = true
+  await click('Actualiser')
+  expect(byLabel('Vérifier et récupérer l’événement').disabled).toBe(true)
+  readsFail = false
+  await click('Actualiser')
+  expect(byLabel('Vérifier et récupérer l’événement').disabled).toBe(false)
+})
+
+test('a confirmed validation refusal preserves the incident controls without reporting an unknown result', async () => {
+  vi.mocked(fetch).mockImplementation(async (url, options) => options?.method === 'POST'
+    ? response({ error: 'reason_required' }, 400)
+    : response(String(url).includes('incidentId=') ? incidentDetail() : queue()))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Ouvrir le dossier')
+  await fill('commerce-reason', 'Motif refusé par le serveur')
+  await click('Prendre en charge')
+  expect(byLabel('Prendre en charge').disabled).toBe(false)
+  expect(container.textContent).not.toContain('Résultat à vérifier')
+  expect(container.textContent).not.toContain('Actions suspendues')
+})
+
+test('a queue change clears both the incident and Stripe form context', async () => {
+  vi.mocked(fetch).mockImplementation(async (url) => response(String(url).includes('incidentId=') ? incidentDetail() : queue()))
+  await act(async () => root.render(createElement(CommerceIncidentConsole)))
+  await click('Ouvrir le dossier')
+  await fill('commerce-reason', 'Ancien dossier')
+  await fill('commerce-stripe-reason', 'Ancienne intervention Stripe')
+  await fill('commerce-session', 'cs_previous')
+  await click('Paiements à confirmer')
+  expect(container.querySelector('aside')).toBeNull()
+  expect(container.querySelector<HTMLTextAreaElement>('#commerce-stripe-reason')?.value).toBe('')
+  expect(container.querySelector<HTMLInputElement>('#commerce-session')?.value).toBe('')
+})

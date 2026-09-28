@@ -152,22 +152,24 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('Espace / F1 pour cliquer'), findsOneWidget);
-      expect(find.text('Autres commandes'), findsOneWidget);
+      expect(find.text('Autres commandes'), findsNothing);
       await tester.ensureVisible(
-        find.byKey(const Key('desktop-control-more-keys')),
+        find.byKey(const Key('desktop-control-bindings-editor')),
       );
-      await tester.tap(find.byKey(const Key('desktop-control-more-keys')));
+      await tester.tap(
+        find.byKey(const Key('desktop-control-bindings-editor')),
+      );
       await tester.pumpAndSettle();
       expect(
         find.descendant(
-          of: find.byKey(const Key('desktop-control-command-rightClick')),
+          of: find.byKey(const Key('desktop-control-binding-card-rightClick')),
           matching: find.text('F2'),
         ),
         findsOneWidget,
       );
       expect(
         find.descendant(
-          of: find.byKey(const Key('desktop-control-command-reset')),
+          of: find.byKey(const Key('desktop-control-binding-card-reset')),
           matching: find.text('F9'),
         ),
         findsOneWidget,
@@ -176,7 +178,7 @@ void main() {
   );
 
   testWidgets(
-    'command pill opens the matching editor and reflects the saved replacement',
+    'binding card captures in place and reflects the saved replacement on a narrow window',
     (tester) => onWindows(() async {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1;
@@ -200,12 +202,12 @@ void main() {
           if (call.method == 'setBindings') 'bindings': call.arguments,
         },
       );
-      final overview = find.byKey(const Key('desktop-control-more-keys'));
+      final overview = find.byKey(const Key('desktop-control-bindings-editor'));
       await tester.ensureVisible(overview);
       await tester.tap(overview);
       await tester.pumpAndSettle();
       final pill = find.byKey(
-        const Key('desktop-control-command-key-rightClick-0'),
+        const Key('desktop-control-capture-rightClick-0'),
       );
       expect(
         find.descendant(of: pill, matching: find.text('Ctrl+Espace')),
@@ -236,6 +238,63 @@ void main() {
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);
+    }),
+  );
+
+  testWidgets(
+    'groups shortcuts once and adapts cards without clipping at desktop and narrow widths',
+    (tester) => onWindows(() async {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      for (final width in [400.0, 800.0, 1200.0]) {
+        tester.view.physicalSize = Size(width, 1000);
+        await mount(
+          tester,
+          preferences: _MemoryPreference(),
+          statusForCall: (_) => {
+            'supported': true,
+            'enabled': false,
+            'active': false,
+            'hotkeyRegistered': false,
+          },
+        );
+        final editor = find.byKey(const Key('desktop-control-bindings-editor'));
+        await tester.ensureVisible(editor);
+        // State can survive a window resize; expand only if currently collapsed.
+        if (!tester.widget<ExpansionTile>(editor).controller!.isExpanded) {
+          await tester.tap(editor);
+          await tester.pumpAndSettle();
+        }
+        final first = find.byKey(
+          const Key('desktop-control-binding-card-leftClick'),
+        );
+        final second = find.byKey(
+          const Key('desktop-control-binding-card-rightClick'),
+        );
+        final third = find.byKey(
+          const Key('desktop-control-binding-card-middleClick'),
+        );
+        await tester.ensureVisible(first);
+        final firstRect = tester.getRect(first);
+        final secondRect = tester.getRect(second);
+        final thirdRect = tester.getRect(third);
+        if (width == 400) {
+          expect(secondRect.top, greaterThan(firstRect.top));
+          expect(secondRect.left, firstRect.left);
+        } else {
+          expect(secondRect.top, firstRect.top);
+          expect(secondRect.left, greaterThan(firstRect.left));
+          if (width == 1200) expect(thirdRect.top, firstRect.top);
+        }
+        for (final id in DesktopControlBindings.actionIds) {
+          final card = find.byKey(Key('desktop-control-binding-card-$id'));
+          expect(card, findsOneWidget);
+          expect(tester.getRect(card).right, lessThanOrEqualTo(width));
+        }
+        expect(find.text('Autres commandes'), findsNothing);
+        expect(tester.takeException(), isNull);
+      }
     }),
   );
 
@@ -314,6 +373,9 @@ void main() {
       await tester.ensureVisible(
         find.byKey(const Key('desktop-control-capture-activation')),
       );
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-capture-activation')),
+      );
       await tester.tap(
         find.byKey(const Key('desktop-control-capture-activation')),
       );
@@ -326,7 +388,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(preferences.bindings.activationVirtualKey, 0x47);
       expect(preferences.bindings.activationModifiers, 3);
-      expect(nativeCalls.last.method, 'setBindings');
+      expect(
+        nativeCalls.where((call) => call.method == 'setBindings'),
+        hasLength(2),
+      );
 
       rejectNext = true;
       await tester.ensureVisible(
@@ -342,7 +407,10 @@ void main() {
         'F2',
       );
       expect(find.text('Cette touche est réservée.'), findsOneWidget);
-      expect(nativeCalls.last.method, 'setBindings');
+      expect(
+        nativeCalls.where((call) => call.method == 'setBindings'),
+        hasLength(3),
+      );
     }),
   );
 
@@ -620,11 +688,15 @@ void main() {
         const Key('desktop-control-add-to-sheet-desktop-grid:activation'),
       );
       await tester.ensureVisible(add);
+      await tester.ensureVisible(add);
       await tester.tap(add);
       await tester.pumpAndSettle();
       expect((await repository.list()).single.chord.label, 'Ctrl + Alt + G');
       expect((await repository.list()).single.requiresSelfAssessment, isTrue);
 
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-capture-activation')),
+      );
       await tester.tap(
         find.byKey(const Key('desktop-control-capture-activation')),
       );
@@ -636,6 +708,7 @@ void main() {
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
       await tester.pumpAndSettle();
       expect((await repository.list()).single.chord.label, 'Ctrl + Alt + H');
+      await tester.ensureVisible(add);
       await tester.tap(add);
       await tester.pumpAndSettle();
       final rows = await repository.list();
@@ -673,9 +746,13 @@ void main() {
         const Key('desktop-control-add-to-sheet-desktop-grid:activation'),
       );
       await tester.ensureVisible(add);
+      await tester.ensureVisible(add);
       await tester.tap(add);
       await tester.pumpAndSettle();
       persistence.failWrites = true;
+      await tester.ensureVisible(
+        find.byKey(const Key('desktop-control-capture-activation')),
+      );
       await tester.tap(
         find.byKey(const Key('desktop-control-capture-activation')),
       );

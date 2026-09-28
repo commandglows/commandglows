@@ -3,6 +3,7 @@ import { mutation, query } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import { v } from 'convex/values'
+import { commerceEnvironment } from './commerceEventContract'
 import {
   COMMANDGLOWS_APP_PRODUCT_ID,
   COMMANDGLOWS_FORMATION_PRODUCT_ID,
@@ -86,18 +87,13 @@ function normalizeProductAndPlan(productId: string, plan: string) {
   return { productId: product, plan: normalizedPlan }
 }
 
-function normalizeEnvironment(
-  raw: string | undefined,
-  fallback = 'production'
-) {
-  const environment = raw?.trim().toLowerCase() || fallback
-  if (
-    !new Set(['development', 'preview', 'staging', 'test', 'production']).has(
-      environment
-    )
-  ) {
+function supportEnvironment(requested?: string) {
+  const environment = commerceEnvironment(
+    process.env.SUITE_BRIDGE_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV || ''
+  )
+  if (!environment) throw new Error('environment_not_configured')
+  if (requested !== undefined && commerceEnvironment(requested.trim().toLowerCase()) !== environment)
     throw new Error('environment_not_allowed')
-  }
   return environment
 }
 
@@ -175,6 +171,7 @@ export const searchLicenses = query({
           .withIndex('by_email', (q) => q.eq('email', search.value))
           .take(SEARCH_RESULT_LIMIT + 1),
       ])
+      sourceTruncated = primaryUsers.length > SEARCH_RESULT_LIMIT || identities.length > SEARCH_RESULT_LIMIT
       primaryUsers.forEach((entry) => ids.add(entry._id))
       identities.forEach((entry) => ids.add(entry.globalUserId))
     } else if (search.kind === 'redacted_provider_reference') {
@@ -196,6 +193,7 @@ export const searchLicenses = query({
           q.eq('providerAccountId', search.value)
         )
         .take(SEARCH_RESULT_LIMIT + 1)
+      sourceTruncated = identities.length > SEARCH_RESULT_LIMIT
       identities.forEach((entry) => ids.add(entry.globalUserId))
     }
 
@@ -242,7 +240,7 @@ export const getLicenseDetail = query({
             q.eq('globalUserId', globalUser._id)
           )
           .order('desc')
-          .take(EVENT_RESULT_LIMIT),
+          .take(EVENT_RESULT_LIMIT + 1),
         ctx.db
           .query('productTrialInstallations')
           .withIndex('by_globalUserProduct', (q) =>
@@ -253,6 +251,7 @@ export const getLicenseDetail = query({
     )
 
     return {
+      environment: supportEnvironment(),
       account: {
         globalUserId: globalUser.globalUserId,
         email: maskEmail(globalUser.primaryEmail),
@@ -270,7 +269,7 @@ export const getLicenseDetail = query({
         plan: entry.plan,
         status: entry.status,
         source: entry.source,
-        environment: entry.environment,
+        environment: commerceEnvironment(entry.environment) ?? entry.environment,
         grantedAt: entry.grantedAt ?? null,
         trialStartedAt: entry.trialStartedAt ?? null,
         trialExpiresAt: entry.trialExpiresAt ?? null,
@@ -278,17 +277,17 @@ export const getLicenseDetail = query({
         createdAt: entry.createdAt,
         updatedAt: entry.updatedAt,
       })),
-      events: events.map((entry) => ({
+      events: events.slice(0, EVENT_RESULT_LIMIT).map((entry) => ({
         source: entry.source,
         eventType: entry.eventType,
         productId: entry.productId ?? null,
         status: entry.status,
         reason: entry.reason ?? null,
-        environment: entry.environment,
+        environment: commerceEnvironment(entry.environment) ?? entry.environment,
         createdAt: entry.createdAt,
       })),
       recognizedInstallationCount: installations.length,
-      eventHistoryTruncated: events.length === EVENT_RESULT_LIMIT,
+      eventHistoryTruncated: events.length > EVENT_RESULT_LIMIT,
     }
   },
 })
@@ -313,7 +312,7 @@ export const manualGrant = mutation({
       ctx,
       args.globalUserId.trim()
     )
-    const environment = normalizeEnvironment(args.environment)
+    const environment = supportEnvironment(args.environment)
     const existingRows = await ctx.db
       .query('productEntitlements')
       .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
@@ -322,6 +321,7 @@ export const manualGrant = mutation({
       (entry) =>
         normalizeSuiteProductId(entry.productId) === productId &&
         entry.plan === plan &&
+        commerceEnvironment(entry.environment) === environment &&
         isActiveSuiteEntitlement(entry)
     )
     if (activeEntitlement) {
@@ -334,6 +334,7 @@ export const manualGrant = mutation({
       (entry) =>
         normalizeSuiteProductId(entry.productId) === productId &&
         entry.plan === plan &&
+        commerceEnvironment(entry.environment) === environment &&
         entry.source === SUPPORT_SOURCE
     )
 
@@ -342,6 +343,7 @@ export const manualGrant = mutation({
       ? (await ctx.db.patch(existing._id, {
           status: 'active',
           environment,
+          idempotencyKey: `support:${environment}:${globalUser.globalUserId}:${productId}:${plan}`,
           grantedAt: now,
           updatedAt: now,
         }),
@@ -353,7 +355,7 @@ export const manualGrant = mutation({
           status: 'active',
           source: SUPPORT_SOURCE,
           environment,
-          idempotencyKey: `support:${globalUser.globalUserId}:${productId}:${plan}`,
+          idempotencyKey: `support:${environment}:${globalUser.globalUserId}:${productId}:${plan}`,
           grantedAt: now,
           createdAt: now,
           updatedAt: now,
@@ -362,7 +364,7 @@ export const manualGrant = mutation({
       source: SUPPORT_SOURCE,
       eventType: 'license_support.granted',
       sourceRef: `admin:${admin._id}`,
-      idempotencyKey: `support:grant:${entitlementId}:${now}`,
+      idempotencyKey: `support:grant:${environment}:${entitlementId}:${now}`,
       environment,
       productId,
       globalUserId: globalUser._id,
@@ -394,6 +396,7 @@ export const manualRevoke = mutation({
       ctx,
       args.globalUserId.trim()
     )
+    const environment = supportEnvironment(args.environment)
     const rows = await ctx.db
       .query('productEntitlements')
       .withIndex('by_globalUserId', (q) => q.eq('globalUserId', globalUser._id))
@@ -402,15 +405,12 @@ export const manualRevoke = mutation({
       (entry) =>
         normalizeSuiteProductId(entry.productId) === productId &&
         entry.plan === plan &&
+        commerceEnvironment(entry.environment) === environment &&
         isActiveSuiteEntitlement(entry)
     )
     if (active.length === 0) return { status: 'already_revoked' as const }
 
     const now = Date.now()
-    const environment = normalizeEnvironment(
-      args.environment,
-      active[0].environment
-    )
     await Promise.all(
       active.map((entry) =>
         ctx.db.patch(entry._id, { status: 'revoked', updatedAt: now })
@@ -420,7 +420,7 @@ export const manualRevoke = mutation({
       source: SUPPORT_SOURCE,
       eventType: 'license_support.revoked',
       sourceRef: `admin:${admin._id}`,
-      idempotencyKey: `support:revoke:${globalUser.globalUserId}:${productId}:${plan}:${now}`,
+      idempotencyKey: `support:revoke:${environment}:${globalUser.globalUserId}:${productId}:${plan}:${now}`,
       environment,
       productId,
       globalUserId: globalUser._id,

@@ -93,4 +93,23 @@ describe('licence administration API', () => {
     expect(response.status).toBe(400)
     expect(mockMutation).not.toHaveBeenCalled()
   })
+
+  test('uses the canonical server environment even when the browser supplies production', async () => {
+    const { POST } = await import('@/pages/api/admin/licenses')
+    mockMutation.mockResolvedValueOnce({ status: 'granted' })
+    const response = await POST({ request: new Request('https://commandglows.com/api/admin/licenses', {
+      method: 'POST', headers: { Origin: 'https://commandglows.com', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'grant', globalUserId: 'gu_customer', productId: 'communityglows', plan: 'lifetime_deal', reason: 'Verified recovery', environment: 'production' }),
+    }), locals: locals('gu_admin') } as never)
+    expect(response.status).toBe(200)
+    expect(mockMutation).toHaveBeenCalledWith('licenseAdministration:manualGrant', expect.objectContaining({ environment: 'sandbox' }))
+  })
+
+  test('refuses an invalid server environment before accessing Convex', async () => {
+    process.env.SUITE_BRIDGE_ENVIRONMENT = 'unknown'
+    const { GET } = await import('@/pages/api/admin/licenses')
+    const response = await GET({ request: new Request('https://commandglows.com/api/admin/licenses?query=gu_customer'), locals: locals('gu_admin') } as never)
+    expect(response.status).toBe(503)
+    expect(mockQuery).not.toHaveBeenCalled()
+  })
 })

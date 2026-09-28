@@ -10,11 +10,12 @@ export const POST: APIRoute = async ({ request, url, locals, cookies, redirect }
   // Locale changes only the fixed recovery destination, never authentication identity.
   const form = await request.formData().catch(() => null)
   const recoveryPath = form?.get('lang') === 'fr' ? '/fr/account/link-existing' : '/account/link-existing'
+  const returnTo = form?.get('lang') === 'fr' ? '/fr/dashboard/parametres' : '/dashboard/settings'
   try {
     const config = readAuth0Config(getServerEnv())
     if (url.origin !== config.origin) throw new Error('auth_origin_mismatch')
     const { client, authority } = siteBackend()
-    const login = await beginAuth0Login(config, '/dashboard/parametres', clerkId)
+    const login = await beginAuth0Login(config, returnTo, clerkId)
     await client.mutation('siteSessions:register' as never, { ...authority, attemptId: login.loginAttemptId, expiresAt: Date.now() + AUTH_TRANSACTION_SECONDS * 1000 } as never)
     cookies.set(AUTH_TRANSACTION_COOKIE, login.transactionCookie, auth0CookieOptions(config, AUTH_TRANSACTION_SECONDS))
     return redirect(login.authorizationUrl, 303)

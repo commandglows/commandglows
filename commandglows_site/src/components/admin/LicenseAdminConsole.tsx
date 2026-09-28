@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
+import { commerceEnvironment } from '../../../convex/commerceEventContract'
 
 type EntitlementSummary = {
   productId: string
   plan: string
   status: string
   source: string
+  environment?: string
   grantedAt: number | null
   trialExpiresAt: number | null
   updatedAt: number
@@ -15,10 +17,14 @@ type AccessEventSummary = {
   productId: string | null
   status: string
   reason: string | null
+  environment?: string
   createdAt: number
 }
 
 type LicenseAccount = {
+  environment?: string
+  identities?: { provider: string; providerReference: string; email: string | null; environment: string | null }[]
+  eventHistoryTruncated?: boolean
   account: {
     globalUserId: string
     email: string | null
@@ -78,32 +84,53 @@ export default function LicenseAdminConsole() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [forbidden, setForbidden] = useState(false)
+  const [sessionExpired, setSessionExpired] = useState(false)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [searchInfo, setSearchInfo] = useState({ ambiguous: false, truncated: false })
+  const [verificationTarget, setVerificationTarget] = useState<string | null>(null)
+  const requestSequence = useRef(0)
+  const mutationPending = useRef(false)
 
   async function loadDetail(globalUserId: string) {
+    const sequence = ++requestSequence.current
+    setDetailLoading(true)
+    setReason('')
     setSelected(null)
-    const response = await fetch(
-      `/api/admin/licenses?globalUserId=${encodeURIComponent(globalUserId)}`,
-      { headers: { Accept: 'application/json' } },
-    )
-    if (response.status === 403) {
-      setForbidden(true)
-      return
-    }
-    if (!response.ok) throw new Error('detail_failed')
-    const detail = (await response.json()) as LicenseAccount
-    setSelected(detail)
-    const existing = detail.entitlements.find((entry) => Object.prototype.hasOwnProperty.call(supportPlans, entry.productId))
-    if (existing && (supportPlans[existing.productId as SupportProduct] as readonly string[]).includes(existing.plan)) {
-      setProductId(existing.productId as SupportProduct)
-      setPlan(existing.plan)
-    } else {
-      setProductId('communityglows')
-      setPlan('lifetime_deal')
+    try {
+      const response = await fetch(
+        `/api/admin/licenses?globalUserId=${encodeURIComponent(globalUserId)}`,
+        { headers: { Accept: 'application/json' } },
+      )
+      if (sequence !== requestSequence.current) return
+      if (response.status === 401 || response.status === 403) {
+        setSessionExpired(response.status === 401)
+        setForbidden(true)
+        return
+      }
+      if (!response.ok) throw new Error('detail_failed')
+      const detail = (await response.json()) as LicenseAccount
+      if (sequence !== requestSequence.current) return
+      setSelected(detail)
+      setVerificationTarget(null)
+      const existing = detail.entitlements.find((entry) => (!detail.environment || commerceEnvironment(entry.environment ?? '') === commerceEnvironment(detail.environment)) && Object.prototype.hasOwnProperty.call(supportPlans, entry.productId))
+      if (existing && (supportPlans[existing.productId as SupportProduct] as readonly string[]).includes(existing.plan)) {
+        setProductId(existing.productId as SupportProduct)
+        setPlan(existing.plan)
+      } else {
+        setProductId('communityglows')
+        setPlan('lifetime_deal')
+      }
+    } catch (error) {
+      if (sequence === requestSequence.current) throw error
+    } finally {
+      if (sequence === requestSequence.current) setDetailLoading(false)
     }
   }
 
   async function search(event: { preventDefault(): void }) {
     event.preventDefault()
+    if (mutationPending.current || verificationTarget) return
+    const sequence = ++requestSequence.current
     const normalized = query.trim()
     if (normalized.length < 3) {
       setMessage('Saisissez un email exact ou un identifiant reconnu.')
@@ -114,22 +141,28 @@ export default function LicenseAdminConsole() {
     setMessage(null)
     setSelected(null)
     setResults([])
+    setReason('')
+    setSearchInfo({ ambiguous: false, truncated: false })
     try {
       const response = await fetch(
         `/api/admin/licenses?query=${encodeURIComponent(normalized)}`,
         { headers: { Accept: 'application/json' } },
       )
-      if (response.status === 403) {
+      if (sequence !== requestSequence.current) return
+      if (response.status === 401 || response.status === 403) {
+        setSessionExpired(response.status === 401)
         setForbidden(true)
         setResults([])
         return
       }
       if (!response.ok) throw new Error('search_failed')
-      const data = (await response.json()) as { results: SearchResult[] }
+      const data = (await response.json()) as { results: SearchResult[]; ambiguous?: boolean; truncated?: boolean }
+      if (sequence !== requestSequence.current) return
+      setSearchInfo({ ambiguous: !!data.ambiguous, truncated: !!data.truncated })
       setResults(data.results)
       setSelected(null)
       if (data.results.length === 0) setMessage('Aucun compte correspondant.')
-      if (data.results.length === 1) await loadDetail(data.results[0].globalUserId)
+      if (data.results.length === 1 && !data.ambiguous && !data.truncated) await loadDetail(data.results[0].globalUserId)
     } catch {
       setMessage('La recherche est momentanément indisponible.')
     } finally {
@@ -138,12 +171,15 @@ export default function LicenseAdminConsole() {
   }
 
   async function applyAction(action: 'grant' | 'revoke') {
+    if (loading || detailLoading || verificationTarget || mutationPending.current) return
     if (!selected || reason.trim().length < 3) {
       setMessage('Ajoutez un motif support explicite.')
       return
     }
 
     setLoading(true)
+    mutationPending.current = true
+    const target = selected.account.globalUserId
     setMessage(null)
     try {
       const response = await fetch('/api/admin/licenses', {
@@ -157,8 +193,13 @@ export default function LicenseAdminConsole() {
           reason: reason.trim(),
         }),
       })
-      if (response.status === 403) {
+      if (response.status === 401 || response.status === 403) {
+        setSessionExpired(response.status === 401)
         setForbidden(true)
+        return
+      }
+      if (!response.ok && response.status >= 400 && response.status < 500) {
+        setMessage('Action refusée. Vérifiez les informations avant une nouvelle tentative.')
         return
       }
       if (!response.ok) throw new Error('action_failed')
@@ -175,14 +216,18 @@ export default function LicenseAdminConsole() {
               ? 'Accès révoqué et journalisé.'
               : 'Réponse reçue, mais résultat inconnu. Vérifiez le détail et le journal avant une autre action.'
       setMessage(outcome)
+      setVerificationTarget(target)
+      if (!['already_active', 'already_revoked', 'granted', 'revoked'].includes(result.status ?? '')) return
       try {
-        await loadDetail(selected.account.globalUserId)
+        await loadDetail(target)
       } catch {
         setMessage(`${outcome} Le détail n’a pas pu être actualisé ; rechargez-le avant toute autre action.`)
       }
     } catch {
+      setVerificationTarget(target)
       setMessage('Résultat inconnu. Actualisez le détail et le journal avant toute nouvelle tentative.')
     } finally {
+      mutationPending.current = false
       setLoading(false)
     }
   }
@@ -194,10 +239,10 @@ export default function LicenseAdminConsole() {
         role="alert"
       >
         <h2 className="text-dashboard-text-primary text-lg font-bold">
-          Accès administrateur requis
+          {sessionExpired ? 'Connexion requise' : 'Accès administrateur requis'}
         </h2>
         <p className="text-dashboard-text-muted mt-2 text-sm">
-          Cette console est réservée aux comptes administrateurs CommandGlows.
+          {sessionExpired ? 'Votre session a expiré. Reconnectez-vous puis rechargez la console.' : 'Cette console est réservée aux comptes administrateurs CommandGlows.'}
         </p>
       </section>
     )
@@ -227,7 +272,7 @@ export default function LicenseAdminConsole() {
           />
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || detailLoading || !!verificationTarget}
             className="workspace-button workspace-button-primary disabled:opacity-60"
           >
             {loading ? 'Recherche…' : 'Rechercher'}
@@ -240,6 +285,13 @@ export default function LicenseAdminConsole() {
           {message}
         </p>
       )}
+      {verificationTarget && (
+        <button type="button" disabled={loading || detailLoading} className="workspace-button disabled:opacity-60" onClick={() => void loadDetail(verificationTarget).then(() => setMessage('Détail et journal relus. Vérifiez l’état du droit avant toute intervention.')).catch(() => setMessage('La relecture est indisponible. Les actions restent verrouillées.'))}>
+          Relire le détail et le journal
+        </button>
+      )}
+      {searchInfo.ambiguous && <p role="status">Plusieurs comptes correspondent. Vérifiez l’identifiant et les identités avant de choisir un client.</p>}
+      {searchInfo.truncated && <p role="status">Recherche limitée : les résultats ne sont pas exhaustifs. Utilisez un email exact ou un identifiant de compte.</p>}
 
       {results.length > 0 && (
         <section aria-labelledby="license-results-title">
@@ -251,6 +303,7 @@ export default function LicenseAdminConsole() {
               <button
                 key={account.globalUserId}
                 type="button"
+                disabled={loading || !!verificationTarget}
                 onClick={() => void loadDetail(account.globalUserId).catch(() => setMessage('Le détail est momentanément indisponible. Réessayez la recherche.'))}
                 className="border-dashboard-border bg-dashboard-bg-elevated hover:bg-dashboard-bg-hover focus-visible:outline-navbar-ring rounded-2xl border p-4 text-left shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
               >
@@ -275,12 +328,14 @@ export default function LicenseAdminConsole() {
                 {selected.account.email || selected.account.globalUserId}
               </h2>
               <p className="text-dashboard-text-muted mt-1 text-sm">{selected.account.globalUserId}</p>
+              <p className="text-dashboard-text-muted mt-1 text-sm">Environnement des interventions : {selected.environment || 'Non renseigné'}</p>
             </div>
             <div className="bg-dashboard-bg-subtle rounded-xl px-4 py-3">
               <span className="text-dashboard-text-muted block text-xs">Installations reconnues</span>
               <strong className="text-dashboard-text-primary text-xl">{selected.recognizedInstallationCount}</strong>
             </div>
           </div>
+          {selected.identities && <ul className="text-dashboard-text-muted mt-4 text-sm" aria-label="Identités reconnues">{selected.identities.map((identity, index) => <li key={`${identity.provider}:${identity.providerReference}:${index}`}>{identity.provider} · {identity.providerReference} · {identity.email || 'Email non renseigné'} · {identity.environment || 'Environnement non renseigné'}</li>)}</ul>}
 
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             {selected.entitlements.map((entitlement) => (
@@ -288,7 +343,7 @@ export default function LicenseAdminConsole() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-dashboard-text-primary font-bold">{entitlement.productId}</h3>
-                    <p className="text-dashboard-text-muted text-sm">{entitlement.plan} · {entitlement.source}</p>
+                    <p className="text-dashboard-text-muted text-sm">{entitlement.plan} · {entitlement.source} · {entitlement.environment || 'Environnement non renseigné'}</p>
                   </div>
                   <span className="border-dashboard-border text-dashboard-text-primary rounded-full border px-3 py-1 text-xs font-bold">{statusLabel(entitlement.status)}</span>
                 </div>
@@ -338,10 +393,10 @@ export default function LicenseAdminConsole() {
               maxLength={500}
             />
             <div className="mt-3 flex flex-wrap gap-3">
-              <button type="button" disabled={loading} onClick={() => void applyAction('grant')} className="workspace-button workspace-button-primary disabled:opacity-60">
+              <button type="button" disabled={loading || detailLoading || !!verificationTarget} onClick={() => void applyAction('grant')} className="workspace-button workspace-button-primary disabled:opacity-60">
                 Accorder l’accès
               </button>
-              <button type="button" disabled={loading} onClick={() => void applyAction('revoke')} className="workspace-button disabled:opacity-60">
+              <button type="button" disabled={loading || detailLoading || !!verificationTarget} onClick={() => void applyAction('revoke')} className="workspace-button disabled:opacity-60">
                 Retirer l’accès
               </button>
             </div>
@@ -349,6 +404,7 @@ export default function LicenseAdminConsole() {
 
           <div className="mt-7">
             <h3 className="text-dashboard-text-primary font-bold">Historique récent</h3>
+            {selected.eventHistoryTruncated && <p className="text-dashboard-text-muted mt-2 text-sm">Seuls les 50 événements les plus récents sont affichés. Cet historique n’est pas exhaustif.</p>}
             {selected.events.length === 0 ? (
               <p className="text-dashboard-text-muted mt-2 text-sm">Aucun événement récent.</p>
             ) : (
@@ -357,7 +413,7 @@ export default function LicenseAdminConsole() {
                   <li key={`${event.eventType}:${event.createdAt}`} className="border-dashboard-border border-l-2 py-2 pl-4">
                     <strong className="text-dashboard-text-primary block text-sm">{event.eventType}</strong>
                     <span className="text-dashboard-text-muted text-xs">
-                      {dateLabel(event.createdAt)} · {event.status}{event.reason ? ` · ${event.reason}` : ''}
+                      {dateLabel(event.createdAt)} · {event.status} · {event.environment || 'Environnement non renseigné'}{event.reason ? ` · ${event.reason}` : ''}
                     </span>
                   </li>
                 ))}

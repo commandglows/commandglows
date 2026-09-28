@@ -1,12 +1,16 @@
 ---
+import { getSafeAuthRedirectPath } from '@/utils/courseGating'
 interface Props { lang?: 'en' | 'fr' }
 const { lang = 'en' } = Astro.props
-const signInPath = lang === 'fr' ? '/fr/signin' : '/signin'
+const next = getSafeAuthRedirectPath(Astro.url.pathname + Astro.url.search, lang === 'fr' ? '/fr/dashboard/' : '/dashboard')
+const signInPath = `${lang === 'fr' ? '/fr/signin' : '/signin'}?${new URLSearchParams({ next })}`
 const userId = Astro.locals.siteAuth?.().userId ?? null
 ---
 <div data-site-session-guard data-user-id={userId ?? ''} data-sign-in-path={signInPath}>
   <section data-session-recovery hidden role="alert" class="mx-auto max-w-lg px-6 py-12">
     <p>{lang === 'fr' ? 'Votre connexion a changé ou ne peut pas être vérifiée. Reconnectez-vous pour continuer.' : 'Your session has changed or cannot be verified. Sign in again to continue.'}</p>
+    <button type="button" data-session-retry class="workspace-button mt-4">{lang === 'fr' ? 'Réessayer la vérification' : 'Retry verification'}</button>
+    <button type="button" data-session-reload hidden class="workspace-button mt-4">{lang === 'fr' ? 'Recharger la page' : 'Reload the page'}</button>
     <a href={signInPath} class="underline">{lang === 'fr' ? 'Revenir à la connexion' : 'Return to sign-in'}</a>
   </section>
 </div>

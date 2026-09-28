@@ -37,9 +37,6 @@ class _DesktopControlSettingsSectionState
   String? _captureFeedback;
   final FocusNode _captureFocus = FocusNode();
   final ExpansibleController _bindingsEditorController = ExpansibleController();
-  final Map<String, GlobalKey> _actionAnchors = {
-    for (final id in DesktopControlBindings.actionLabels.keys) id: GlobalKey(),
-  };
   static const _editorExpansionDuration = Duration(milliseconds: 200);
 
   DesktopControlPreference get _preferences =>
@@ -584,151 +581,123 @@ class _DesktopControlSettingsSectionState
     child: Text(_captureTarget == target ? 'Appuyez…' : label),
   );
 
-  Future<void> _openBindingEditor(String id, int slot) async {
-    _bindingsEditorController.expand();
-    // Wait until the expansion has laid out the destination before scrolling.
-    await Future<void>.delayed(_editorExpansionDuration);
-    if (!mounted) return;
-    if (_busy) return;
-    _capture('$id:$slot');
-    await WidgetsBinding.instance.endOfFrame;
-    if (!mounted) return;
-    final destination = _actionAnchors[id]?.currentContext;
-    if (destination == null || !destination.mounted) return;
-    await Scrollable.ensureVisible(
-      destination,
-      alignment: 0.25,
-      duration: _editorExpansionDuration,
-    );
-  }
-
-  Widget _commandCard(String id) => Card(
-    key: Key('desktop-control-command-$id'),
-    margin: EdgeInsets.zero,
-    child: Padding(
-      padding: AppInsets.compactCard,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(DesktopControlBindings.actionLabels[id]!),
-          AppGaps.x1,
-          Wrap(
-            spacing: AppSpacing.x1,
-            runSpacing: AppSpacing.x1,
-            children: [
-              for (var i = 0; i < (_bindings.actions[id]?.length ?? 0); i++)
-                Tooltip(
-                  message: 'Modifier ce raccourci',
-                  child: OutlinedButton(
-                    key: Key('desktop-control-command-key-$id-$i'),
-                    onPressed: _busy
-                        ? null
-                        : () => unawaited(_openBindingEditor(id, i)),
-                    child: Text(_bindings.actions[id]![i].displayLabel),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-
-  Widget _commandGroup(String title, List<String> actions) => Padding(
+  Widget _bindingGroup(String title, List<Widget> cards) => Padding(
     padding: AppInsets.compactCard,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(title, style: Theme.of(context).textTheme.titleSmall),
         AppGaps.x2,
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final columns = constraints.maxWidth >= AppSpacing.x20 * 4 ? 2 : 1;
-            final width =
-                (constraints.maxWidth - AppSpacing.x2 * (columns - 1)) /
-                columns;
-            return Wrap(
-              spacing: AppSpacing.x2,
-              runSpacing: AppSpacing.x2,
-              children: [
-                for (final id in actions)
-                  SizedBox(width: width, child: _commandCard(id)),
-              ],
-            );
-          },
+        AppActionRail(
+          minActionWidth: MediaQuery.textScalerOf(context).scale(280),
+          children: cards,
         ),
       ],
     ),
   );
 
-  Widget _bindingActionTile(String id) => ListTile(
-    key: _actionAnchors[id],
-    title: Text(DesktopControlBindings.actionLabels[id]!),
-    subtitle: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _bindingCard({
+    required String id,
+    required String title,
+    String? description,
+    required Widget controls,
+    Widget? reset,
+    Widget? feedback,
+    Widget? extra,
+  }) => Card(
+    key: Key('desktop-control-binding-card-$id'),
+    margin: EdgeInsets.zero,
+    child: Padding(
+      padding: AppInsets.compactCard,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              AppGaps.x1,
+              Flexible(
+                flex: 5,
+                child: Align(alignment: Alignment.centerRight, child: controls),
+              ),
+              ?reset,
+            ],
+          ),
+          if (description != null) ...[AppGaps.x1, Text(description)],
+          if (extra != null) ...[AppGaps.x1, extra],
+          if (feedback != null) ...[AppGaps.x1, feedback],
+        ],
+      ),
+    ),
+  );
+
+  Widget _bindingActionCard(String id) => _bindingCard(
+    id: id,
+    title: DesktopControlBindings.actionLabels[id]!,
+    controls: Wrap(
+      alignment: WrapAlignment.end,
+      spacing: AppSpacing.x1,
+      runSpacing: AppSpacing.x1,
       children: [
-        Wrap(
-          spacing: 6,
-          children: [
-            for (var i = 0; i < (_bindings.actions[id]?.length ?? 0); i++)
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  _keyButton('$id:$i', _bindings.actions[id]![i].displayLabel),
-                  _sheetButton(
-                    sourceId: 'desktop-grid:$id:$i',
-                    description:
-                        'Grille ouverte : ${DesktopControlBindings.actionLabels[id]!}',
-                    label: _bindings.actions[id]![i].displayLabel,
-                  ),
-                  if (id == 'leftClick' && _bindings.actions[id]!.length > 1)
-                    IconButton(
-                      tooltip:
-                          'Retirer ${_bindings.actions[id]![i].displayLabel}',
-                      onPressed: _busy
-                          ? null
-                          : () {
-                              final keys = [..._bindings.actions[id]!]
-                                ..removeAt(i);
-                              unawaited(
-                                _saveBindings(
-                                  _bindings.copyWith(
-                                    actions: {..._bindings.actions, id: keys},
-                                  ),
-                                ),
-                              );
-                            },
-                      icon: const Icon(Icons.remove_circle_outline),
-                    ),
-                ],
+        for (var i = 0; i < (_bindings.actions[id]?.length ?? 0); i++)
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _keyButton('$id:$i', _bindings.actions[id]![i].displayLabel),
+              _sheetButton(
+                sourceId: 'desktop-grid:$id:$i',
+                description:
+                    'Grille ouverte : ${DesktopControlBindings.actionLabels[id]!}',
+                label: _bindings.actions[id]![i].displayLabel,
               ),
-            if (id == 'leftClick')
-              TextButton.icon(
-                onPressed: _busy || (_bindings.actions[id]?.length ?? 0) >= 2
-                    ? null
-                    : () =>
-                          _capture('$id:${_bindings.actions[id]?.length ?? 0}'),
-                icon: const Icon(Icons.add),
-                label: const Text('Ajouter une touche'),
-              ),
-          ],
-        ),
-        if (_captureTarget?.startsWith('$id:') ?? false)
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.x1),
-            child: Text(
-              _captureFeedback ?? 'Saisie en cours…',
-              key: Key('desktop-control-capture-feedback-$id'),
-              style: TextStyle(
-                color: _captureFeedback == null
-                    ? null
-                    : Theme.of(context).colorScheme.error,
-              ),
-            ),
+              if (id == 'leftClick' && _bindings.actions[id]!.length > 1)
+                IconButton(
+                  tooltip: 'Retirer ${_bindings.actions[id]![i].displayLabel}',
+                  onPressed: _busy
+                      ? null
+                      : () {
+                          final keys = [..._bindings.actions[id]!]..removeAt(i);
+                          unawaited(
+                            _saveBindings(
+                              _bindings.copyWith(
+                                actions: {..._bindings.actions, id: keys},
+                              ),
+                            ),
+                          );
+                        },
+                  icon: const Icon(Icons.remove_circle_outline),
+                ),
+            ],
           ),
       ],
     ),
-    trailing: IconButton(
+    extra: id == 'leftClick' && (_bindings.actions[id]?.length ?? 0) < 2
+        ? TextButton.icon(
+            onPressed: _busy
+                ? null
+                : () => _capture('$id:${_bindings.actions[id]?.length ?? 0}'),
+            icon: const Icon(Icons.add),
+            label: const Text('Ajouter une touche'),
+          )
+        : null,
+    feedback: (_captureTarget?.startsWith('$id:') ?? false)
+        ? Text(
+            _captureFeedback ?? 'Saisie en cours…',
+            key: Key('desktop-control-capture-feedback-$id'),
+            style: TextStyle(
+              color: _captureFeedback == null
+                  ? null
+                  : Theme.of(context).colorScheme.error,
+            ),
+          )
+        : null,
+    reset: IconButton(
       tooltip: 'Réinitialiser cette action',
       onPressed: _busy ? null : () => _resetAction(id),
       icon: const Icon(Icons.restart_alt),
@@ -748,7 +717,9 @@ class _DesktopControlSettingsSectionState
       ),
       leading: const Icon(Icons.keyboard_alt_outlined),
       title: const Text('Touches et raccourcis'),
-      subtitle: const Text('Raccourcis locaux à cet appareil'),
+      subtitle: const Text(
+        'Cliquez sur une touche pour la modifier · Enregistré sur cet appareil',
+      ),
       children: [
         const Padding(
           padding: EdgeInsets.symmetric(
@@ -756,101 +727,92 @@ class _DesktopControlSettingsSectionState
             vertical: AppSpacing.x1,
           ),
           child: Text(
-            'Une touche seule ou une combinaison Ctrl, Alt ou Maj est acceptée. Les touches de la grille restent réservées sans modificateur. Les raccourcis avec Win sont réservés au système. Échap annule la saisie des raccourcis de grille et ferme toujours la grille. Utilisez le bouton Annuler pour la séquence de fermeture d’application.',
+            'Cliquez sur une touche, puis saisissez son remplacement. Ctrl, Alt et Maj sont acceptés ; Win et les lettres de la grille sans modificateur sont réservés. Échap annule la saisie et ferme la grille. Pour la séquence de fermeture d’application, utilisez Annuler la saisie.',
           ),
         ),
-        const ListTile(title: Text('Activation'), dense: true),
-        ListTile(
-          dense: false,
-          visualDensity: VisualDensity.standard,
-          minVerticalPadding: 8,
-          title: const Text('Activation'),
-          subtitle: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Affiche ou ferme la grille'),
-              if (_captureTarget == 'activation')
-                Text(
-                  _captureFeedback ?? 'Saisie en cours…',
-                  key: const Key('desktop-control-capture-feedback-activation'),
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _keyButton('activation', _activationLabel),
-              _sheetButton(
-                sourceId: 'desktop-grid:activation',
-                description: 'Afficher ou fermer la grille du bureau',
-                label: _activationLabel,
-                globalHotkey: true,
-              ),
-            ],
-          ),
-        ),
-        ListTile(
-          dense: false,
-          visualDensity: VisualDensity.standard,
-          minVerticalPadding: 8,
-          title: const Text('Fermer l’application active'),
-          subtitle: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Envoie une demande de fermeture à la fenêtre au premier plan. Deux touches dans les 800 ms.',
-              ),
-              if (_captureTarget == 'closeAppSequence') ...[
-                Text(_captureFeedback ?? 'Capture en cours…'),
-                TextButton.icon(
-                  key: const Key('desktop-control-close-app-cancel-capture'),
-                  onPressed: _cancelCapture,
-                  icon: const Icon(Icons.close),
-                  label: const Text('Annuler la saisie'),
+        _bindingGroup('Commandes globales', [
+          _bindingCard(
+            id: 'activation',
+            title: 'Afficher ou fermer la grille',
+            controls: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                _keyButton('activation', _activationLabel),
+                _sheetButton(
+                  sourceId: 'desktop-grid:activation',
+                  description: 'Afficher ou fermer la grille du bureau',
+                  label: _activationLabel,
+                  globalHotkey: true,
                 ),
               ],
-            ],
+            ),
+            feedback: _captureTarget == 'activation'
+                ? Text(
+                    _captureFeedback ?? 'Saisie en cours…',
+                    key: const Key(
+                      'desktop-control-capture-feedback-activation',
+                    ),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  )
+                : null,
           ),
-          trailing: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              OutlinedButton(
-                key: const Key('desktop-control-close-app-sequence'),
-                onPressed: _busy ? null : () => _capture('closeAppSequence'),
-                child: Text(
-                  _captureTarget == 'closeAppSequence'
-                      ? 'Appuyez…'
-                      : _closeAppSequenceLabel,
+          _bindingCard(
+            id: 'closeAppSequence',
+            title: 'Fermer l’application active',
+            description:
+                'Demande la fermeture de la fenêtre au premier plan. Deux touches dans les 800 ms.',
+            controls: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                OutlinedButton(
+                  key: const Key('desktop-control-close-app-sequence'),
+                  onPressed: _busy ? null : () => _capture('closeAppSequence'),
+                  child: Text(
+                    _captureTarget == 'closeAppSequence'
+                        ? 'Appuyez…'
+                        : _closeAppSequenceLabel,
+                  ),
                 ),
-              ),
-              IconButton(
-                key: const Key('desktop-control-close-app-reset'),
-                tooltip: 'Rétablir Échap, Échap',
-                onPressed: _busy || _captureTarget == 'closeAppSequence'
-                    ? null
-                    : () => unawaited(
-                        _saveBindings(
-                          _bindings.copyWith(
-                            closeAppSequence: DesktopControlBindings.defaults()
-                                .closeAppSequence,
-                          ),
+                if (_captureTarget == 'closeAppSequence')
+                  TextButton.icon(
+                    key: const Key('desktop-control-close-app-cancel-capture'),
+                    onPressed: _cancelCapture,
+                    icon: const Icon(Icons.close),
+                    label: const Text('Annuler la saisie'),
+                  ),
+              ],
+            ),
+            reset: IconButton(
+              key: const Key('desktop-control-close-app-reset'),
+              tooltip: 'Rétablir Échap, Échap',
+              onPressed: _busy || _captureTarget == 'closeAppSequence'
+                  ? null
+                  : () => unawaited(
+                      _saveBindings(
+                        _bindings.copyWith(
+                          closeAppSequence: DesktopControlBindings.defaults()
+                              .closeAppSequence,
                         ),
                       ),
-                icon: const Icon(Icons.restart_alt),
-              ),
-            ],
+                    ),
+              icon: const Icon(Icons.restart_alt),
+            ),
+            feedback: _captureTarget == 'closeAppSequence'
+                ? Text(_captureFeedback ?? 'Capture en cours…')
+                : null,
           ),
-        ),
+        ]),
         for (final group in const <String, List<String>>{
-          'Actions du pointeur': [
+          'Clics et glisser-déposer': [
             'leftClick',
             'rightClick',
             'middleClick',
             'dragStart',
             'dragRelease',
+          ],
+          'Défilement et déplacement': [
             'wheelUp',
             'wheelDown',
             'nudgeLeft',
@@ -858,18 +820,18 @@ class _DesktopControlSettingsSectionState
             'nudgeUp',
             'nudgeDown',
           ],
-          'Navigation': [
+          'Navigation dans la grille': [
             'back',
             'reset',
             'coordinateView',
-            'previousMonitor',
-            'nextMonitor',
+            'toggleScope',
+            'close',
           ],
-          'Portée': ['toggleScope', 'close'],
-        }.entries) ...[
-          ListTile(title: Text(group.key), dense: true),
-          for (final id in group.value) _bindingActionTile(id),
-        ],
+          'Écrans': ['previousMonitor', 'nextMonitor'],
+        }.entries)
+          _bindingGroup(group.key, [
+            for (final id in group.value) _bindingActionCard(id),
+          ]),
         TextButton.icon(
           key: const Key('desktop-control-bindings-reset-all'),
           onPressed: _busy
@@ -946,38 +908,6 @@ class _DesktopControlSettingsSectionState
                   '3. Appuyez sur la lettre affichée dans la case visée, répétez pour affiner, puis sur ${_keysFor('leftClick')} pour cliquer.',
             ),
             _bindingsEditor(),
-            ExpansionTile(
-              key: const Key('desktop-control-more-keys'),
-              leading: const Icon(Icons.tune_outlined),
-              title: const Text('Autres commandes'),
-              subtitle: const Text('Cliquez sur une touche pour la modifier'),
-              children: [
-                _commandGroup('Se repérer', [
-                  'back',
-                  'reset',
-                  'coordinateView',
-                  'toggleScope',
-                  'close',
-                ]),
-                _commandGroup('Agir sur la cible', [
-                  'leftClick',
-                  'rightClick',
-                  'middleClick',
-                  'dragStart',
-                  'dragRelease',
-                  'wheelUp',
-                  'wheelDown',
-                  'nudgeLeft',
-                  'nudgeRight',
-                  'nudgeUp',
-                  'nudgeDown',
-                ]),
-                _commandGroup('Changer d’écran', [
-                  'previousMonitor',
-                  'nextMonitor',
-                ]),
-              ],
-            ),
           ],
           ListTile(
             leading: Icon(

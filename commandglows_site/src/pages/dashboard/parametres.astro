@@ -14,13 +14,4 @@ if (auth.unavailable) {
 
 <DashboardLayout title="Paramètres - Dashboard" currentPath="/dashboard/parametres" lang="fr">
   <AccountSettings auth={auth} lang="fr" />
-  {!auth.unavailable && auth.provider === 'clerk' && (
-    <section class="mt-6 rounded-2xl border border-content-border bg-content-bg-elevated p-6 dark:border-content-border-strong">
-      <h2 class="text-content-text-primary text-lg font-semibold">Liaison du compte</h2>
-      <p class="text-content-text-secondary mt-2">Reliez ce compte à la nouvelle connexion pour conserver vos achats et vos accès.</p>
-      <form method="post" action="/api/auth/link" class="mt-4">
-        <button type="submit" class="brand-text-magenta min-h-11 rounded-lg border border-content-border px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">Relier mon compte à Auth0</button>
-      </form>
-    </section>
-  )}
 </DashboardLayout>

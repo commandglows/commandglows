@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro'
 import { ConvexHttpClient } from 'convex/browser'
 import { getServerEnv } from '@/lib/serverEnv'
+import { commerceEnvironment } from '../../../../convex/commerceEventContract'
 
 export const prerender = false
 
@@ -13,7 +14,7 @@ function adminError(error: unknown) {
   if (/admin_forbidden|bridge_secret_mismatch/.test(message)) {
     return json({ status: 'forbidden', error: 'admin_required' }, 403)
   }
-  if (/search_|reason_|product_not_allowed|plan_not_allowed|global_user_not_found/.test(message)) {
+  if (/search_|reason_|product_not_allowed|plan_not_allowed|global_user_not_found|environment_not_allowed/.test(message)) {
     return json({ status: 'invalid', error: 'invalid_request' }, 400)
   }
   return json({ status: 'error', error: 'license_admin_unavailable' }, 500)
@@ -35,7 +36,9 @@ function getAuthority(locals: App.Locals) {
   }
 
   const env = getServerEnv()
+  const environment = commerceEnvironment(env.SUITE_BRIDGE_ENVIRONMENT || env.VERCEL_ENV || process.env.NODE_ENV || '')
   if (
+    !environment ||
     !env.PUBLIC_CONVEX_URL ||
     env.PUBLIC_CONVEX_URL === 'https://PLACEHOLDER.convex.cloud' ||
     !env.SUITE_BRIDGE_CONVEX_SECRET
@@ -50,7 +53,7 @@ function getAuthority(locals: App.Locals) {
     ok: true as const,
     actorGlobalUserId: auth.userId,
     bridgeSecret: env.SUITE_BRIDGE_CONVEX_SECRET,
-    environment: env.SUITE_BRIDGE_ENVIRONMENT || env.VERCEL_ENV || 'development',
+    environment,
     convex: new ConvexHttpClient(env.PUBLIC_CONVEX_URL),
   }
 }

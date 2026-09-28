@@ -10,6 +10,8 @@ export function installSiteSessionGuard(options: {
   const surface = doc.querySelector<HTMLElement>('main')
   const recovery = doc.querySelector<HTMLElement>('[data-session-recovery]')
   const checking = doc.querySelector<HTMLElement>('[data-session-checking-status]')
+  const retry = doc.querySelector<HTMLButtonElement>('[data-session-retry]')
+  const reload = doc.querySelector<HTMLButtonElement>('[data-session-reload]')
   const container = surface?.parentElement
   const originalMinHeight = container?.style.minHeight ?? ''
   let generation = 0, disposed = false, blocked = false, controller: AbortController | undefined
@@ -21,11 +23,13 @@ export function installSiteSessionGuard(options: {
     surface.hidden = true
     if (checking) checking.hidden = false
   }
-  const invalidate = () => { generation++; controller?.abort(); hide() }
-  const recover = () => {
-    blocked = true; invalidate()
+  const invalidate = () => { generation++; controller?.abort(); pending = false; hide() }
+  const recover = (sessionChanged = true) => {
+    blocked = sessionChanged; invalidate()
     if (checking) checking.hidden = true
     if (expectedUserId && recovery) recovery.hidden = false
+    if (retry) retry.hidden = sessionChanged
+    if (reload) reload.hidden = !sessionChanged
   }
   const check = async () => {
     if (!expectedUserId || disposed || blocked || pending || doc.visibilityState === 'hidden') return
@@ -36,15 +40,16 @@ export function installSiteSessionGuard(options: {
     try {
       const value = await options.fetchSession(controller.signal)
       if (disposed || blocked || current !== generation) return
-      if (!value || typeof value !== 'object' || !('userId' in value)) { recover(); return }
+      if (!value || typeof value !== 'object' || !('userId' in value)) { recover(false); return }
       const id = value.userId
       if (id === null) { blocked = true; options.signIn(); return }
-      if (typeof id !== 'string' || !id) { recover(); return }
+      if (typeof id !== 'string' || !id) { recover(false); return }
       if (id !== expectedUserId) { blocked = true; options.reload(); return }
       if (surface) surface.hidden = false
+      if (recovery) recovery.hidden = true
       if (checking) checking.hidden = true
       if (container) container.style.minHeight = originalMinHeight
-    } catch { if (!disposed && current === generation) recover() }
+    } catch { if (!disposed && current === generation) recover(false) }
     finally { if (current === generation) pending = false }
   }
   const hidden = () => { pending = false; invalidate() }
@@ -66,11 +71,16 @@ export function installSiteSessionGuard(options: {
   win.addEventListener('storage', storage)
   doc.addEventListener('visibilitychange', visible)
   doc.addEventListener('submit', submit, true)
+  const retryCheck = () => { void check() }
+  const reloadPage = () => options.reload()
+  retry?.addEventListener('click', retryCheck)
+  reload?.addEventListener('click', reloadPage)
   void check()
   return () => {
     disposed = true; generation++; controller?.abort()
     win.removeEventListener('pageshow', check); win.removeEventListener('pagehide', hidden)
     win.removeEventListener('focus', check); win.removeEventListener('storage', storage)
     doc.removeEventListener('visibilitychange', visible); doc.removeEventListener('submit', submit, true)
+    retry?.removeEventListener('click', retryCheck); reload?.removeEventListener('click', reloadPage)
   }
 }

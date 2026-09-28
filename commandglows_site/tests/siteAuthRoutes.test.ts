@@ -1,8 +1,9 @@
 import { beforeEach, expect, test, vi } from 'vitest'
-const mocks = vi.hoisted(() => ({ begin: vi.fn(), complete: vi.fn(), mutate: vi.fn(), revoke: vi.fn(), config: vi.fn(), provider: vi.fn() }))
+const mocks = vi.hoisted(() => ({ begin: vi.fn(), complete: vi.fn(), mutate: vi.fn(), revoke: vi.fn(), config: vi.fn(), provider: vi.fn(), returnTo: vi.fn() }))
 vi.mock('@/lib/auth/auth0Session', () => ({
   AUTH_SESSION_COOKIE: 'session', AUTH_TRANSACTION_COOKIE: 'transaction', AUTH_TRANSACTION_SECONDS: 600,
   readAuth0Config: mocks.config, beginAuth0Login: mocks.begin, completeAuth0Login: mocks.complete,
+  readAuth0TransactionReturnTo: mocks.returnTo,
   auth0CookieOptions: (_config: unknown, maxAge: number) => ({ path: '/', httpOnly: true, secure: true, sameSite: 'lax', maxAge }),
   readAuth0Session: async () => ({ loginAttemptId: 'active-attempt' }), readAuth0TransactionId: async () => 'pending-attempt',
   auth0LogoutUrl: () => 'https://identity.example/v2/logout',
@@ -27,6 +28,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mocks.config.mockReturnValue({ origin })
   mocks.provider.mockReturnValue('auth0')
+  mocks.returnTo.mockResolvedValue(null)
   mocks.begin.mockResolvedValue({ authorizationUrl: 'https://identity.example/authorize', transactionCookie: 'sealed', loginAttemptId: 'pending-attempt' })
   mocks.complete.mockResolvedValue({ session: { loginAttemptId: 'active-attempt', issuer: 'https://identity.example/', subject: 'auth0|verified', expiresAt: Math.floor(Date.now()/1000) + 3600, email: 'verified@example.test', emailVerified: true }, sessionCookie: 'new-session', returnTo: '/dashboard' })
   mocks.mutate.mockResolvedValue({ globalUserId: 'global-account' })
@@ -51,7 +53,25 @@ test.each([null, 'https://evil.example'])('link and logout reject missing or for
 test('link uses only verified legacy identity in the encrypted transaction', async () => {
   const ctx = context('/api/auth/link?clerkId=attacker', 'POST')
   expect((await link(ctx as never)).status).toBe(303)
-  expect(mocks.begin).toHaveBeenCalledWith(expect.anything(), '/dashboard/parametres', 'verified-clerk')
+  expect(mocks.begin).toHaveBeenCalledWith(expect.anything(), '/dashboard/settings', 'verified-clerk')
+})
+
+test('French account linking returns to canonical French settings', async () => {
+  const ctx = context('/api/auth/link', 'POST')
+  ctx.request = new Request(ctx.url, { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ lang: 'fr', next: '//attacker.example' }) })
+  await link(ctx as never)
+  expect(mocks.begin).toHaveBeenCalledWith(expect.anything(), '/fr/dashboard/parametres', 'verified-clerk')
+})
+
+test('failed callback preserves language and private destination from authenticated transaction only', async () => {
+  mocks.returnTo.mockResolvedValue('/dashboard/docs/fr/formations/module-2-windows')
+  mocks.complete.mockRejectedValueOnce(new Error('provider unavailable'))
+  const ctx = context('/api/auth/callback?next=https://attacker.example')
+  const response = await callback(ctx as never)
+  const location = new URL(response.headers.get('Location')!, origin)
+  expect(location.pathname).toBe('/fr/signin')
+  expect(location.searchParams.get('next')).toBe('/dashboard/docs/fr/formations/module-2-windows')
+  expect(ctx.cookies.set).not.toHaveBeenCalled()
 })
 
 test.each([

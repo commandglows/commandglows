@@ -1640,8 +1640,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final useTwoColumns =
+              _pageMode() != _SettingsPageMode.desktopControl &&
               constraints.maxWidth >=
-              AppLayoutMetrics.settingsTwoColumnBreakpoint;
+                  AppLayoutMetrics.settingsTwoColumnBreakpoint;
           final content = useTwoColumns
               ? _settingsTwoColumnList(constraints, sections)
               : _settingsSingleColumnList(sections);

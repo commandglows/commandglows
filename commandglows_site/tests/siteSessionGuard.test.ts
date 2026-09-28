@@ -4,7 +4,7 @@ import { installSiteSessionGuard, SESSION_CHANGE_EVENT_KEY } from '../src/lib/au
 let cleanup: (() => void) | undefined
 const flush = async () => { await Promise.resolve(); await Promise.resolve() }
 beforeEach(() => {
-  document.body.innerHTML = '<main>Private content</main><section data-session-recovery hidden>Reconnect</section>'
+  document.body.innerHTML = '<main>Private content</main><section data-session-recovery hidden>Reconnect<button data-session-retry>Retry</button><button data-session-reload hidden>Reload</button></section>'
   Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' })
 })
 afterEach(() => cleanup?.())
@@ -93,4 +93,31 @@ test('same-origin logout broadcasts no identity and cross-origin form does not',
   document.querySelector('form')!.action = 'https://elsewhere.example/api/auth/logout'
   document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }))
   expect(set).not.toHaveBeenCalled(); set.mockRestore()
+})
+
+test('explicit retry after network failure restores content only after fresh identity verification', async () => {
+  let resolve!: (value: unknown) => void
+  const fetcher = vi.fn().mockRejectedValueOnce(new Error('offline')).mockImplementationOnce(() => new Promise(done => { resolve = done }))
+  const guard = start(fetcher); await flush()
+  const retry = document.querySelector<HTMLButtonElement>('[data-session-retry]')!
+  expect(retry.hidden).toBe(false)
+  retry.click(); expect(guard.surface.hidden).toBe(true)
+  expect(fetcher).toHaveBeenCalledTimes(2)
+  resolve({ userId: 'alice' }); await flush()
+  expect(guard.surface.hidden).toBe(false)
+  expect(document.querySelector<HTMLElement>('[data-session-recovery]')!.hidden).toBe(true)
+})
+
+test('focus retries a transient failure but retry cannot bypass a cross-tab invalidation', async () => {
+  const guard = start(vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue({ userId: 'alice' }))
+  await flush(); window.dispatchEvent(new Event('focus')); await flush()
+  expect(guard.surface.hidden).toBe(false)
+  window.dispatchEvent(new StorageEvent('storage', { key: SESSION_CHANGE_EVENT_KEY }))
+  const retry = document.querySelector<HTMLButtonElement>('[data-session-retry]')!
+  expect(retry.hidden).toBe(true)
+  retry.click(); window.dispatchEvent(new Event('focus')); await flush()
+  expect(guard.fetchSession).toHaveBeenCalledTimes(2)
+  expect(guard.surface.hidden).toBe(true)
+  document.querySelector<HTMLButtonElement>('[data-session-reload]')!.click()
+  expect(guard.reload).toHaveBeenCalledOnce()
 })

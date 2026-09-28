@@ -43,7 +43,19 @@ const recoveryAvailable = isAccountRecoveryAvailable(Astro.url.origin, auth.unav
       {recoveryAvailable ? <a class="dashboard-action-link workspace-button mt-5" href={recoveryUrl}>{isFrench ? 'Retrouver mes achats existants' : 'Recover existing purchases'}</a> : <p class="text-content-text-secondary mt-5">{isFrench ? 'La récupération des achats n’est pas disponible pour le moment. Gardez votre confirmation d’achat et contactez le support si vous avez besoin d’aide.' : 'Purchase recovery is not available right now. Keep your purchase confirmation and contact support if you need help.'} <a class="brand-text-magenta font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2" href={contactUrl}>{isFrench ? 'Contacter le support' : 'Contact support'}</a></p>}
     </section>
   )}
-  {!auth.unavailable && auth.userId && (
+  {!auth.unavailable && auth.provider === 'clerk' && (
+    <section class="workspace-card mt-6">
+      <h2 class="text-content-text-primary text-lg font-semibold">{isFrench ? 'Liaison du compte' : 'Link your account'}</h2>
+      <p class="text-content-text-secondary mt-2">{isFrench ? 'Reliez ce compte à la nouvelle connexion pour conserver vos achats et vos accès.' : 'Link this account to the new sign-in to keep your purchases and access.'}</p>
+      {recoveryAvailable ? (
+        <form method="post" action="/api/auth/link" class="mt-4">
+          <input type="hidden" name="lang" value={lang} />
+          <button type="submit" class="workspace-button">{isFrench ? 'Relier mon compte' : 'Link my account'}</button>
+        </form>
+      ) : <p class="text-content-text-secondary mt-4">{isFrench ? 'La liaison est temporairement indisponible.' : 'Account linking is temporarily unavailable.'}</p>}
+    </section>
+  )}
+  {(auth.userId || auth.unavailable) && (
     <form method="post" action="/api/auth/logout" class="mt-6">
       <button type="submit" class="workspace-button">
         {isFrench ? 'Se déconnecter' : 'Sign out'}

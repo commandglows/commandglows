@@ -56,6 +56,8 @@ async function seed(t: ReturnType<typeof backend>) {
 }
 
 describe('license administration authority', () => {
+  beforeEach(() => vi.stubEnv('SUITE_BRIDGE_ENVIRONMENT', 'test'))
+  afterEach(() => vi.unstubAllEnvs())
   const previousSecret = process.env.SUITE_BRIDGE_CONVEX_SECRET
   beforeAll(() => {
     process.env.SUITE_BRIDGE_CONVEX_SECRET = BRIDGE_SECRET
@@ -195,6 +197,17 @@ describe('license administration authority', () => {
     expect(serialized).not.toContain('idempotencyKey')
   })
 
+  test('reports a bounded identity search even when all scanned identities belong to one account', async () => {
+    const t = backend()
+    const customerId = await seed(t)
+    await t.run(async ctx => {
+      for (let index = 0; index < 21; index++) await ctx.db.insert('identityAccounts', { globalUserId: customerId, provider: 'firebase', providerAccountId: `identity:${index}`, email: 'shared@example.test', createdAt: 1, updatedAt: 1 })
+    })
+    const result = await t.query(api.licenseAdministration.searchLicenses, { clerkId: 'clerk_admin', bridgeSecret: BRIDGE_SECRET, search: 'shared@example.test' })
+    expect(result.results).toHaveLength(1)
+    expect(result.truncated).toBe(true)
+  })
+
   test('requires allowlisted product, plan, and support reason', async () => {
     const t = backend()
     await seed(t)
@@ -304,5 +317,44 @@ describe('license administration authority', () => {
       ctx.db.query('productEntitlements').collect()
     )
     expect(rows).toHaveLength(1)
+  })
+
+  test('isolates production from canonical sandbox transitions and rejects caller environment changes', async () => {
+    const t = backend()
+    const customerId = await seed(t)
+    await t.run(async (ctx) => {
+      for (const environment of ['production', 'test']) {
+        await ctx.db.insert('productEntitlements', {
+          globalUserId: customerId, productId: 'communityglows', plan: 'lifetime_deal',
+          status: environment === 'production' ? 'active' : 'revoked', source: 'license_support',
+          environment, idempotencyKey: `legacy:${environment}`, createdAt: 1, updatedAt: 1,
+        })
+      }
+    })
+    const args = { clerkId: 'clerk_admin', bridgeSecret: BRIDGE_SECRET, globalUserId: 'gu_customer', productId: 'communityglows', plan: 'lifetime_deal', reason: 'Verified recovery', environment: 'sandbox' }
+    await expect(t.mutation(api.licenseAdministration.manualGrant, { ...args, environment: 'production' })).rejects.toThrow('environment_not_allowed')
+    expect(await t.mutation(api.licenseAdministration.manualGrant, args)).toMatchObject({ status: 'granted' })
+    expect(await t.mutation(api.licenseAdministration.manualGrant, { ...args, environment: 'development' })).toMatchObject({ status: 'already_active' })
+    expect(await t.mutation(api.licenseAdministration.manualRevoke, args)).toMatchObject({ status: 'revoked' })
+    const rows = await t.run(async ctx => ({ entitlements: await ctx.db.query('productEntitlements').collect(), events: await ctx.db.query('productAccessEvents').collect() }))
+    expect(rows.entitlements).toHaveLength(2)
+    expect(rows.entitlements.find(row => row.environment === 'production')?.status).toBe('active')
+    expect(rows.entitlements.find(row => row.environment === 'sandbox')?.status).toBe('revoked')
+    expect(rows.events.every(row => row.environment === 'sandbox' && row.idempotencyKey.includes(':sandbox:'))).toBe(true)
+  })
+
+  test('marks event history truncated only when older events actually exist', async () => {
+    const t = backend()
+    const customerId = await seed(t)
+    const args = { clerkId: 'clerk_admin', bridgeSecret: BRIDGE_SECRET, globalUserId: 'gu_customer' }
+    await t.run(async ctx => {
+      for (let index = 0; index < 50; index++) await ctx.db.insert('productAccessEvents', { globalUserId: customerId, source: 'license_support', eventType: 'audit', status: 'granted', environment: 'test', idempotencyKey: `audit:${index}`, createdAt: index })
+    })
+    expect((await t.query(api.licenseAdministration.getLicenseDetail, args)).eventHistoryTruncated).toBe(false)
+    await t.run(async ctx => { await ctx.db.insert('productAccessEvents', { globalUserId: customerId, source: 'license_support', eventType: 'audit', status: 'granted', environment: 'test', idempotencyKey: 'audit:50', createdAt: 50 }) })
+    const detail = await t.query(api.licenseAdministration.getLicenseDetail, args)
+    expect(detail.events).toHaveLength(50)
+    expect(detail.eventHistoryTruncated).toBe(true)
+    expect(detail.environment).toBe('sandbox')
   })
 })

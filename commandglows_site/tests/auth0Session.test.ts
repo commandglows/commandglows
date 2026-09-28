@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { exportJWK, generateKeyPair, SignJWT } from 'jose'
-import { auth0CookieOptions, auth0LogoutUrl, beginAuth0Login, completeAuth0Login, readAuth0Config, readAuth0Session, readAuth0TransactionId, safeAuthReturnTo } from '../src/lib/auth/auth0Session'
+import { auth0CookieOptions, auth0LogoutUrl, beginAuth0Login, completeAuth0Login, readAuth0Config, readAuth0Session, readAuth0TransactionId, readAuth0TransactionReturnTo, safeAuthReturnTo } from '../src/lib/auth/auth0Session'
 
 const env = { AUTH0_ISSUER: 'https://tenant.auth0.com/', AUTH_SITE_ORIGIN: 'https://preview.example.com', AUTH0_CLIENT_ID: 'test-client', AUTH0_CLIENT_SECRET: 'synthetic-client-secret', AUTH_SESSION_SECRET: 'ab'.repeat(32) }
 const config = readAuth0Config(env)
@@ -40,6 +40,12 @@ async function start(link?: string) {
 }
 
 describe('Auth0 server session boundary', () => {
+  it('reads recovery context only from an authenticated transaction cookie', async () => {
+    const login = await start()
+    expect(await readAuth0TransactionReturnTo(config, login.transactionCookie)).toBe('/dashboard/licenses?tab=all')
+    expect(await readAuth0TransactionReturnTo(config, 'invalid-cookie')).toBeNull()
+    expect(await readAuth0TransactionReturnTo({ ...config, sessionSecret: 'cd'.repeat(32) }, login.transactionCookie)).toBeNull()
+  })
   it('uses exact configuration and secure host-only browser cookies', () => {
     expect(auth0CookieOptions(config, 600)).toEqual({ httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 600 })
     expect(() => readAuth0Config({ ...env, AUTH_SITE_ORIGIN: 'https://preview.example.com/path' })).toThrow()

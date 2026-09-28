@@ -9,7 +9,7 @@ interface Props {
 
 const { auth, lang } = Astro.props
 const isFrench = lang === 'fr'
-const formationUrl = isFrench ? '/fr/formations/' : '/en/formations/'
+const formationUrl = isFrench ? '/dashboard/docs/fr/formations' : '/dashboard/docs/en/formations'
 const offerUrl = isFrench ? '/fr/maitrise-windows' : '/windows-mastery'
 const recoveryUrl = isFrench ? '/fr/account/link-existing' : '/account/link-existing'
 const contactUrl = isFrench ? '/fr/contact' : '/contact'

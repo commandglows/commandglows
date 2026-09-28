@@ -47,6 +47,11 @@ export function safeAuthReturnTo(value: unknown): string {
 }
 
 const key = (config: Auth0Config) => Uint8Array.from(config.sessionSecret.match(/.{2}/g)!, byte => parseInt(byte, 16))
+/** Recovery context is accepted only from the authenticated, encrypted transaction. */
+export async function readAuth0TransactionReturnTo(config: Auth0Config, cookie: string): Promise<string | null> {
+  try { return safeAuthReturnTo((await unseal(config, 'transaction', cookie)).returnTo) }
+  catch { return null }
+}
 async function seal(config: Auth0Config, purpose: string, data: Record<string, unknown>, expires: number) {
   const cookie = await new EncryptJWT(data).setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
     .setIssuer(config.origin).setAudience(`${config.clientId}:${purpose}`).setIssuedAt().setExpirationTime(expires).encrypt(key(config))

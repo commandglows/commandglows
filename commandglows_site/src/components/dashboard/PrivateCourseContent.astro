@@ -1,0 +1,7 @@
+---
+import { rewritePrivateCourseLinks } from '@/utils/privateCourseNavigation'
+interface Props { slug: string; publishedSlugs: string[] }
+const { slug, publishedSlugs } = Astro.props
+const html = rewritePrivateCourseLinks(await Astro.slots.render('default'), slug, Astro.url.origin, publishedSlugs)
+---
+<Fragment set:html={html} />

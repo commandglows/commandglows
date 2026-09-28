@@ -11,6 +11,10 @@ type Action = { _id: string; action: string; reason: string; operatorId: string;
 type Detail = { incident: Incident; actions: Action[]; historyTruncated: boolean;
   receipt?: { businessId?: string; providerAccountId?: string } | null }
 
+class OperationError extends Error {
+  constructor(message: string, readonly status: number) { super(message) }
+}
+
 const summarizeAlerts = (
   alerts: Incident['alerts'],
 ) => {
@@ -101,6 +105,7 @@ export default function CommerceIncidentConsole() {
   const [done, setDone] = useState(true)
   const [detail, setDetail] = useState<Detail | null>(null)
   const [busy, setBusy] = useState(false)
+  const [verificationRequired, setVerificationRequired] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [forbidden, setForbidden] = useState(false)
@@ -108,22 +113,26 @@ export default function CommerceIncidentConsole() {
   const [environment, setEnvironment] = useState('')
   const [watchdogStale, setWatchdogStale] = useState<boolean | null>(null)
   const loadSequence = useRef(0)
+  const verificationIncidentId = useRef<string | null>(null)
   const [reason, setReason] = useState('')
+  const [stripeReason, setStripeReason] = useState('')
   const [evidence, setEvidence] = useState('')
   const [eventId, setEventId] = useState('')
   const [sessionId, setSessionId] = useState('')
   const [businessId, setBusinessId] = useState<'commandglows' | 'communityglows' | 'replayglows' | 'contentglows'>('commandglows')
   const [merchantAvailability, setMerchantAvailability] = useState<Record<string, boolean> | null>(null)
   const reasonRef = useRef<HTMLTextAreaElement | null>(null)
+  const stripeReasonRef = useRef<HTMLTextAreaElement | null>(null)
   const detailRef = useRef<HTMLElement | null>(null)
   const receiptMerchantReady = Boolean(detail?.receipt?.businessId && detail.receipt.providerAccountId &&
     merchantAvailability?.[detail.receipt.businessId] === true)
+  const actionsDisabled = busy || verificationRequired
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const response = await fetch(url, { cache: 'no-store', ...init })
-    if (response.status === 401 || response.status === 403) { setForbidden(true); throw new Error('Accès administrateur requis.') }
-    if (response.status === 409) throw new Error('Le dossier a changé. Actualisez-le avant une nouvelle action.')
-    if (!response.ok) throw new Error('L’opération a échoué. Vérifiez la configuration, les preuves et le dossier, puis réessayez.')
+    if (response.status === 401 || response.status === 403) { setForbidden(true); throw new OperationError('Accès administrateur requis.', response.status) }
+    if (response.status === 409) throw new OperationError('Le dossier a changé. Actualisez-le avant une nouvelle action.', response.status)
+    if (!response.ok) throw new OperationError('L’opération a échoué. Vérifiez la configuration, les preuves et le dossier.', response.status)
     return response.json()
   }, [])
   const load = useCallback(async (nextCursor: string | null = null) => {
@@ -141,12 +150,24 @@ export default function CommerceIncidentConsole() {
   }, [request, view])
   async function refresh() {
     setBusy(true); setError('')
-    try { await load(); if (detail) setDetail(await request(`/api/admin/commerce?incidentId=${encodeURIComponent(detail.incident._id)}`)) }
-    catch (failure) { setError((failure as Error).message) } finally { setBusy(false) }
+    try {
+      await load()
+      if (verificationIncidentId.current && verificationIncidentId.current !== detail?.incident._id) {
+        await request(`/api/admin/commerce?incidentId=${encodeURIComponent(verificationIncidentId.current)}`)
+      }
+      if (detail) setDetail(await request(`/api/admin/commerce?incidentId=${encodeURIComponent(detail.incident._id)}`))
+      setVerificationRequired(false)
+      verificationIncidentId.current = null
+    }
+    catch (failure) {
+      verificationIncidentId.current ??= detail?.incident._id ?? null
+      setVerificationRequired(true); setError((failure as Error).message)
+    } finally { setBusy(false) }
   }
   useEffect(() => {
     let active = true
     setDetail(null); setError(''); setBusy(true)
+    setReason(''); setEvidence(''); setStripeReason(''); setEventId(''); setSessionId(''); setMessage('')
     setIncidents([]); setCandidates([]); setCursor(null); setDone(true)
     setEnvironment(''); setConfigured(null); setWatchdogStale(null); setMerchantAvailability(null)
     load().catch((failure) => { if (active) setError(failure.message) }).finally(() => { if (active) setBusy(false) })
@@ -155,13 +176,17 @@ export default function CommerceIncidentConsole() {
   useEffect(() => {
     if (detail || !done || view !== 'active') return
     const timer = window.setInterval(() => {
-      if (!document.hidden) void load().catch(() => setError('Actualisation indisponible. Utilisez Actualiser pour réessayer.'))
+      if (!document.hidden) void load().catch(() => {
+        setVerificationRequired(true)
+        setError('Actualisation indisponible. Utilisez Actualiser pour réessayer.')
+      })
     }, 60_000)
     return () => window.clearInterval(timer)
   }, [detail, done, view, load])
 
   async function select(incident: Incident) {
-    setBusy(true); setError(''); setReason(''); setEvidence(''); setMessage('')
+    setBusy(true); setDetail(null); setError(''); setReason(''); setEvidence(''); setMessage('')
+    setStripeReason(''); setEventId(''); setSessionId('')
     try {
       setDetail(await request(`/api/admin/commerce?incidentId=${encodeURIComponent(incident._id)}`))
       window.requestAnimationFrame(() => detailRef.current?.scrollIntoView?.({ block: 'start' }))
@@ -169,23 +194,47 @@ export default function CommerceIncidentConsole() {
     catch (failure) { setError((failure as Error).message) } finally { setBusy(false) }
   }
   async function act(action: string) {
-    if (reason.trim().length < 3) {
+    if (actionsDisabled) return
+    const stripeAction = action === 'reconcile' || action === 'repair_checkout'
+    const actionReason = stripeAction ? stripeReason : reason
+    const actionReasonRef = stripeAction ? stripeReasonRef : reasonRef
+    if (!stripeAction && !detail) return
+    if (actionReason.trim().length < 3) {
       setError('Ajoutez un motif précis avant de poursuivre.')
-      reasonRef.current?.focus()
-      reasonRef.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
+      actionReasonRef.current?.focus()
+      actionReasonRef.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
       return
     }
     setBusy(true); setError(''); setMessage('')
+    verificationIncidentId.current = detail?.incident._id ?? null
     try {
       const data = await request('/api/admin/commerce', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, reason, evidenceReference: evidence, eventId, sessionId, businessId,
-          incidentId: detail?.incident._id, expectedVersion: detail?.incident.version, expectedAttempts: detail?.incident.attempts }) })
+        body: JSON.stringify({ action, reason: actionReason, eventId, sessionId, businessId,
+          ...(!stripeAction ? { evidenceReference: evidence, incidentId: detail?.incident._id,
+            expectedVersion: detail?.incident.version, expectedAttempts: detail?.incident.attempts } : {}) }) })
       setMessage(action === 'dry_run'
         ? data.eligible ? 'Reprise autorisée. Cette vérification ne modifie aucun droit.' : 'Reprise indisponible. Récupérez la preuve fournisseur ou escaladez le dossier.'
         : `Opération enregistrée. ${label(data.status ?? data.result?.status ?? 'À vérifier dans le dossier')}`)
+    } catch (failure) {
+      const refused = failure instanceof OperationError && failure.status >= 400 && failure.status < 500 &&
+        failure.status !== 409 && failure.status !== 404
+      setVerificationRequired(!refused)
+      if (refused) verificationIncidentId.current = null
+      setError(refused ? (failure as Error).message : failure instanceof OperationError && failure.status === 409
+        ? failure.message : 'Résultat à vérifier. Relisez le dossier et le journal avec Actualiser avant une nouvelle action.')
+      setBusy(false)
+      return
+    }
+    // A confirmed operation stays confirmed even if its subsequent read fails.
+    setVerificationRequired(true)
+    try {
       await load()
       if (detail) setDetail(await request(`/api/admin/commerce?incidentId=${encodeURIComponent(detail.incident._id)}`))
-    } catch (failure) { setError((failure as Error).message) } finally { setBusy(false) }
+      setVerificationRequired(false)
+      verificationIncidentId.current = null
+    } catch {
+      setError('Opération confirmée, mais actualisation indisponible. Utilisez Actualiser avant une nouvelle action.')
+    } finally { setBusy(false) }
   }
 
   if (forbidden) return <section className={panel} role="alert"><h2 className="text-dashboard-text-primary text-lg font-bold">Administration commerce réservée aux administrateurs</h2></section>
@@ -231,6 +280,7 @@ export default function CommerceIncidentConsole() {
     </div>
     {error && <p className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-950" role="alert">{error}</p>}
     {message && <p className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm font-semibold text-emerald-950" role="status">{message}</p>}
+    {verificationRequired && <p className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="status">Actions suspendues jusqu’à la relecture du dossier et de la file avec Actualiser.</p>}
     <div className="grid gap-5">
     {detail && <aside ref={detailRef} className="grid content-start gap-5 scroll-mt-6">
       <div className={panel}>
@@ -251,17 +301,17 @@ export default function CommerceIncidentConsole() {
           <div className={quietPanel}>
             <p className="text-dashboard-text-primary text-sm font-bold">Prise en charge</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <button className={primaryButton} disabled={busy} onClick={() => void act('claim')}>Prendre en charge</button>
-              <button className={button} disabled={busy} onClick={() => void act('retry_alert')}>Relancer la notification</button>
+              <button className={primaryButton} disabled={actionsDisabled} onClick={() => void act('claim')}>Prendre en charge</button>
+              <button className={button} disabled={actionsDisabled} onClick={() => void act('retry_alert')}>Relancer la notification</button>
             </div>
           </div>
           <div className={quietPanel}>
             <p className="text-dashboard-text-primary text-sm font-bold">Reprendre le traitement de l’achat</p>
             <p className={`${meta} mt-1`}>Vérifiez d’abord si la reprise est possible. Le traitement peut mettre à jour les accès à partir du reçu confirmé.</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <button className={button} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review'} onClick={() => void act('dry_run')}>Vérifier la reprise</button>
-              <button className={button} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review' || detail.incident.attempts >= 5} onClick={() => void act('retry')}>Reprendre le traitement</button>
-              <button className={dangerButton} disabled={busy || !detail.incident.receiptId || detail.incident.status !== 'pending_review' || detail.incident.attempts !== 5 || !receiptMerchantReady} onClick={() => void act('recover')}>Vérifier Stripe et effectuer l’ultime reprise</button>
+              <button className={button} disabled={actionsDisabled || !detail.incident.receiptId || detail.incident.status !== 'pending_review'} onClick={() => void act('dry_run')}>Vérifier la reprise</button>
+              <button className={button} disabled={actionsDisabled || !detail.incident.receiptId || detail.incident.status !== 'pending_review' || detail.incident.attempts >= 5} onClick={() => void act('retry')}>Reprendre le traitement</button>
+              <button className={dangerButton} disabled={actionsDisabled || !detail.incident.receiptId || detail.incident.status !== 'pending_review' || detail.incident.attempts !== 5 || !receiptMerchantReady} onClick={() => void act('recover')}>Vérifier Stripe et effectuer l’ultime reprise</button>
               {detail.incident.attempts === 5 && !receiptMerchantReady && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status">L’ultime reprise nécessite un reçu lié à un compte Stripe configuré. Vérifiez le marchand et les preuves avant de poursuivre.</p>}
             </div>
           </div>
@@ -271,8 +321,8 @@ export default function CommerceIncidentConsole() {
             <input className={`${input} mt-2`} id="commerce-evidence" value={evidence} maxLength={500} onChange={(event) => setEvidence(event.target.value)} placeholder="Dossier support ou preuve fournisseur, sans secret" />
             <p className={`${meta} mt-2`}>Clôturez uniquement après traitement effectif de l’acheteur. Décrivez le résultat dans le motif ; la référence permet à un autre opérateur de le vérifier.</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <button className={button} disabled={busy} onClick={() => void act('escalate')}>Escalader</button>
-              <button className={dangerButton} disabled={busy || evidence.trim().length < 3} onClick={() => void act('resolve')}>Clôturer le dossier sans modifier les droits</button>
+              <button className={button} disabled={actionsDisabled} onClick={() => void act('escalate')}>Escalader</button>
+              <button className={dangerButton} disabled={actionsDisabled || evidence.trim().length < 3} onClick={() => void act('resolve')}>Clôturer le dossier sans modifier les droits</button>
             </div>
           </div>
         </div>
@@ -336,7 +386,9 @@ export default function CommerceIncidentConsole() {
     </div>
     <details className={panel}>
       <summary className="text-dashboard-text-primary focus-visible:outline-navbar-ring min-h-11 cursor-pointer font-bold focus-visible:outline-2 focus-visible:outline-offset-2">Réparer un achat depuis Stripe · outils avancés</summary>
-      <p className="text-dashboard-text-muted mt-2 text-sm">À utiliser lorsqu’un événement manque ou qu’une session payée n’est pas rattachée au bon compte. Ouvrez d’abord le dossier et renseignez le motif de votre intervention.</p>
+      <p className="text-dashboard-text-muted mt-2 text-sm">À utiliser lorsqu’un événement manque ou qu’une session payée n’est pas rattachée au bon compte, y compris depuis les paiements à confirmer. Renseignez le motif et les références vérifiées dans Stripe.</p>
+      <label htmlFor="commerce-stripe-reason" className="text-dashboard-text-primary mt-3 block text-sm font-bold">Motif obligatoire pour l’intervention Stripe</label>
+      <textarea ref={stripeReasonRef} id="commerce-stripe-reason" className={`${input} mt-2`} value={stripeReason} maxLength={500} onChange={(event) => setStripeReason(event.target.value)} placeholder="Vérification réalisée et traitement attendu. Aucun secret ni donnée bancaire." />
       <p className="text-dashboard-text-muted mt-2 text-sm">Récupérez l’identifiant exact dans Stripe : événement evt_… ou session cs_…. La référence interne du dossier ne peut pas être utilisée ici.</p>
       <label htmlFor="commerce-business" className="text-dashboard-text-primary mt-3 block text-sm">Compte business pour la recherche Stripe</label>
       <select id="commerce-business" className={`${input} mt-2`} value={businessId}
@@ -349,10 +401,10 @@ export default function CommerceIncidentConsole() {
       {merchantAvailability?.[businessId] === false && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status">Ce compte Stripe n’est pas configuré pour les outils de reprise dans cet environnement.</p>}
       <label htmlFor="commerce-event" className="text-dashboard-text-primary mt-3 block text-sm">Identifiant d’événement Stripe</label>
       <input id="commerce-event" className={`${input} mt-2`} value={eventId} maxLength={255} onChange={(event) => setEventId(event.target.value)} placeholder="evt_…" />
-      <button className={`${button} mt-3`} disabled={busy || merchantAvailability?.[businessId] !== true || !eventId.startsWith('evt_')} onClick={() => void act('reconcile')}>Vérifier et récupérer l’événement</button>
+      <button className={`${button} mt-3`} disabled={actionsDisabled || merchantAvailability?.[businessId] !== true || !eventId.startsWith('evt_')} onClick={() => void act('reconcile')}>Vérifier et récupérer l’événement</button>
       <label htmlFor="commerce-session" className="text-dashboard-text-primary mt-5 block text-sm">Session Stripe terminée dont le rattachement a échoué</label>
       <input id="commerce-session" className={`${input} mt-2`} value={sessionId} maxLength={255} onChange={(event) => setSessionId(event.target.value)} placeholder="cs_…" />
-      <button className={`${button} mt-3`} disabled={busy || merchantAvailability?.[businessId] !== true || !sessionId.startsWith('cs_')} onClick={() => void act('repair_checkout')}>Vérifier et réparer le rattachement</button>
+      <button className={`${button} mt-3`} disabled={actionsDisabled || merchantAvailability?.[businessId] !== true || !sessionId.startsWith('cs_')} onClick={() => void act('repair_checkout')}>Vérifier et réparer le rattachement</button>
     </details>
   </section>
 }

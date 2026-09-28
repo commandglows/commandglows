@@ -151,6 +151,13 @@ next_step: "/sf-start shipglows_data/workflow/specs/firebase-backend-agnostic-mi
     foreground keyboard layout captured at activation. Close and reopen the grid
     after changing input language. The local opt-in persists, defaults off, and
     does not sync to an account.
+  - The desktop-control settings page uses full-width sections even on wide
+    windows; only its shortcut cards form an adaptive inner grid.
+  - The Windows shortcut editor is also the command reference: responsive cards
+    group global commands, clicks/drag, movement, grid navigation and monitors.
+    Labels and editable keys share one row, with the keys aligned right.
+    Each key is editable in place, with aliases, sheet export and resets; there is
+    no duplicate command overview. Cards adapt to window width and text scale.
   - **Touches et raccourcis** in the Windows desktop-control settings lets the
     person change the global activation shortcut and the in-session pointer,
     navigation, scope and close keys. The default left click is Space with F1 as

@@ -1,16 +1,14 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro'
 import { getCollection, render } from 'astro:content'
-import { getCourseAccess, isFormationSlug } from '@/utils/courseGating'
+import { getCourseAccess, isFormationSlug, getPrivateCoursePath } from '@/utils/courseGating'
 import { getEntrySlug } from '@/utils/docs'
+import { getPublishedCourseEntry, getAlternatePrivateCoursePath, getPrivateCourseModuleLessons } from '@/utils/privateCourseNavigation'
+import PrivateCourseContent from '@/components/dashboard/PrivateCourseContent.astro'
 
 const requestedSlug = Astro.params.slug?.replace(/\/$/, '')
 const docs = await getCollection('docs')
-const entry = docs.find((doc) => {
-  const slug = getEntrySlug(doc)
-  const normalized = (slug === 'index' ? '' : slug).replace(/\/$/, '')
-  return normalized === requestedSlug
-})
+const entry = getPublishedCourseEntry(docs, requestedSlug)
 
 if (!entry || !isFormationSlug(getEntrySlug(entry))) {
   return Astro.redirect('/404')
@@ -24,33 +22,40 @@ if (!access.hasAccess) {
 
 const { Content, headings } = await render(entry)
 const lang = entrySlug.startsWith('fr/') ? 'fr' : 'en'
-const publicPath = `/${entrySlug}`
+const alternateLanguagePath = getAlternatePrivateCoursePath(docs, entrySlug)
+const moduleLessons = getPrivateCourseModuleLessons(docs, entrySlug)
+const publishedSlugs = docs.filter(doc => !doc.data.draft).map(getEntrySlug)
 ---
 
 <DashboardLayout
   title={entry.data.title}
   lang={lang}
-  currentPath="/dashboard/docs"
+  currentPath={Astro.url.pathname}
+  alternateLanguagePath={alternateLanguagePath}
 >
   <div class="mx-auto max-w-5xl">
     <div class="mb-6 flex flex-wrap items-center gap-3">
+      <a class="dashboard-action-link brand-text-magenta text-sm hover:underline" href={getPrivateCoursePath(`${lang}/formations`)}>{lang === 'fr' ? 'Toutes les formations' : 'All formations'}</a>
       <span
         class="bg-green/15 tracking-eyebrow text-green ring-green/30 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ring-1"
       >
-        {lang === 'fr' ? 'Lecon debloquee' : 'Unlocked lesson'}
+        {lang === 'fr' ? 'Formation accessible' : 'Formation available'}
       </span>
-      <a
-        href={publicPath}
-        class="dashboard-action-link brand-text-magenta text-sm hover:underline"
-      >
-        {lang === 'fr' ? 'Voir la version publique' : 'View public version'}
-      </a>
     </div>
+
+    {moduleLessons.length > 0 && <nav aria-label={lang === 'fr' ? 'Leçons du module' : 'Module lessons'} class="workspace-card mb-6">
+      <details open={entrySlug.split('/').length === 3}>
+        <summary class="cursor-pointer font-semibold">{lang === 'fr' ? 'Leçons du module' : 'Module lessons'}</summary>
+        <ul class="mt-3 space-y-2">{moduleLessons.map(lesson => <li><a class="dashboard-action-link brand-text-magenta hover:underline" href={getPrivateCoursePath(getEntrySlug(lesson))} aria-current={getEntrySlug(lesson) === entrySlug ? 'page' : undefined}>{lesson.data.sidebar?.label || lesson.data.title}</a></li>)}</ul>
+      </details>
+    </nav>}
 
     <article
       class="sl-markdown-content border-content-border bg-content-bg-elevated dark:border-content-border-strong dark:bg-content-bg-elevated rounded-2xl border p-6"
     >
-      {Content && <Content />}
+      <PrivateCourseContent slug={entrySlug} publishedSlugs={publishedSlugs}>
+        {Content && <Content />}
+      </PrivateCourseContent>
     </article>
 
     {

@@ -1,14 +1,16 @@
 import type { APIRoute } from 'astro'
-import { completeAuth0Login, readAuth0Config, auth0CookieOptions, AUTH_TRANSACTION_COOKIE, AUTH_SESSION_COOKIE } from '@/lib/auth/auth0Session'
+import { completeAuth0Login, readAuth0Config, readAuth0TransactionReturnTo, auth0CookieOptions, AUTH_TRANSACTION_COOKIE, AUTH_SESSION_COOKIE } from '@/lib/auth/auth0Session'
 import { siteBackend } from '@/lib/auth/siteAuth'
 import { getServerEnv } from '@/lib/serverEnv'
 export const prerender = false
 export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   const transaction = cookies.get(AUTH_TRANSACTION_COOKIE)?.value
   cookies.delete(AUTH_TRANSACTION_COOKIE, { path: '/' })
+  let returnTo: string | null = null
   try {
     if (!transaction) throw new Error('transaction_missing')
     const config = readAuth0Config(getServerEnv())
+    returnTo = await readAuth0TransactionReturnTo(config, transaction)
     const result = await completeAuth0Login(config, url, transaction)
     const { client, authority } = siteBackend()
     const identity = { ...authority, provider: 'auth0', issuer: result.session.issuer, subject: result.session.subject }
@@ -26,6 +28,9 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   } catch (error) {
     cookies.delete(AUTH_SESSION_COOKIE, { path: '/' })
     const conflict = error instanceof Error && error.message.includes('identity_link_conflict')
-    return redirect(`/signin?error=${conflict ? 'account_link_conflict' : 'auth_failed'}`, 303)
+    const french = Boolean(returnTo && (/^\/fr(?:\/|$)/.test(returnTo) || returnTo.startsWith('/dashboard/docs/fr/')))
+    const params = new URLSearchParams({ error: conflict ? 'account_link_conflict' : 'auth_failed' })
+    if (returnTo) params.set('next', returnTo)
+    return redirect(`${french ? '/fr/signin' : '/signin'}?${params}`, 303)
   }
 }

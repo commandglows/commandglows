@@ -11,9 +11,10 @@ interface Props {
   title: string
   currentPath: string
   lang?: Language
+  alternateLanguagePath?: string | null
 }
 
-const { title, currentPath, lang = 'en' } = Astro.props
+const { title, currentPath, lang = 'en', alternateLanguagePath } = Astro.props
 const auth = Astro.locals.siteAuth()
 const navigation = await getNavigation(lang, auth.role, {
   showNewsletter: auth.provider === 'clerk' && getServerEnv().EMAIL_ENGINE_WEB_ENABLED === 'true',
@@ -33,7 +34,7 @@ const normalizePath = (path: string) => path.replace(/\/$/, '') || '/'
 const isCurrentPage = (href: string) =>
   normalizePath(currentPath) === normalizePath(href) ||
   (currentPath === '/dashboard/parametres' && href === '/fr/dashboard/parametres')
-const alternatePath = /parametres|settings/.test(currentPath)
+const alternatePath = alternateLanguagePath !== undefined ? alternateLanguagePath : /parametres|settings/.test(currentPath)
   ? lang === 'fr' ? '/dashboard/settings' : '/fr/dashboard/parametres'
   : lang === 'fr' ? '/dashboard/' : '/fr/dashboard/'
 ---
@@ -44,7 +45,7 @@ const alternatePath = /parametres|settings/.test(currentPath)
     <span class="workspace-context">{customerLabel}</span>
     <div class="workspace-tools">
       <a class="workspace-site-link" href={lang === 'fr' ? '/fr' : '/'}>{lang === 'fr' ? 'Voir le site' : 'Visit website'} <span aria-hidden="true">↗</span></a>
-      {!currentPath.includes('licences') && !currentPath.includes('newsletters') && <a class="workspace-language" href={alternatePath} lang={lang === 'fr' ? 'en' : 'fr'} aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en français'}>{lang === 'fr' ? 'EN' : 'FR'}</a>}
+      {!currentPath.includes('licences') && !currentPath.includes('newsletters') && (alternatePath ? <a class="workspace-language" href={alternatePath} lang={lang === 'fr' ? 'en' : 'fr'} aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en français'}>{lang === 'fr' ? 'EN' : 'FR'}</a> : <span class="text-dashboard-text-muted text-sm">{lang === 'fr' ? 'Traduction indisponible' : 'Translation unavailable'}</span>)}
       <ThemePicker />
     </div>
   </header>
