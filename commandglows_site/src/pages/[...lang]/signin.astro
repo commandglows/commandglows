@@ -24,8 +24,8 @@ const errorMessage = error === 'configuration_required'
       : null
 ---
 
-<MainLayout title={title} lang={lang} clientNavigation={false} noindex structuredData={null}>
-	<div class="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+<MainLayout title={title} lang={lang} clientNavigation={false} noindex structuredData={null} navbarStatic showFooter={false}>
+	<div class="flex min-h-[calc(100svh-6rem)] flex-col items-center justify-center px-4 py-8">
 		{errorMessage && <p role="alert" class="text-content-text-primary mb-5 max-w-sm text-center text-sm">{errorMessage}</p>}
 		{provider === 'auth0' ? (
 			<a href={auth0LoginHref} class="btn-primary inline-flex min-h-11 items-center justify-center px-6 py-3" data-astro-reload>

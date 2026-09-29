@@ -10,7 +10,7 @@ import '../assets/styles/global.css'
 import { ClientRouter } from 'astro:transitions'
 
 // Setting expected props
-const { title = SITE.title, meta, structuredData, lang = 'en', noindex = false, alternateUrls, clientNavigation = true, workspace = false } = Astro.props
+const { title = SITE.title, meta, structuredData, lang = 'en', noindex = false, alternateUrls, clientNavigation = true, workspace = false, navbarStatic = false, showFooter = true } = Astro.props
 
 // Interface to type-check the properties
 interface Props {
@@ -26,6 +26,8 @@ interface Props {
 	noindex?: boolean
 	clientNavigation?: boolean
 	workspace?: boolean
+	navbarStatic?: boolean
+	showFooter?: boolean
 	alternateUrls?: Partial<Record<'en' | 'fr', string>>
 }
 ---
@@ -61,15 +63,15 @@ interface Props {
 		>
 			{lang === 'fr' ? 'Aller au contenu principal' : 'Skip to main content'}
 		</a>
-		{workspace ? <slot name="navigation" /> : <Navbar />}
+		{workspace ? <slot name="navigation" /> : <Navbar static={navbarStatic} />}
   <SiteSessionGuard lang={lang === 'fr' ? 'fr' : 'en'} />
-		<div class="site-page-shell site-main-shell">
+		<div class:list={['site-page-shell site-main-shell', navbarStatic && 'site-main-shell--nav-flow']}>
 			<main id="main-content" tabindex="-1">
 				<slot />
 			</main>
 			{workspace && <p data-session-checking-status hidden role="status" class="session-checking">{lang === 'fr' ? 'Vérification de votre connexion…' : 'Checking your session…'}</p>}
 		</div>
-		{!workspace && <Footer />}
+		{!workspace && showFooter && <Footer />}
 		<CookieConsent />
 		{
 			import.meta.env.PROD && (
@@ -87,3 +89,9 @@ interface Props {
 		</script>
 </body>
 </html>
+
+<style>
+	.site-main-shell--nav-flow {
+		padding-top: 0;
+	}
+</style>
