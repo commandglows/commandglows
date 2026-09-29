@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.5"
+artifact_version: "1.0.6"
 project: commandglows
 created: "2026-09-06"
 updated: "2026-09-29"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-29T00:59:47Z"
+updated_at: "2026-09-29T10:47:00Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -21,7 +21,7 @@ linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
 evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access.", "Hosted buyer-path edge cases observed in conversation on 2026-09-09: card decline showed Stripe refusal with no access, abandoned checkout kept access locked, partial refund preserved access, and cumulative full refund removed access.", "Hosted dispute acceptance on 2026-09-09 proved open/pending dispute keeps access locked and lost dispute keeps access locked; a separate normal card checkout later restored access on a clean session. Buyer receipt, dispute-won restoration, alerts, recovery and production activation remain pending."]
-next_step: "Validate the installed CommunityGlows candidate from commit 240afc0, repair the deleted Google OAuth client used by CommandGlows production, then promote the accepted installer and enable the scoped CommunityGlows launch. Email acceptance is complete; Formation stays off sale. The first genuine customer payment can provide live purchase/access proof under monitoring, without an operator-funded charge."
+next_step: "Confirm the installed CommunityGlows screen after the successful access response, then accept the rebuilt Windows candidate from commit 37495179. Repair the deleted CommandGlows Google OAuth client before installer promotion and scoped CommunityGlows sales opening. Email acceptance is complete; Formation stays off sale. The first genuine customer payment can provide live purchase/access proof under monitoring, without an operator-funded charge."
 ---
 
 # Title
@@ -160,7 +160,19 @@ Hosted test-mode acceptance and progressive commits were authorized on 2026-09-0
 
 | 2026-09-29 | sg-release | GPT-6 | Integrated the unpushed CommunityGlows milestone with current main, repaired group editor focus and stale verification snippets/assertions, and prepared a branch-only production Windows installer. Revalidated live merchant/bridge configuration and diagnosed deleted Google OAuth client in CommandGlows production. | 407 app tests, four runtime tests, ten site tests, types, tokens, lint and all remote CI gates pass; draft PR #67 and candidate Windows build 36504227956 are delivered. Installed acceptance and Google repair remain unproven; no live charge or extra email. | Complete native acceptance and OAuth repair before promoting the installer and opening CommunityGlows sales. |
 
+| 2026-09-29 | sg-bug | GPT-6 | Diagnosed the installed access failure, aligned the existing bridge credential in Vercel, reconciled Convex stored/effective runtime values, and delegated the startup/recovery patch on the candidate branch. | Runtime comparison matches; actual CommandGlows bridge and CommunityGlows billing calls both complete without error at 10:50:19 UTC. Candidate 37495179 has 428 passing tests and successful Windows build 36556811536. Login form rendered in the browser; installed-screen and recovery acceptance remain pending. | Confirm the screen and install the rebuilt candidate for native recovery acceptance; keep PR draft and public sales closed. |
+
 ## Current Chantier Flow
+
+### Installed CommunityGlows access failure and recovery — 2026-09-29
+
+The operator's Windows screenshot proves an access-service failure before any deliberate sign-in during that launch. It does not establish an anonymous session: a previous authenticated session may have been restored. Production CommunityGlows `billing:getProductAccess` failed with `bridge_not_configured`; the corresponding CommandGlows operation failed with `bridge_secret_mismatch`. No missing paid entitlement was established.
+
+The existing Vercel Production bridge credential was aligned with the unchanged Doppler value, and immutable deployment `dpl_75uDNpn1pdX8oZdWqcXHWUzBrZm8` became READY on both canonical aliases. A subsequent real access call still failed, so provider READY was not treated as runtime acceptance. Readonly Convex runtime comparison then showed its effective credential differed from both Doppler and the identical stored environment value. Reapplying the existing canonical value through captured stdin made the effective runtime comparison match. A readonly query for a nonexistent diagnostic account now reaches `global_user_not_found` after credential validation, where it previously failed at the credential check. No account, entitlement, trial, purchase or email was created by this diagnostic. Why stored and effective values diverged has not been established. At 10:50:19 UTC, the actual CommandGlows bridge operation and CommunityGlows billing call both completed without error. Private response contents were not inspected or retained; a paid entitlement and the resulting Windows screen are not claimed.
+
+CommunityGlows bug `BUG-2026-09-29-001` also records a separate recovery dead end: the whole-app gate hid login/settings, and authenticated login routing redirected to the workspace. Candidate commit `37495179e44d784907ad0c978bf617499faa699c`, pushed to draft PR #67, orders authentication loading and session locking before access decisions, exposes real sign-out/reconnect and existing recovery settings, suppresses purchase prompts on technical failures, and prevents native preload without confirmed rights. Three new behavioral regressions failed before the patch; 428 tests, core types and changed-file design checks pass afterward. A real browser rendered the public login form without injecting authentication or submitting an account; this is not native Windows acceptance.
+
+Windows build `36556811536` succeeded at that exact code commit and its MSI/NSIS artifacts were downloaded locally. Branch-only build policy preserves the public installer. The bug remains `fix-attempted` until the rebuilt installed app proves reconnect, session lock, recovery settings and actual entitlement response; sales remain closed.
 
 ### CommunityGlows distribution and buyer-path audit — 2026-09-29
 
