@@ -26,7 +26,7 @@ evidence:
   - commandglows_site/tests/email/centralApi.test.ts
   - commandglows_site/tests/email/centralLifecycle.test.ts
   - commandglows_site/tests/email/centralTransport.test.ts
-next_step: Confirm human inbox receipt of the single delivered production acceptance. Retain the consumed one-attempt quota and retired request evidence; do not resend. Complete the remaining CommunityGlows launch and actual commerce-event acceptance independently.
+next_step: Retain the consumed one-attempt quota and retired request evidence; do not resend. Human inbox receipt is confirmed. Complete the remaining CommunityGlows launch and actual commerce-event acceptance independently.
 next_review: "2026-10-05"
 ---
 
@@ -52,7 +52,7 @@ The internal `emailAcceptance.retireExpired` command can cancel only an expired 
 
 ### Completed technical acceptance
 
-The stale queued acceptance was retired after its zero-attempt/no-receipt guard passed. The fresh profile `prod-alert-acceptance-20260929-final` was synchronized into Doppler, Convex, and Vercel with the same approved recipient, one attempt, and a 30-minute expiry. Vercel deployment `dpl_4vjvMr9a1y52wmYeiYBbpeB6dezB` is Ready on both production aliases at commit `a6beed7a`. One enqueue and one explicit dispatch returned HTTP 200 with `submitted`. A read-only Convex reconciliation found exactly one acceptance message, one submitted attempt, one consumed quota, a provider receipt, a `delivery` event, and final state `delivered`. A direct Postmark outbound-details lookup for that correlated receipt returned HTTP 200, status `Sent`, and an actual `Delivered` event. This establishes provider delivery and actual webhook ingestion. Human inbox receipt was requested and remains pending.
+The stale queued acceptance was retired after its zero-attempt/no-receipt guard passed. The fresh profile `prod-alert-acceptance-20260929-final` was synchronized into Doppler, Convex, and Vercel with the same approved recipient, one attempt, and a 30-minute expiry. Vercel deployment `dpl_4vjvMr9a1y52wmYeiYBbpeB6dezB` is Ready on both production aliases at commit `a6beed7a`. One enqueue and one explicit dispatch returned HTTP 200 with `submitted`. A read-only Convex reconciliation found exactly one acceptance message, one submitted attempt, one consumed quota, a provider receipt, a `delivery` event, and final state `delivered`. A direct Postmark outbound-details lookup for that correlated receipt returned HTTP 200, status `Sent`, and an actual `Delivered` event. This establishes provider delivery and actual webhook ingestion. The operator explicitly confirmed human inbox receipt on 2026-09-29. The bounded production email acceptance is verified end to end.
 
 Read-only Postmark inventory confirms the outbound webhook targets the canonical `www.commandglows.com` email endpoint with delivery, bounce, and spam-complaint triggers enabled. Runtime configuration confirms commerce alerts use the email channel, their JSON configuration is valid, production sending is enabled, and retention is 30 days. The real `emailDelivery.poll` entry point completed successfully with `polled`, verifying the automatic Convex-to-worker path against the canonical public base URL. No purchase, customer incident, consent, newsletter subscription, or public sales opening was fabricated by acceptance. No further acceptance submission is authorized by this consumed profile.
 
