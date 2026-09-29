@@ -28,6 +28,7 @@ export const enqueue = internalMutation({
     if (
       (!requiresLiveTest(config, business) && !productionAcceptance) ||
       !profile ||
+      profile.expiresAt <= Date.now() ||
       profile.maxAttempts !== 1 ||
       profile.recipients.length !== 1 ||
       !dispatchAllowed(
@@ -84,5 +85,29 @@ export const enqueue = internalMutation({
       at: now,
     })
     return result
+  },
+})
+
+/** Retire an expired acceptance without deleting its request, attempts, or quota. */
+export const retireExpired = internalMutation({
+  args: { credential: v.string(), businessId: v.string(), messageId: v.id('emailMessages') },
+  handler: async (ctx, { credential, businessId, messageId }) => {
+    const { business } = authorize(credential, businessId, 'operator_test')
+    const message = await ctx.db.get(messageId)
+    const profile = business.liveTest
+    if (
+      !message || message.businessId !== businessId || message.kind !== 'operator' ||
+      !profile || message.operatorTestProfileId !== profile.id || profile.expiresAt > Date.now()
+    ) fail('invalid_state')
+    const attempt = await ctx.db.query('emailAttempts')
+      .withIndex('message', (q) => q.eq('messageId', messageId)).first()
+    const quota = await ctx.db.query('emailTestQuotas')
+      .withIndex('scope', (q) => q.eq('businessId', businessId).eq('profileId', profile.id)).first()
+    if (
+      !['queued', 'cancelled'].includes(message.state) || message.providerMessageId ||
+      attempt || (quota?.attempts ?? 0) > 0
+    ) fail('invalid_state')
+    if (message.state === 'queued') await ctx.db.patch(messageId, { state: 'cancelled' })
+    return { status: 'cancelled' }
   },
 })

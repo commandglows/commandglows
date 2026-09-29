@@ -106,6 +106,38 @@ test('acceptance requires exactly one authorized unexpired recipient and attempt
   await expect(f.enqueue()).rejects.toThrow('acceptance_profile_required')
 })
 
+test('retires only an expired unsent acceptance and preserves its idempotency evidence', async () => {
+  const f = fixture()
+  const { messageId } = await f.enqueue() as { messageId: any }
+  const retire = () => f.t.mutation(anyApi.emailAcceptance.retireExpired, { credential, businessId: 'test', messageId })
+  await expect(retire()).rejects.toThrow('invalid_state')
+  f.config.businesses[0].liveTest.expiresAt = 1
+  f.apply()
+  expect(await retire()).toEqual({ status: 'cancelled' })
+  expect(await retire()).toEqual({ status: 'cancelled' })
+  expect(await f.t.run((ctx) => ctx.db.get(messageId))).toMatchObject({ state: 'cancelled' })
+  expect(await f.t.run((ctx) => ctx.db.query('emailRequests').collect())).toHaveLength(1)
+  expect(await f.t.run((ctx) => ctx.db.query('emailTestQuotas').collect())).toEqual([])
+})
+
+test.each(['attempt', 'receipt', 'wrong_business', 'ordinary_message', 'consumed_quota'])(
+  'refuses acceptance retirement with %s evidence', async (condition) => {
+    const f = fixture()
+    const { messageId } = await f.enqueue() as { messageId: any }
+    f.config.businesses[0].liveTest.expiresAt = 1
+    f.apply()
+    await f.t.run(async (ctx) => {
+      if (condition === 'attempt') await ctx.db.insert('emailAttempts', { businessId: 'test', messageId, state: 'unknown', at: Date.now() })
+      if (condition === 'receipt') await ctx.db.patch(messageId, { providerMessageId: 'provider-receipt' })
+      if (condition === 'wrong_business') await ctx.db.patch(messageId, { businessId: 'other' })
+      if (condition === 'ordinary_message') await ctx.db.patch(messageId, { kind: 'transactional' })
+      if (condition === 'consumed_quota') await ctx.db.insert('emailTestQuotas', { businessId: 'test', profileId: 'acceptance-test', maxAttempts: 1, attempts: 1 })
+    })
+    await expect(f.t.mutation(anyApi.emailAcceptance.retireExpired, { credential, businessId: 'test', messageId })).rejects.toThrow('invalid_state')
+    expect(await f.t.run((ctx) => ctx.db.get(messageId))).toMatchObject({ state: 'queued' })
+  }
+)
+
 test('production acceptance is operator-only and reserves exactly one provider attempt', async () => {
   const config: EmailConfig = {
     environment: 'production',
@@ -130,6 +162,11 @@ test('production acceptance is operator-only and reserves exactly one provider a
   vi.stubEnv('EMAIL_TEST_DISPATCH', productionDispatchCredential)
   vi.stubEnv('EMAIL_CONTROL_CONFIG', JSON.stringify(config))
   const t = convexTest(schema, modules)
+  config.businesses[0].liveTest!.expiresAt = 1
+  vi.stubEnv('EMAIL_CONTROL_CONFIG', JSON.stringify(config))
+  await expect(t.mutation(anyApi.emailAcceptance.enqueue, { credential, businessId: 'commandglows' })).rejects.toThrow('acceptance_profile_required')
+  config.businesses[0].liveTest!.expiresAt = Date.now() + 60_000
+  vi.stubEnv('EMAIL_CONTROL_CONFIG', JSON.stringify(config))
   const first = await t.mutation(anyApi.emailAcceptance.enqueue, { credential, businessId: 'commandglows' })
   expect(await t.mutation(anyApi.emailAcceptance.enqueue, { credential, businessId: 'commandglows' })).toEqual(first)
   const message = (await t.run((ctx) => ctx.db.query('emailMessages').collect()))[0]
