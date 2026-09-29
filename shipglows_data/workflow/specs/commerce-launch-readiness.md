@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.3"
+artifact_version: "1.0.4"
 project: commandglows
 created: "2026-09-06"
 updated: "2026-09-29"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-28T22:41:29Z"
+updated_at: "2026-09-29T00:53:18Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -21,7 +21,7 @@ linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
 evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access.", "Hosted buyer-path edge cases observed in conversation on 2026-09-09: card decline showed Stripe refusal with no access, abandoned checkout kept access locked, partial refund preserved access, and cumulative full refund removed access.", "Hosted dispute acceptance on 2026-09-09 proved open/pending dispute keeps access locked and lost dispute keeps access locked; a separate normal card checkout later restored access on a clean session. Buyer receipt, dispute-won restoration, alerts, recovery and production activation remain pending."]
-next_step: "Correct Vercel Production EMAIL_COMMANDGLOWS_POSTMARK with the Postmark Server API Token for server 20723143, synchronize Doppler commandglows/prd, and verify the single authorized operator email; keep CommunityGlows direct sales closed until required hosted buyer/access proof is obtained from the first genuine customer transaction, and keep Formation checkout locked until its launch."
+next_step: "Validate the installed CommunityGlows candidate from commit 240afc0, repair the deleted Google OAuth client used by CommandGlows production, then promote the accepted installer and enable the scoped CommunityGlows launch. Email acceptance is complete; Formation stays off sale. The first genuine customer payment can provide live purchase/access proof under monitoring, without an operator-funded charge."
 ---
 
 # Title
@@ -30,7 +30,7 @@ Commerce launch readiness
 
 ## Status
 
-Implemented with local synthetic evidence and a hosted ordinary-customer purchase/access proof. Commercial opening remains blocked on the remaining hosted acceptance scenarios and production provider activation.
+The shared commerce layer has local synthetic evidence and historical hosted Formation purchase/access proof. Production email acceptance is complete, including provider delivery, the Convex webhook and operator-confirmed inbox receipt. CommunityGlows live merchant/price/webhook configuration and its authenticated bridge credential are verified, but commercial opening still requires acceptance of the rebuilt Windows candidate, repair of CommandGlows production Google sign-in, and proof of the installed buyer/access path. Draft CommunityGlows PR #67 combines the previously unpushed application milestone with current GitHub main; all CI gates and the Windows candidate build pass.
 
 The September 7 central email continuation adds an opt-in durable commerce alert channel on its isolated work branch. Queue/submission/provider delivery remain separate; unknown submissions cannot be re-alerted blindly, and a late hard bounce remains visible. See `central-email-completion-plan.md` and `central-email-operations.md`. This local implementation does not close the hosted notification, Stripe, protected-access, fallback or historical index acceptance gaps recorded here.
 
@@ -158,7 +158,19 @@ Hosted test-mode acceptance and progressive commits were authorized on 2026-09-0
 | 2026-09-29 | sg-release | GPT-6 | Prepared the operator-requested commit/push of email and launch corrections; added dispatch-stage logging without exception payloads. Compared Vercel source-file hashes instead of relying on its Git metadata. | 71 focused tests pass, including diagnostic privacy, acceptance quota, retention, and Formation checkout guards. Astro reports zero errors/warnings; both documentation metadata checks and the bounded dev/prd secret scan pass. The previous deployment already contains the uncommitted adapter/course/acceptance/retention files. Production acceptance remains queued with zero attempts and no provider receipt; the 503 cause and mailbox delivery remain unverified. | Verify the committed deployment, identify the failing worker stage, then complete the already-authorized bounded email acceptance. |
 | 2026-09-29 | sg-release | GPT-6 | Pushed commits `bdfcb60e` and `a6beed7a`; corrected production backend routing and invalid escaped Convex JSON; installed guarded acceptance retirement, retired the never-attempted expired entry, and executed the already-authorized one-recipient acceptance. | Vercel production Ready at `a6beed7a`; 13 follow-up tests, Convex TypeScript and dry-run/install passed. One dispatch returned 200/submitted; reconciliation found one attempt, one consumed quota, provider receipt, delivery webhook, and delivered state. Postmark's direct receipt lookup also confirms Delivered. Automatic `emailDelivery.poll` passed; commerce channel JSON and 30-day retention are valid. Operator confirmed human inbox receipt. | Keep actual CommunityGlows purchase/access and commercial-opening evidence separate; no additional acceptance send. |
 
+| 2026-09-29 | sg-release | GPT-6 | Integrated the unpushed CommunityGlows milestone with current main, repaired group editor focus and stale verification snippets/assertions, and prepared a branch-only production Windows installer. Revalidated live merchant/bridge configuration and diagnosed deleted Google OAuth client in CommandGlows production. | 407 app tests, four runtime tests, ten site tests, types, tokens, lint and all remote CI gates pass; draft PR #67 and candidate Windows build 36504227956 are delivered. Installed acceptance and Google repair remain unproven; no live charge or extra email. | Complete native acceptance and OAuth repair before promoting the installer and opening CommunityGlows sales. |
+
 ## Current Chantier Flow
+
+### CommunityGlows distribution and buyer-path audit — 2026-09-29
+
+Read-only production checks confirm the CommunityGlows Stripe key belongs to the configured merchant account, charges and payouts are enabled, and the active live one-time Price is EUR 149 inclusive of tax. Its enabled dedicated webhook targets `www.commandglows.com/api/commerce/webhooks/communityglows` with the ten required events. The CommunityGlows production Convex deployment exposes access and Checkout functions and points its suite bridge to `www.commandglows.com`. A malformed request authenticated with the existing server credential is rejected at payload validation (HTTP 400), proving that credential is accepted without writing a user, entitlement, purchase or trial. Anonymous access/Checkout calls are rejected before mutation. The bounded production receipt inventory is empty; no genuine CommunityGlows purchase is claimed.
+
+The public Windows asset still comes from the successful August 15 build at `0fb768ae`, while local commit `f18c90b` contains later application, authentication, billing and EU-runtime work absent from GitHub main. GitHub main `ace2a53e` contains subsequent public-site and required-CI improvements. An isolated integration checkout preserves the operator's unrelated dirty work and combines both histories; conflicts retain the newer site validation and documentation. The integrated full app checks initially found stale Bento source assertions, a missing return of keyboard focus after group editing, and two verification snippets not exported as CommonJS modules. The focus regression and snippets are repaired, obsolete presentation expectations follow the current sidebar/context-menu arrangement, and generated tokens are synchronized without semantic changes. All 407 application tests, app/Convex TypeScript, four production-runtime tests, and the token check pass; lint has zero errors and 749 pre-existing style warnings. The earlier 330-file milestone scan found no known Doppler secret or token/private-key pattern. Commit `240afc0dead6f1e945075ce11529378178dbdb13` is pushed on `codex/community-prod-readiness` with draft [PR #67](https://github.com/commandglows/communityglows/pull/67). Required gate run `36504202506`, all quality-check jobs in run `36504202516` (including Windows Rust and extension runtime checks), and Windows installer run `36504227956` all succeeded. The branch build correctly skipped public installer replacement. Its production-runtime MSI and NSIS artifacts were downloaded for installed acceptance; the NSIS SHA-256 is `DA434D8E16B1787564EB5F28D539F15DFFDFED20CEDFDA9916EDFD807F5968EE`. The application frontend production bundle, Convex dry-run, site build (49 pages), site launch checks and ten site tests also pass. Native authentication, access, network/profile isolation and overlay recovery are still pending; historical Windows bug records remain open at their actual evidence level. No production payment or additional email is initiated.
+
+### CommandGlows production Google sign-in — 2026-09-29
+
+An anonymous visit to the production administrator route redirects to the expected Clerk sign-in form. The form loads normally; clicking its existing Google provider produces Google HTTP 401 `deleted_client` with “The OAuth client was deleted.” Read-only inspection of CommandGlows Clerk Production confirms that Google is enabled and its saved client matches the rejected OAuth client. The owning Google project is absent from both the authenticated CLI inventory and browser project search, so restoration is not claimed. Production email-code sign-in is configured and remains untested; it does not close the Google defect or prove administrator access. Repair requires access to the original Google project to restore the client, or a replacement client configured for the existing production redirect URI with the same minimal scopes. Any credential entry through the browser requires operator handoff; no credential is changed and no secret is committed.
 
 ### Email production diagnosis and Git checkpoint — 2026-09-29
 
