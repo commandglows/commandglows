@@ -1,7 +1,7 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.2.1"
 project: CommandGlows
 created: "2026-09-05"
 updated: "2026-09-29"
@@ -26,7 +26,7 @@ evidence:
   - commandglows_site/tests/email/centralApi.test.ts
   - commandglows_site/tests/email/centralLifecycle.test.ts
   - commandglows_site/tests/email/centralTransport.test.ts
-next_step: Publish the sanitized dispatch-stage diagnostics, identify the production 503, and retire the expired acceptance entry before a fresh one-recipient, one-attempt acceptance under the existing operator authorization. Do not renew the expired profile in place; its complete value is part of the frozen route fingerprint. Verify provider delivery, webhook ingestion, and inbox receipt separately.
+next_step: Confirm human inbox receipt of the single delivered production acceptance. Retain the consumed one-attempt quota and retired request evidence; do not resend. Complete the remaining CommunityGlows launch and actual commerce-event acceptance independently.
 next_review: "2026-10-05"
 ---
 
@@ -34,7 +34,7 @@ next_review: "2026-10-05"
 
 ## What exists
 
-The additive email architecture and commerce retention changes are deployed to production Convex `elegant-mule-677`; the latest CommandGlows Vercel production deployment is `dpl_9zjn5DNgqoVAk9mHuSr7Wx6uPn6z` and serves `www.commandglows.com`. Convex owns normalized addresses, consent history, audience membership, opaque-token records, suppression state, idempotency, outbox, attempts and delivery events. Astro exposes authenticated v1 controllers and a Postmark adapter. Newsletter signup uses the central registry with explicit consent and signed preferences; the former buyer newsletter hook cannot subscribe a purchaser without consent. Entitlements are unchanged. Commerce alerts use an explicitly configured durable email channel; its acceptance boundaries are described below. New API contracts are in `central-email-api-contract.md`.
+The additive email architecture, guarded acceptance lifecycle, and commerce retention changes are deployed to production Convex `elegant-mule-677`. CommandGlows Vercel production serves `www.commandglows.com` and is now built from the committed `main` branch. Convex owns normalized addresses, consent history, audience membership, opaque-token records, suppression state, idempotency, outbox, attempts and delivery events. Astro exposes authenticated v1 controllers and a Postmark adapter. Newsletter signup uses the central registry with explicit consent and signed preferences; the former buyer newsletter hook cannot subscribe a purchaser without consent. Entitlements are unchanged. Commerce alerts use an explicitly configured durable email channel; its acceptance boundaries are described below. New API contracts are in `central-email-api-contract.md`.
 
 ## Production verification — 2026-09-29
 
@@ -48,7 +48,13 @@ The first prebuilt Windows artifact failed at runtime because its package symlin
 
 Commit `bdfcb60e` was pushed to `main` and deployed by Vercel. Its diagnostic correlated the 503 with stage `claim`, after Postmark verification. No matching claim execution appeared on production Convex. The dedicated `EMAIL_CONVEX_URL` was absent in Doppler and unreadable as a sensitive Vercel variable; it was explicitly aligned in both production configurations with the verified regional production backend. A read-only runtime query then established that Convex's `EMAIL_CONTROL_CONFIG` contained literal backslashes before its JSON quotes and could not be parsed. The valid Doppler value was copied using a direct process argument array, avoiding shell quoting, and a runtime reread confirmed valid production JSON. Vercel redeployment `dpl_7AveCM8azYMmj61fLH28rjX2LbhJ` is Ready on the production aliases. Authenticated dispatch now returns HTTP 200 with no jobs; the stale acceptance still has no attempt or provider receipt. This verifies removal of the observed pre-submission failure, not delivery.
 
-The internal `emailAcceptance.retireExpired` command can cancel only an expired operator acceptance still queued and never attempted/submitted. It requires the dedicated `operator_test` authorization and matching business/profile; any attempt, provider receipt, or consumed quota blocks retirement. It preserves all request and quota evidence. Production acceptance enqueue now explicitly rejects expired profiles as well as checking the final dispatch expiry. Thirteen focused tests and Convex TypeScript validation pass for these boundaries; installation and fresh delivery proof remain pending.
+The internal `emailAcceptance.retireExpired` command can cancel only an expired operator acceptance still queued and never attempted/submitted. It requires the dedicated `operator_test` authorization and matching business/profile; any attempt, provider receipt, or consumed quota blocks retirement. It preserves all request and quota evidence. Production acceptance enqueue now explicitly rejects expired profiles as well as checking the final dispatch expiry. Thirteen focused tests and Convex TypeScript validation pass for these boundaries. Commit `a6beed7a` was pushed; Convex dry-run and installation passed against the verified production target without reported index deletion.
+
+### Completed technical acceptance
+
+The stale queued acceptance was retired after its zero-attempt/no-receipt guard passed. The fresh profile `prod-alert-acceptance-20260929-final` was synchronized into Doppler, Convex, and Vercel with the same approved recipient, one attempt, and a 30-minute expiry. Vercel deployment `dpl_4vjvMr9a1y52wmYeiYBbpeB6dezB` is Ready on both production aliases at commit `a6beed7a`. One enqueue and one explicit dispatch returned HTTP 200 with `submitted`. A read-only Convex reconciliation found exactly one acceptance message, one submitted attempt, one consumed quota, a provider receipt, a `delivery` event, and final state `delivered`. A direct Postmark outbound-details lookup for that correlated receipt returned HTTP 200, status `Sent`, and an actual `Delivered` event. This establishes provider delivery and actual webhook ingestion. Human inbox receipt was requested and remains pending.
+
+Read-only Postmark inventory confirms the outbound webhook targets the canonical `www.commandglows.com` email endpoint with delivery, bounce, and spam-complaint triggers enabled. Runtime configuration confirms commerce alerts use the email channel, their JSON configuration is valid, production sending is enabled, and retention is 30 days. The real `emailDelivery.poll` entry point completed successfully with `polled`, verifying the automatic Convex-to-worker path against the canonical public base URL. No purchase, customer incident, consent, newsletter subscription, or public sales opening was fabricated by acceptance. No further acceptance submission is authorized by this consumed profile.
 
 CommunityGlows is the first pilot. Its static Astro site uses a same-origin Vercel function under `site/api/newsletter/subscribe.js`; adding an Astro POST route to the static build would not provide a server. Its coordinated `site/NEWSLETTER.md` owns product configuration. The form remains disabled until its versioned notice and controller are configured explicitly. Hosting a static build alone does not prove the function exists.
 
