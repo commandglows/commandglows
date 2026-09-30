@@ -39,6 +39,9 @@ html body.workspace-page {
 .workspace-context { color: var(--workspace-muted); font-size: var(--text-sm); border-left: solid var(--workspace-border) calc(var(--workspace-unit) / 4); padding-left: calc(var(--workspace-unit) * 6); }
 .workspace-tools { margin-left: auto; display: flex; align-items: center; gap: calc(var(--workspace-unit) * 3); }
 .workspace-tools a { color: var(--workspace-muted); font-size: var(--text-sm); font-weight: var(--font-weight-semibold); display: inline-flex; align-items: center; gap: calc(var(--workspace-unit) * 2); min-height: calc(var(--workspace-unit) * 11); }
+.workspace-logout button { min-height: calc(var(--workspace-unit) * 10); padding-inline: calc(var(--workspace-unit) * 3); border: solid var(--workspace-border) calc(var(--workspace-unit) / 4); border-radius: var(--cg-semantic-radius-workspace-control); color: var(--workspace-text); background: transparent; font-size: var(--text-sm); font-weight: var(--font-weight-semibold); white-space: nowrap; cursor: pointer; }
+.workspace-logout button:hover { border-color: var(--workspace-accent); color: var(--workspace-accent); }
+.workspace-logout button:focus-visible { outline: solid var(--workspace-accent) calc(var(--workspace-unit) / 2); outline-offset: var(--workspace-unit); }
 .workspace-language { justify-content: center; min-width: calc(var(--workspace-unit) * 11); }
 .workspace-shell { min-height: calc(100svh - var(--cg-semantic-layout-workspace-header)); padding: calc(var(--workspace-unit) * 10) calc(var(--workspace-unit) * 6); }
 .workspace-grid { display: grid; grid-template-columns: var(--cg-semantic-layout-workspace-sidebar) minmax(0, 1fr); gap: calc(var(--workspace-unit) * 12); max-width: var(--cg-semantic-layout-workspace-maximum); margin-inline: auto; }

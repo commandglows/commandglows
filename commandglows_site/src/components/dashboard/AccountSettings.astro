@@ -55,11 +55,4 @@ const recoveryAvailable = isAccountRecoveryAvailable(Astro.url.origin, auth.unav
       ) : <p class="text-content-text-secondary mt-4">{isFrench ? 'La liaison est temporairement indisponible.' : 'Account linking is temporarily unavailable.'}</p>}
     </section>
   )}
-  {(auth.userId || auth.unavailable) && (
-    <form method="post" action="/api/auth/logout" class="mt-6">
-      <button type="submit" class="workspace-button">
-        {isFrench ? 'Se déconnecter' : 'Sign out'}
-      </button>
-    </form>
-  )}
 </div>

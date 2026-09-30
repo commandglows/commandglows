@@ -45,6 +45,11 @@ const alternatePath = alternateLanguagePath !== undefined ? alternateLanguagePat
     <span class="workspace-context">{customerLabel}</span>
     <div class="workspace-tools">
       <a class="workspace-site-link" href={lang === 'fr' ? '/fr' : '/'}>{lang === 'fr' ? 'Voir le site' : 'Visit website'} <span aria-hidden="true">↗</span></a>
+      {(auth.userId || auth.unavailable) && (
+        <form method="post" action="/api/auth/logout" class="workspace-logout">
+          <button type="submit">{lang === 'fr' ? 'Se déconnecter' : 'Sign out'}</button>
+        </form>
+      )}
       {!currentPath.includes('licences') && !currentPath.includes('newsletters') && (alternatePath ? <a class="workspace-language" href={alternatePath} lang={lang === 'fr' ? 'en' : 'fr'} aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en français'}>{lang === 'fr' ? 'EN' : 'FR'}</a> : <span class="text-dashboard-text-muted text-sm">{lang === 'fr' ? 'Traduction indisponible' : 'Translation unavailable'}</span>)}
       <ThemePicker />
     </div>

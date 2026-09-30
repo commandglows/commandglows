@@ -64,16 +64,32 @@ export const resolveClerk = query({ args: { clerkId: v.string(), environment: v.
 } })
 
 /** Provision an empty account only after the site has verified the Clerk session. */
-export const ensureClerk = mutation({ args: { clerkId: v.string(), environment: v.string(), bridgeSecret: v.string() }, handler: async (ctx, args) => {
+export const ensureClerk = mutation({ args: { clerkId: v.string(), environment: v.string(), bridgeSecret: v.string(), email: v.optional(v.string()), name: v.optional(v.string()) }, handler: async (ctx, args) => {
   const identity = checked({ ...args, provider: 'clerk', subject: args.clerkId, issuer: 'https://legacy-clerk.invalid/' })
   const existing = await ctx.db.query('identityAccounts').withIndex('by_providerAccount', q => q.eq('provider', 'clerk').eq('providerAccountId', identity.subject)).unique()
   if (existing) {
     if (commerceEnvironment(existing.environment || '') !== identity.environment) throw new Error('identity_environment_mismatch')
+    const account = await ctx.db.get(existing.globalUserId)
+    if (!account) throw new Error('global_user_not_found')
+    const email = args.email?.trim()
+    const name = args.name?.trim()
+    const accountPatch = {
+      ...(!account.primaryEmail && email ? { primaryEmail: email } : {}),
+      ...(!account.name && name ? { name } : {}),
+      ...((!existing.email && email) ? { email } : {}),
+    }
+    if (Object.keys(accountPatch).length) {
+      const { email: identityEmail, ...globalUserPatch } = accountPatch
+      if (Object.keys(globalUserPatch).length) await ctx.db.patch(existing.globalUserId, { ...globalUserPatch, updatedAt: Date.now() })
+      if (identityEmail) await ctx.db.patch(existing._id, { email: identityEmail })
+    }
     return snapshot(ctx, existing.globalUserId, identity.environment)
   }
   const now = Date.now()
-  const globalUserId = await ctx.db.insert('globalUsers', { globalUserId: `gu_${crypto.randomUUID()}`, createdAt: now, updatedAt: now })
-  await ctx.db.insert('identityAccounts', { globalUserId, provider: 'clerk', providerAccountId: identity.subject,
+  const email = args.email?.trim()
+  const name = args.name?.trim()
+  const globalUserId = await ctx.db.insert('globalUsers', { globalUserId: `gu_${crypto.randomUUID()}`, ...(email ? { primaryEmail: email } : {}), ...(name ? { name } : {}), createdAt: now, updatedAt: now })
+  await ctx.db.insert('identityAccounts', { globalUserId, provider: 'clerk', providerAccountId: identity.subject, ...(email ? { email } : {}),
     environment: identity.environment, source: 'site_verified_session', createdAt: now, updatedAt: now })
   return snapshot(ctx, globalUserId, identity.environment)
 } })

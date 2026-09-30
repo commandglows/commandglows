@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.7"
+artifact_version: "1.0.8"
 project: commandglows
 created: "2026-09-06"
 updated: "2026-09-29"
 created_at: "2026-09-06T19:15:00Z"
-updated_at: "2026-09-29T11:51:24Z"
+updated_at: "2026-09-29T15:20:00Z"
 status: active
 source_skill: sg-development
 source_model: GPT-6
@@ -21,7 +21,7 @@ linked_systems: [Stripe, Convex, Clerk, Astro]
 depends_on: [shipglows_data/technical/payment-activation-entitlements.md, shipglows_data/technical/platforms/stripe-managed-payments.md]
 supersedes: []
 evidence: ["Operator approved the commerce launch plan and business rules on 2026-09-06.", "Hosted Stripe test payment, signed webhook processing, ordinary-customer entitlement and private lesson access verified on 2026-09-08.", "A full 49 EUR test refund revoked that ordinary customer's backend entitlement and private lesson access.", "Hosted buyer-path edge cases observed in conversation on 2026-09-09: card decline showed Stripe refusal with no access, abandoned checkout kept access locked, partial refund preserved access, and cumulative full refund removed access.", "Hosted dispute acceptance on 2026-09-09 proved open/pending dispute keeps access locked and lost dispute keeps access locked; a separate normal card checkout later restored access on a clean session. Buyer receipt, dispute-won restoration, alerts, recovery and production activation remain pending."]
-next_step: "Accept the delivered private Windows candidate f69b472d from successful build 36563568490: installed language-first onboarding, real account/trial status and native access/lock behavior, preserving existing account/profile/trial data. Repair the deleted CommandGlows Google OAuth client and triage the remaining candidate dependency advisories before installer promotion and scoped CommunityGlows sales opening. Email acceptance is complete; Formation stays off sale. The first genuine customer payment can provide live purchase/access proof under monitoring, without an operator-funded charge."
+next_step: "Install and manually retest the latest private Windows candidate `65fcff3e4baacf7f1a0a98fe20aaa03e12d9697e` (run `36577196278`): confirm language-first onboarding, account/trial explanation, actual access result and native lock behavior while preserving account/profile/trial data. The earlier `37495179` candidate connected but skipped onboarding. Repair the deleted CommandGlows Google OAuth client and triage the remaining candidate dependency advisories before installer promotion and scoped CommunityGlows sales opening. Email acceptance is complete; Formation stays off sale. The first genuine customer payment can provide live purchase/access proof under monitoring, without an operator-funded charge."
 ---
 
 # Title
@@ -30,7 +30,7 @@ Commerce launch readiness
 
 ## Status
 
-The shared commerce layer has local synthetic evidence and historical hosted Formation purchase/access proof. Production email acceptance is complete, including provider delivery, the Convex webhook and operator-confirmed inbox receipt. CommunityGlows live merchant/price/webhook configuration and its authenticated bridge credential are verified, but commercial opening still requires acceptance of the rebuilt Windows candidate, repair of CommandGlows production Google sign-in, and proof of the installed buyer/access path. Draft CommunityGlows PR #67 combines the previously unpushed application milestone with current GitHub main. The earlier Windows candidate and CI gates passed, but its installed retest found a skipped onboarding journey. The bounded repair reuses the existing screens and has passing local tests and rendered browser evidence; its rebuilt Windows acceptance remains required.
+The shared commerce layer has local synthetic evidence and historical hosted Formation purchase/access proof. Production email acceptance is complete, including provider delivery, the Convex webhook and operator-confirmed inbox receipt. CommunityGlows live merchant/price/webhook configuration and its authenticated bridge credential are verified, but commercial opening still requires acceptance of the rebuilt Windows candidate, repair of CommandGlows production Google sign-in, and proof of the installed buyer/access path. Draft CommunityGlows PR #67 combines the previously unpushed application milestone with current GitHub main. The earlier Windows candidate and CI gates passed, but its installed retest found a skipped onboarding journey. The bounded repair reuses the existing screens and has passing local tests and rendered browser evidence; the user reported that candidate `37495179` connected but skipped the entry journey. A later candidate `65fcff3` passes Windows packaging/lifecycle CI, but its installed onboarding and exact access result remain unaccepted.
 
 The September 7 central email continuation adds an opt-in durable commerce alert channel on its isolated work branch. Queue/submission/provider delivery remain separate; unknown submissions cannot be re-alerted blindly, and a late hard bounce remains visible. See `central-email-completion-plan.md` and `central-email-operations.md`. The later production acceptance below closes the bounded email transport proof. A genuine commerce incident-to-email path, Stripe buyer/access, recovery and independent fallback evidence remain separate; historical checkpoints below retain their original evidence level.
 
@@ -152,6 +152,7 @@ Hosted test-mode acceptance and progressive commits were authorized on 2026-09-0
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 | --- | --- | --- | --- | --- | --- |
+| 2026-09-29 | sg-docs | GPT-6 | Reconciled CommunityGlows bridge tasks and launch checkpoint with later runtime and installed-candidate evidence. | Bridge configuration is aligned and real bridge/access calls completed without error; exact entitlement remains unverified. Onboarding acceptance of the latest Windows candidate remains pending. | Retest candidate `65fcff3`, capture the exact access state, then update launch trackers. |
 | 2026-09-06 | sg-development | GPT-6 | Formalized approved commerce rules and bounded local proof. | reviewed | Readiness review and implementation. |
 | 2026-09-06 | 101-sg-ready | GPT-6 | Checked purchase isolation, provider evidence, failure exits and non-overlapping write batches against current code. | ready for local implementation | Implement both batches and run combined checks. |
 | 2026-09-06 | sg-development | GPT-6 | Implemented immutable financial facts, purchase rights reduction, operator cases, alert outbox, missing-webhook surveillance, evidence recovery and buyer copy. Independent review fixes cover legacy audit provenance and contradictory dispute outcomes. | 244 synthetic tests, Convex TypeScript and Astro checks passed; metadata lint passed. | Hosted test-mode acceptance requires separate authorization. |

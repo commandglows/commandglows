@@ -1,4 +1,5 @@
 import { ConvexHttpClient } from 'convex/browser'
+import { clerkClient } from '@clerk/astro/server'
 import { getServerEnv } from '../serverEnv'
 import { readAuth0Config, readAuth0Session, AUTH_SESSION_COOKIE } from './auth0Session'
 import type { APIContext } from 'astro'
@@ -47,7 +48,25 @@ export async function initializeSiteAuth(context: APIContext) {
       if (!clerkId) return
       const { client, authority } = siteBackend()
       rawAccount = await client.query('siteIdentity:resolveClerk' as never, { ...authority, clerkId } as never)
-      if (rawAccount === null) rawAccount = await client.mutation('siteIdentity:ensureClerk' as never, { ...authority, clerkId } as never)
+      const isResolvedAccount = typeof rawAccount === 'object' && rawAccount !== null && !Array.isArray(rawAccount)
+        && typeof (rawAccount as Record<string, unknown>).globalUserId === 'string'
+      const needsProfileSync = isResolvedAccount && !Boolean((rawAccount as Record<string, unknown>).email)
+      if (rawAccount === null || needsProfileSync) {
+        let email: string | undefined
+        let name: string | undefined
+        try {
+          const user = await clerkClient(context).users.getUser(clerkId)
+          const primaryEmail = user.emailAddresses.find(address =>
+            address.id === user.primaryEmailAddressId && address.verification?.status === 'verified')
+          email = primaryEmail?.emailAddress.trim() || undefined
+          name = [user.firstName, user.lastName].filter((part): part is string => Boolean(part?.trim())).join(' ').trim() || undefined
+        } catch {
+          // Profile details are optional; a Clerk API outage must not hide an otherwise valid session.
+        }
+        rawAccount = await client.mutation('siteIdentity:ensureClerk' as never, {
+          ...authority, clerkId, ...(email ? { email } : {}), ...(name ? { name } : {}),
+        } as never)
+      }
     } else {
       const config = readAuth0Config(getServerEnv())
       if (context.url.origin !== config.origin) throw new Error('site_auth_origin_mismatch')
